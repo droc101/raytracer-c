@@ -28,7 +28,7 @@ int findChar(char target) {
     return -1;  // Character not found
 }
 
-void FontDrawChar(Vector2 pos, char c) {
+void FontDrawChar(Vector2 pos, char c, uint size) {
     int index = findChar(tolower(c));
     if (index == -1) {
         index = findChar('U');
@@ -41,26 +41,26 @@ void FontDrawChar(Vector2 pos, char c) {
     SDL_Rect dstRect;
     dstRect.x = pos.x;
     dstRect.y = pos.y;
-    dstRect.w = FONT_CHAR_WIDTH;
-    dstRect.h = FONT_CHAR_HEIGHT;
+    dstRect.w = size;
+    dstRect.h = size;
     SDL_RenderCopy(GetRenderer(), fontTexture, &srcRect, &dstRect);
 }
 
-void FontDrawString(Vector2 pos, char* str) {
+void FontDrawString(Vector2 pos, char* str, uint size) {
     int x = pos.x;
     int y = pos.y;
     int i = 0;
     while (str[i] != '\0') {
         if (str[i] == ' ') {
             i++;
-            x += FONT_SPACE_WIDTH;
+            x += size;
         } else if (str[i] == '\n') {
             i++;
             x = pos.x;
-            y += FONT_CHAR_HEIGHT;
+            y += size;
         }
-        FontDrawChar(vec2(x, y), str[i]);
-        x += FONT_CHAR_WIDTH;
+        FontDrawChar(vec2(x, y), str[i], size);
+        x += size;
         i++;
     }
 }

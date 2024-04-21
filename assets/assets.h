@@ -1,8 +1,6 @@
 #ifndef ASSETS_H
 #define ASSETS_H
 
-
-
 extern const unsigned int tex_actor_BLOB2[];
 extern const unsigned int tex_actor_demon[];
 extern const unsigned int tex_actor_iq[];

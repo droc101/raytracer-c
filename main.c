@@ -9,6 +9,7 @@
 #include "Structs/level.h"
 #include "Structs/ray.h"
 #include "Helpers/mathex.h"
+#include "error.h"
 
 int main(int argc, char *argv[]) {
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
@@ -79,7 +80,7 @@ int main(int argc, char *argv[]) {
 
         char buffer[64];
         sprintf(buffer, "Position %.2f, %.2f\nRotation %.4f", l.position.x, l.position.y, l.rotation);
-        FontDrawString(vec2(20, 20), buffer);
+        FontDrawString(vec2(20, 20), buffer, 16);
 
         // Frame draw end
 
@@ -110,6 +111,10 @@ int main(int argc, char *argv[]) {
             l.rotation += ROT_SPEED;
         }
 
+        if (IsKeyJustPressed(SDL_SCANCODE_C)) {
+            Error("debug crash");
+        }
+
         l.rotation = wrap(l.rotation, 0, 2*PI);
 
         UpdateKeyStates();
@@ -122,11 +127,12 @@ int main(int argc, char *argv[]) {
 
         // Calculate and print FPS
         float fps = 1000.0 / (SDL_GetTicks64() - frameStart);
-        sprintf(buffer, "FPS: %.2f Time: %lu ms\n", fps, frameTime);
+        sprintf(buffer, "GAME! - FPS: %.2f Time: %lu ms\n", fps, frameTime);
         SDL_SetWindowTitle(window, buffer);
-        //fflush(stdout);
 
     }
+
+    DestroyLevel(l);
 
     SDL_DestroyRenderer(GetRenderer());
     SDL_DestroyWindow(window);

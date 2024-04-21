@@ -6,6 +6,7 @@
 #include "SDL.h"
 #include "drawing.h"
 #include <stdio.h>
+#include "../error.h"
 
 SDL_Renderer *renderer;
 
@@ -41,6 +42,7 @@ SDL_Texture* ToSDLTexture(const unsigned char* imageData) {
     SDL_Surface* surface = SDL_CreateRGBSurfaceFrom((void*)pixelData, width, height, 32, width * 4, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
     if (!surface) {
         printf("Failed to create surface: %s\n", SDL_GetError());
+        Error("ToSDLTexture: Failed to create surface");
         return NULL;
     }
 
@@ -48,6 +50,7 @@ SDL_Texture* ToSDLTexture(const unsigned char* imageData) {
     SDL_FreeSurface(surface); // Free the surface as it's not needed anymore
     if (!texture) {
         printf("Failed to create texture: %s\n", SDL_GetError());
+        Error("ToSDLTexture: Failed to create texture");
         return NULL;
     }
 

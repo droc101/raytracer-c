@@ -9,8 +9,7 @@
 #include "../Helpers/drawing.h"
 #include "ray.h"
 #include "../Helpers/mathex.h"
-
-#define TEXTURED
+#include "../error.h"
 
 Level CreateLevel() {
     Level l;
@@ -23,6 +22,11 @@ Level CreateLevel() {
     return l;
 }
 
+void DestroyLevel(Level l) {
+    ListFreeWithData(l.walls);
+    ListFreeWithData(l.actors);
+}
+
 void RenderCol(Level l, int col) {
     setColorUint(0xFFFFFFFF);
     double angle = atan2(col - WIDTH / 2, WIDTH / 2) + l.rotation;
@@ -33,18 +37,16 @@ void RenderCol(Level l, int col) {
         return; // nothing else to do
     }
 
-#pragma region RayCast
 
     double distance = Vector2Distance(l.position, raycast.CollisonPoint) * cos(angle - l.rotation);
 
     if (distance == 0) {
-        return;
+        Error("Distance to wall is 0 -- this is NOT ok.");
     }
 
     double height = HEIGHT / distance;
     int y = (HEIGHT - height) / 2;
-#pragma  endregion
-#pragma region Shade
+
     double shade = fabs(cos((l.rotation + (1.5 * PI)) - WallGetAngle(raycast.CollisionWall)));
     shade *= (1 - (distance / (WIDTH / 2)));
     shade = max(0.4, min(1, shade));
@@ -52,8 +54,6 @@ void RenderCol(Level l, int col) {
 
     byte shadeByte = 255 * shade;
 
-#pragma endregion
-#ifdef TEXTURED
 
     SDL_Texture *texture = raycast.CollisionWall.tex;
     SDL_Point texSize = SDL_TextureSize(texture);
@@ -73,9 +73,5 @@ void RenderCol(Level l, int col) {
     SDL_SetRenderDrawColor(GetRenderer(), 0, 0, 0, 255 - shadeByte);
     SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_BLEND);
     draw_rect(col, y, 1, height);
-#else
 
-    SDL_SetRenderDrawColor(GetRenderer(), shadeByte, shadeByte, shadeByte, SDL_ALPHA_OPAQUE);
-    draw_rect(col, y, 1, height);
-#endif
 }

@@ -8,7 +8,7 @@
 #include "../Structs/Vector2.h"
 
 void FontInit();
-void FontDrawString(Vector2 pos, char* str);
+void FontDrawString(Vector2 pos, char* str, uint size);
 
 #define FONT_CHAR_WIDTH 16
 #define FONT_CHAR_HEIGHT 16
