@@ -1,12 +1,14 @@
 #include <SDL.h>
 #include <stdio.h>
 
+#include "Helpers/drawing.h"
 #include "defines.h"
 #include "input.h"
-#include "Helpers/drawing.h"
+#include "Helpers/font.h"
 #include "assets/assets.h"
 #include "Structs/level.h"
 #include "Structs/ray.h"
+#include "Helpers/mathex.h"
 
 int main(int argc, char *argv[]) {
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
@@ -14,7 +16,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    SDL_Window *window = SDL_CreateWindow("surface to draw on with the magic sand",
+    SDL_Window *window = SDL_CreateWindow("",
                                           SDL_WINDOWPOS_UNDEFINED,
                                           SDL_WINDOWPOS_UNDEFINED,
                                           WIDTH, HEIGHT, 0);
@@ -24,17 +26,21 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    if (renderer == NULL) {
+    SDL_Renderer *tr = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+
+    if (tr == NULL) {
         SDL_DestroyWindow(window);
         printf("SCreateRenderer Error: %s\n", SDL_GetError());
         SDL_Quit();
         return 1;
     }
+    SetRenderer(tr);
+
+    FontInit();
 
     Level l = CreateLevel();
     l.rotation = PI/2;
-    Wall w = CreateWall(vec2(-10, 1), vec2(10, 1), 0);
+    Wall w = CreateWall(vec2(-10, 1), vec2(10, 1), 1);
     ListAdd(l.walls, &w);
 
     SDL_Event e;
@@ -58,30 +64,33 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        setColorUint(renderer, l.SkyColor);
-        SDL_RenderClear(renderer);
+        // Frame draw begin
 
-        setColorUint(renderer, l.FloorColor);
-        draw_rect(renderer, 0, HEIGHT/2, WIDTH, HEIGHT/2);
-        // Frame loop begin
+        setColorUint(l.SkyColor);
+        SDL_RenderClear(GetRenderer());
+
+        setColorUint(l.FloorColor);
+        draw_rect(0, HEIGHT/2, WIDTH, HEIGHT/2);
+
 
         for (int col = 0; col < WIDTH; col++) {
-            RenderCol(renderer, l, col);
+            RenderCol(l, col);
         }
 
-        draw_texture(renderer, tex_actor_BLOB2, frameCount % 0x7f, 10);
-        draw_texture(renderer, tex_actor_iq, frameCount % 300, 20);
+        char buffer[64];
+        sprintf(buffer, "Position %.2f, %.2f\nRotation %.4f", l.position.x, l.position.y, l.rotation);
+        FontDrawString(vec2(20, 20), buffer);
 
-        // Frame loop end
+        // Frame draw end
 
-        SDL_RenderPresent(renderer);
+        SDL_RenderPresent(GetRenderer());
 
         Vector2 oldPos = l.position;
-        if (IsKeyPressed(SDL_SCANCODE_UP)) {
-            Vector2 rotAngle = Vector2Rotated(vec2(0.5, 0), l.rotation);
+        if (IsKeyPressed(SDL_SCANCODE_W)) {
+            Vector2 rotAngle = Vector2Rotated(vec2(MOVE_SPEED, 0), l.rotation);
             l.position = Vector2Add(l.position, rotAngle);
-        } else if (IsKeyPressed(SDL_SCANCODE_DOWN)) {
-            Vector2 rotAngle = Vector2Rotated(vec2(-0.5, 0), l.rotation);
+        } else if (IsKeyPressed(SDL_SCANCODE_S)) {
+            Vector2 rotAngle = Vector2Rotated(vec2(-MOVE_SPEED, 0), l.rotation);
             l.position = Vector2Add(l.position, rotAngle);
         }
 
@@ -95,15 +104,16 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        if (IsKeyPressed(SDL_SCANCODE_LEFT)) {
-            l.rotation -= 0.1;
-        } else if (IsKeyPressed(SDL_SCANCODE_RIGHT)) {
-            l.rotation += 0.1;
+        if (IsKeyPressed(SDL_SCANCODE_A)) {
+            l.rotation -= ROT_SPEED;
+        } else if (IsKeyPressed(SDL_SCANCODE_D)) {
+            l.rotation += ROT_SPEED;
         }
+
+        l.rotation = wrap(l.rotation, 0, 2*PI);
 
         UpdateKeyStates();
         frameCount++;
-        //l.rotation += 0.01;
 
         frameTime = SDL_GetTicks64() - frameStart;
         if (frameTime < TARGET_MS) {
@@ -112,12 +122,13 @@ int main(int argc, char *argv[]) {
 
         // Calculate and print FPS
         float fps = 1000.0 / (SDL_GetTicks64() - frameStart);
-        printf("FPS: %.2f Time: %lu ms\n", fps, frameTime);
-        fflush(stdout);
+        sprintf(buffer, "FPS: %.2f Time: %lu ms\n", fps, frameTime);
+        SDL_SetWindowTitle(window, buffer);
+        //fflush(stdout);
 
     }
 
-    SDL_DestroyRenderer(renderer);
+    SDL_DestroyRenderer(GetRenderer());
     SDL_DestroyWindow(window);
     SDL_Quit();
 

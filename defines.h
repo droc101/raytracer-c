@@ -6,6 +6,7 @@
 #define GAME_DEFINES_H
 
 #include "Helpers/List.h"
+#include "SDL.h"
 
 // "boolean"
 #define bool unsigned char
@@ -25,7 +26,7 @@ typedef struct {
 typedef struct {
     Vector2 a;
     Vector2 b;
-    uint *tex;
+    SDL_Texture *tex;
 } Wall;
 
 typedef struct {
@@ -45,10 +46,13 @@ typedef struct {
 
 #define PI 3.14159265358979323846
 
-#define TARGET_FPS 60
+#define TARGET_FPS 120
 #define TARGET_MS (1000 / TARGET_FPS)
 
-#define WIDTH 1066
-#define HEIGHT 600
+#define WIDTH 1280
+#define HEIGHT 720
+
+#define MOVE_SPEED 0.15
+#define ROT_SPEED 0.02
 
 #endif //GAME_DEFINES_H

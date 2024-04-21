@@ -12,6 +12,6 @@
 #include "SDL.h"
 
 Level CreateLevel();
-void RenderCol(SDL_Renderer *renderer, Level l, int col);
+void RenderCol(Level l, int col);
 
 #endif //GAME_LEVEL_H

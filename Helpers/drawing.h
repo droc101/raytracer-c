@@ -8,10 +8,14 @@
 #include "SDL.h"
 #include "../defines.h"
 
-void draw_texture(SDL_Renderer *renderer, const uint tex[], uint sx, uint sy);
-void draw_rect(SDL_Renderer *renderer, int x, int y, int w, int h);
+void SetRenderer(SDL_Renderer *r);
+SDL_Renderer *GetRenderer();
 
-uint texture_get_pixel(const uint tex[], uint x, uint y);
-void setColorUint(SDL_Renderer *renderer, uint color);
+void draw_rect(int x, int y, int w, int h);
+
+SDL_Texture* ToSDLTexture(const unsigned char* imageData);
+SDL_Point SDL_TextureSize(SDL_Texture *texture);
+void DrawTextureColumn(SDL_Texture* texture, int sx, int dx, int dy, int dh);
+void setColorUint(uint color);
 
 #endif //GAME_DRAWING_H

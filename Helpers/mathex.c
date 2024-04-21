@@ -16,8 +16,7 @@ double max(double a, double b) // Get the maximum of two numbers
     return a > b ? a : b;
 }
 
-double wrap(double n, double min, double max) // Wrap a number between two numbers
-{
+double wrap(double n, double min, double max) {
     double d = max - min;
-    return n == max ? n : fmod(n - min, d) + min;
+    return n >= min && n <= max ? fmod(n - min, d) + min : fmod(n - min, d) + min + d;
 }

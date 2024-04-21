@@ -5,18 +5,13 @@
 #include "../defines.h"
 #include "wall.h"
 #include <math.h>
-
-const uint *texIds[] = {
-        tex_level_bricks,
-        tex_level_cross,
-        tex_level_wall2
-};
+#include "../Helpers/drawing.h"
 
 Wall CreateWall(Vector2 a, Vector2 b, uint tex) {
     Wall w;
     w.a = a;
     w.b = b;
-    w.tex = texIds[tex];
+    w.tex = ToSDLTexture((const unsigned char *) tex_level_bricks);
     return w;
 }
 

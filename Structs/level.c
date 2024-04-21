@@ -10,7 +10,7 @@
 #include "ray.h"
 #include "../Helpers/mathex.h"
 
-//#define TEXTURED
+#define TEXTURED
 
 Level CreateLevel() {
     Level l;
@@ -23,8 +23,8 @@ Level CreateLevel() {
     return l;
 }
 
-void RenderCol(SDL_Renderer *renderer, Level l, int col) {
-    setColorUint(renderer, 0xFFFFFFFF);
+void RenderCol(Level l, int col) {
+    setColorUint(0xFFFFFFFF);
     double angle = atan2(col - WIDTH / 2, WIDTH / 2) + l.rotation;
 
     RayCastResult raycast = HitscanLevel(l, l.position, angle);
@@ -37,8 +37,12 @@ void RenderCol(SDL_Renderer *renderer, Level l, int col) {
 
     double distance = Vector2Distance(l.position, raycast.CollisonPoint) * cos(angle - l.rotation);
 
+    if (distance == 0) {
+        return;
+    }
+
     double height = HEIGHT / distance;
-    double y = (HEIGHT - height) / 2;
+    int y = (HEIGHT - height) / 2;
 #pragma  endregion
 #pragma region Shade
     double shade = fabs(cos((l.rotation + (1.5 * PI)) - WallGetAngle(raycast.CollisionWall)));
@@ -47,13 +51,13 @@ void RenderCol(SDL_Renderer *renderer, Level l, int col) {
     shade = floor(shade * 16) / 16;
 
     byte shadeByte = 255 * shade;
+
 #pragma endregion
 #ifdef TEXTURED
-#pragma region Texture
 
-    uint *texture = raycast.CollisionWall.tex;
-    uint texH = texture[2];
-    uint texW = texture[1];
+    SDL_Texture *texture = raycast.CollisionWall.tex;
+    SDL_Point texSize = SDL_TextureSize(texture);
+    uint texW = texSize.x;
 
     double wallLength = WallGetLength(raycast.CollisionWall);
     double localX = Vector2Distance(raycast.CollisionWall.a, raycast.CollisonPoint);
@@ -63,32 +67,15 @@ void RenderCol(SDL_Renderer *renderer, Level l, int col) {
     texCol = fmod(texCol, texW);
 
     texCol = wrap(texCol, 0, texW - 1);
-#pragma endregion
 
-    int typ = height * texH;
+    DrawTextureColumn(texture, texCol, col, y, height);
 
-    for (int i = 0; i < height; i++) {
-
-        if (y+i > HEIGHT || y+i < 0) {
-            continue;
-        }
-
-        int texY = (i / typ);
-
-        uint color = texture_get_pixel(texture, texCol, texY);
-        byte r = (color >> 16) & 0xFF;
-        byte g = (color >> 8) & 0xFF;
-        byte b = (color >> 0) & 0xFF;
-        r *= shadeByte;
-        g *= shadeByte;
-        b *= shadeByte;
-
-        SDL_SetRenderDrawColor(renderer, r, g, b, SDL_ALPHA_OPAQUE);
-
-        SDL_RenderDrawPoint(renderer, col, y+i);
-    }
+    SDL_SetRenderDrawColor(GetRenderer(), 0, 0, 0, 255 - shadeByte);
+    SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_BLEND);
+    draw_rect(col, y, 1, height);
 #else
-    SDL_SetRenderDrawColor(renderer, shadeByte, shadeByte, shadeByte, SDL_ALPHA_OPAQUE);
-    draw_rect(renderer, col, y, 1, height);
+
+    SDL_SetRenderDrawColor(GetRenderer(), shadeByte, shadeByte, shadeByte, SDL_ALPHA_OPAQUE);
+    draw_rect(col, y, 1, height);
 #endif
 }
