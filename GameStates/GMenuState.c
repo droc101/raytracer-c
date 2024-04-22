@@ -22,7 +22,7 @@ void GMenuStateUpdate() {
 }
 
 void GMenuStateRender() {
-    setColorUint(0x0);
+    setColorUint(0xFF123456);
     SDL_RenderClear(GetRenderer());
 
     FontDrawString(vec2(20, 20), "GAME.", 128);

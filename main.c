@@ -4,11 +4,7 @@
 #include "defines.h"
 #include "input.h"
 #include "Helpers/font.h"
-#include "assets/assets.h"
 #include "Structs/level.h"
-#include "Structs/ray.h"
-#include "Helpers/mathex.h"
-#include "error.h"
 #include "Helpers/LevelLoader.h"
 #include "Structs/GlobalState.h"
 #include "GameStates/GMenuState.h"
@@ -61,7 +57,6 @@ int main(int argc, char *argv[]) {
     bool quit = false;
     ulong frameStart, frameTime;
 
-    ulong frameCount = 0;
     printf("Entering main loop\n");
     while (!quit) {
         frameStart = SDL_GetTicks64();
@@ -86,17 +81,16 @@ int main(int argc, char *argv[]) {
         SDL_RenderPresent(GetRenderer());
 
         UpdateKeyStates();
-        frameCount++;
+        g->frame++;
+
+        if (g->requestExit) {
+            quit = true;
+        }
 
         frameTime = SDL_GetTicks64() - frameStart;
         if (frameTime < TARGET_MS) {
             SDL_Delay(TARGET_MS - frameTime);
         }
-
-        // Calculate and print FPS
-        //float fps = 1000.0 / (SDL_GetTicks64() - frameStart);
-        //sprintf(buffer, "GAME! - FPS: %.2f Time: %lu ms\n", fps, frameTime);
-        //SDL_SetWindowTitle(window, buffer);
 
     }
     printf("Exited main loop\n");

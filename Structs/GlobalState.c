@@ -14,6 +14,7 @@ void InitState() {
     state.maxAmmo = 100;
     state.frame = 0;
     state.level = CreateLevel(); // empty level so we don't segfault
+    state.requestExit = false;
 }
 
 GlobalState *GetState() {
