@@ -11,37 +11,37 @@
 #include "../Helpers/mathex.h"
 #include "../error.h"
 
-Level CreateLevel() {
-    Level l;
-    l.actors = CreateList();
-    l.walls = CreateList();
-    l.position = vec2s(0);
-    l.rotation = 0;
-    l.SkyColor = 0xff82c5ff;
-    l.FloorColor = 0xff36322f;
+Level *CreateLevel() {
+    Level *l = (Level*)malloc(sizeof(Level));
+    l->actors = CreateList();
+    l->walls = CreateList();
+    l->position = vec2s(0);
+    l->rotation = 0;
+    l->SkyColor = 0xff82c5ff;
+    l->FloorColor = 0xff36322f;
     return l;
 }
 
-void DestroyLevel(Level l) {
-    for (int i = 0; i < l.walls->size; i++) {
-        Wall *w = (Wall *) ListGet(l.walls, i);
+void DestroyLevel(Level *l) {
+    for (int i = 0; i < l->walls->size; i++) {
+        Wall *w = (Wall *) ListGet(l->walls, i);
         FreeWall(*w);
     }
-    ListFreeWithData(l.walls);
-    ListFreeWithData(l.actors);
+    ListFreeWithData(l->walls);
+    ListFreeWithData(l->actors);
 }
 
-void RenderCol(Level l, int col) {
+void RenderCol(Level *l, int col) {
     setColorUint(0xFFFFFFFF);
-    double angle = atan2(col - WIDTH / 2, WIDTH / 2) + l.rotation;
+    double angle = atan2(col - WIDTH / 2, WIDTH / 2) + l->rotation;
 
-    RayCastResult raycast = HitscanLevel(l, l.position, angle);
+    RayCastResult raycast = HitscanLevel(*l, l->position, angle);
 
     if (!raycast.Collided) {
         return; // nothing else to do
     }
 
-    double distance = Vector2Distance(l.position, raycast.CollisonPoint) * cos(angle - l.rotation);
+    double distance = Vector2Distance(l->position, raycast.CollisonPoint) * cos(angle - l->rotation);
 
     if (distance == 0) {
         distance = 0.000001;
@@ -51,7 +51,7 @@ void RenderCol(Level l, int col) {
     double height = HEIGHT / distance;
     int y = (HEIGHT - height) / 2;
 
-    double shade = fabs(cos((l.rotation + (1.5 * PI)) - WallGetAngle(raycast.CollisionWall)));
+    double shade = fabs(cos((l->rotation + (1.5 * PI)) - WallGetAngle(raycast.CollisionWall)));
     shade *= (1 - (distance / (WIDTH / 2)));
     shade = max(0.4, min(1, shade));
     shade = floor(shade * 16) / 16;

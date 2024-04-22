@@ -16,6 +16,6 @@
 #define LEVEL_CMD_FINISH 4 // Indicates that the level is completed and no further data should be processed
 
 // Load a level from bytecode
-Level LoadLevel(byte *data);
+Level *LoadLevel(byte *data);
 
 #endif //GAME_LEVELLOADER_H

@@ -3,19 +3,21 @@
 //
 
 #include "GlobalState.h"
+#include "../Structs/level.h"
 
 GlobalState state;
 
 void InitState() {
     state.hp = 100;
     state.maxHp = 100;
-    state.ammo = 10;
-    state.maxAmmo = 10;
+    state.ammo = 100;
+    state.maxAmmo = 100;
     state.frame = 0;
+    state.level = CreateLevel(); // empty level so we don't segfault
 }
 
-GlobalState GetState() {
-    return state;
+GlobalState *GetState() {
+    return &state;
 }
 
 void TakeDamage(int damage) {
@@ -51,6 +53,11 @@ void SetUpdateCallback(void (*UpdateGame)()) {
     state.UpdateGame = UpdateGame;
 }
 
-void ChangeLevel(Level l) {
+void SetRenderCallback(void (*RenderGame)()) {
+    state.RenderGame = RenderGame;
+}
+
+void ChangeLevel(Level *l) {
+    DestroyLevel(state.level);
     state.level = l;
 }

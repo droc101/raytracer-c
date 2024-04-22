@@ -12,12 +12,12 @@
 #include "SDL.h"
 
 // Create a default level
-Level CreateLevel();
+Level * CreateLevel();
 
 // Free all the memory used by a level
-void DestroyLevel(Level l);
+void DestroyLevel(Level *l);
 
 // Render 1 column of the level
-void RenderCol(Level l, int col);
+void RenderCol(Level *l, int col);
 
 #endif //GAME_LEVEL_H

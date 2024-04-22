@@ -49,8 +49,9 @@ typedef struct {
 } RayCastResult;
 
 typedef struct {
-    Level level;
+    Level *level;
     void (*UpdateGame)();
+    void (*RenderGame)();
     int hp;
     int maxHp;
     int ammo;

@@ -9,7 +9,7 @@
 
 void InitState();
 
-GlobalState GetState();
+GlobalState *GetState();
 
 void TakeDamage(int damage);
 
@@ -20,7 +20,8 @@ void AddAmmo(int amount);
 void UseAmmo(int amount);
 
 void SetUpdateCallback(void (*UpdateGame)());
+void SetRenderCallback(void (*RenderGame)());
 
-void ChangeLevel(Level l);
+void ChangeLevel(Level *l);
 
 #endif //GAME_GLOBALSTATE_H
