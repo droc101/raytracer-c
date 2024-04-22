@@ -7,11 +7,13 @@
 
 #include "../Structs/Vector2.h"
 
+// Set up the font system
 void FontInit();
+
+// Draw a string to the screen
 void FontDrawString(Vector2 pos, char* str, uint size);
 
 #define FONT_CHAR_WIDTH 16
 #define FONT_CHAR_HEIGHT 16
-#define FONT_SPACE_WIDTH 8
 
 #endif //GAME_FONT_H

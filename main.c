@@ -120,7 +120,7 @@ int main(int argc, char *argv[]) {
         }
 
         if (IsKeyJustPressed(SDL_SCANCODE_C)) {
-            Error("debug crash");
+            Error("Manually triggered error.");
         }
 
         l.rotation = wrap(l.rotation, 0, 2*PI);
