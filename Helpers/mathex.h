@@ -9,4 +9,7 @@ double min(double a, double b);
 double max(double a, double b);
 double wrap(double n, double min, double max);
 
+#define degToRad(d) (d * 0.017453292519943295)
+#define radToDeg(r) (r * 57.29577951308232)
+
 #endif //GAME_MATHEX_H

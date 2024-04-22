@@ -45,7 +45,7 @@ void RenderCol(Level l, int col) {
 
     if (distance == 0) {
         distance = 0.000001;
-        Error("Distance to wall is 0");
+        //Error("Distance to wall is 0");
     }
 
     double height = HEIGHT / distance;

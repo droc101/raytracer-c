@@ -13,5 +13,6 @@
 _Noreturn void Error(const char* error) {
     FontDrawString(vec2(20, 20), error, 32);
     SDL_RenderPresent(GetRenderer());
-    while (true) {}
+    SDL_Delay(5000);
+    exit(1);
 }

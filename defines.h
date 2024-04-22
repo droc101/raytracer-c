@@ -48,6 +48,16 @@ typedef struct {
     Wall CollisionWall;
 } RayCastResult;
 
+typedef struct {
+    Level level;
+    void (*UpdateGame)();
+    int hp;
+    int maxHp;
+    int ammo;
+    int maxAmmo;
+    ulong frame;
+} GlobalState;
+
 #define PI 3.14159265358979323846
 
 #define TARGET_FPS 120
