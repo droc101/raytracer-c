@@ -23,8 +23,8 @@ Level CreateLevel() {
 }
 
 void DestroyLevel(Level l) {
-    ListFreeWithData(l.walls);
-    ListFreeWithData(l.actors);
+    ListFree(l.walls);
+    ListFree(l.actors);
 }
 
 void RenderCol(Level l, int col) {
