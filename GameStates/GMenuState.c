@@ -15,7 +15,7 @@
 #include "GMainState.h"
 
 void GMenuStateUpdate() {
-    if (IsKeyPressed(SDL_SCANCODE_RETURN)) {
+    if (IsKeyJustPressed(SDL_SCANCODE_RETURN)) {
         // change to the main game state
         GMainStateSet();
     }

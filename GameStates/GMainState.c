@@ -12,8 +12,14 @@
 #include "../Helpers/font.h"
 #include <stdio.h>
 #include "../Structs/GlobalState.h"
+#include "../GameStates/GPauseState.h"
 
 void GMainStateUpdate() {
+
+    if (IsKeyJustPressed(SDL_SCANCODE_RETURN)) {
+        GPauseStateSet();
+    }
+
     Level *l = GetState()->level;
 
     Vector2 oldPos = l->position;
@@ -39,7 +45,7 @@ void GMainStateUpdate() {
 
     double angle = atan2(moveVec.y - oldPos.y, moveVec.x - oldPos.x);
 
-    RayCastResult moveCheck = HitscanLevel(*l, oldPos, angle);
+    RayCastResult moveCheck = HitscanLevel(*l, oldPos, angle, true, true, false); // scan walls and actors
     if (moveCheck.Collided) {
         double distance = fabs(Vector2Distance(oldPos, moveCheck.CollisonPoint));
         if (distance <= WALL_HITBOX_EXTENTS) {
@@ -63,6 +69,11 @@ void GMainStateUpdate() {
     }
 
     l->rotation = wrap(l->rotation, 0, 2*PI);
+
+    for (int i = 0; i < l->actors->size; i++) {
+        Actor *a = (Actor *) ListGet(l->actors, i);
+        a->Update(a);
+    }
 }
 
 void GMainStateRender() {
@@ -77,6 +88,7 @@ void GMainStateRender() {
 
     for (int col = 0; col < WIDTH; col++) {
         RenderCol(l, col);
+        RenderActorCol(l, col);
     }
 
     char buffer[64];

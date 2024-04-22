@@ -60,6 +60,17 @@ typedef struct {
     bool requestExit;
 } GlobalState;
 
+typedef struct {
+    Vector2 position;
+    double rotation;
+    Wall actorWall;
+    bool solid;
+    void *extra_data;
+    void (*Init)(void *self);
+    void (*Update)(void *self);
+    void (*Destroy)(void *self);
+} Actor;
+
 #define PI 3.14159265358979323846
 
 #define TARGET_FPS 120

@@ -77,3 +77,23 @@ void DrawTextureColumn(SDL_Texture* texture, int sx, int dx, int dy, int dh) {
     srcRect.h = SDL_TextureSize(texture).y;
     SDL_RenderCopy(renderer, texture, &srcRect, &destRect);
 }
+
+SDL_Texture *GetScreenshot() {
+    SDL_Surface *ss = SDL_CreateRGBSurface(0, WIDTH, HEIGHT, 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
+    if (!ss) {
+        printf("Failed to create surface: %s\n", SDL_GetError());
+        Error("GetScreenshot: Failed to create surface");
+        return NULL;
+    }
+
+    SDL_RenderReadPixels(renderer, NULL, SDL_PIXELFORMAT_ARGB8888, ss->pixels, ss->pitch);
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, ss);
+    SDL_FreeSurface(ss);
+    if (!texture) {
+        printf("Failed to create texture: %s\n", SDL_GetError());
+        Error("GetScreenshot: Failed to create texture");
+        return NULL;
+    }
+
+    return texture;
+}

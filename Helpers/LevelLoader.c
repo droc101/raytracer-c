@@ -8,6 +8,7 @@
 #include "../Structs/level.h"
 #include "../error.h"
 #include "../Structs/wall.h"
+#include "../Structs/Actor.h"
 
 double ReadDouble(byte *data, int *offset) {
     double d;
@@ -76,7 +77,13 @@ Level *LoadLevel(byte *data) {
                 break;
             }
             case LEVEL_CMD_ACTOR: {
-                break; // TODO
+                double x = ReadDouble(data, &i);
+                double y = ReadDouble(data, &i);
+                double r = ReadDouble(data, &i);
+                int type = ReadUint(data, &i);
+                Actor *a = CreateActor(vec2(x, y), r, type);
+                ListAdd(l->actors, a);
+                break;
             }
             case LEVEL_CMD_FINISH: {
                 done = true;

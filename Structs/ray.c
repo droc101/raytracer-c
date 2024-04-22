@@ -5,6 +5,7 @@
 #include "../defines.h"
 #include <math.h>
 #include "Vector2.h"
+#include "Actor.h"
 
 // Perform a ray cast from a position and rotation into a wall. Don't forget to free the result!
 RayCastResult Intersect(Wall wall, Vector2 from, double direction)
@@ -38,22 +39,43 @@ RayCastResult Intersect(Wall wall, Vector2 from, double direction)
     return rr; // no intersection
 }
 
-RayCastResult HitscanLevel(Level l, Vector2 pos, double angle) {
+RayCastResult HitscanLevel(Level l, Vector2 pos, double angle, bool scanWalls, bool scanActors, bool alwaysCollideActors) {
 
     RayCastResult closestResult;
     closestResult.Collided = false;
     double closestDist = 999999;
 
-    for (int i = 0; i < l.walls->size; i++) {
-        Wall *w = (Wall*)ListGet(l.walls, i);
-        RayCastResult r = Intersect(*w, pos, angle);
-        if (r.Collided) {
-            double dist = Vector2Distance(l.position, r.CollisonPoint);
-            if (dist < closestDist) {
-                closestDist = dist;
-                closestResult = r;
+    if (scanWalls) {
+        for (int i = 0; i < l.walls->size; i++) {
+            Wall *w = (Wall *) ListGet(l.walls, i);
+            RayCastResult r = Intersect(*w, pos, angle);
+            if (r.Collided) {
+                double dist = Vector2Distance(l.position, r.CollisonPoint);
+                if (dist < closestDist) {
+                    closestDist = dist;
+                    closestResult = r;
+                }
             }
         }
     }
+
+    if (scanActors) {
+        for (int i = 0; i < l.actors->size; i++) {
+            Actor *a = (Actor *) ListGet(l.actors, i);
+            if (!a->solid && !alwaysCollideActors) {
+                continue;
+            }
+            Wall w = GetTransformedWall(a);
+            RayCastResult r = Intersect(w, pos, angle);
+            if (r.Collided) {
+                double dist = Vector2Distance(l.position, r.CollisonPoint);
+                if (dist < closestDist) {
+                    closestDist = dist;
+                    closestResult = r;
+                }
+            }
+        }
+    }
+
     return closestResult;
 }

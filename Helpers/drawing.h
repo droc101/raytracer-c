@@ -29,4 +29,6 @@ void DrawTextureColumn(SDL_Texture* texture, int sx, int dx, int dy, int dh);
 // Set the renderer color from a uint
 void setColorUint(uint color);
 
+SDL_Texture *GetScreenshot();
+
 #endif //GAME_DRAWING_H
