@@ -2,10 +2,10 @@
 // Created by droc101 on 4/21/2024.
 //
 
+#include <stdio.h>
 #include "../defines.h"
 #include "SDL.h"
 #include "drawing.h"
-#include <stdio.h>
 #include "../error.h"
 
 SDL_Renderer *renderer;
@@ -32,7 +32,8 @@ void setColorUint(uint color) {
     SDL_SetRenderDrawColor(renderer, (color >> 16) & 0xFF, (color >> 8) & 0xFF, (color >> 0) & 0xFF, (color >> 24) & 0xFF);
 }
 
-SDL_Texture* ToSDLTexture(const unsigned char* imageData) {
+SDL_Texture* ToSDLTexture(const unsigned char* imageData, char *filterMode) {
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, filterMode);
     uint *textureDataUint = (uint*)imageData;
     uint totalLength = textureDataUint[0];
     uint width = textureDataUint[1];

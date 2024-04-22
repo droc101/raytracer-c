@@ -13,7 +13,7 @@ SDL_Renderer *GetRenderer();
 
 void draw_rect(int x, int y, int w, int h);
 
-SDL_Texture* ToSDLTexture(const unsigned char* imageData);
+SDL_Texture* ToSDLTexture(const unsigned char* imageData, char *filterMode);
 SDL_Point SDL_TextureSize(SDL_Texture *texture);
 void DrawTextureColumn(SDL_Texture* texture, int sx, int dx, int dy, int dh);
 void setColorUint(uint color);

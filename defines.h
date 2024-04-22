@@ -55,4 +55,6 @@ typedef struct {
 #define MOVE_SPEED 0.15
 #define ROT_SPEED 0.02
 
+
+
 #endif //GAME_DEFINES_H

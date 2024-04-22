@@ -2,9 +2,9 @@
 // Created by droc101 on 4/21/2024.
 //
 
-#include "List.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include "List.h"
 
 // Function to create a new node
 Node* createNode(void *data) {

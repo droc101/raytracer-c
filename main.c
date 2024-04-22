@@ -1,6 +1,5 @@
 #include <SDL.h>
 #include <stdio.h>
-
 #include "Helpers/drawing.h"
 #include "defines.h"
 #include "input.h"
@@ -38,6 +37,8 @@ int main(int argc, char *argv[]) {
     SetRenderer(tr);
 
     FontInit();
+
+
 
     Level l = CreateLevel();
     l.rotation = PI/2;

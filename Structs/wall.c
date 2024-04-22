@@ -7,11 +7,17 @@
 #include <math.h>
 #include "../Helpers/drawing.h"
 
+const uint *wallTextures[] = {
+        tex_level_bricks,
+        tex_level_cross,
+        tex_level_wall2
+};
+
 Wall CreateWall(Vector2 a, Vector2 b, uint tex) {
     Wall w;
     w.a = a;
     w.b = b;
-    w.tex = ToSDLTexture((const unsigned char *) tex_level_bricks);
+    w.tex = ToSDLTexture((const unsigned char *) wallTextures[tex], "1");
     return w;
 }
 
