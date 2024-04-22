@@ -50,6 +50,10 @@ Vector2 Vector2Add(Vector2 vec, Vector2 offset) {
     return vec2(vec.x+offset.x, vec.y+offset.y);
 }
 
+Vector2 Vector2Sub(Vector2 vec, Vector2 offset) {
+    return vec2(vec.x-offset.x, vec.y-offset.y);
+}
+
 Vector2 Vector2Rotated(Vector2 vec, double angle) {
     Vector2 result = vec2s(2);
     float cosAngle = cos(angle);
@@ -60,5 +64,9 @@ Vector2 Vector2Rotated(Vector2 vec, double angle) {
     result.y = vec.x * sinAngle + vec.y * cosAngle;
 
     return result;
+}
+
+double Vector2Dot(Vector2 a, Vector2 b) {
+    return a.x*b.x + a.y*b.y;
 }
 

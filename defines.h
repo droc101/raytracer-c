@@ -44,9 +44,9 @@ typedef struct {
     Wall CollisionWall;
 } RayCastResult;
 
-#define PI 3.14159265358979323846
+#define PI 3.14159265358979323846 // 🥧
 
-#define TARGET_FPS 120
+#define TARGET_FPS 120 // i am speed.
 #define TARGET_MS (1000 / TARGET_FPS)
 
 #define WIDTH 1280
@@ -54,7 +54,5 @@ typedef struct {
 
 #define MOVE_SPEED 0.15
 #define ROT_SPEED 0.02
-
-
 
 #endif //GAME_DEFINES_H

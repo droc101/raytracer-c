@@ -23,8 +23,12 @@ Level CreateLevel() {
 }
 
 void DestroyLevel(Level l) {
-    ListFree(l.walls);
-    ListFree(l.actors);
+    for (int i = 0; i < l.walls->size; i++) {
+        Wall *w = (Wall *) ListGet(l.walls, i);
+        FreeWall(*w);
+    }
+    ListFreeWithData(l.walls);
+    ListFreeWithData(l.actors);
 }
 
 void RenderCol(Level l, int col) {
@@ -37,11 +41,11 @@ void RenderCol(Level l, int col) {
         return; // nothing else to do
     }
 
-
     double distance = Vector2Distance(l.position, raycast.CollisonPoint) * cos(angle - l.rotation);
 
     if (distance == 0) {
-        Error("Distance to wall is 0 -- this is NOT ok.");
+        distance = 0.000001;
+        //Error("Distance to wall is 0 -- this is NOT ok.");
     }
 
     double height = HEIGHT / distance;

@@ -5,6 +5,6 @@
 #ifndef GAME_ERROR_H
 #define GAME_ERROR_H
 
-void Error(const char* error);
+_Noreturn void Error(const char* error);
 
 #endif //GAME_ERROR_H

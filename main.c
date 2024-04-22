@@ -9,6 +9,7 @@
 #include "Structs/ray.h"
 #include "Helpers/mathex.h"
 #include "error.h"
+#include "Helpers/LevelLoader.h"
 
 int main(int argc, char *argv[]) {
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
@@ -27,7 +28,6 @@ int main(int argc, char *argv[]) {
     }
 
     SDL_Renderer *tr = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-
     if (tr == NULL) {
         SDL_DestroyWindow(window);
         printf("SCreateRenderer Error: %s\n", SDL_GetError());
@@ -38,12 +38,12 @@ int main(int argc, char *argv[]) {
 
     FontInit();
 
-
+    const byte levelData[] = { 0x00, 0xc0, 0x24, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3f, 0xf0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x24, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3f, 0xf0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3f, 0xf9, 0x21, 0xfb, 0x55, 0x20, 0x6d, 0xdf, 0x03, 0xff, 0xeb, 0x40, 0x34, 0xff, 0x33, 0x28, 0x00, 0x04};
 
     Level l = CreateLevel();
     l.rotation = PI/2;
-    Wall w = CreateWall(vec2(-10, 1), vec2(10, 1), 1);
-    ListAdd(l.walls, &w);
+    Wall *w = CreateWall(vec2(10, 1), vec2(-10, 1), 1);
+    ListAdd(l.walls, w);
 
     SDL_Event e;
     bool quit = false;
@@ -96,13 +96,20 @@ int main(int argc, char *argv[]) {
             l.position = Vector2Add(l.position, rotAngle);
         }
 
+        if (IsKeyPressed(SDL_SCANCODE_Q)) {
+            l.position = Vector2Add(l.position, Vector2Rotated(vec2(0, -MOVE_SPEED/2), l.rotation));
+        } else if (IsKeyPressed(SDL_SCANCODE_E)) {
+            l.position = Vector2Add(l.position, Vector2Rotated(vec2(0, MOVE_SPEED/2), l.rotation));
+        }
+
         double angle = atan2(l.position.y - oldPos.y, l.position.x - oldPos.x);
 
         RayCastResult moveCheck = HitscanLevel(l, oldPos, angle);
         if (moveCheck.Collided) {
             double distance = Vector2Distance(oldPos, moveCheck.CollisonPoint);
-            if (distance < 0.5) {
-                l.position = oldPos;
+            if (distance < WALL_HITBOX_EXTENTS) {
+                // push 0.5 units out of the wall
+                l.position = PushPointOutOfWallHitbox(moveCheck.CollisionWall, moveCheck.CollisonPoint);
             }
         }
 
