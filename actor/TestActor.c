@@ -9,7 +9,7 @@
 
 void TestActorInit(Actor *this) {
     this->solid = true;
-    this->actorWall = *CreateWall(vec2(-0.5, 0), vec2(0.5, 0), 1);
+    this->actorWall = *CreateWall(vec2(-0.5, 0), vec2(0.5, 0), 3);
 }
 
 void TestActorUpdate(Actor *this) {

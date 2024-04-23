@@ -82,12 +82,8 @@ void RenderCol(Level *l, int col) {
 
     texCol = wrap(texCol, 0, texW - 1);
 
+    SDL_SetTextureColorMod(texture, shadeByte, shadeByte, shadeByte);
     DrawTextureColumn(texture, texCol, col, y, height);
-
-    SDL_SetRenderDrawColor(GetRenderer(), 0, 0, 0, 255 - shadeByte);
-    SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_BLEND);
-    draw_rect(col, y, 1, height);
-
 }
 
 void RenderActorCol(Level *l, int col) {
@@ -133,9 +129,6 @@ void RenderActorCol(Level *l, int col) {
 
     texCol = wrap(texCol, 0, texW - 1);
 
+    SDL_SetTextureColorMod(texture, shadeByte, shadeByte, shadeByte);
     DrawTextureColumn(texture, texCol, col, y, height);
-
-    SDL_SetRenderDrawColor(GetRenderer(), 0, 0, 0, 255 - shadeByte);
-    SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_BLEND);
-    draw_rect(col, y, 1, height);
 }

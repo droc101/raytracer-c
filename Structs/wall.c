@@ -11,7 +11,8 @@
 const uint *wallTextures[] = {
         tex_level_bricks,
         tex_level_cross,
-        tex_level_wall2
+        tex_level_wall2,
+        tex_actor_iq,
 };
 
 Wall *CreateWall(Vector2 a, Vector2 b, uint tex) {
