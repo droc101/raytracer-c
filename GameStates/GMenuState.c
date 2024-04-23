@@ -11,7 +11,7 @@
 #include "GMainState.h"
 
 void GMenuStateUpdate() {
-    if (IsKeyJustPressed(SDL_SCANCODE_RETURN)) {
+    if (IsKeyJustPressed(SDL_SCANCODE_SPACE)) {
         // change to the main game state
         GMainStateSet();
     }
@@ -22,7 +22,7 @@ void GMenuStateRender() {
     SDL_RenderClear(GetRenderer());
 
     FontDrawString(vec2(20, 20), "GAME.", 128);
-    FontDrawString(vec2(20, 150), "Press Enter to start.", 32);
+    FontDrawString(vec2(20, 150), "Press Space to start.", 32);
 
 }
 

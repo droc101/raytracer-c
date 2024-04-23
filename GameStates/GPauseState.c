@@ -14,7 +14,7 @@
 SDL_Texture *pauseTexture;
 
 void GPauseStateUpdate() {
-    if (IsKeyJustPressed(SDL_SCANCODE_RETURN)) {
+    if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE)) {
         SDL_DestroyTexture(pauseTexture); // free the screenshot texture (we don't want to leak memory)
         // change to the main game state
         GMainStateSet();
@@ -24,7 +24,7 @@ void GPauseStateUpdate() {
 void GPauseStateRender() {
     SDL_RenderCopy(GetRenderer(), pauseTexture, NULL, NULL);
 
-    FontDrawString(vec2(20, 150), "Game Paused\nPress enter to resume", 32);
+    FontDrawString(vec2(20, 150), "Game Paused\nPress escape to resume", 32);
 
 }
 

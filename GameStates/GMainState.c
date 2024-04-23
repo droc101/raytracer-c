@@ -16,7 +16,7 @@
 
 void GMainStateUpdate() {
 
-    if (IsKeyJustPressed(SDL_SCANCODE_RETURN)) {
+    if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE)) {
         GPauseStateSet();
     }
 
