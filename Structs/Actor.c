@@ -3,9 +3,6 @@
 //
 
 #include "Actor.h"
-#include "../defines.h"
-#include "../Structs/Vector2.h"
-#include "wall.h"
 
 // Empty template functions
 void ActorInit(Actor *this) {}

@@ -6,7 +6,6 @@
 #include <stdio.h>
 #include "List.h"
 
-// Function to create a new node
 Node* createNode(void *data) {
     Node* newNode = (Node*)malloc(sizeof(Node));
     if (newNode == NULL) {
@@ -19,7 +18,6 @@ Node* createNode(void *data) {
     return newNode;
 }
 
-// Function to initialize an empty doubly linked list
 List* CreateList() {
     List* newList = (List*)malloc(sizeof(List));
     if (newList == NULL) {
@@ -32,7 +30,6 @@ List* CreateList() {
     return newList;
 }
 
-// Function to add a node to the end of the list
 void ListAdd(List* list, void *data) {
     Node* newNode = createNode(data);
     if (list->head == NULL) {
@@ -46,7 +43,6 @@ void ListAdd(List* list, void *data) {
     list->size++;
 }
 
-// Function to remove a node from the list
 void ListRemove(List* list, Node* node) {
     if (node == NULL)
         return;
@@ -64,7 +60,6 @@ void ListRemove(List* list, Node* node) {
     free(node);
 }
 
-// Function to insert a node after a given node
 void ListInsertAfter(List* list, Node* prevNode, void *data) {
     if (prevNode == NULL) {
         printf("List: Previous node cannot be NULL\n");
@@ -82,7 +77,6 @@ void ListInsertAfter(List* list, Node* prevNode, void *data) {
     list->size++;
 }
 
-// Function to get the data at a given index
 void* ListGet(List* list, int index) {
     Node* current = list->head;
     int i = 0;
@@ -97,7 +91,6 @@ void* ListGet(List* list, int index) {
     return current->data;
 }
 
-// Function to free memory allocated for the list
 void ListFree(List* list) {
     Node* current = list->head;
     while (current != NULL) {

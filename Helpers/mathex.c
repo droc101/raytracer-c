@@ -3,8 +3,6 @@
 //
 
 #include <math.h>
-#include "../Structs/Vector2.h"
-#include "../defines.h"
 
 double min(double a, double b) // Get the minimum of two numbers
 {

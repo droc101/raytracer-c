@@ -3,7 +3,6 @@
 //
 
 #include "TestActor.h"
-#include "../defines.h"
 #include "../Structs/wall.h"
 #include "../Structs/Vector2.h"
 

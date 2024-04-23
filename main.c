@@ -8,7 +8,6 @@
 #include "Helpers/LevelLoader.h"
 #include "Structs/GlobalState.h"
 #include "GameStates/GMenuState.h"
-
 #include "Structs/Actor.h"
 
 int main(int argc, char *argv[]) {

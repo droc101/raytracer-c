@@ -3,11 +3,10 @@
 //
 
 #include "font.h"
+#include <ctype.h>
 #include "SDL.h"
 #include "drawing.h"
 #include "../assets/assets.h"
-#include "../Structs/Vector2.h"
-#include <ctype.h>
 
 SDL_Texture *fontTexture;
 

@@ -3,15 +3,15 @@
 //
 
 #include "GMainState.h"
-#include "../input.h"
+#include <stdio.h>
 #include <math.h>
+#include "../input.h"
 #include "../Structs/ray.h"
 #include "../error.h"
 #include "../Helpers/mathex.h"
 #include "../Helpers/drawing.h"
 #include "../Helpers/font.h"
-#include <stdio.h>
-#include "../Structs/GlobalState.h"
+
 #include "../GameStates/GPauseState.h"
 
 void GMainStateUpdate() {

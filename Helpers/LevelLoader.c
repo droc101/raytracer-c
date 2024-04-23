@@ -4,10 +4,7 @@
 
 #include <stdio.h>
 #include "LevelLoader.h"
-#include "../defines.h"
-#include "../Structs/level.h"
 #include "../error.h"
-#include "../Structs/wall.h"
 #include "../Structs/Actor.h"
 
 double ReadDouble(byte *data, int *offset) {

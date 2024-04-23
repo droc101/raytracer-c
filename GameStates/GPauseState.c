@@ -3,14 +3,11 @@
 //
 
 #include "GPauseState.h"
+#include <stdio.h>
 #include "../input.h"
-#include <math.h>
 #include "../Structs/ray.h"
-#include "../error.h"
-#include "../Helpers/mathex.h"
 #include "../Helpers/drawing.h"
 #include "../Helpers/font.h"
-#include <stdio.h>
 #include "../Structs/GlobalState.h"
 #include "GMainState.h"
 

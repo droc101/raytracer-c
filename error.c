@@ -2,7 +2,6 @@
 // Created by droc101 on 4/21/2024.
 //
 
-#include <stdio.h>
 #include <stdlib.h>
 #include "defines.h"
 #include "error.h"
