@@ -32,7 +32,6 @@ Actor *CreateActor(Vector2 position, double rotation, int actorType) {
     actor->position = position;
     actor->rotation = rotation;
     actor->solid = false;
-    actor->actorWall = *CreateWall(vec2(-1, 0), vec2(1, 0), 0);
     actor->Init = (void (*)(void *)) ActorInitFuncs[actorType];
     actor->Update = (void (*)(void *)) ActorUpdateFuncs[actorType];
     actor->Destroy = (void (*)(void *)) ActorDestroyFuncs[actorType];
@@ -47,7 +46,7 @@ void FreeActor(Actor *actor) {
 
 Wall GetTransformedWall(Actor *actor) {
     Wall wall;
-    memcpy(&wall, &actor->actorWall, sizeof(Wall)); // duplicate the wall struct without modifying the original
+    memcpy(&wall, actor->actorWall, sizeof(Wall)); // duplicate the wall struct without modifying the original
 
     // Rotate the wall
     wall.a = Vector2Rotated(wall.a, actor->rotation);

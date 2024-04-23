@@ -63,7 +63,7 @@ typedef struct {
 typedef struct {
     Vector2 position;
     double rotation;
-    Wall actorWall;
+    Wall *actorWall;
     bool solid;
     void *extra_data;
     void (*Init)(void *self);

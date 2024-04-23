@@ -23,8 +23,8 @@ Wall *CreateWall(Vector2 a, Vector2 b, uint tex) {
     return w;
 }
 
-void FreeWall(Wall w) {
-    SDL_DestroyTexture(w.tex);
+void FreeWall(Wall *w) {
+    SDL_DestroyTexture(w->tex);
 }
 
 double WallGetLength(Wall w) {

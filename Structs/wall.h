@@ -11,7 +11,7 @@
 Wall *CreateWall(Vector2 a, Vector2 b, uint tex);
 
 // Free the memory used by a wall (be warned, this also frees the texture)
-void FreeWall(Wall w);
+void FreeWall(Wall *w);
 
 // How far out the hitbox of the wall extends from the actual wall (on both sides)
 #define WALL_HITBOX_EXTENTS 0.2

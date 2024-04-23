@@ -26,7 +26,7 @@ Level *CreateLevel() {
 void DestroyLevel(Level *l) {
     for (int i = 0; i < l->walls->size; i++) {
         Wall *w = (Wall *) ListGet(l->walls, i);
-        FreeWall(*w);
+        FreeWall(w);
     }
     for (int i = 0; i < l->actors->size; i++) {
         Actor *a = (Actor *) ListGet(l->actors, i);
@@ -34,6 +34,7 @@ void DestroyLevel(Level *l) {
     }
     ListFreeWithData(l->walls);
     ListFree(l->actors); // actors are freed above (FreeActor)
+    free(l);
 }
 
 double DepthBuffer[WIDTH];
