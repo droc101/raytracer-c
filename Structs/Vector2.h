@@ -39,4 +39,6 @@ Vector2 Vector2Rotated(Vector2 vec, double angle);
 // Get the dot product of two vectors
 double Vector2Dot(Vector2 a, Vector2 b);
 
+double Vector2Angle(Vector2 a, Vector2 b);
+
 #endif //GAME_VECTOR2_H

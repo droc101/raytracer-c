@@ -70,3 +70,7 @@ double Vector2Dot(Vector2 a, Vector2 b) {
     return a.x*b.x + a.y*b.y;
 }
 
+double Vector2Angle(Vector2 a, Vector2 b) {
+    return acos(Vector2Dot(a, b) / (Vector2Length(a) * Vector2Length(b)));
+}
+

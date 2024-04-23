@@ -64,8 +64,8 @@ void RenderCol(Level *l, int col) {
 
     double shade = fabs(cos((l->rotation + (1.5 * PI)) - WallGetAngle(raycast.CollisionWall)));
     shade *= (1 - (distance / (WIDTH / 2)));
-    shade = max(0.4, min(1, shade));
-    shade = floor(shade * 16) / 16;
+    shade = max(0.6, min(1, shade));
+    //shade = floor(shade * 16) / 16;
 
     byte shadeByte = 255 * shade;
 
@@ -111,8 +111,8 @@ void RenderActorCol(Level *l, int col) {
 
     double shade = fabs(cos((l->rotation + (1.5 * PI)) - WallGetAngle(raycast.CollisionWall)));
     shade *= (1 - (distance / (WIDTH / 2)));
-    shade = max(0.4, min(1, shade));
-    shade = floor(shade * 16) / 16;
+    shade = max(0.6, min(1, shade));
+    //shade = floor(shade * 16) / 16;
 
     byte shadeByte = 255 * shade;
 

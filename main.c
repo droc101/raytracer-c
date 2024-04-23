@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
 
     Level *l = LoadLevel(levelData);
 
-    Actor *a = CreateActor(vec2(0, 0), 0, 1);
+    Actor *a = CreateActor(vec2(5, -1), 0, 1);
     ListAdd(l->actors, a);
 
     printf("Level Loaded\n");

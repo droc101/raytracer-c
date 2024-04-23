@@ -35,18 +35,13 @@ double WallGetAngle(Wall w) {
     return atan2(w.b.y - w.a.y, w.b.x - w.a.x);
 }
 
-Vector2 PushPointOutOfWallHitbox(Wall w, Vector2 point) {
-    // Push the point out of the wall hitbox perpendicularly to the wall
-    double angle = WallGetAngle(w) + PI / 2;
-    Vector2 offset = Vector2Scale(Vector2FromAngle(angle), WALL_HITBOX_EXTENTS);
+Vector2 PushPointOutOfWallHitbox(Wall w, Vector2 point, Vector2 originPoint) {
+    // TODO: Implement this function (unfortunately, the math isn't mathing)
+    // Push the point out of the wall hitbox perpendicular to the wall
+    // The wall is the line between a and b
+    // The point is the point to push out of the wall
+    // Use the originPoint to determine which side of the wall to push the point out of
 
-    // Check which side of the wall the point is on, prevent it from being pushed out the wrong way
-    Vector2 wallDir = Vector2Normalize(Vector2Sub(w.b, w.a));
-    Vector2 pointDir = Vector2Normalize(Vector2Sub(point, w.a));
-    if (Vector2Dot(wallDir, pointDir) < 0) {
-        offset = Vector2Scale(offset, -1);
-    }
-
-    return Vector2Add(point, offset);
+    return originPoint; // this function is going to be the death of me
 }
 

@@ -49,8 +49,9 @@ void GMainStateUpdate() {
     if (moveCheck.Collided) {
         double distance = fabs(Vector2Distance(oldPos, moveCheck.CollisonPoint));
         if (distance <= WALL_HITBOX_EXTENTS) {
+
             // push 0.5 units out of the wall
-            l->position = PushPointOutOfWallHitbox(moveCheck.CollisionWall, moveCheck.CollisonPoint);
+            l->position = PushPointOutOfWallHitbox(moveCheck.CollisionWall, moveCheck.CollisonPoint, l->position);
         } else {
             l->position = moveVec; // not close enough to the wall to collide
         }
