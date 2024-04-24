@@ -23,6 +23,6 @@ double WallGetLength(Wall w);
 double WallGetAngle(Wall w);
 
 // Push a point out of the hitbox of a wall
-Vector2 PushPointOutOfWallHitbox(Wall w, Vector2 point, Vector2 originPoint);
+Vector2 PushPointOutOfWallHitbox(Wall w, Vector2 movmentVector);
 
 #endif //GAME_WALL_H

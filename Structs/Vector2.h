@@ -11,6 +11,10 @@
 Vector2 vec2(double x, double y);
 // Create a 2D vector with the same x and y values
 Vector2 vec2s(double xy);
+// Create a 2D vector with a non-zero origin
+Vector2 vec2o(double x, double y, double originX, double originY);
+
+Vector2 Vector2RemoveOrigin(Vector2 vec);
 
 // Get the distance between two vectors
 double Vector2Distance(Vector2 a, Vector2 b);
@@ -28,13 +32,13 @@ Vector2 Vector2FromAngle(double angle);
 Vector2 Vector2Scale(Vector2 vec, double scale);
 
 // Add two vectors
-Vector2 Vector2Add(Vector2 vec, Vector2 offset);
+Vector2 Vector2Add(Vector2 a, Vector2 b);
 
 // Subtract two vectors
 Vector2 Vector2Sub(Vector2 vec, Vector2 offset);
 
 // Rotate a vector by an angle
-Vector2 Vector2Rotated(Vector2 vec, double angle);
+Vector2 Vector2Rotate(Vector2 vec, double angle);
 
 // Get the dot product of two vectors
 double Vector2Dot(Vector2 a, Vector2 b);

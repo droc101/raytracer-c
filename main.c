@@ -12,6 +12,8 @@
 #include "Debug/FrameGrapher.h"
 #include "GameStates/GMainState.h"
 
+#include "Structs/Vector2.h"
+
 int main(int argc, char *argv[]) {
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         printf("SInit Error: %s\n", SDL_GetError());

@@ -3,6 +3,7 @@
 //
 
 #include "FrameGrapher.h"
+#include <stdio.h>
 #include "../Helpers/drawing.h"
 #include "SDL.h"
 #include "../Structs/GlobalState.h"

@@ -42,7 +42,7 @@ void GMainStateUpdate() {
         moveVec = Vector2Normalize(moveVec);
     }
     moveVec = Vector2Scale(moveVec, MOVE_SPEED);
-    moveVec = Vector2Rotated(moveVec, l->rotation);
+    moveVec = Vector2Rotate(moveVec, l->rotation);
     moveVec = Vector2Add(l->position, moveVec);
 
     double angle = atan2(moveVec.y - oldPos.y, moveVec.x - oldPos.x);
@@ -51,9 +51,10 @@ void GMainStateUpdate() {
     if (moveCheck.Collided) {
         double distance = fabs(Vector2Distance(oldPos, moveCheck.CollisonPoint));
         if (distance <= WALL_HITBOX_EXTENTS) {
-
             // push 0.5 units out of the wall
-            l->position = PushPointOutOfWallHitbox(moveCheck.CollisionWall, moveCheck.CollisonPoint, l->position);
+            l->position = PushPointOutOfWallHitbox(moveCheck.CollisionWall,
+                                                   vec2o(moveCheck.CollisonPoint.x, moveCheck.CollisonPoint.y,
+                                                         l->position.x, l->position.y));
         } else {
             l->position = moveVec; // not close enough to the wall to collide
         }

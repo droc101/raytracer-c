@@ -11,6 +11,8 @@ Vector2 vec2(double x, double y) // Create a Vector2
     Vector2 v;
     v.x = x;
     v.y = y;
+    v.originX = 0;
+    v.originY = 0;
     return v;
 }
 
@@ -19,7 +21,23 @@ Vector2 vec2s(double xy) // Create a Vector2 with x and y set the same
     Vector2 v;
     v.x = xy;
     v.y = xy;
+    v.originX = 0;
+    v.originY = 0;
     return v;
+}
+
+Vector2 vec2o(double x, double y, double originX, double originY) // Create a Vector2 with a non-zero origin
+{
+    Vector2 v;
+    v.x = x;
+    v.y = y;
+    v.originX = originX;
+    v.originY = originY;
+    return v;
+}
+
+Vector2 Vector2RemoveOrigin(Vector2 vec) {
+    return vec2(vec.x + vec.originX, vec.y + vec.originY);
 }
 
 double Vector2Distance(Vector2 a, Vector2 b) // Get the distance between two Vector2s
@@ -30,31 +48,35 @@ double Vector2Distance(Vector2 a, Vector2 b) // Get the distance between two Vec
 }
 
 double Vector2Length(Vector2 vec) {
-    return sqrt(vec.x*vec.x+vec.y*vec.y);
+    return sqrt((vec.x - vec.originX) * (vec.x - vec.originX) + (vec.y - vec.originY) * (vec.y - vec.originY));
 }
 
 Vector2 Vector2Normalize(Vector2 vec) {
     double length = Vector2Length(vec);
-    return vec2(vec.x / length, vec.y / length);
+    return vec2((vec.x - vec.originX) / length + vec.originX, (vec.y - vec.originY) / length + vec.originY);
 }
 
 Vector2 Vector2FromAngle(double angle) {
     return vec2(cos(angle), sin(angle));
 }
 
+Vector2 Vector2Add(Vector2 a, Vector2 b) {
+    return vec2o(a.x + b.x - b.originX, a.y + b.y - b.originY, a.originX, a.originY);
+}
+
+Vector2 Vector2Sub(Vector2 a, Vector2 b) {
+    return vec2o(a.x - b.x + b.originX, a.y - b.y + b.originY, a.originX, a.originY);
+}
+
 Vector2 Vector2Scale(Vector2 vec, double scale) {
-    return vec2(vec.x*scale, vec.y*scale);
+    return vec2o(vec.x * scale, vec.y * scale, vec.originX, vec.originY);
 }
 
-Vector2 Vector2Add(Vector2 vec, Vector2 offset) {
-    return vec2(vec.x+offset.x, vec.y+offset.y);
+double Vector2Dot(Vector2 a, Vector2 b) {
+    return (a.x - a.originX) * (b.x - b.originX) + (a.y - a.originY) * (b.y - b.originY);
 }
 
-Vector2 Vector2Sub(Vector2 vec, Vector2 offset) {
-    return vec2(vec.x-offset.x, vec.y-offset.y);
-}
-
-Vector2 Vector2Rotated(Vector2 vec, double angle) {
+Vector2 Vector2Rotate(Vector2 vec, double angle) {  // TODO Vec2o
     Vector2 result = vec2s(2);
     float cosAngle = cos(angle);
     float sinAngle = sin(angle);
@@ -66,11 +88,7 @@ Vector2 Vector2Rotated(Vector2 vec, double angle) {
     return result;
 }
 
-double Vector2Dot(Vector2 a, Vector2 b) {
-    return a.x*b.x + a.y*b.y;
-}
-
-double Vector2Angle(Vector2 a, Vector2 b) {
+double Vector2Angle(Vector2 a, Vector2 b) {  // TODO Vec2o
     return acos(Vector2Dot(a, b) / (Vector2Length(a) * Vector2Length(b)));
 }
 
