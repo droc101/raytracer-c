@@ -18,16 +18,23 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    SDL_Window *window = SDL_CreateWindow("game",SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,WIDTH, HEIGHT, 0);
-    if (window == NULL) {
+    SDL_Window *w = SDL_CreateWindow("game",SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,DEF_WIDTH, DEF_HEIGHT, SDL_WINDOW_RESIZABLE);
+    if (w == NULL) {
         printf("SCreateWindow Error: %s\n", SDL_GetError());
         SDL_Quit();
         return 1;
     }
+    SetWindow(w);
 
-    SDL_Renderer *tr = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    SDL_SetWindowMinimumSize(w, 640, 480);
+    SDL_SetWindowMaximumSize(w, 8192, 8192);
+
+    SDL_Surface *icon = ToSDLSurface(tex_interface_icon, FILTER_LINEAR);
+    SDL_SetWindowIcon(w, icon);
+
+    SDL_Renderer *tr = SDL_CreateRenderer(GetWindow(), -1, SDL_RENDERER_ACCELERATED);
     if (tr == NULL) {
-        SDL_DestroyWindow(window);
+        SDL_DestroyWindow(GetWindow());
         printf("SCreateRenderer Error: %s\n", SDL_GetError());
         SDL_Quit();
         return 1;
@@ -46,8 +53,8 @@ int main(int argc, char *argv[]) {
     Actor *a = CreateActor(vec2(5, -1), 0, 1);
     ListAdd(l->actors, a);
 
-    Wall *w = CreateWall(vec2(0, -5), vec2(1, 10), 0);
-    ListAdd(l->walls, w);
+    Wall *wl = CreateWall(vec2(0, -5), vec2(1, 10), 0);
+    ListAdd(l->walls, wl);
 
     ChangeLevel(l);
 
@@ -87,8 +94,6 @@ int main(int argc, char *argv[]) {
             quit = true;
         }
 
-
-
         frameTime = SDL_GetTicks64() - frameStart;
         FrameGraphUpdate(frameTime);
         if (frameTime < TARGET_MS) {
@@ -99,7 +104,7 @@ int main(int argc, char *argv[]) {
     DestroyLevel(l);
 
     SDL_DestroyRenderer(GetRenderer());
-    SDL_DestroyWindow(window);
+    SDL_DestroyWindow(GetWindow());
     SDL_Quit();
     return 0;
 }

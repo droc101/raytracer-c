@@ -37,10 +37,10 @@ void FrameGraphDraw() {
             color = 0x80ff8000;
         }
         setColorUint(color);
-        int y = HEIGHT - height;
+        int y = WindowHeight() - height;
         draw_rect(x+(i*2), y, 2, height);
     }
     char fps[20];
     sprintf(fps, "FPS: %.2f", framerates[FRAMEGRAPH_HISTORY_SIZE - 1]);
-    FontDrawString(vec2(10, HEIGHT - 64), fps, 24);
+    FontDrawString(vec2(10, WindowHeight() - 64), fps, 24);
 }

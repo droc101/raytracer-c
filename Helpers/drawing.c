@@ -9,6 +9,7 @@
 #include "../error.h"
 
 SDL_Renderer *renderer;
+SDL_Window *window;
 
 void SetRenderer(SDL_Renderer *r) {
     renderer = r;
@@ -16,6 +17,26 @@ void SetRenderer(SDL_Renderer *r) {
 
 SDL_Renderer *GetRenderer() {
     return renderer;
+}
+
+void SetWindow(SDL_Window *w) {
+    window = w;
+}
+
+SDL_Window *GetWindow() {
+    return window;
+}
+
+int WindowWidth() {
+    int w, h;
+    SDL_GetWindowSize(window, &w, &h);
+    return w;
+}
+
+int WindowHeight() {
+    int w, h;
+    SDL_GetWindowSize(window, &w, &h);
+    return h;
 }
 
 void draw_rect(int x, int y, int w, int h) {
@@ -41,15 +62,27 @@ byte* getColorUint(uint color) {
     return buf;
 }
 
-SDL_Texture* ToSDLTexture(const unsigned char* imageData, char *filterMode) {
+SDL_Surface* ToSDLSurface(const unsigned char* imageData, char *filterMode) {
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, filterMode);
     uint *textureDataUint = (uint*)imageData;
-    uint totalLength = textureDataUint[0];
     uint width = textureDataUint[1];
     uint height = textureDataUint[2];
     const unsigned char* pixelData = imageData + (sizeof(uint) * 4); // Skip the first 4 bytes
 
     SDL_Surface* surface = SDL_CreateRGBSurfaceFrom((void*)pixelData, width, height, 32, width * 4, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
+    if (!surface) {
+        printf("Failed to create surface: %s\n", SDL_GetError());
+        Error("ToSDLTexture: Failed to create surface");
+        return NULL;
+    }
+
+    return surface;
+}
+
+SDL_Texture* ToSDLTexture(const unsigned char* imageData, char *filterMode) {
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, filterMode);
+
+    SDL_Surface* surface = ToSDLSurface(imageData, filterMode);
     if (!surface) {
         printf("Failed to create surface: %s\n", SDL_GetError());
         Error("ToSDLTexture: Failed to create surface");
@@ -88,7 +121,7 @@ void DrawTextureColumn(SDL_Texture* texture, int sx, int dx, int dy, int dh) {
 }
 
 SDL_Texture *GetScreenshot() {
-    SDL_Surface *ss = SDL_CreateRGBSurface(0, WIDTH, HEIGHT, 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
+    SDL_Surface *ss = SDL_CreateRGBSurface(0, WindowWidth(), WindowHeight(), 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
     if (!ss) {
         printf("Failed to create surface: %s\n", SDL_GetError());
         Error("GetScreenshot: Failed to create surface");

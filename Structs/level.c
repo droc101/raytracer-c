@@ -37,11 +37,11 @@ void DestroyLevel(Level *l) {
     free(l);
 }
 
-double DepthBuffer[WIDTH];
+double DepthBuffer[8192]; // if you have a screen wider than 8192 pixels, you're on your own
 
 void RenderCol(Level *l, int col) {
     setColorUint(0xFFFFFFFF);
-    double angle = atan2(col - WIDTH / 2, WIDTH / 2) + l->rotation;
+    double angle = atan2(col - WindowWidth() / 2, WindowWidth() / 2) + l->rotation;
 
     RayCastResult raycast = HitscanLevel(*l, l->position, angle, true, false, false); // scan walls only
 
@@ -59,11 +59,11 @@ void RenderCol(Level *l, int col) {
 
     DepthBuffer[col] = distance; // store the distance for later (actor pass)
 
-    double height = HEIGHT / distance;
-    int y = (HEIGHT - height) / 2;
+    double height = WindowHeight() / distance;
+    int y = (WindowHeight() - height) / 2;
 
     double shade = fabs(cos((l->rotation + (1.5 * PI)) - WallGetAngle(raycast.CollisionWall)));
-    shade *= (1 - (distance / (WIDTH / 2)));
+    shade *= (1 - (distance / (WindowWidth() / 2)));
     shade = max(0.6, min(1, shade));
     //shade = floor(shade * 16) / 16;
 
@@ -88,7 +88,7 @@ void RenderCol(Level *l, int col) {
 }
 
 void RenderActorCol(Level *l, int col) {
-    double angle = atan2(col - WIDTH / 2, WIDTH / 2) + l->rotation;
+    double angle = atan2(col - WindowWidth() / 2, WindowWidth() / 2) + l->rotation;
 
     RayCastResult raycast = HitscanLevel(*l, l->position, angle, false, true, true); // scan actors only
 
@@ -106,11 +106,11 @@ void RenderActorCol(Level *l, int col) {
         return; // actor is behind a wall
     }
 
-    double height = HEIGHT / distance;
-    int y = (HEIGHT - height) / 2;
+    double height = WindowHeight() / distance;
+    int y = (WindowHeight() - height) / 2;
 
     double shade = fabs(cos((l->rotation + (1.5 * PI)) - WallGetAngle(raycast.CollisionWall)));
-    shade *= (1 - (distance / (WIDTH / 2)));
+    shade *= (1 - (distance / (WindowWidth() / 2)));
     shade = max(0.6, min(1, shade));
     //shade = floor(shade * 16) / 16;
 

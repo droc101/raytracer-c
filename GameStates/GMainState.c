@@ -89,21 +89,21 @@ void GMainStateRender() {
     double skyPos = remap(l->rotation, 0, 2*PI, 0, 527);
     skyPos = (int)skyPos % 527;
 
-    for (int i = -WIDTH; i < WIDTH * 3; i += 1) {
-        double tuSize = 527.0 / WIDTH;
+    for (int i = -WindowWidth(); i < WindowWidth() * 3; i += 1) {
+        double tuSize = 527.0 / WindowWidth();
         double tu = (i * tuSize) + skyPos;
         SDL_Rect src = {fmod(tu, 527), 0, 1, 527};
-        SDL_Rect dest = {i, 0, 1, HEIGHT/2};
+        SDL_Rect dest = {i, 0, 1, WindowHeight()/2};
         SDL_RenderCopy(GetRenderer(), skyTex, &src, &dest);
     }
 
     //SDL_RenderClear(GetRenderer());
 
     setColorUint(l->FloorColor);
-    draw_rect(0, HEIGHT/2, WIDTH, HEIGHT/2);
+    draw_rect(0, WindowHeight()/2, WindowWidth(), WindowHeight()/2);
 
 
-    for (int col = 0; col < WIDTH; col++) {
+    for (int col = 0; col < WindowWidth(); col++) {
         RenderCol(l, col);
         RenderActorCol(l, col);
     }

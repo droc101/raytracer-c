@@ -17,10 +17,20 @@ void SetRenderer(SDL_Renderer *r);
 // Get the renderer to draw to
 SDL_Renderer *GetRenderer();
 
+// Set the window to draw to
+void SetWindow(SDL_Window *w);
+
+// Get the window to draw to
+SDL_Window *GetWindow();
+
+int WindowWidth();
+int WindowHeight();
+
 // Draw a rectangle at the given position
 void draw_rect(int x, int y, int w, int h);
 
 // Convert a texture from assets.h to an SDL_Texture
+SDL_Surface* ToSDLSurface(const unsigned char* imageData, char *filterMode);
 SDL_Texture* ToSDLTexture(const unsigned char* imageData, char *filterMode);
 
 // Get the size of a texture

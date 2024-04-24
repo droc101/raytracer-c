@@ -76,8 +76,8 @@ typedef struct {
 #define TARGET_FPS 120
 #define TARGET_MS (1000 / TARGET_FPS)
 
-#define WIDTH 1280
-#define HEIGHT 720
+#define DEF_WIDTH 1280
+#define DEF_HEIGHT 720
 
 #define MOVE_SPEED 0.15
 #define ROT_SPEED 0.02
