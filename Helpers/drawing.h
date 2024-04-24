@@ -8,6 +8,9 @@
 #include "SDL.h"
 #include "../defines.h"
 
+#define FILTER_NEAREST "0"
+#define FILTER_LINEAR "1"
+
 // Set the renderer to draw to
 void SetRenderer(SDL_Renderer *r);
 
@@ -28,6 +31,8 @@ void DrawTextureColumn(SDL_Texture* texture, int sx, int dx, int dy, int dh);
 
 // Set the renderer color from a uint
 void setColorUint(uint color);
+
+byte* getColorUint(uint color);
 
 SDL_Texture *GetScreenshot();
 

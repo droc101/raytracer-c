@@ -14,6 +14,8 @@
 
 #include "../GameStates/GPauseState.h"
 
+SDL_Texture *skyTex = NULL;
+
 void GMainStateUpdate() {
 
     if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE)) {
@@ -80,8 +82,21 @@ void GMainStateUpdate() {
 void GMainStateRender() {
     Level *l = GetState()->level;
 
-    setColorUint(l->SkyColor);
-    SDL_RenderClear(GetRenderer());
+    byte *sc = getColorUint(l->SkyColor);
+    SDL_SetTextureColorMod(skyTex, sc[0], sc[1], sc[2]);
+
+    double skyPos = remap(l->rotation, 0, 2*PI, 0, 527);
+    skyPos = (int)skyPos % 527;
+
+    for (int i = -WIDTH; i < WIDTH * 3; i += 1) {
+        double tuSize = 527.0 / WIDTH;
+        double tu = (i * tuSize) + skyPos;
+        SDL_Rect src = {fmod(tu, 527), 0, 1, 527};
+        SDL_Rect dest = {i, 0, 1, HEIGHT/2};
+        SDL_RenderCopy(GetRenderer(), skyTex, &src, &dest);
+    }
+
+    //SDL_RenderClear(GetRenderer());
 
     setColorUint(l->FloorColor);
     draw_rect(0, HEIGHT/2, WIDTH, HEIGHT/2);
@@ -101,6 +116,11 @@ void GMainStateRender() {
 }
 
 void GMainStateSet() {
+
+    if (skyTex == NULL) {
+        skyTex = ToSDLTexture(tex_level_sky, FILTER_LINEAR);
+    }
+
     SetRenderCallback(GMainStateRender);
     SetUpdateCallback(GMainStateUpdate);
 }

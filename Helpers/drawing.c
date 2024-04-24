@@ -32,6 +32,10 @@ void setColorUint(uint color) {
     SDL_SetRenderDrawColor(renderer, (color >> 16) & 0xFF, (color >> 8) & 0xFF, (color >> 0) & 0xFF, (color >> 24) & 0xFF);
 }
 
+byte* getColorUint(uint color) {
+    return (byte[4]){(color >> 16) & 0xFF, (color >> 8) & 0xFF, (color >> 0) & 0xFF, (color >> 24) & 0xFF};
+}
+
 SDL_Texture* ToSDLTexture(const unsigned char* imageData, char *filterMode) {
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, filterMode);
     uint *textureDataUint = (uint*)imageData;
