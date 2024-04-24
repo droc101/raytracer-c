@@ -17,18 +17,13 @@ int main(int argc, char *argv[]) {
         printf("SInit Error: %s\n", SDL_GetError());
         return 1;
     }
-    printf("SDL Initialized\n");
 
-    SDL_Window *window = SDL_CreateWindow("game",
-                                          SDL_WINDOWPOS_UNDEFINED,
-                                          SDL_WINDOWPOS_UNDEFINED,
-                                          WIDTH, HEIGHT, 0);
+    SDL_Window *window = SDL_CreateWindow("game",SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,WIDTH, HEIGHT, 0);
     if (window == NULL) {
         printf("SCreateWindow Error: %s\n", SDL_GetError());
         SDL_Quit();
         return 1;
     }
-    printf("Window Created\n");
 
     SDL_Renderer *tr = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if (tr == NULL) {
@@ -37,14 +32,11 @@ int main(int argc, char *argv[]) {
         SDL_Quit();
         return 1;
     }
-    printf("Renderer Created\n");
     SetRenderer(tr);
-    printf("Renderer Set\n");
 
+    printf("Initializing Engine\n");
     FontInit();
-    printf("Font Initialized\n");
     InitState();
-    printf("GlobalState Initialized\n");
     InitSkyTex();
 
     byte levelData[] = { 0x00, 0xc0, 0x24, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3f, 0xf0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x24, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3f, 0xf0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3f, 0xf9, 0x21, 0xfb, 0x55, 0x20, 0x6d, 0xdf, 0x03, 0xff, 0xeb, 0x40, 0x34, 0xff, 0x33, 0x28, 0x00, 0x04};
@@ -57,18 +49,13 @@ int main(int argc, char *argv[]) {
     Wall *w = CreateWall(vec2(0, -5), vec2(1, 10), 0);
     ListAdd(l->walls, w);
 
-    printf("Level Loaded\n");
     ChangeLevel(l);
-    printf("Level Set\n");
 
     GMenuStateSet();
-    printf("GMainState Set\n");
 
     SDL_Event e;
     bool quit = false;
     ulong frameStart, frameTime;
-
-    printf("Entering main loop\n");
     while (!quit) {
         frameStart = SDL_GetTicks64();
 
@@ -109,18 +96,10 @@ int main(int argc, char *argv[]) {
         }
 
     }
-    printf("Exited main loop\n");
-
-
     DestroyLevel(l);
-    printf("Level Destroyed\n");
 
     SDL_DestroyRenderer(GetRenderer());
-    printf("Renderer Destroyed\n");
     SDL_DestroyWindow(window);
-    printf("Window Destroyed\n");
     SDL_Quit();
-    printf("SDL Quit\n");
-
     return 0;
 }
