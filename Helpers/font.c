@@ -13,7 +13,7 @@ SDL_Texture *fontTexture;
 const char fontChars[] = "abcdefghijklmnopqrstuvwxyz0123456789.:-";
 
 void FontInit() {
-    fontTexture = ToSDLTexture((const unsigned char *) tex_interface_font, "1");
+    fontTexture = ToSDLTexture((const unsigned char *) tex_interface_font, FILTER_LINEAR);
 }
 
 int findChar(char target) {

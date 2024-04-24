@@ -39,7 +39,7 @@ SDL_Point SDL_TextureSize(SDL_Texture *texture);
 // Draw a column of a texture to the screen (used in raycaster)
 void DrawTextureColumn(SDL_Texture* texture, int sx, int dx, int dy, int dh);
 
-// Set the renderer color from a uint
+// Set the renderer color from an uint
 void setColorUint(uint color);
 
 byte* getColorUint(uint color);

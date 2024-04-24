@@ -24,6 +24,12 @@ typedef struct {
     double y;
 } Vector2;
 
+typedef struct {
+    double x;
+    double y;
+    Vector2 origin;
+} Vector2o;
+
 // Utility functions are in Structs/wall.h
 typedef struct {
     Vector2 a;

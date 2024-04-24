@@ -19,7 +19,7 @@ Wall *CreateWall(Vector2 a, Vector2 b, uint tex) {
     Wall *w = malloc(sizeof(Wall));
     w->a = a;
     w->b = b;
-    w->tex = ToSDLTexture((const unsigned char *) wallTextures[tex], "0");
+    w->tex = ToSDLTexture((const unsigned char *) wallTextures[tex], FILTER_NEAREST);
     return w;
 }
 
@@ -42,6 +42,6 @@ Vector2 PushPointOutOfWallHitbox(Wall w, Vector2 point, Vector2 originPoint) {
     // The point is the point to push out of the wall
     // Use the originPoint to determine which side of the wall to push the point out of
 
-    return originPoint; // this function is going to be the death of me
+    return originPoint;
 }
 
