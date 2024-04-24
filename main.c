@@ -9,6 +9,7 @@
 #include "Structs/GlobalState.h"
 #include "GameStates/GMenuState.h"
 #include "Structs/Actor.h"
+#include "Debug/FrameGrapher.h"
 
 int main(int argc, char *argv[]) {
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
@@ -51,6 +52,9 @@ int main(int argc, char *argv[]) {
     Actor *a = CreateActor(vec2(5, -1), 0, 1);
     ListAdd(l->actors, a);
 
+    Wall *w = CreateWall(vec2(0, -5), vec2(1, 10), 0);
+    ListAdd(l->walls, w);
+
     printf("Level Loaded\n");
     ChangeLevel(l);
     printf("Level Set\n");
@@ -83,6 +87,8 @@ int main(int argc, char *argv[]) {
         g->UpdateGame();
         g->RenderGame();
 
+        FrameGraphDraw();
+
         SDL_RenderPresent(GetRenderer());
 
         UpdateKeyStates();
@@ -92,7 +98,10 @@ int main(int argc, char *argv[]) {
             quit = true;
         }
 
+
+
         frameTime = SDL_GetTicks64() - frameStart;
+        FrameGraphUpdate(frameTime);
         if (frameTime < TARGET_MS) {
             SDL_Delay(TARGET_MS - frameTime);
         }

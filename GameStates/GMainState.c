@@ -97,7 +97,7 @@ void GMainStateRender() {
     FontDrawString(vec2(20, 20), buffer, 16);
 
     sprintf(buffer, "HP %d\nAmmo %d", GetState()->hp, GetState()->ammo);
-    FontDrawString(vec2(20, HEIGHT - 20 - (24*2)), buffer, 24);
+    //FontDrawString(vec2(20, HEIGHT - 20 - (24*2)), buffer, 24);
 }
 
 void GMainStateSet() {
