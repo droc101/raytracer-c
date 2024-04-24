@@ -73,13 +73,13 @@ typedef struct {
 
 #define PI 3.14159265358979323846
 
-#define TARGET_FPS 120
+#define TARGET_FPS 60
 #define TARGET_MS (1000 / TARGET_FPS)
 
 #define DEF_WIDTH 1280
 #define DEF_HEIGHT 720
 
-#define MOVE_SPEED 0.15
-#define ROT_SPEED 0.02
+#define MOVE_SPEED 0.225
+#define ROT_SPEED 0.04
 
 #endif //GAME_DEFINES_H

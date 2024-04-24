@@ -50,8 +50,6 @@ Level *LoadLevel(byte *data) {
                 double v3 = ReadDouble(data, &i);
                 double v4 = ReadDouble(data, &i);
                 uint tid = ReadUint(data, &i);
-                printf("Wall: %f %f %f %f %u\n", v1, v2, v3, v4, tid);
-                fflush(stdout);
                 Vector2 va = vec2(v1, v2);
                 Vector2 vb = vec2(v3, v4);
                 Wall *w = CreateWall(va, vb, tid);
