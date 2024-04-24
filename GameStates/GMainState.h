@@ -11,4 +11,6 @@
 
 void GMainStateSet();
 
+void InitSkyTex();
+
 #endif //GAME_GMAINSTATE_H

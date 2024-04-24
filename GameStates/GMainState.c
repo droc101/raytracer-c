@@ -14,7 +14,7 @@
 
 #include "../GameStates/GPauseState.h"
 
-SDL_Texture *skyTex = NULL;
+SDL_Texture *skyTex;
 
 void GMainStateUpdate() {
 
@@ -84,6 +84,7 @@ void GMainStateRender() {
 
     byte *sc = getColorUint(l->SkyColor);
     SDL_SetTextureColorMod(skyTex, sc[0], sc[1], sc[2]);
+    free(sc);
 
     double skyPos = remap(l->rotation, 0, 2*PI, 0, 527);
     skyPos = (int)skyPos % 527;
@@ -116,11 +117,11 @@ void GMainStateRender() {
 }
 
 void GMainStateSet() {
-
-    if (skyTex == NULL) {
-        skyTex = ToSDLTexture(tex_level_sky, FILTER_LINEAR);
-    }
-
     SetRenderCallback(GMainStateRender);
     SetUpdateCallback(GMainStateUpdate);
 }
+
+void InitSkyTex() {
+    skyTex = ToSDLTexture((const unsigned char *) tex_level_sky, FILTER_LINEAR);
+}
+

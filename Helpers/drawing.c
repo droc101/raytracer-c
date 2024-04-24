@@ -33,7 +33,12 @@ void setColorUint(uint color) {
 }
 
 byte* getColorUint(uint color) {
-    return (byte[4]){(color >> 16) & 0xFF, (color >> 8) & 0xFF, (color >> 0) & 0xFF, (color >> 24) & 0xFF};
+    byte *buf = malloc(4);
+    buf[0] = (color >> 16) & 0xFF;
+    buf[1] = (color >> 8) & 0xFF;
+    buf[2] = (color >> 0) & 0xFF;
+    buf[3] = (color >> 24) & 0xFF;
+    return buf;
 }
 
 SDL_Texture* ToSDLTexture(const unsigned char* imageData, char *filterMode) {
