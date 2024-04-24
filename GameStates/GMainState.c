@@ -86,13 +86,13 @@ void GMainStateRender() {
     SDL_SetTextureColorMod(skyTex, sc[0], sc[1], sc[2]);
     free(sc);
 
-    double skyPos = remap(l->rotation, 0, 2*PI, 0, 527);
-    skyPos = (int)skyPos % 527;
+    double skyPos = remap(l->rotation, 0, 2*PI, 0, 256);
+    skyPos = (int)skyPos % 256;
 
     for (int i = -WindowWidth(); i < WindowWidth() * 3; i += 1) {
-        double tuSize = 527.0 / WindowWidth();
+        double tuSize = 256.0 / WindowWidth();
         double tu = (i * tuSize) + skyPos;
-        SDL_Rect src = {fmod(tu, 527), 0, 1, 527};
+        SDL_Rect src = {fmod(tu, 256), 0, 1, 256};
         SDL_Rect dest = {i, 0, 1, WindowHeight()/2};
         SDL_RenderCopy(GetRenderer(), skyTex, &src, &dest);
     }
