@@ -92,7 +92,7 @@ void GMenuStateRender() {
 }
 
 void GMenuStateSet() {
-    tWall = CreateWall(vec2(400, 400), vec2(600, 600), 0);
+    tWall = CreateWall(vec2(300, 400), vec2(600, 650), 0);
     tPlayerPos = vec2(400, 600);
     tPlayerRot = -(PI/4);
     SetRenderCallback(GMenuStateRender);
