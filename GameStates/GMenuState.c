@@ -11,8 +11,6 @@
 #include "../Structs/GlobalState.h"
 #include "GMainState.h"
 
-#include "../Structs/ray.h"
-
 Wall *tWall;
 Vector2 tPlayerPos;
 double tPlayerRot;
@@ -43,8 +41,6 @@ void GMenuStateUpdate() {
         GMainStateSet();
     }
 }
-
-
 
 void GMenuStateRender() {
     setColorUint(0xFF123456);
@@ -79,22 +75,16 @@ void GMenuStateRender() {
     } else {
         FontDrawString(vec2(20, 200), "No Collision", 16);
         Vector2 dir = vec2(cos(tPlayerRot), sin(tPlayerRot));
-        dir = Vector2Scale(dir, 1024);
+        dir = Vector2Scale(dir, 10000);
         dir = Vector2Add(tPlayerPos, dir);
         setColorUint(0xFF0000FF);
         SDL_RenderDrawLine(GetRenderer(), tPlayerPos.x, tPlayerPos.y, dir.x, dir.y);
     }
-
-
-
-
-
 }
 
 void GMenuStateSet() {
     tWall = CreateWall(vec2(300, 400), vec2(600, 650), 0);
     tPlayerPos = vec2(400, 600);
-    tPlayerRot = -(PI/4);
     SetRenderCallback(GMenuStateRender);
     SetUpdateCallback(GMenuStateUpdate);
 }
