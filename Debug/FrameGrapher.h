@@ -11,6 +11,8 @@
 #define FRAMEGRAPH_THRESHOLD_GOOD 60
 #define FRAMEGRAPH_THRESHOLD_BAD 30
 
+#define FRAMEGRAPH_ENABLE 0
+
 void FrameGraphUpdate(int ms);
 void FrameGraphDraw();
 

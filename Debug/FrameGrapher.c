@@ -27,6 +27,7 @@ void FrameGraphUpdate(int ms) {
 }
 
 void FrameGraphDraw() {
+    if (!FRAMEGRAPH_ENABLE) { return; }
     SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_BLEND);
     int x = 10;
     for (int i = 0; i < FRAMEGRAPH_HISTORY_SIZE; i++) {
