@@ -52,8 +52,21 @@ double Vector2Length(Vector2 vec) {
 }
 
 Vector2 Vector2Normalize(Vector2 vec) {
+    // Calculate the length of the vector
     double length = Vector2Length(vec);
-    return vec2((vec.x - vec.originX) / length + vec.originX, (vec.y - vec.originY) / length + vec.originY);
+
+    // If the length is non-zero, normalize the vector
+    if (length != 0) {
+        // Calculate the normalized components relative to the origin
+        double normalizedX = (vec.x - vec.originX) / length + vec.originX;
+        double normalizedY = (vec.y - vec.originY) / length + vec.originY;
+
+        // Return the normalized vector
+        return vec2o(normalizedX, normalizedY, vec.originX, vec.originY);
+    } else {
+        // If the vector has zero length, return the zero vector
+        return vec2o(0, 0, vec.originX, vec.originY);
+    }
 }
 
 Vector2 Vector2FromAngle(double angle) {
@@ -69,11 +82,7 @@ Vector2 Vector2Sub(Vector2 a, Vector2 b) {
 }
 
 Vector2 Vector2Scale(Vector2 vec, double scale) {
-    // Scale the vector by the scalar
-    Vector2 scaledVec;
-    scaledVec.x = (vec.x - vec.originX) * scale + vec.originX;
-    scaledVec.y = (vec.y - vec.originY) * scale + vec.originY;
-    return scaledVec;
+    return vec2o(vec.x * scale, vec.y * scale, vec.originX, vec.originY);
 }
 
 
