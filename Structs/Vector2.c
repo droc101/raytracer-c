@@ -69,8 +69,13 @@ Vector2 Vector2Sub(Vector2 a, Vector2 b) {
 }
 
 Vector2 Vector2Scale(Vector2 vec, double scale) {
-    return vec2o(vec.x * scale, vec.y * scale, vec.originX, vec.originY);
+    // Scale the vector by the scalar
+    Vector2 scaledVec;
+    scaledVec.x = (vec.x - vec.originX) * scale + vec.originX;
+    scaledVec.y = (vec.y - vec.originY) * scale + vec.originY;
+    return scaledVec;
 }
+
 
 double Vector2Dot(Vector2 a, Vector2 b) {
     return (a.x - a.originX) * (b.x - b.originX) + (a.y - a.originY) * (b.y - b.originY);
