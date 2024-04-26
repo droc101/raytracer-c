@@ -150,3 +150,4 @@ void GMainStateSet() {
 void InitSkyTex() {
     skyTex = ToSDLTexture((const unsigned char *) tex_level_sky, FILTER_LINEAR);
 }
+
