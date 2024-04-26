@@ -8,13 +8,13 @@
 #include "../defines.h"
 #include "../Structs/Vector2.h"
 
-// Create a new actor and return a pointer to it
+// Create a new Actor and return a pointer to it
 Actor *CreateActor(Vector2 position, double rotation, int actorType);
 
-// Free the actor from memory
+// Free the Actor from memory
 void FreeActor(Actor *actor);
 
-// Get the actor's wall transformed by the actor's position and rotation
+// Get the Actor's wall transformed by the Actor's position and rotation
 Wall GetTransformedWall(Actor *actor);
 
 #endif //GAME_ACTOR_H

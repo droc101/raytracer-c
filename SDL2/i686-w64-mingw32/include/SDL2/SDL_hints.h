@@ -87,7 +87,7 @@ extern "C" {
  * Must be set together with SDL_HINT_ANDROID_APK_EXPANSION_PATCH_FILE_VERSION.
  *
  * If both hints were set then SDL_RWFromFile() will look into expansion files
- * after a given relative path was not found in the internal storage and assets.
+ * after a given relative path was not found in the internal storage and Assets.
  *
  * By default this hint is not set and the APK expansion files are not searched.
  */
@@ -99,7 +99,7 @@ extern "C" {
  * Must be set together with SDL_HINT_ANDROID_APK_EXPANSION_MAIN_FILE_VERSION.
  *
  * If both hints were set then SDL_RWFromFile() will look into expansion files
- * after a given relative path was not found in the internal storage and assets.
+ * after a given relative path was not found in the internal storage and Assets.
  *
  * By default this hint is not set and the APK expansion files are not searched.
  */

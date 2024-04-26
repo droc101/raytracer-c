@@ -6,11 +6,11 @@
 #include <ctype.h>
 #include "SDL.h"
 #include "Drawing.h"
-#include "../assets/assets.h"
+#include "../assets/Assets.h"
 
 SDL_Texture *fontTexture;
 
-const char fontChars[] = "abcdefghijklmnopqrstuvwxyz0123456789.:-";
+const char fontChars[] = "abcdefghijklmnopqrstuvwxyz0123456789.:-,/\\|[]{}();'\"<>`~!@#$%^&*()_=+?";
 
 void FontInit() {
     fontTexture = ToSDLTexture((const unsigned char *) tex_interface_font, FILTER_LINEAR);

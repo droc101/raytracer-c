@@ -57,7 +57,7 @@ void RenderCol(Level *l, int col) {
         Error("Distance to wall is 0");
     }
 
-    DepthBuffer[col] = distance; // store the distance for later (actor pass)
+    DepthBuffer[col] = distance; // store the distance for later (Actor pass)
 
     double height = WindowHeight() / distance;
     int y = (WindowHeight() - height) / 2;
@@ -103,7 +103,7 @@ void RenderActorCol(Level *l, int col) {
     }
 
     if (distance > DepthBuffer[col]) {
-        return; // actor is behind a wall
+        return; // Actor is behind a wall
     }
 
     double height = WindowHeight() / distance;

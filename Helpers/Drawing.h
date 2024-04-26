@@ -30,7 +30,7 @@ int WindowHeight();
 // Draw a rectangle at the given position
 void draw_rect(int x, int y, int w, int h);
 
-// Convert a texture from assets.h to an SDL_Texture
+// Convert a texture from Assets.h to an SDL_Texture
 SDL_Surface* ToSDLSurface(const unsigned char* imageData, char *filterMode);
 SDL_Texture* ToSDLTexture(const unsigned char* imageData, char *filterMode);
 

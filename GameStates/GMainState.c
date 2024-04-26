@@ -63,9 +63,9 @@ void GMainStateUpdate() {
     moveVec = Vector2Rotate(moveVec, l->rotation);
 
     /* TODO
-     * - Check for actor collisions too
+     * - Check for Actor collisions too
      * - Fix it
-     * - Move to a better place so that other functions can use it (such as actor movement)
+     * - Move to a better place so that other functions can use it (such as Actor movement)
     */
     for (int i = 0; i < l->walls->size; i++) {
         Wall *w = ListGet(l->walls, i);
@@ -138,7 +138,8 @@ void GMainStateRender() {
         RenderCol(l, col);
         RenderActorCol(l, col);
     }
-    DPrintF("Position: %.2f, %.2f\nRotation: %.4f", 0xFFFFFFFF, false, l->position.x, l->position.y, l->rotation);
+    DPrintF("Position: (%.2f, %.2f)\nRotation: %.4f (%.2fdeg)", 0xFFFFFFFF, false, l->position.x, l->position.y, l->rotation,
+            radToDeg(l->rotation));
 }
 
 void GMainStateSet() {
