@@ -7,7 +7,7 @@
 
 #include "../defines.h"
 #include "../Structs/GlobalState.h"
-#include "../Structs/level.h"
+#include "../Structs/Level.h"
 
 void GMainStateSet();
 

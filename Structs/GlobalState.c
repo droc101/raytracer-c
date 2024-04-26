@@ -3,7 +3,7 @@
 //
 
 #include "GlobalState.h"
-#include "../Structs/level.h"
+#include "../Structs/Level.h"
 
 GlobalState state;
 

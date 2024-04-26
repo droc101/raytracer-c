@@ -4,10 +4,10 @@
 
 #include "GPauseState.h"
 #include <stdio.h>
-#include "../input.h"
-#include "../Structs/ray.h"
-#include "../Helpers/drawing.h"
-#include "../Helpers/font.h"
+#include "../Helpers/Input.h"
+#include "../Structs/Ray.h"
+#include "../Helpers/Drawing.h"
+#include "../Helpers/Font.h"
 #include "../Structs/GlobalState.h"
 #include "GMainState.h"
 
@@ -24,7 +24,7 @@ void GPauseStateUpdate() {
 void GPauseStateRender() {
     SDL_RenderCopy(GetRenderer(), pauseTexture, NULL, NULL);
 
-    FontDrawString(vec2(20, 150), "Game Paused\nPress escape to resume", 32);
+    FontDrawString(vec2(20, 150), "Game Paused\nPress escape to resume", 32, 0xFFFFFFFF);
 
 }
 

@@ -3,14 +3,14 @@
 //
 
 #include <stdlib.h>
-#include "defines.h"
-#include "error.h"
-#include "Helpers/drawing.h"
-#include "Helpers/font.h"
-#include "Structs/Vector2.h"
+#include "../defines.h"
+#include "Error.h"
+#include "Drawing.h"
+#include "Font.h"
+#include "../Structs/Vector2.h"
 
 _Noreturn void Error(char* error) {
-    FontDrawString(vec2(20, 20), error, 32);
+    FontDrawString(vec2(20, 20), error, 32, 0xFFFF0000);
     SDL_RenderPresent(GetRenderer());
     SDL_Delay(5000);
     exit(1);

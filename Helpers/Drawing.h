@@ -8,8 +8,8 @@
 #include "SDL.h"
 #include "../defines.h"
 
-#define FILTER_NEAREST "0"
-#define FILTER_LINEAR "1"
+#define FILTER_NEAREST "0" // pixelated texture (nearest neighbor)
+#define FILTER_LINEAR "1" // smooth texture (linear)
 
 // Set the renderer to draw to
 void SetRenderer(SDL_Renderer *r);
@@ -23,6 +23,7 @@ void SetWindow(SDL_Window *w);
 // Get the window to draw to
 SDL_Window *GetWindow();
 
+// Get the window size
 int WindowWidth();
 int WindowHeight();
 
@@ -42,8 +43,10 @@ void DrawTextureColumn(SDL_Texture* texture, int sx, int dx, int dy, int dh);
 // Set the renderer color from an uint
 void setColorUint(uint color);
 
+// Split an uint into its color components
 byte* getColorUint(uint color);
 
+// Get a screenshot of the current window
 SDL_Texture *GetScreenshot();
 
 #endif //GAME_DRAWING_H

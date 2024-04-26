@@ -2,9 +2,12 @@
 // Created by droc101 on 4/20/2024.
 //
 
-#include "input.h"
-#include "defines.h"
+#include "Input.h"
+#include "../defines.h"
 
+// every key is tracked, even if it's not used
+// this *could* be optimized, but it's not necessary
+// on modern systems where memory is not a concern
 byte keys[SDL_NUM_SCANCODES];
 
 void HandleKeyDown(int code) {

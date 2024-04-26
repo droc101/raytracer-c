@@ -14,11 +14,12 @@ double max(double a, double b) // Get the maximum of two numbers
     return a > b ? a : b;
 }
 
-double wrap(double n, double min, double max) {
+double wrap(double n, double min, double max) { // BUG: Sometimes returns a value outside the range, needs more testing
     double d = max - min;
     return n >= min && n <= max ? fmod(n - min, d) + min : fmod(n - min, d) + min + d;
 }
 
+// Map a value from one range to another
 double remap(double in, double in_min, double in_max, double out_min, double out_max) {
     return (in - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }

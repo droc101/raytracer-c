@@ -50,6 +50,7 @@ typedef struct {
     Wall CollisionWall;
 } RayCastResult;
 
+// Global state of the game
 typedef struct {
     Level *level;
     void (*UpdateGame)();
@@ -62,6 +63,7 @@ typedef struct {
     bool requestExit;
 } GlobalState;
 
+// Actor (interactable/moving wall) struct
 typedef struct {
     Vector2 position;
     double rotation;
@@ -73,14 +75,18 @@ typedef struct {
     void (*Destroy)(void *self);
 } Actor;
 
+// pi
 #define PI 3.14159265358979323846
 
+// Target frame rate (the game is tied to this :D)
 #define TARGET_FPS 60
 #define TARGET_MS (1000 / TARGET_FPS)
 
+// Default window size
 #define DEF_WIDTH 1280
 #define DEF_HEIGHT 720
 
+// Player movement speed
 #define MOVE_SPEED 0.225
 #define ROT_SPEED 0.04
 

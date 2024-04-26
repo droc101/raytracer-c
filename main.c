@@ -1,10 +1,10 @@
 #include <SDL.h>
 #include <stdio.h>
-#include "Helpers/drawing.h"
+#include "Helpers/Drawing.h"
 #include "defines.h"
-#include "input.h"
-#include "Helpers/font.h"
-#include "Structs/level.h"
+#include "Helpers/Input.h"
+#include "Helpers/Font.h"
+#include "Structs/Level.h"
 #include "Helpers/LevelLoader.h"
 #include "Structs/GlobalState.h"
 #include "GameStates/GMenuState.h"

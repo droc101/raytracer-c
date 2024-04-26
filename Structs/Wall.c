@@ -3,9 +3,9 @@
 //
 
 #include "../defines.h"
-#include "wall.h"
+#include "Wall.h"
 #include <math.h>
-#include "../Helpers/drawing.h"
+#include "../Helpers/Drawing.h"
 #include "Vector2.h"
 
 const uint *wallTextures[] = {

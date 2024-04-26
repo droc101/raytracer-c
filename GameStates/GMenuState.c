@@ -4,10 +4,10 @@
 
 #include <stdio.h>
 #include "GMenuState.h"
-#include "../input.h"
-#include "../Structs/ray.h"
-#include "../Helpers/drawing.h"
-#include "../Helpers/font.h"
+#include "../Helpers/Input.h"
+#include "../Structs/Ray.h"
+#include "../Helpers/Drawing.h"
+#include "../Helpers/Font.h"
 #include "../Structs/GlobalState.h"
 #include "GMainState.h"
 
@@ -49,7 +49,7 @@ void GMenuStateRender() {
     //FontDrawString(vec2(20, 20), "GAME.", 128);
     //FontDrawString(vec2(20, 150), "Press Space to start.", 32);
 
-    FontDrawString(vec2(10, 10), "wasd to move test player, mouse to look, space to start", 16);
+    FontDrawString(vec2(10, 10), "wasd to move test player, mouse to look, space to start", 16, 0xFFFFFFFF);
 
     setColorUint(0xFFFFFFFF);
     SDL_RenderDrawLine(GetRenderer(), tWall->a.x, tWall->a.y, tWall->b.x, tWall->b.y);
@@ -67,13 +67,13 @@ void GMenuStateRender() {
         draw_rect(PushedPos.x - 5, PushedPos.y - 5, 10, 10);
 
         char buffer[256];
-        sprintf(buffer, "Collision Point: %f, %f\nPushed Point: %f, %f", rc.CollisonPoint.x, rc.CollisonPoint.y, PushedPos.x, PushedPos.y);
-        FontDrawString(vec2(20, 200), buffer, 16);
+        sprintf(buffer, "Collision Point: %f, %f\nPushed Point: %f, %f", rc.CollisonPoint.x, rc.CollisonPoint.y, PushedPos.x, PushedPos.y, 0xFF00FF00);
+        FontDrawString(vec2(20, 200), buffer, 16, 0xFF00FF00);
 
         setColorUint(0xFF0000FF);
         SDL_RenderDrawLine(GetRenderer(), tPlayerPos.x, tPlayerPos.y, rc.CollisonPoint.x, rc.CollisonPoint.y);
     } else {
-        FontDrawString(vec2(20, 200), "No Collision", 16);
+        FontDrawString(vec2(20, 200), "No Collision", 16, 0xFF808080);
         Vector2 dir = vec2(cos(tPlayerRot), sin(tPlayerRot));
         dir = Vector2Scale(dir, 10000);
         dir = Vector2Add(tPlayerPos, dir);

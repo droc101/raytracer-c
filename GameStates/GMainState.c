@@ -5,12 +5,12 @@
 #include "GMainState.h"
 #include <stdio.h>
 #include <math.h>
-#include "../input.h"
-#include "../Structs/ray.h"
-#include "../error.h"
-#include "../Helpers/mathex.h"
-#include "../Helpers/drawing.h"
-#include "../Helpers/font.h"
+#include "../Helpers/Input.h"
+#include "../Structs/Ray.h"
+#include "../Helpers/Error.h"
+#include "../Helpers/MathEx.h"
+#include "../Helpers/Drawing.h"
+#include "../Helpers/Font.h"
 
 #include "../GameStates/GPauseState.h"
 
@@ -111,7 +111,7 @@ void GMainStateRender() {
 
     char buffer[64];
     sprintf(buffer, "Position %.2f, %.2f\nRotation %.4f", l->position.x, l->position.y, l->rotation);
-    FontDrawString(vec2(20, 20), buffer, 16);
+    FontDrawString(vec2(20, 20), buffer, 16, 0xFFFFFFFF);
 
     sprintf(buffer, "HP %d\nAmmo %d", GetState()->hp, GetState()->ammo);
     //FontDrawString(vec2(20, HEIGHT - 20 - (24*2)), buffer, 24);

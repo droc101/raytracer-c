@@ -2,10 +2,10 @@
 // Created by droc101 on 4/21/2024.
 //
 
-#include "font.h"
+#include "Font.h"
 #include <ctype.h>
 #include "SDL.h"
-#include "drawing.h"
+#include "Drawing.h"
 #include "../assets/assets.h"
 
 SDL_Texture *fontTexture;
@@ -45,7 +45,8 @@ void FontDrawChar(Vector2 pos, char c, uint size) {
     SDL_RenderCopy(GetRenderer(), fontTexture, &srcRect, &dstRect);
 }
 
-void FontDrawString(Vector2 pos, char* str, uint size) {
+void FontDrawString(Vector2 pos, char* str, uint size, uint color) {
+    SDL_SetTextureColorMod(fontTexture, (color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF);
     int x = pos.x;
     int y = pos.y;
     int i = 0;

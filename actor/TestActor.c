@@ -3,7 +3,7 @@
 //
 
 #include "TestActor.h"
-#include "../Structs/wall.h"
+#include "../Structs/Wall.h"
 #include "../Structs/Vector2.h"
 
 void TestActorInit(Actor *this) {

@@ -11,8 +11,9 @@
 void FontInit();
 
 // Draw a string to the screen
-void FontDrawString(Vector2 pos, char* str, uint size);
+void FontDrawString(Vector2 pos, char* str, uint size, uint color);
 
+// Texture sizes of the font
 #define FONT_CHAR_WIDTH 16
 #define FONT_CHAR_HEIGHT 16
 

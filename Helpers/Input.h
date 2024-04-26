@@ -6,7 +6,7 @@
 #define GAME_INPUT_H
 
 #include "SDL.h"
-#include "defines.h"
+#include "../defines.h"
 
 #define KS_RELEASED 0
 #define KS_JUST_PRESSED 1
@@ -21,6 +21,7 @@ void HandleKeyUp(int code);
 void UpdateKeyStates();
 
 // Exposed methods
+// Use SDL_SCANCODE_* codes
 bool IsKeyPressed(int code);
 bool IsKeyJustPressed(int code);
 bool IsKeyJustReleased(int code);

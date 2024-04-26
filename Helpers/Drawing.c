@@ -5,8 +5,8 @@
 #include <stdio.h>
 #include "../defines.h"
 #include "SDL.h"
-#include "drawing.h"
-#include "../error.h"
+#include "Drawing.h"
+#include "Error.h"
 
 SDL_Renderer *renderer;
 SDL_Window *window;

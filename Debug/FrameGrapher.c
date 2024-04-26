@@ -4,10 +4,10 @@
 
 #include "FrameGrapher.h"
 #include <stdio.h>
-#include "../Helpers/drawing.h"
+#include "../Helpers/Drawing.h"
 #include "SDL.h"
 #include "../Structs/GlobalState.h"
-#include "../Helpers/font.h"
+#include "../Helpers/Font.h"
 
 double framerates[FRAMEGRAPH_HISTORY_SIZE];
 
@@ -30,9 +30,9 @@ void FrameGraphDraw() {
     if (!FRAMEGRAPH_ENABLE) { return; }
     SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_BLEND);
     int x = 10;
+    uint color = 0x8000ff00;
     for (int i = 0; i < FRAMEGRAPH_HISTORY_SIZE; i++) {
         int height = framerates[i] / 2;
-        uint color = 0x8000ff00;
         if (framerates[i] < FRAMEGRAPH_THRESHOLD_BAD) {
             color = 0x80ff0000;
         } else if (framerates[i] < FRAMEGRAPH_THRESHOLD_GOOD) {
@@ -44,5 +44,5 @@ void FrameGraphDraw() {
     }
     char fps[20];
     sprintf(fps, "FPS: %.2f", framerates[FRAMEGRAPH_HISTORY_SIZE - 1]);
-    FontDrawString(vec2(10, WindowHeight() - 64), fps, 24);
+    FontDrawString(vec2(10, WindowHeight() - 64), fps, 24, color);
 }
