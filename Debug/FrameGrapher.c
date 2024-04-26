@@ -61,6 +61,6 @@ void FrameGraphDraw() {
 
     setColorUint(color);
     char fps[20];
-    sprintf(fps, "FPS: %.2f", framerates[FRAMEGRAPH_HISTORY_SIZE - 1]);
+    sprintf(fps, "FPS: %.0f", framerates[FRAMEGRAPH_HISTORY_SIZE - 1]);
     FontDrawString(vec2(10, WindowHeight() - 32), fps, 16, color);
 }
