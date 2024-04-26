@@ -43,24 +43,44 @@ void GMainStateUpdate() {
     }
     moveVec = Vector2Scale(moveVec, MOVE_SPEED);
     moveVec = Vector2Rotate(moveVec, l->rotation);
-    moveVec = Vector2Add(l->position, moveVec);
 
     double angle = atan2(moveVec.y - oldPos.y, moveVec.x - oldPos.x);
 
-    RayCastResult moveCheck = HitscanLevel(*l, oldPos, angle, true, true, false); // scan walls and actors
-    if (moveCheck.Collided) {
-        double distance = fabs(Vector2Distance(oldPos, moveCheck.CollisonPoint));
-        if (distance <= WALL_HITBOX_EXTENTS) {
-            // push 0.5 units out of the wall
-            l->position = PushPointOutOfWallHitbox(moveCheck.CollisionWall,
-                                                   vec2o(moveCheck.CollisonPoint.x, moveCheck.CollisonPoint.y,
-                                                         l->position.x, l->position.y));
-        } else {
-            l->position = moveVec; // not close enough to the wall to collide
-        }
-    } else {
-        l->position = moveVec; // no collision, move freely
+    for (int i = 0; i < l->walls->size; i++) {
+    	Wall *w = (Wall *) ListGet(l->walls, i);
+    	Vector2 pos = Vector2Add(l->position, moveVec);
+	bool abx = ((w->a.x + WALL_HITBOX_EXTENTS <= pos.x) || (w->a.x - WALL_HITBOX_EXTENTS <= pos.x)) && ((w->b.x + WALL_HITBOX_EXTENTS >= pos.x) || (w->b.x - WALL_HITBOX_EXTENTS >= pos.x));
+	bool bax = ((w->b.x + WALL_HITBOX_EXTENTS <= pos.x) || (w->b.x - WALL_HITBOX_EXTENTS <= pos.x)) && ((w->a.x + WALL_HITBOX_EXTENTS >= pos.x) || (w->a.x - WALL_HITBOX_EXTENTS >= pos.x));
+	bool aby = ((w->a.y + WALL_HITBOX_EXTENTS <= pos.y) || (w->a.y - WALL_HITBOX_EXTENTS <= pos.y)) && ((w->b.y + WALL_HITBOX_EXTENTS >= pos.y) || (w->b.y - WALL_HITBOX_EXTENTS >= pos.y));
+	bool bay = ((w->b.y + WALL_HITBOX_EXTENTS <= pos.y) || (w->b.y - WALL_HITBOX_EXTENTS <= pos.y)) && ((w->a.y + WALL_HITBOX_EXTENTS >= pos.y) || (w->a.y - WALL_HITBOX_EXTENTS >= pos.y));
+	if ((abx && aby) || (abx && bay) || (bax && aby) || (bax && bay)) {
+		if (w->a.x != w->b.x && w->a.y != w->b.y) {
+			if ((abs((pos.x - 1) * ((w->b.y - w->a.y) / (w->b.x - w->a.x)) + 10 - pos.y) > WALL_HITBOX_EXTENTS) && (abs((pos.y - 10) * ((w->b.x - w->a.x) / (w->b.y - w->a.y)) + 1 - pos.x) > WALL_HITBOX_EXTENTS)) continue;
+		}
+		printf("cos: %f sin: %f rot: %f angle: %f\n", cos(WallGetAngle(*w)), sin(WallGetAngle(*w)), l->rotation, angle);
+		fflush(stdout);
+		moveVec.x *= sin(angle) * cos(WallGetAngle(*w));
+		moveVec.y *= cos(angle) * sin(WallGetAngle(*w));
+		// moveVec.y -= max(WALL_HITBOX_EXTENTS - abs((moveVec.x - 1) * ((w->b.y - w->a.y) / (w->b.x - w->a.x)) + 10 - moveVec.y), 0);
+		// moveVec.x -= max(WALL_HITBOX_EXTENTS - abs((moveVec.y - 10) * ((w->b.x - w->a.x) / (w->b.y - w->a.y)) + 1 - moveVec.x), 0);
+    		// printf("Wall: {Start: {x: %f, y: %f}, End: {x: %f, y: %f}}\n", w->a.x, w->a.y, w->b.x, w->b.y);
+	}
     }
+    l->position = Vector2Add(l->position, moveVec);
+    // RayCastResult moveCheck = HitscanLevel(*l, oldPos, angle, true, true, false); // scan walls and actors
+    // if (moveCheck.Collided) {
+    //     double distance = fabs(Vector2Distance(oldPos, moveCheck.CollisonPoint));
+    //     if (distance <= WALL_HITBOX_EXTENTS) {
+    //         // push 0.5 units out of the wall
+    //         l->position = PushPointOutOfWallHitbox(moveCheck.CollisionWall,
+    //                                                vec2o(moveCheck.CollisonPoint.x, moveCheck.CollisonPoint.y,
+    //                                                      l->position.x, l->position.y));
+    //     } else {
+    //         l->position = moveVec; // not close enough to the wall to collide
+    //     }
+    // } else {
+    //     l->position = moveVec; // no collision, move freely
+    // }
 
     if (IsKeyPressed(SDL_SCANCODE_A)) {
         l->rotation -= ROT_SPEED;
