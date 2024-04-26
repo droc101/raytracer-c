@@ -45,7 +45,7 @@ void FontDrawChar(Vector2 pos, char c, uint size) {
     SDL_RenderCopy(GetRenderer(), fontTexture, &srcRect, &dstRect);
 }
 
-void FontDrawString(Vector2 pos, char* str, uint size, uint color) {
+Vector2 FontDrawString(Vector2 pos, char* str, uint size, uint color) {
     SDL_SetTextureColorMod(fontTexture, (color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF);
     int x = pos.x;
     int y = pos.y;
@@ -63,4 +63,5 @@ void FontDrawString(Vector2 pos, char* str, uint size, uint color) {
         x += size;
         i++;
     }
+    return vec2(x+size, y+size); // Return the bottom right corner of the text
 }

@@ -11,10 +11,13 @@
 #include "Structs/Actor.h"
 #include "Debug/FrameGrapher.h"
 #include "GameStates/GMainState.h"
+#include "Debug/DPrint.h"
 
 #include "Structs/Vector2.h"
 
 int main(int argc, char *argv[]) {
+    printf("Build time: %s at %s\n", __DATE__, __TIME__);
+
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         printf("SInit Error: %s\n", SDL_GetError());
         return 1;
@@ -80,9 +83,12 @@ int main(int argc, char *argv[]) {
             }
         }
 
+        ResetDPrintYPos();
+
         GlobalState *g = GetState();
 
         g->UpdateGame();
+
         g->RenderGame();
 
         FrameGraphDraw();

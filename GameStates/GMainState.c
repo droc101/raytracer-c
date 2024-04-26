@@ -11,6 +11,7 @@
 #include "../Helpers/MathEx.h"
 #include "../Helpers/Drawing.h"
 #include "../Helpers/Font.h"
+#include "../Debug/DPrint.h"
 
 #include "../GameStates/GPauseState.h"
 
@@ -109,11 +110,12 @@ void GMainStateRender() {
         RenderActorCol(l, col);
     }
 
-    char buffer[64];
-    sprintf(buffer, "Position %.2f, %.2f\nRotation %.4f", l->position.x, l->position.y, l->rotation);
-    FontDrawString(vec2(20, 20), buffer, 16, 0xFFFFFFFF);
+    //char buffer[64];
+    //sprintf(buffer, "Position %.2f, %.2f\nRotation %.4f", l->position.x, l->position.y, l->rotation);
+    DPrintF("Position: %.2f, %.2f\nRotation: %.4f", 0xFFFFFFFF, false, l->position.x, l->position.y, l->rotation);
+    //FontDrawString(vec2(20, 20), buffer, 16, 0xFFFFFFFF);
 
-    sprintf(buffer, "HP %d\nAmmo %d", GetState()->hp, GetState()->ammo);
+    //sprintf(buffer, "HP %d\nAmmo %d", GetState()->hp, GetState()->ammo);
     //FontDrawString(vec2(20, HEIGHT - 20 - (24*2)), buffer, 24);
 }
 

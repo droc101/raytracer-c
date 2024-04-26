@@ -14,6 +14,8 @@ include_directories(${SDL2_INCLUDE_DIR})
 add_executable(game main.c Helpers/Input.h Helpers/Input.c defines.h Helpers/Drawing.h Helpers/Drawing.c assets/assets.h assets/assets.c Structs/Vector2.h Structs/Vector2.c Helpers/MathEx.h Helpers/MathEx.c Structs/Ray.h Structs/Ray.c Structs/Wall.h Structs/Wall.c Helpers/List.h Helpers/List.c Structs/Level.h Structs/Level.c Helpers/Font.c Helpers/Font.h Helpers/Error.c Helpers/Error.h Helpers/LevelLoader.c Helpers/LevelLoader.h Structs/GlobalState.c Structs/GlobalState.h GameStates/GMainState.c GameStates/GMainState.h GameStates/GMenuState.c GameStates/GMenuState.h Structs/Actor.c Structs/Actor.h actor/TestActor.c actor/TestActor.h GameStates/GPauseState.c GameStates/GPauseState.h
         Debug/FrameGrapher.c
         Debug/FrameGrapher.h
+        Debug/DPrint.c
+        Debug/DPrint.h
 )
 
 if (UNIX)
