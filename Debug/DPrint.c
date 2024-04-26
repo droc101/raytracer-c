@@ -20,7 +20,7 @@ void DPrint(char *str, uint color) {
 void DPrintF(char *str, uint color, bool con, ...) {
     char buffer[256];
     va_list args;
-    va_start(args, color);
+    va_start(args, con);
     vsprintf(buffer, str, args);
     va_end(args);
     DPrint(buffer, color);
