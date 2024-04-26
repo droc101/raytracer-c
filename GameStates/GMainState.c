@@ -16,8 +16,24 @@
 
 SDL_Texture *skyTex;
 
-void GMainStateUpdate() {
+bool IsNearWall(Wall wall, Vector2 position) {
+    bool abx = (wall.a.x + WALL_HITBOX_EXTENTS <= position.x || wall.a.x - WALL_HITBOX_EXTENTS <= position.x) && (
+                   wall.b.x + WALL_HITBOX_EXTENTS >= position.x || wall.b.x - WALL_HITBOX_EXTENTS >= position.x);
+    bool bax = (wall.b.x + WALL_HITBOX_EXTENTS <= position.x || wall.b.x - WALL_HITBOX_EXTENTS <= position.x) && (
+                   wall.a.x + WALL_HITBOX_EXTENTS >= position.x || wall.a.x - WALL_HITBOX_EXTENTS >= position.x);
+    bool aby = (wall.a.y + WALL_HITBOX_EXTENTS <= position.y || wall.a.y - WALL_HITBOX_EXTENTS <= position.y) && (
+                   wall.b.y + WALL_HITBOX_EXTENTS >= position.y || wall.b.y - WALL_HITBOX_EXTENTS >= position.y);
+    bool bay = (wall.b.y + WALL_HITBOX_EXTENTS <= position.y || wall.b.y - WALL_HITBOX_EXTENTS <= position.y) && (
+                   wall.a.y + WALL_HITBOX_EXTENTS >= position.y || wall.a.y - WALL_HITBOX_EXTENTS >= position.y);
+    return ((abx && aby) || (abx && bay) || (bax && aby) || (bax && bay)) && !(
+               wall.a.x != wall.b.x && wall.a.y != wall.b.y && (
+                   abs((position.x - 1) * ((wall.b.y - wall.a.y) / (wall.b.x - wall.a.x)) + 10 - position.y) >
+                   WALL_HITBOX_EXTENTS && abs(
+                       (position.y - 10) * ((wall.b.x - wall.a.x) / (wall.b.y - wall.a.y)) + 1 - position.x) >
+                   WALL_HITBOX_EXTENTS));
+}
 
+void GMainStateUpdate() {
     if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE)) {
         GPauseStateSet();
     }
@@ -44,27 +60,16 @@ void GMainStateUpdate() {
     moveVec = Vector2Scale(moveVec, MOVE_SPEED);
     moveVec = Vector2Rotate(moveVec, l->rotation);
 
-    double angle = atan2(moveVec.y - oldPos.y, moveVec.x - oldPos.x);
-
     for (int i = 0; i < l->walls->size; i++) {
-    	Wall *w = (Wall *) ListGet(l->walls, i);
-    	Vector2 pos = Vector2Add(l->position, moveVec);
-	bool abx = ((w->a.x + WALL_HITBOX_EXTENTS <= pos.x) || (w->a.x - WALL_HITBOX_EXTENTS <= pos.x)) && ((w->b.x + WALL_HITBOX_EXTENTS >= pos.x) || (w->b.x - WALL_HITBOX_EXTENTS >= pos.x));
-	bool bax = ((w->b.x + WALL_HITBOX_EXTENTS <= pos.x) || (w->b.x - WALL_HITBOX_EXTENTS <= pos.x)) && ((w->a.x + WALL_HITBOX_EXTENTS >= pos.x) || (w->a.x - WALL_HITBOX_EXTENTS >= pos.x));
-	bool aby = ((w->a.y + WALL_HITBOX_EXTENTS <= pos.y) || (w->a.y - WALL_HITBOX_EXTENTS <= pos.y)) && ((w->b.y + WALL_HITBOX_EXTENTS >= pos.y) || (w->b.y - WALL_HITBOX_EXTENTS >= pos.y));
-	bool bay = ((w->b.y + WALL_HITBOX_EXTENTS <= pos.y) || (w->b.y - WALL_HITBOX_EXTENTS <= pos.y)) && ((w->a.y + WALL_HITBOX_EXTENTS >= pos.y) || (w->a.y - WALL_HITBOX_EXTENTS >= pos.y));
-	if ((abx && aby) || (abx && bay) || (bax && aby) || (bax && bay)) {
-		if (w->a.x != w->b.x && w->a.y != w->b.y) {
-			if ((abs((pos.x - 1) * ((w->b.y - w->a.y) / (w->b.x - w->a.x)) + 10 - pos.y) > WALL_HITBOX_EXTENTS) && (abs((pos.y - 10) * ((w->b.x - w->a.x) / (w->b.y - w->a.y)) + 1 - pos.x) > WALL_HITBOX_EXTENTS)) continue;
-		}
-		printf("cos: %f sin: %f rot: %f angle: %f\n", cos(WallGetAngle(*w)), sin(WallGetAngle(*w)), l->rotation, angle);
-		fflush(stdout);
-		moveVec.x *= sin(angle) * cos(WallGetAngle(*w));
-		moveVec.y *= cos(angle) * sin(WallGetAngle(*w));
-		// moveVec.y -= max(WALL_HITBOX_EXTENTS - abs((moveVec.x - 1) * ((w->b.y - w->a.y) / (w->b.x - w->a.x)) + 10 - moveVec.y), 0);
-		// moveVec.x -= max(WALL_HITBOX_EXTENTS - abs((moveVec.y - 10) * ((w->b.x - w->a.x) / (w->b.y - w->a.y)) + 1 - moveVec.x), 0);
-    		// printf("Wall: {Start: {x: %f, y: %f}, End: {x: %f, y: %f}}\n", w->a.x, w->a.y, w->b.x, w->b.y);
-	}
+        Wall *w = ListGet(l->walls, i);
+        Vector2 pos = Vector2Add(l->position, moveVec);
+        double angle = atan2(moveVec.y, moveVec.x);
+        if (IsNearWall(*w, pos)) {
+            printf("oldX: %f oldY: %f newX: %f newY: %f\n", moveVec.x, moveVec.y, moveVec.x * cos(angle) * cos(WallGetAngle(*w)), moveVec.y * sin(angle) * sin(WallGetAngle(*w)));
+            fflush(stdout);
+            moveVec.x *= cos(angle) * cos(WallGetAngle(*w));
+            moveVec.y *= sin(angle) * sin(WallGetAngle(*w));
+        }
     }
     l->position = Vector2Add(l->position, moveVec);
     // RayCastResult moveCheck = HitscanLevel(*l, oldPos, angle, true, true, false); // scan walls and actors
@@ -92,7 +97,7 @@ void GMainStateUpdate() {
         Error("Manually triggered error.");
     }
 
-    l->rotation = wrap(l->rotation, 0, 2*PI);
+    l->rotation = wrap(l->rotation, 0, 2 * PI);
 
     for (int i = 0; i < l->actors->size; i++) {
         Actor *a = (Actor *) ListGet(l->actors, i);
@@ -107,21 +112,21 @@ void GMainStateRender() {
     SDL_SetTextureColorMod(skyTex, sc[0], sc[1], sc[2]);
     free(sc);
 
-    double skyPos = remap(l->rotation, 0, 2*PI, 0, 256);
-    skyPos = (int)skyPos % 256;
+    double skyPos = remap(l->rotation, 0, 2 * PI, 0, 256);
+    skyPos = (int) skyPos % 256;
 
     for (int i = -WindowWidth(); i < WindowWidth() * 3; i += 1) {
         double tuSize = 256.0 / WindowWidth();
-        double tu = (i * tuSize) + skyPos;
+        double tu = i * tuSize + skyPos;
         SDL_Rect src = {fmod(tu, 256), 0, 1, 256};
-        SDL_Rect dest = {i, 0, 1, WindowHeight()/2};
+        SDL_Rect dest = {i, 0, 1, WindowHeight() / 2};
         SDL_RenderCopy(GetRenderer(), skyTex, &src, &dest);
     }
 
     //SDL_RenderClear(GetRenderer());
 
     setColorUint(l->FloorColor);
-    draw_rect(0, WindowHeight()/2, WindowWidth(), WindowHeight()/2);
+    draw_rect(0, WindowHeight() / 2, WindowWidth(), WindowHeight() / 2);
 
 
     for (int col = 0; col < WindowWidth(); col++) {
@@ -145,4 +150,3 @@ void GMainStateSet() {
 void InitSkyTex() {
     skyTex = ToSDLTexture((const unsigned char *) tex_level_sky, FILTER_LINEAR);
 }
-
