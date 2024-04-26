@@ -17,6 +17,7 @@
 
 SDL_Texture *skyTex;
 
+// TODO: Clean this up and move it to Wall.c/h
 bool IsNearWall(Wall wall, Vector2 position) {
     bool abx = (wall.a.x + WALL_HITBOX_EXTENTS <= position.x || wall.a.x - WALL_HITBOX_EXTENTS <= position.x) && (
                    wall.b.x + WALL_HITBOX_EXTENTS >= position.x || wall.b.x - WALL_HITBOX_EXTENTS >= position.x);
@@ -61,6 +62,11 @@ void GMainStateUpdate() {
     moveVec = Vector2Scale(moveVec, MOVE_SPEED);
     moveVec = Vector2Rotate(moveVec, l->rotation);
 
+    /* TODO
+     * - Check for actor collisions too
+     * - Fix it
+     * - Move to a better place so that other functions can use it (such as actor movement)
+    */
     for (int i = 0; i < l->walls->size; i++) {
         Wall *w = ListGet(l->walls, i);
         Vector2 pos = Vector2Add(l->position, moveVec);
@@ -124,8 +130,6 @@ void GMainStateRender() {
         SDL_RenderCopy(GetRenderer(), skyTex, &src, &dest);
     }
 
-    //SDL_RenderClear(GetRenderer());
-
     setColorUint(l->FloorColor);
     draw_rect(0, WindowHeight() / 2, WindowWidth(), WindowHeight() / 2);
 
@@ -134,14 +138,7 @@ void GMainStateRender() {
         RenderCol(l, col);
         RenderActorCol(l, col);
     }
-
-    //char buffer[64];
-    //sprintf(buffer, "Position %.2f, %.2f\nRotation %.4f", l->position.x, l->position.y, l->rotation);
     DPrintF("Position: %.2f, %.2f\nRotation: %.4f", 0xFFFFFFFF, false, l->position.x, l->position.y, l->rotation);
-    //FontDrawString(vec2(20, 20), buffer, 16, 0xFFFFFFFF);
-
-    //sprintf(buffer, "HP %d\nAmmo %d", GetState()->hp, GetState()->ammo);
-    //FontDrawString(vec2(20, HEIGHT - 20 - (24*2)), buffer, 24);
 }
 
 void GMainStateSet() {

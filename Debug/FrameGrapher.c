@@ -32,17 +32,35 @@ void FrameGraphDraw() {
     int x = 10;
     uint color = 0x8000ff00;
     for (int i = 0; i < FRAMEGRAPH_HISTORY_SIZE; i++) {
-        int height = framerates[i] / 2;
+        color = 0x4000ff00;
+        int height = framerates[i]*2;
+
+        if (height > (TARGET_FPS*2)*2) {
+            height = (TARGET_FPS*2)*2;
+        }
+
         if (framerates[i] < FRAMEGRAPH_THRESHOLD_BAD) {
-            color = 0x80ff0000;
+            color = 0x40ff0000;
         } else if (framerates[i] < FRAMEGRAPH_THRESHOLD_GOOD) {
-            color = 0x80ff8000;
+            color = 0x40ff8000;
         }
         setColorUint(color);
-        int y = WindowHeight() - height;
+        int y = WindowHeight() - height - 10;
         draw_rect(x+(i*2), y, 2, height);
     }
+
+    // draw a line at the target frame time
+    setColorUint(0x80808080);
+    int y = WindowHeight() - (TARGET_FPS*2) - 10;
+    draw_rect(x, y, FRAMEGRAPH_HISTORY_SIZE * 2, 2);
+    FontDrawString(vec2(10, y - 5), "Target FPS", 12, 0xff00ffff);
+
+    // draw a line at the bottom
+    setColorUint(0x80808080);
+    draw_rect(x, WindowHeight() - 10, FRAMEGRAPH_HISTORY_SIZE * 2, 2);
+
+    setColorUint(color);
     char fps[20];
     sprintf(fps, "FPS: %.2f", framerates[FRAMEGRAPH_HISTORY_SIZE - 1]);
-    FontDrawString(vec2(10, WindowHeight() - 64), fps, 24, color);
+    FontDrawString(vec2(10, WindowHeight() - 32), fps, 16, color);
 }

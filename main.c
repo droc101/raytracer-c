@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
     }
     SetWindow(w);
 
-    SDL_SetWindowMinimumSize(w, 640, 480);
+    SDL_SetWindowMinimumSize(w, 800, 600);
     SDL_SetWindowMaximumSize(w, 8192, 8192);
 
     SDL_Surface *icon = ToSDLSurface((const unsigned char *) tex_interface_icon, FILTER_LINEAR);

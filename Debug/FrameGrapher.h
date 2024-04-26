@@ -17,7 +17,7 @@
 // Anything between these two is orange
 
 // Enable or disable the frame graph (just the rendering)
-#define FRAMEGRAPH_ENABLE 0
+#define FRAMEGRAPH_ENABLE 1
 
 void FrameGraphUpdate(int ms);
 void FrameGraphDraw();
