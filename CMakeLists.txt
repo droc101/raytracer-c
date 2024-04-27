@@ -50,6 +50,8 @@ add_custom_target(
         run ALL
         COMMAND "python" ${CMAKE_CURRENT_SOURCE_DIR}/Assets/genassets.py ${CMAKE_CURRENT_SOURCE_DIR}/Assets/
         COMMENT "Generating assets"
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Assets/
+        BYPRODUCTS ${CMAKE_CURRENT_SOURCE_DIR}/Assets/Assets.h ${CMAKE_CURRENT_SOURCE_DIR}/Assets/Assets.c
 )
 
 add_dependencies(game run)
