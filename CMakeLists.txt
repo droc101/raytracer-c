@@ -6,6 +6,11 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 --strip -Wl,--gc-sections -fdata-sections -ffunction-sections")
 
+# Add --static flag when building on Windows to include libwinpthread-1.dll
+if (WIN32)
+    set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} --static")
+endif ()
+
 set(SDL2_PATH "${CMAKE_SOURCE_DIR}/SDL2/x86_64-w64-mingw32")
 
 find_package(SDL2 REQUIRED)
@@ -21,7 +26,7 @@ add_executable(game main.c Helpers/Input.h Helpers/Input.c defines.h Helpers/Dra
 )
 
 if (UNIX)
-    target_link_libraries(game ${SDL2_LIBRARY} m SDL2)
+    target_link_libraries(game ${SDL2_LIBRARY} m SDL2) # Link math library on Unix
 elseif (WIN32)
     target_link_libraries(game ${SDL2_LIBRARY})
 endif ()
