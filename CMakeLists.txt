@@ -3,8 +3,8 @@ project(game C)
 
 set(CMAKE_C_STANDARD 11)
 
-set(CMAKE_CXX_FLAGS_DEBUG "-g")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 --strip -Wl,--gc-sections -fdata-sections -ffunction-sections")
+set(CMAKE_C_FLAGS_DEBUG "-g3")
+set(CMAKE_C_FLAGS_RELEASE "-g0 -O3 -s -DNDEBUG -Wl,--gc-sections -fdata-sections -ffunction-sections -Wall")
 
 # Add --static flag when building on Windows to include libwinpthread-1.dll
 if (WIN32)
