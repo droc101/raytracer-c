@@ -2,8 +2,10 @@
 // Created by droc101 on 4/22/2024.
 //
 
+#include <stdio.h>
 #include "GlobalState.h"
 #include "../Structs/Level.h"
+#include "../Assets/AssetReader.h"
 
 GlobalState state;
 
@@ -15,6 +17,7 @@ void InitState() {
     state.frame = 0;
     state.level = CreateLevel(); // empty level so we don't segfault
     state.requestExit = false;
+    StopMusic();
 }
 
 GlobalState *GetState() {
@@ -58,7 +61,57 @@ void SetRenderCallback(void (*RenderGame)()) {
     state.RenderGame = RenderGame;
 }
 
+const byte *music[] = {
+        gzmpg_audio_field
+};
+
 void ChangeLevel(Level *l) {
     DestroyLevel(state.level);
     state.level = l;
+    if (l->MusicID != -1) {
+        ChangeMusic(music[l->MusicID]);
+    } else {
+        StopMusic();
+    }
+}
+
+void ChangeMusic(const byte *asset) {
+
+    if (AssetGetType(asset) != ASSET_TYPE_MP3) {
+        printf("ChangeMusic Error: Asset is not a music file.\n");
+        return;
+    }
+
+    StopMusic(); // stop the current music and free it's data
+    byte *mp3 = DecompressAsset(asset);
+    uint mp3Size = AssetGetSize(asset);
+    Mix_Music *mus = Mix_LoadMUS_RW(SDL_RWFromConstMem(mp3, mp3Size), 1);
+    if (mus == NULLPTR) {
+        printf("Mix_LoadMUS_RW Error: %s\n", Mix_GetError());
+        return;
+    }
+    state.music = mus;
+    Mix_PlayMusic(mus, -1);
+}
+
+void StopMusic() {
+    if (state.music != NULLPTR) { // stop and free the current music
+        Mix_HaltMusic();
+        Mix_FreeMusic(state.music);
+        state.music = NULLPTR; // set to NULL so we don't free it again if this function fails
+    }
+}
+
+void DestroyGlobalState() {
+    DestroyLevel(state.level);
+    if (state.music != NULLPTR) {
+        Mix_HaltMusic();
+        Mix_FreeMusic(state.music);
+    }
+    // free sound effects
+    for (int i = 0; i < 8; i++) {
+        if (state.channels[i] != NULLPTR) {
+            Mix_FreeChunk(state.channels[i]);
+        }
+    }
 }

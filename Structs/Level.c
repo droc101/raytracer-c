@@ -20,6 +20,7 @@ Level *CreateLevel() {
     l->rotation = 0;
     l->SkyColor = 0xff82c5ff;
     l->FloorColor = 0xff36322f;
+    l->MusicID = -1;
     return l;
 }
 

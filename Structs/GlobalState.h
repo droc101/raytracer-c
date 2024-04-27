@@ -28,4 +28,10 @@ void SetRenderCallback(void (*RenderGame)());
 // Set the level
 void ChangeLevel(Level *l);
 
+void ChangeMusic(const byte *asset);
+
+void StopMusic();
+
+void DestroyGlobalState();
+
 #endif //GAME_GLOBALSTATE_H

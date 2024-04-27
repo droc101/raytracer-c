@@ -63,14 +63,14 @@ def mp3_to_bytes(path): # Convert an MP3 file to bytes
 	
  
 	data += int_to_bytes(len(data)) # array size (excluding header)
-	data += int_to_bytes(48000) # bitrate
+	data += int_to_bytes(0) # unused
 	data += int_to_bytes(0) # unused
 	data += int_to_bytes(aid) # Padding
 
 	# check that everything is in the right range
 	for i in range(0, len(data)):
 		if data[i] < 0 or data[i] > 255:
-			print('Error: Pixel data out of range')
+			print('Error: MP3 data out of range')
 			sys.exit(1)
 
 	#data = bytearray(data)
@@ -85,6 +85,43 @@ def mp3_to_bytes(path): # Convert an MP3 file to bytes
 	header.extend(int_to_bytes(decompressed_len)) # Decompressed length
 	header.extend(int_to_bytes(aid)) # Asset ID
 	header.extend(int_to_bytes(1)) # Asset Type (1 = mp3)
+
+	header.extend(data)
+
+	aid += 1
+
+	return header
+
+def wav_to_bytes(path): # Convert an MP3 file to bytes
+	global aid
+	
+	file = open(path, 'rb')
+	data = list(file.read())
+	
+ 
+	data += int_to_bytes(len(data)) # array size (excluding header)
+	data += int_to_bytes(0) # unused
+	data += int_to_bytes(0) # unused
+	data += int_to_bytes(aid) # Padding
+
+	# check that everything is in the right range
+	for i in range(0, len(data)):
+		if data[i] < 0 or data[i] > 255:
+			print('Error: WAV data out of range')
+			sys.exit(1)
+
+	#data = bytearray(data)
+
+	decompressed_len = len(data)
+
+	# Gzip the data
+	data = gzip.compress(bytes(data))
+
+	header = bytearray()
+	header.extend(int_to_bytes(len(data))) # Compressed length
+	header.extend(int_to_bytes(decompressed_len)) # Decompressed length
+	header.extend(int_to_bytes(aid)) # Asset ID
+	header.extend(int_to_bytes(2)) # Asset Type (2 = wav)
 
 	header.extend(data)
 
@@ -137,7 +174,14 @@ def recursive_search(path):
 				count += 1
 				print('Converting ' + path + file)
 				data = mp3_to_bytes(path + file)
-				name = "gzsnd_" + foldername + '_' + file.split('.')[0]
+				name = "gzmpg_" + foldername + '_' + file.split('.')[0]
+				assets_c += bytes_to_c_array(data, name)
+				assets_h += c_header_array(name, len(data))
+			elif file.endswith('.wav'):
+				count += 1
+				print('Converting ' + path + file)
+				data = wav_to_bytes(path + file)
+				name = "gzwav_" + foldername + '_' + file.split('.')[0]
 				assets_c += bytes_to_c_array(data, name)
 				assets_h += c_header_array(name, len(data))
 

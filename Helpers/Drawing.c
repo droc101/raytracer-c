@@ -66,14 +66,19 @@ byte* getColorUint(uint color) {
 
 SDL_Surface* ToSDLSurface(const unsigned char* imageData, char *filterMode) {
 
+    if (AssetGetType(imageData) != ASSET_TYPE_TEXTURE) {
+        printf("Asset is not a texture\n");
+        Error("ToSDLSurface: Asset is not a texture");
+    }
+
     byte *Decompressed = DecompressAsset(imageData);
 
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, filterMode);
 
-    uint size = ReadUintA(Decompressed, 0);
+    //uint size = ReadUintA(Decompressed, 0);
     uint width = ReadUintA(Decompressed, 4);
     uint height = ReadUintA(Decompressed, 8);
-    uint id = ReadUintA(Decompressed, 12);
+    //uint id = ReadUintA(Decompressed, 12);
 
     const byte* pixelData = Decompressed + (sizeof(uint) * 4); // Skip the first 4 bytes
 

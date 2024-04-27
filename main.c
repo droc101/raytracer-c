@@ -25,19 +25,10 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    if (Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
+    if (Mix_OpenAudio(22050, AUDIO_S16, 2, 2048) < 0) {
         printf("Mix_OpenAudio Error: %s\n", Mix_GetError());
         return 1;
     }
-
-    byte *mp3 = DecompressAsset(gzsnd_audio_field);
-    uint mp3Size = AssetGetSize(gzsnd_audio_field);
-    Mix_Music *mus = Mix_LoadMUS_RW(SDL_RWFromConstMem(mp3, mp3Size), 1);
-    if (mus == NULL) {
-        printf("Mix_LoadMUS_RW Error: %s\n", Mix_GetError());
-        return 1;
-    }
-    Mix_PlayMusic(mus, -1);
 
     SDL_Window *w = SDL_CreateWindow("game",SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,DEF_WIDTH, DEF_HEIGHT, SDL_WINDOW_RESIZABLE);
     if (w == NULL) {
@@ -70,6 +61,7 @@ int main(int argc, char *argv[]) {
     byte levelData[] = { 0x00, 0xc0, 0x24, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3f, 0xf0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x24, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3f, 0xf0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3f, 0xf9, 0x21, 0xfb, 0x55, 0x20, 0x6d, 0xdf, 0x03, 0xff, 0xeb, 0x40, 0x34, 0xff, 0x33, 0x28, 0x00, 0x04};
 
     Level *l = LoadLevel(levelData);
+    l->MusicID = 0;
 
     Actor *a = CreateActor(vec2(5, -1), 0, 1);
     ListAdd(l->actors, a);
@@ -126,10 +118,8 @@ int main(int argc, char *argv[]) {
         }
 
     }
-    DestroyLevel(l);
-
-    Mix_FreeMusic(mus);
-
+    printf("Destructing Engine\n");
+    DestroyGlobalState();
     SDL_DestroyRenderer(GetRenderer());
     SDL_DestroyWindow(GetWindow());
     SDL_FreeSurface(icon);

@@ -6,7 +6,8 @@
 #define GAME_DEFINES_H
 
 #include "Helpers/List.h"
-#include "SDL.h"
+#include <SDL.h>
+#include <SDL_mixer.h>
 
 // "boolean"
 #define bool unsigned char // unsigned 8-bit integer (nonzero is true)
@@ -17,6 +18,8 @@
 #define ushort unsigned short // unsigned 16-bit integer
 #define uint unsigned int // unsigned 32-bit integer
 #define ulong unsigned long // unsigned 64-bit integer
+
+#define NULLPTR NULL
 
 // Utility functions are in Structs/Vector2.h
 typedef struct {
@@ -41,6 +44,7 @@ typedef struct {
     double rotation;
     uint SkyColor;
     uint FloorColor;
+    uint MusicID;
 } Level;
 
 // Utility functions are in Structs/ray.h
@@ -61,6 +65,8 @@ typedef struct {
     int maxAmmo;
     ulong frame;
     bool requestExit;
+    Mix_Music *music; // background music
+    Mix_Chunk *channels[8]; // sound effects
 } GlobalState;
 
 // Actor (interactable/moving wall) struct

@@ -11,8 +11,11 @@
 #include "Assets.h"
 
 uint AssetGetSize(const byte *asset) {
-    int offset = 0;
-    return ReadUint(asset, &offset);
+    return ReadUintA(asset, 4);
+}
+
+uint AssetGetType(const byte *asset) {
+    return ReadUintA(asset, 12);
 }
 
 byte *DecompressAsset(const byte *asset) {
@@ -21,7 +24,7 @@ byte *DecompressAsset(const byte *asset) {
     uint compressedSize = ReadUint(asset, &offset);
     uint decompressedSize = ReadUint(asset, &offset); // Read the decompressed size (4 bytes after the compressed size
     uint assetId = ReadUint(asset, &offset); // Read the asset ID (4 bytes after the decompressed size)
-    uint type = ReadUint(asset, &offset); // Read the asset type (4 bytes after the asset ID)
+    //uint type = ReadUint(asset, &offset); // Read the asset type (4 bytes after the asset ID)
 
     if (assetId >= ASSET_COUNT) {
         printf("Asset ID %d is out of range\n", assetId);
@@ -47,7 +50,7 @@ byte *DecompressAsset(const byte *asset) {
         free(decompressedData);
         printf("Failed to initialize zlib stream: %s\n", stream.msg);
         Error("Failed to initialize zlib stream");
-        return NULL;
+        return NULLPTR;
     }
 
     // Decompress the data
@@ -58,7 +61,7 @@ byte *DecompressAsset(const byte *asset) {
             free(decompressedData);
             printf("Failed to decompress zlib stream: %s\n", stream.msg);
             Error("Failed to decompress zlib stream");
-            return NULL;
+            return NULLPTR;
         }
     } while (ret != Z_STREAM_END);
 

@@ -1,5 +1,5 @@
 # raytracer-c
-Old-School first-person raycaster game written in C using [SDL2](https://www.libsdl.org/) for rendering.
+Old-School first-person raycaster game written in C using [SDL2](https://www.libsdl.org/) for rendering and audio, and [zlib](https://www.zlib.net/) for asset compression.
 Runs on Windows and Linux.
 
 ### Setup

@@ -41,7 +41,7 @@ void GMainStateUpdate() {
 
     Level *l = GetState()->level;
 
-    Vector2 oldPos = l->position;
+    //Vector2 oldPos = l->position;
     Vector2 moveVec = vec2(0, 0);
     if (IsKeyPressed(SDL_SCANCODE_W)) {
         moveVec.x += MOVE_SPEED;

@@ -5,34 +5,35 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "List.h"
+#include "../defines.h"
 
 Node* createNode(void *data) {
     Node* newNode = (Node*)malloc(sizeof(Node));
-    if (newNode == NULL) {
+    if (newNode == NULLPTR) {
         printf("List: malloc fail\n");
         exit(1);
     }
     newNode->data = data;
-    newNode->prev = NULL;
-    newNode->next = NULL;
+    newNode->prev = NULLPTR;
+    newNode->next = NULLPTR;
     return newNode;
 }
 
 List* CreateList() {
     List* newList = (List*)malloc(sizeof(List));
-    if (newList == NULL) {
+    if (newList == NULLPTR) {
         printf("List: malloc fail\n");
         exit(1);
     }
-    newList->head = NULL;
-    newList->tail = NULL;
+    newList->head = NULLPTR;
+    newList->tail = NULLPTR;
     newList->size = 0;
     return newList;
 }
 
 void ListAdd(List* list, void *data) {
     Node* newNode = createNode(data);
-    if (list->head == NULL) {
+    if (list->head == NULLPTR) {
         list->head = newNode;
         list->tail = newNode;
     } else {
@@ -44,15 +45,15 @@ void ListAdd(List* list, void *data) {
 }
 
 void ListRemove(List* list, Node* node) {
-    if (node == NULL)
+    if (node == NULLPTR)
         return;
 
-    if (node->prev != NULL)
+    if (node->prev != NULLPTR)
         node->prev->next = node->next;
     else
         list->head = node->next;
 
-    if (node->next != NULL)
+    if (node->next != NULLPTR)
         node->next->prev = node->prev;
     else
         list->tail = node->prev;
@@ -61,7 +62,7 @@ void ListRemove(List* list, Node* node) {
 }
 
 void ListInsertAfter(List* list, Node* prevNode, void *data) {
-    if (prevNode == NULL) {
+    if (prevNode == NULLPTR) {
         printf("List: Previous node cannot be NULL\n");
         return;
     }
@@ -69,7 +70,7 @@ void ListInsertAfter(List* list, Node* prevNode, void *data) {
     Node* newNode = createNode(data);
     newNode->next = prevNode->next;
     newNode->prev = prevNode;
-    if (prevNode->next != NULL)
+    if (prevNode->next != NULLPTR)
         prevNode->next->prev = newNode;
     else
         list->tail = newNode;
@@ -80,11 +81,11 @@ void ListInsertAfter(List* list, Node* prevNode, void *data) {
 void* ListGet(List* list, int index) {
     Node* current = list->head;
     int i = 0;
-    while (current != NULL && i < index) {
+    while (current != NULLPTR && i < index) {
         current = current->next;
         i++;
     }
-    if (current == NULL) {
+    if (current == NULLPTR) {
         printf("List: Index out of bounds\n");
         exit(1);
     }
@@ -93,7 +94,7 @@ void* ListGet(List* list, int index) {
 
 void ListFree(List* list) {
     Node* current = list->head;
-    while (current != NULL) {
+    while (current != NULLPTR) {
         Node* next = current->next;
         free(current);
         current = next;
@@ -103,7 +104,7 @@ void ListFree(List* list) {
 
 void ListFreeWithData(List* list) {
     Node* current = list->head;
-    while (current != NULL) {
+    while (current != NULLPTR) {
         Node* next = current->next;
         free(current->data); // free the node's data too
         free(current);

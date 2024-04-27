@@ -7,9 +7,16 @@
 
 #include "../defines.h"
 
+// Get the **DECOMPRESSED** size of the asset
 uint AssetGetSize(const byte *asset);
+
+uint AssetGetType(const byte *asset);
 
 // Remember to free!
 byte *DecompressAsset(const byte *asset);
+
+#define ASSET_TYPE_TEXTURE 0
+#define ASSET_TYPE_MP3 1
+#define ASSET_TYPE_WAV 2
 
 #endif //GAME_ASSETREADER_H
