@@ -88,7 +88,7 @@ typedef struct {
 #define DEF_HEIGHT 720
 
 // Player movement speed
-#define MOVE_SPEED 0.225
+#define MOVE_SPEED 0.125
 #define ROT_SPEED 0.04
 
 #endif //GAME_DEFINES_H
