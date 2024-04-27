@@ -7,7 +7,9 @@ Download [SDL2 2.30.2 w64](https://github.com/libsdl-org/SDL/releases/download/r
 and extract it to the root of the project as "SDL2".
 
 ### Notes
-On Windows, you'll need to copy `SDL2/x86_64-w64-mingw32/bin/SDL2.dll` into your output directory. On Linux, you just need the sdl2 shared library installed (refer to your specific distro for that)
+On Windows, you'll need to copy `SDL2/x86_64-w64-mingw32/bin/SDL2.dll` and `zlib/bin/libzlib1.dll` into your output directory. 
+
+On Linux, you just need the sdl2 and zlib shared libraries installed (refer to your specific distro for that)
 
 ### Tested on
 - Windows 10 and 11
