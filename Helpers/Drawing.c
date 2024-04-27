@@ -64,24 +64,18 @@ byte* getColorUint(uint color) {
     return buf;
 }
 
-// TODO: Cache textures based on their Asset ID (so we don't have to decompress them and totally not because i can't figure out how to free them without segfaulting :p)
 SDL_Surface* ToSDLSurface(const unsigned char* imageData, char *filterMode) {
 
     byte *Decompressed = DecompressAsset(imageData);
 
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, filterMode);
 
-    //printf("Decompressed: %x %x %x %x\n", Decompressed[4], Decompressed[5], Decompressed[6], Decompressed[7]);
-    //fflush(stdout);
     uint size = ReadUintA(Decompressed, 0);
     uint width = ReadUintA(Decompressed, 4);
     uint height = ReadUintA(Decompressed, 8);
     uint id = ReadUintA(Decompressed, 12);
-    //printf("Size: %d, Width: %d, Height: %d, ID: %d\n", size, width, height, id);
-    //fflush(stdout);
-    const byte* pixelData = Decompressed + (sizeof(uint) * 4); // Skip the first 4 bytes
 
-    //printf("Width: %d, Height: %d\n", width, height);
+    const byte* pixelData = Decompressed + (sizeof(uint) * 4); // Skip the first 4 bytes
 
     SDL_Surface* surface = SDL_CreateRGBSurfaceFrom((void*)pixelData, width, height, 32, width * 4, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
     if (!surface) {
@@ -99,7 +93,10 @@ SDL_Texture* ToSDLTexture(const unsigned char* imageData, char *filterMode) {
     SDL_Surface* surface = ToSDLSurface(imageData, filterMode); // if this fails, it will call a _NoReturn function, so no need to check
 
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    byte *pixels = surface->pixels;
+    pixels -= 16; // Move back to the start of the decompressed data
     SDL_FreeSurface(surface); // Free the surface as it's not needed anymore
+    free(pixels); // Free the decompressed data as it's not needed anymore
     if (!texture) {
         printf("Failed to create texture: %s\n", SDL_GetError());
         Error("ToSDLTexture: Failed to create texture");

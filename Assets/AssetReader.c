@@ -9,19 +9,20 @@
 #include "../Helpers/Error.h"
 #include "../Helpers/LevelLoader.h" // for ReadUInt
 
-byte *DecompressAsset(byte *asset) {
+byte *DecompressAsset(const byte *asset) {
     int offset = 0;
     // Read the first 4 bytes of the asset to get the size of the compressed data
     uint compressedSize = ReadUint(asset, &offset);
     uint decompressedSize = ReadUint(asset, &offset); // Read the decompressed size (4 bytes after the compressed size
+    uint assetId = ReadUint(asset, &offset); // Read the asset ID (4 bytes after the decompressed size)
+    uint type = ReadUint(asset, &offset); // Read the asset type (4 bytes after the asset ID)
 
-    //printf("Compressed size: %d\n", compressedSize);
-    //printf("Decompressed size: %d\n", decompressedSize);
-
-    // Skip the first 8 bytes (4 for compressed size, 4 for decompressed size)
-    asset += 8;
-
-    //printf("First few bytes of compressed data: %x %x %x %x\n", asset[0], asset[1], asset[2], asset[3]);
+    if (assetId >= ASSET_COUNT) {
+        printf("Asset ID %d is out of range\n", assetId);
+        Error("Asset ID out of range");
+        return NULL;
+    }
+    asset += 16; // skip header
 
     // Allocate memory for the decompressed data
     byte *decompressedData = (byte *)malloc(decompressedSize);
@@ -57,8 +58,6 @@ byte *DecompressAsset(byte *asset) {
 
     // Clean up the zlib stream
     inflateEnd(&stream);
-
-    //printf("First few bytes of decompressed data: %x %x %x %x\n", decompressedData[0], decompressedData[1], decompressedData[2], decompressedData[3]);
 
     return decompressedData;
 }
