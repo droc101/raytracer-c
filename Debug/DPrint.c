@@ -17,10 +17,10 @@ void DPrint(char *str, uint color) {
     DPrintYPos += FontDrawString((Vector2) {10, DPrintYPos}, str, 16, color).y;
 }
 
-void DPrintF(char *str, uint color, bool con, ...) {
+void DPrintF(char *str, uint color, bool con, int ac, ...) {
     char buffer[256];
     va_list args;
-    va_start(args, con);
+    va_start(args, ac);
     vsprintf(buffer, str, args);
     va_end(args);
     DPrint(buffer, color);
