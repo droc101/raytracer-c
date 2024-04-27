@@ -30,3 +30,6 @@
 
 # CMake
 cmake-build-*/
+
+# SDL2 files
+/SDL2/
