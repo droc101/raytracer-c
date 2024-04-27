@@ -30,7 +30,7 @@ void FrameGraphDraw() {
     if (!FRAMEGRAPH_ENABLE) { return; }
     SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_BLEND);
     int x = 10;
-    uint color = 0x8000ff00;
+    uint color;
     for (int i = 0; i < FRAMEGRAPH_HISTORY_SIZE; i++) {
         color = 0x4000ff00;
         int height = framerates[i]*2;

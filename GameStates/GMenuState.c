@@ -66,18 +66,18 @@ void GMenuStateRender() {
     RayCastResult rc = Intersect(*tWall, tPlayerPos, tPlayerRot);
     if (rc.Collided) {
         setColorUint(0xFFFF00FF);
-        draw_rect(rc.CollisonPoint.x - 5, rc.CollisonPoint.y - 5, 10, 10);
+        draw_rect(rc.CollisionPoint.x - 5, rc.CollisionPoint.y - 5, 10, 10);
 
-        Vector2 PushedPos = PushPointOutOfWallHitbox(*tWall, vec2o(rc.CollisonPoint.x, rc.CollisonPoint.y, tPlayerPos.x, tPlayerPos.y));
+        Vector2 PushedPos = PushPointOutOfWallHitbox(*tWall, vec2o(rc.CollisionPoint.x, rc.CollisionPoint.y, tPlayerPos.x, tPlayerPos.y));
         setColorUint(0xFF000000);
         draw_rect(PushedPos.x - 5, PushedPos.y - 5, 10, 10);
 
         char buffer[256];
-        sprintf(buffer, "Collision Point: %f, %f\nPushed Point: %f, %f", rc.CollisonPoint.x, rc.CollisonPoint.y, PushedPos.x, PushedPos.y, 0xFF00FF00);
+        sprintf(buffer, "Collision Point: %f, %f\nPushed Point: %f, %f", rc.CollisionPoint.x, rc.CollisionPoint.y, PushedPos.x, PushedPos.y, 0xFF00FF00);
         FontDrawString(vec2(20, 200), buffer, 16, 0xFF00FF00);
 
         setColorUint(0xFF0000FF);
-        SDL_RenderDrawLine(GetRenderer(), tPlayerPos.x, tPlayerPos.y, rc.CollisonPoint.x, rc.CollisonPoint.y);
+        SDL_RenderDrawLine(GetRenderer(), tPlayerPos.x, tPlayerPos.y, rc.CollisionPoint.x, rc.CollisionPoint.y);
     } else {
         FontDrawString(vec2(20, 200), "No Collision", 16, 0xFF808080);
         Vector2 dir = vec2(cos(tPlayerRot), sin(tPlayerRot));

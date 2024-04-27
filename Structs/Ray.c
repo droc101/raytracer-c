@@ -30,7 +30,7 @@ RayCastResult Intersect(Wall wall, Vector2 from, double direction)
         Vector2 colPoint = vec2(intersectionX, intersectionY);
         RayCastResult rr;
         rr.Collided = true;
-        rr.CollisonPoint = colPoint;
+        rr.CollisionPoint = colPoint;
         rr.CollisionWall = wall;
         return rr;
     }
@@ -50,7 +50,7 @@ RayCastResult HitscanLevel(Level l, Vector2 pos, double angle, bool scanWalls, b
             Wall *w = (Wall *) ListGet(l.walls, i);
             RayCastResult r = Intersect(*w, pos, angle);
             if (r.Collided) {
-                double dist = Vector2Distance(l.position, r.CollisonPoint);
+                double dist = Vector2Distance(l.position, r.CollisionPoint);
                 if (dist < closestDist) {
                     closestDist = dist;
                     closestResult = r;
@@ -68,7 +68,7 @@ RayCastResult HitscanLevel(Level l, Vector2 pos, double angle, bool scanWalls, b
             Wall w = GetTransformedWall(a);
             RayCastResult r = Intersect(w, pos, angle);
             if (r.Collided) {
-                double dist = Vector2Distance(l.position, r.CollisonPoint);
+                double dist = Vector2Distance(l.position, r.CollisionPoint);
                 if (dist < closestDist) {
                     closestDist = dist;
                     closestResult = r;

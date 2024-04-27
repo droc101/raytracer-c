@@ -73,7 +73,6 @@ SDL_Surface* ToSDLSurface(const unsigned char* imageData, char *filterMode) {
     if (!surface) {
         printf("Failed to create surface: %s\n", SDL_GetError());
         Error("ToSDLTexture: Failed to create surface");
-        return NULL;
     }
 
     return surface;
@@ -82,19 +81,13 @@ SDL_Surface* ToSDLSurface(const unsigned char* imageData, char *filterMode) {
 SDL_Texture* ToSDLTexture(const unsigned char* imageData, char *filterMode) {
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, filterMode);
 
-    SDL_Surface* surface = ToSDLSurface(imageData, filterMode);
-    if (!surface) {
-        printf("Failed to create surface: %s\n", SDL_GetError());
-        Error("ToSDLTexture: Failed to create surface");
-        return NULL;
-    }
+    SDL_Surface* surface = ToSDLSurface(imageData, filterMode); // if this fails, it will call a _NoReturn function, so no need to check
 
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
     SDL_FreeSurface(surface); // Free the surface as it's not needed anymore
     if (!texture) {
         printf("Failed to create texture: %s\n", SDL_GetError());
         Error("ToSDLTexture: Failed to create texture");
-        return NULL;
     }
 
     return texture;
@@ -125,7 +118,6 @@ SDL_Texture *GetScreenshot() {
     if (!ss) {
         printf("Failed to create surface: %s\n", SDL_GetError());
         Error("GetScreenshot: Failed to create surface");
-        return NULL;
     }
 
     SDL_RenderReadPixels(renderer, NULL, SDL_PIXELFORMAT_ARGB8888, ss->pixels, ss->pitch);
@@ -134,7 +126,6 @@ SDL_Texture *GetScreenshot() {
     if (!texture) {
         printf("Failed to create texture: %s\n", SDL_GetError());
         Error("GetScreenshot: Failed to create texture");
-        return NULL;
     }
 
     return texture;

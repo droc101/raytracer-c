@@ -23,9 +23,7 @@ void GPauseStateUpdate() {
 
 void GPauseStateRender() {
     SDL_RenderCopy(GetRenderer(), pauseTexture, NULL, NULL);
-
     FontDrawString(vec2(20, 150), "Game Paused\nPress escape to resume", 32, 0xFFFFFFFF);
-
 }
 
 void GPauseStateSet() {

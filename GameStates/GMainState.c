@@ -10,7 +10,6 @@
 #include "../Helpers/Error.h"
 #include "../Helpers/MathEx.h"
 #include "../Helpers/Drawing.h"
-#include "../Helpers/Font.h"
 #include "../Debug/DPrint.h"
 
 #include "../GameStates/GPauseState.h"
@@ -29,8 +28,8 @@ bool IsNearWall(Wall wall, Vector2 position) {
                    wall.a.y + WALL_HITBOX_EXTENTS >= position.y || wall.a.y - WALL_HITBOX_EXTENTS >= position.y);
     return ((abx && aby) || (abx && bay) || (bax && aby) || (bax && bay)) && !(
                wall.a.x != wall.b.x && wall.a.y != wall.b.y && (
-                   abs((position.x - 1) * ((wall.b.y - wall.a.y) / (wall.b.x - wall.a.x)) + 10 - position.y) >
-                   WALL_HITBOX_EXTENTS && abs(
+                   fabs((position.x - 1) * ((wall.b.y - wall.a.y) / (wall.b.x - wall.a.x)) + 10 - position.y) >
+                   WALL_HITBOX_EXTENTS && fabs(
                        (position.y - 10) * ((wall.b.x - wall.a.x) / (wall.b.y - wall.a.y)) + 1 - position.x) >
                    WALL_HITBOX_EXTENTS));
 }
@@ -81,11 +80,11 @@ void GMainStateUpdate() {
     l->position = Vector2Add(l->position, moveVec);
     // RayCastResult moveCheck = HitscanLevel(*l, oldPos, angle, true, true, false); // scan walls and actors
     // if (moveCheck.Collided) {
-    //     double distance = fabs(Vector2Distance(oldPos, moveCheck.CollisonPoint));
+    //     double distance = fabs(Vector2Distance(oldPos, moveCheck.CollisionPoint));
     //     if (distance <= WALL_HITBOX_EXTENTS) {
     //         // push 0.5 units out of the wall
     //         l->position = PushPointOutOfWallHitbox(moveCheck.CollisionWall,
-    //                                                vec2o(moveCheck.CollisonPoint.x, moveCheck.CollisonPoint.y,
+    //                                                vec2o(moveCheck.CollisionPoint.x, moveCheck.CollisionPoint.y,
     //                                                      l->position.x, l->position.y));
     //     } else {
     //         l->position = moveVec; // not close enough to the wall to collide

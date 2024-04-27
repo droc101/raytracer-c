@@ -14,7 +14,7 @@
 // Thresholds for coloring the graph
 #define FRAMEGRAPH_THRESHOLD_GOOD 60 // Anything above this is good (green)
 #define FRAMEGRAPH_THRESHOLD_BAD 30 // Anything below this is bad (red)
-// Anything between these two is orange
+// Anything between these two are orange
 
 // Enable or disable the frame graph (just the rendering)
 #define FRAMEGRAPH_ENABLE 1

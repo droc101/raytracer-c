@@ -7,7 +7,6 @@
 #include "Error.h"
 #include "Drawing.h"
 #include "Font.h"
-#include "../Structs/Vector2.h"
 
 _Noreturn void Error(char* error) {
     FontDrawString(vec2(20, 20), error, 32, 0xFFFF0000);

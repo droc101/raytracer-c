@@ -45,7 +45,7 @@ void ListFree(List* list);
 // Free the list structure and the data
 void ListFreeWithData(List* list);
 
-// Get the size of the list (you coyld also use list->size, that would be faster)
+// Get the size of the list (you could also use list->size, that would be faster)
 int ListGetSize(List* list);
 
 #endif //GAME_LIST_H

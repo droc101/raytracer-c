@@ -45,7 +45,7 @@ typedef struct {
 
 // Utility functions are in Structs/ray.h
 typedef struct {
-    Vector2 CollisonPoint;
+    Vector2 CollisionPoint;
     bool Collided;
     Wall CollisionWall;
 } RayCastResult;

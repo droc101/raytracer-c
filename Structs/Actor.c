@@ -9,7 +9,7 @@ void ActorInit(Actor *this) {}
 void ActorUpdate(Actor *this) {}
 void ActorDestroy(Actor *this) {}
 
-#include "../actor/TestActor.h"
+#include "../Actor/TestActor.h"
 
 void(*ActorInitFuncs[])(Actor *) = {
         ActorInit,
