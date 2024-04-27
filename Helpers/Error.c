@@ -11,6 +11,6 @@
 _Noreturn void Error(char* error) {
     FontDrawString(vec2(20, 20), error, 32, 0xFFFF0000);
     SDL_RenderPresent(GetRenderer());
-    SDL_Delay(5000);
+    //SDL_Delay(5000);
     exit(1);
 }

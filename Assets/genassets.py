@@ -4,33 +4,63 @@ import os
 import sys
 import PIL
 from PIL import Image
+import gzip
+
+aid = 0
+
+def int_to_bytes(i): # Convert an integer to bytes big endian, 4 bytes
+	return [(i >> 24) & 0xFF, (i >> 16) & 0xFF, (i >> 8) & 0xFF, i & 0xFF]
 
 def png_to_bytes(path): # Convert a PNG file to bytes
+	global aid
 	img = Image.open(path)
 	img = img.convert('RGBA')
 	img_dta = img.getdata()
 	data = []
-
-	data.append(img.width * img.height) # array size (excluding header)
-	data.append(img.width) # width
-	data.append(img.height) # height
-	data.append(0) # Padding
+ 
+	data += int_to_bytes(img.width * img.height) # array size (excluding header)
+	data += int_to_bytes(img.width) # width
+	data += int_to_bytes(img.height) # height
+	data += int_to_bytes(aid) # Padding
+	aid += 1
 
 	for pixel in img_dta:
-		data.append((pixel[3] << 24) | (pixel[0] << 16) | (pixel[1] << 8) | pixel[2])
-	return data
+		data.append(pixel[0])
+		data.append(pixel[1])
+		data.append(pixel[2])
+		data.append(pixel[3])
+
+	# check that everything is in the right range
+	for i in range(0, len(data)):
+		if data[i] < 0 or data[i] > 255:
+			print('Error: Pixel data out of range')
+			sys.exit(1)
+
+	#data = bytearray(data)
+
+	decompressed_len = len(data)
+
+	# Gzip the data
+	data = gzip.compress(bytes(data))
+
+	header = bytearray()
+	header.extend(int_to_bytes(len(data)))
+	header.extend(int_to_bytes(decompressed_len))
+
+	header.extend(data)
+	return header
 
 def bytes_to_c_array(data, name): # Convert the bytes to a C array (for the .c file)
-	output = 'const unsigned int ' + name + '[] = {\n'
+	output = 'const unsigned char ' + name + '[] = {\n'
 	for i in range(0, len(data)):
-		output += hex(data[i]) + ', '
+		output += "0x{:02x}".format(data[i]) + ', '
 		if i % 16 == 15:
 			output += '\n'
 	output += '};\n'
 	return output
 
 def c_header_array(name, size): # Generate the header for the array (the actual array is in the .c file)
-	return 'extern const unsigned int ' + name + '[];\n'
+	return 'extern const unsigned char ' + name + '[];\n'
 
 path = "./"
 
@@ -58,7 +88,7 @@ def recursive_search(path):
 				count += 1
 				print('Converting ' + path + file)
 				data = png_to_bytes(path + file)
-				name = "tex_" + foldername + '_' + file.split('.')[0]
+				name = "gztex_" + foldername + '_' + file.split('.')[0]
 				assets_c += bytes_to_c_array(data, name)
 				assets_h += c_header_array(name, len(data))
 

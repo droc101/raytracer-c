@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
     SDL_SetWindowMinimumSize(w, 800, 600);
     SDL_SetWindowMaximumSize(w, 8192, 8192);
 
-    SDL_Surface *icon = ToSDLSurface((const unsigned char *) tex_interface_icon, FILTER_LINEAR);
+    SDL_Surface *icon = ToSDLSurface((const unsigned char *) gztex_interface_icon, FILTER_LINEAR);
     SDL_SetWindowIcon(w, icon);
 
     SDL_Renderer *tr = SDL_CreateRenderer(GetWindow(), -1, SDL_RENDERER_ACCELERATED);

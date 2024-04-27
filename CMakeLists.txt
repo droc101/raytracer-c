@@ -12,9 +12,14 @@ if (WIN32)
 endif ()
 
 set(SDL2_PATH "${CMAKE_SOURCE_DIR}/SDL2/x86_64-w64-mingw32")
+set(ZLIB_ROOT "${CMAKE_SOURCE_DIR}/zlib")
+
 
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIR})
+
+find_package(ZLIB REQUIRED)
+include_directories(${ZLIB_INCLUDE_DIRS})
 
 add_executable(game main.c Helpers/Input.h Helpers/Input.c defines.h Helpers/Drawing.h Helpers/Drawing.c Assets/Assets.h Assets/Assets.c Structs/Vector2.h Structs/Vector2.c Helpers/MathEx.h Helpers/MathEx.c Structs/Ray.h Structs/Ray.c Structs/Wall.h Structs/Wall.c Helpers/List.h Helpers/List.c Structs/Level.h Structs/Level.c Helpers/Font.c Helpers/Font.h Helpers/Error.c Helpers/Error.h Helpers/LevelLoader.c Helpers/LevelLoader.h Structs/GlobalState.c Structs/GlobalState.h GameStates/GMainState.c GameStates/GMainState.h GameStates/GMenuState.c GameStates/GMenuState.h Structs/Actor.c Structs/Actor.h Actor/TestActor.c Actor/TestActor.h GameStates/GPauseState.c GameStates/GPauseState.h
         Debug/FrameGrapher.c
@@ -23,11 +28,13 @@ add_executable(game main.c Helpers/Input.h Helpers/Input.c defines.h Helpers/Dra
         Debug/DPrint.h
         Helpers/Timing.c
         Helpers/Timing.h
+        Assets/AssetReader.c
+        Assets/AssetReader.h
 )
 
 if (UNIX)
-    target_link_libraries(game ${SDL2_LIBRARY} m SDL2) # Link math library on Unix
+    target_link_libraries(game ${SDL2_LIBRARY} ${ZLIB_LIBRARIES} m SDL2 ZLIB) # Link math library on Unix
 elseif (WIN32)
-    target_link_libraries(game ${SDL2_LIBRARY})
+    target_link_libraries(game ${SDL2_LIBRARY} ${ZLIB_LIBRARIES})
 endif ()
 

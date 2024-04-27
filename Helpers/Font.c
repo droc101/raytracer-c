@@ -7,13 +7,14 @@
 #include "SDL.h"
 #include "Drawing.h"
 #include "../assets/Assets.h"
+#include "../Assets/AssetReader.h"
 
 SDL_Texture *fontTexture;
 
 const char fontChars[] = "abcdefghijklmnopqrstuvwxyz0123456789.:-,/\\|[]{}();'\"<>`~!@#$%^&*()_=+?";
 
 void FontInit() {
-    fontTexture = ToSDLTexture((const unsigned char *) tex_interface_font, FILTER_LINEAR);
+    fontTexture = ToSDLTexture((const unsigned char *) gztex_interface_font, FILTER_LINEAR);
 }
 
 int findChar(char target) {
