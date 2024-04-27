@@ -32,6 +32,8 @@ void ChangeMusic(const byte *asset);
 
 void StopMusic();
 
+void PlaySoundEffect(byte *asset);
+
 void DestroyGlobalState();
 
 #endif //GAME_GLOBALSTATE_H

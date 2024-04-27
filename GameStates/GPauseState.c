@@ -15,6 +15,7 @@ SDL_Texture *pauseTexture;
 
 void GPauseStateUpdate() {
     if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE)) {
+        PlaySoundEffect(gzwav_sfx_popdown);
         SDL_DestroyTexture(pauseTexture); // free the screenshot texture (we don't want to leak memory)
         // change to the main game state
         GMainStateSet();
@@ -27,6 +28,7 @@ void GPauseStateRender() {
 }
 
 void GPauseStateSet() {
+    PlaySoundEffect(gzwav_sfx_popup);
     pauseTexture = GetScreenshot();
     SetRenderCallback(GPauseStateRender);
     SetUpdateCallback(GPauseStateUpdate);

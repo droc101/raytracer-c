@@ -9,6 +9,10 @@
 
 GlobalState state;
 
+void ChannelFinished(int channel) { // callback for when a channel finishes playing (so we can free it)
+    state.channels[channel] = NULLPTR;
+}
+
 void InitState() {
     state.hp = 100;
     state.maxHp = 100;
@@ -18,6 +22,7 @@ void InitState() {
     state.level = CreateLevel(); // empty level so we don't segfault
     state.requestExit = false;
     StopMusic();
+    Mix_ChannelFinished(ChannelFinished);
 }
 
 GlobalState *GetState() {
@@ -100,6 +105,31 @@ void StopMusic() {
         Mix_FreeMusic(state.music);
         state.music = NULLPTR; // set to NULL so we don't free it again if this function fails
     }
+}
+
+void PlaySoundEffect(byte *asset) {
+    if (AssetGetType(asset) != ASSET_TYPE_WAV) {
+        printf("PlaySoundEffect Error: Asset is not a sound effect file.\n");
+        return;
+    }
+
+    byte *wav = DecompressAsset(asset);
+    uint wavSize = AssetGetSize(asset);
+    Mix_Chunk *chunk = Mix_LoadWAV_RW(SDL_RWFromConstMem(wav, wavSize), 1);
+    if (chunk == NULLPTR) {
+        printf("Mix_LoadWAV_RW Error: %s\n", Mix_GetError());
+        return;
+    }
+    for (int i = 0; i < 8; i++) {
+        if (state.channels[i] == NULLPTR) {
+            state.channels[i] = chunk;
+            Mix_PlayChannel(i, chunk, 0);
+            return;
+        }
+    }
+    printf("PlaySoundEffect Error: No available channels.\n");
+    Mix_FreeChunk(chunk);
+
 }
 
 void DestroyGlobalState() {
