@@ -137,8 +137,7 @@ void GMainStateRender() {
         RenderCol(l, col);
         RenderActorCol(l, col);
     }
-    DPrintF("Position: (%.2f, %.2f)\nRotation: %.4f (%.2fdeg)", 0xFFFFFFFF, false, l->position.x, l->position.y, l->rotation,
-            radToDeg(l->rotation));
+    DPrintF("Position: (%.2f, %.2f)\nRotation: %.4f (%.2fdeg)", 0xFFFFFFFF, false, l->position.x, l->position.y, l->rotation, radToDeg(l->rotation));
 }
 
 void GMainStateSet() {
