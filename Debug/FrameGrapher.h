@@ -16,8 +16,15 @@
 #define FRAMEGRAPH_THRESHOLD_BAD 30 // Anything below this is bad (red)
 // Anything between these two are orange
 
+// Enable or disable capping the graph at 2x the target FPS
+#define FRAMEGRAPH_ENABLE_CAPPING
+
+// How much to scale the graph by (60fps target and 2x scale makes it a nice square)
+#define FRAMEGRAPH_V_SCALE 2
+
 // Enable or disable the frame graph (just the rendering)
 #define FRAMEGRAPH_ENABLE 1
+
 
 void FrameGraphUpdate(int ns);
 void FrameGraphDraw();
