@@ -47,11 +47,6 @@ byte *DecompressAsset(const byte *asset) {
         return AssetCache[assetId];
     }
 
-    if (assetId >= ASSET_COUNT) {
-        printf("Asset ID %d is out of range\n", assetId);
-        Error("Asset ID out of range");
-        return NULL;
-    }
     asset += 16; // skip header
 
     // Allocate memory for the decompressed data
