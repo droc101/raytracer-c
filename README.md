@@ -3,7 +3,7 @@ Old-School first-person raycaster game written in C using [SDL2](https://www.lib
 Runs on Windows and Linux.
 
 ### Setup
-Download [SDL2 2.30.2 w64](https://github.com/libsdl-org/SDL/releases/download/release-2.30.2/SDL2-2.30.2-win32-x64.zip)
+Download [SDL2 2.30.2 w64](https://github.com/libsdl-org/SDL/releases/download/release-2.30.2/SDL2-devel-2.30.2-mingw.zip)
 and extract it to the root of the project as "SDL2".
 
 ### Notes
