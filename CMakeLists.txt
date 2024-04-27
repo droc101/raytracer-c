@@ -16,6 +16,8 @@ add_executable(game main.c Helpers/Input.h Helpers/Input.c defines.h Helpers/Dra
         Debug/FrameGrapher.h
         Debug/DPrint.c
         Debug/DPrint.h
+        Helpers/Timing.c
+        Helpers/Timing.h
 )
 
 if (UNIX)

@@ -18,10 +18,10 @@ void FG_PushIntoArray(double value) {
     framerates[FRAMEGRAPH_HISTORY_SIZE-1] = value;
 }
 
-void FrameGraphUpdate(int ms) {
+void FrameGraphUpdate(int ns) {
     if (GetState()->frame % FRAMEGRAPH_INTERVAL == 0) {
-        if (ms == 0) { ms = 1; }
-        double fps = 1000 / ms;
+        if (ns == 0) { ns = 1; }
+        double fps = 1000000000.0 / ns;
         FG_PushIntoArray(fps);
     }
 }
@@ -61,6 +61,6 @@ void FrameGraphDraw() {
 
     setColorUint(color);
     char fps[20];
-    sprintf(fps, "FPS: %.0f", framerates[FRAMEGRAPH_HISTORY_SIZE - 1]);
+    sprintf(fps, "FPS: %.2f", framerates[FRAMEGRAPH_HISTORY_SIZE - 1]);
     FontDrawString(vec2(10, WindowHeight() - 32), fps, 16, color);
 }

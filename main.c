@@ -14,6 +14,7 @@
 #include "Debug/DPrint.h"
 
 #include "Structs/Vector2.h"
+#include "Helpers/Timing.h"
 
 int main(int argc, char *argv[]) {
     printf("Build time: %s at %s\n", __DATE__, __TIME__);
@@ -69,7 +70,7 @@ int main(int argc, char *argv[]) {
     bool quit = false;
     ulong frameStart, frameTime;
     while (!quit) {
-        frameStart = SDL_GetTicks64();
+        frameStart = GetTimeNs();
 
         while (SDL_PollEvent(&e) != 0) {
             if (e.type == SDL_QUIT) {
@@ -102,10 +103,11 @@ int main(int argc, char *argv[]) {
             quit = true;
         }
 
-        frameTime = SDL_GetTicks64() - frameStart;
+        frameTime = GetTimeNs() - frameStart;
         FrameGraphUpdate(frameTime);
-        if (frameTime < TARGET_MS) {
-            SDL_Delay(TARGET_MS - frameTime);
+        if (frameTime < TARGET_NS) {
+            ulong sleepTime = (TARGET_NS - frameTime) / 1000000;
+            SDL_Delay(sleepTime);
         }
 
     }

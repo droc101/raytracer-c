@@ -81,6 +81,7 @@ typedef struct {
 // Target frame rate (the game is tied to this :D)
 #define TARGET_FPS 60
 #define TARGET_MS (1000 / TARGET_FPS)
+#define TARGET_NS (1000000000 / TARGET_FPS) // nanoseconds because precision
 
 // Default window size
 #define DEF_WIDTH 1280

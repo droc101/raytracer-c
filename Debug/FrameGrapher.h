@@ -19,7 +19,7 @@
 // Enable or disable the frame graph (just the rendering)
 #define FRAMEGRAPH_ENABLE 1
 
-void FrameGraphUpdate(int ms);
+void FrameGraphUpdate(int ns);
 void FrameGraphDraw();
 
 #endif //GAME_FRAMEGRAPHER_H
