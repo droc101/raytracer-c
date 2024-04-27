@@ -7,7 +7,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "../Helpers/Error.h"
-#include "../Helpers/LevelLoader.h" // for ReadUInt
+#include "../Helpers/DataReader.h"
+#include "Assets.h"
 
 byte *DecompressAsset(const byte *asset) {
     int offset = 0;

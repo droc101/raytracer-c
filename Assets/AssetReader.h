@@ -8,6 +8,6 @@
 #include "../defines.h"
 
 // Remember to free!
-byte *DecompressAsset(byte *asset);
+byte *DecompressAsset(const byte *asset);
 
 #endif //GAME_ASSETREADER_H

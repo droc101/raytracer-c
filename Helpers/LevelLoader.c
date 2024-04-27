@@ -6,51 +6,7 @@
 #include "LevelLoader.h"
 #include "Error.h"
 #include "../Structs/Actor.h"
-
-// TODO: Move these functions to a more appropriate file (they are now shared between LevelLoader, Drawing, and AssetReader)
-
-double ReadDouble(byte *data, int *offset) {
-    double d;
-    memcpy(&d, data + *offset, sizeof(double));
-    *offset += sizeof(double);
-
-    // Reverse the byte order
-    for (int i = 0; i < sizeof(double) / 2; i++) {
-        byte temp = ((byte *) &d)[i];
-        ((byte *) &d)[i] = ((byte *) &d)[sizeof(double) - i - 1];
-        ((byte *) &d)[sizeof(double) - i - 1] = temp;
-    }
-
-    return d;
-}
-
-uint ReadUint(byte *data, int *offset) {
-    uint i;
-    memcpy(&i, data + *offset, sizeof(uint));
-    *offset += sizeof(uint);
-
-    // convert to little endian
-    i = ((i >> 24) & 0xff) | // move byte 3 to byte 0
-        ((i << 8) & 0xff0000) | // move byte 1 to byte 2
-        ((i >> 8) & 0xff00) | // move byte 2 to byte 1
-        ((i << 24) & 0xff000000); // byte 0 to byte 3
-
-    return i;
-}
-
-// TODO: Find a better name for this function
-uint ReadUintA(byte *data, int offset) {
-    uint i;
-    memcpy(&i, data + offset, sizeof(uint));
-
-    // convert to little endian
-    i = ((i >> 24) & 0xff) | // move byte 3 to byte 0
-        ((i << 8) & 0xff0000) | // move byte 1 to byte 2
-        ((i >> 8) & 0xff00) | // move byte 2 to byte 1
-        ((i << 24) & 0xff000000); // byte 0 to byte 3
-
-    return i;
-}
+#include "DataReader.h"
 
 Level *LoadLevel(byte *data) {
     Level *l = CreateLevel();

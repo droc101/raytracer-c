@@ -30,6 +30,8 @@ add_executable(game main.c Helpers/Input.h Helpers/Input.c defines.h Helpers/Dra
         Helpers/Timing.h
         Assets/AssetReader.c
         Assets/AssetReader.h
+        Helpers/DataReader.c
+        Helpers/DataReader.h
 )
 
 if (UNIX)

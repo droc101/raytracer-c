@@ -8,7 +8,7 @@
 #include "../Helpers/Drawing.h"
 #include "Vector2.h"
 
-const uint *wallTextures[] = {
+const byte *wallTextures[] = {
         gztex_level_bricks,
         gztex_level_cross,
         gztex_level_wall2,
