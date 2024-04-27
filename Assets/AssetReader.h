@@ -12,7 +12,9 @@ uint AssetGetSize(const byte *asset);
 
 uint AssetGetType(const byte *asset);
 
-// Remember to free!
+// Dangerous! If anything is still using the asset, it will almost certainly crash!
+void InvalidateAssetCache();
+
 byte *DecompressAsset(const byte *asset);
 
 #define ASSET_TYPE_TEXTURE 0

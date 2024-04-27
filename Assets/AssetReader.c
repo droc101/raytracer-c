@@ -18,6 +18,17 @@ uint AssetGetType(const byte *asset) {
     return ReadUintA(asset, 12);
 }
 
+byte *AssetCache[ASSET_COUNT];
+
+void InvalidateAssetCache() {
+    for (int i = 0; i < ASSET_COUNT; i++) {
+        if (AssetCache[i] != NULLPTR) {
+            free(AssetCache[i]);
+            AssetCache[i] = NULLPTR;
+        }
+    }
+}
+
 byte *DecompressAsset(const byte *asset) {
     int offset = 0;
     // Read the first 4 bytes of the asset to get the size of the compressed data
@@ -25,6 +36,16 @@ byte *DecompressAsset(const byte *asset) {
     uint decompressedSize = ReadUint(asset, &offset); // Read the decompressed size (4 bytes after the compressed size
     uint assetId = ReadUint(asset, &offset); // Read the asset ID (4 bytes after the decompressed size)
     //uint type = ReadUint(asset, &offset); // Read the asset type (4 bytes after the asset ID)
+
+    if (assetId >= ASSET_COUNT) {
+        printf("Asset ID %d is out of range\n", assetId);
+        Error("Asset ID out of range");
+        return NULL;
+    }
+
+    if (AssetCache[assetId] != NULLPTR) {
+        return AssetCache[assetId];
+    }
 
     if (assetId >= ASSET_COUNT) {
         printf("Asset ID %d is out of range\n", assetId);
@@ -67,6 +88,8 @@ byte *DecompressAsset(const byte *asset) {
 
     // Clean up the zlib stream
     inflateEnd(&stream);
+
+    AssetCache[assetId] = decompressedData;
 
     return decompressedData;
 }

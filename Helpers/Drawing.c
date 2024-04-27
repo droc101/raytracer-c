@@ -98,10 +98,7 @@ SDL_Texture* ToSDLTexture(const unsigned char* imageData, char *filterMode) {
     SDL_Surface* surface = ToSDLSurface(imageData, filterMode); // if this fails, it will call a _NoReturn function, so no need to check
 
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-    byte *pixels = surface->pixels;
-    pixels -= 16; // Move back to the start of the decompressed data
     SDL_FreeSurface(surface); // Free the surface as it's not needed anymore
-    free(pixels); // Free the decompressed data as it's not needed anymore
     if (!texture) {
         printf("Failed to create texture: %s\n", SDL_GetError());
         Error("ToSDLTexture: Failed to create texture");

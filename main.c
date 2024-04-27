@@ -123,6 +123,7 @@ int main(int argc, char *argv[]) {
     SDL_DestroyRenderer(GetRenderer());
     SDL_DestroyWindow(GetWindow());
     SDL_FreeSurface(icon);
+    InvalidateAssetCache(); // Free all assets
     SDL_Quit();
     return 0;
 }
