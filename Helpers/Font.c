@@ -6,7 +6,7 @@
 #include <ctype.h>
 #include "SDL.h"
 #include "Drawing.h"
-#include "../assets/Assets.h"
+#include "../Assets/Assets.h"
 #include "../Assets/AssetReader.h"
 
 SDL_Texture *fontTexture;

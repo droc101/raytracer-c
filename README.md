@@ -17,8 +17,5 @@ On Windows, you'll need to copy `SDL2/x86_64-w64-mingw32/bin/SDL2.dll`, `SDL2_mi
 On Linux, you just need the sdl2, sdl2_mixer, and zlib shared libraries installed (refer to your specific distro for that)
 
 ### Tested on
-- Windows 10 and 11 
-- 
-TODO: Test with zlib and sdl2_mixer on Linux
-- ~~Arch Linux~~
-- ~~Debian 12~~
+- Windows 10 and 11
+- Arch Linux

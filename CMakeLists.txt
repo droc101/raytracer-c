@@ -39,7 +39,7 @@ add_executable(game main.c Helpers/Input.h Helpers/Input.c defines.h Helpers/Dra
 )
 
 if (UNIX)
-    target_link_libraries(game ${SDL2_LIBRARY} ${ZLIB_LIBRARIES} ${SDL2_MIXER_LIBRARY} m SDL2 SDL2_mixer ZLIB) # Link math library on Unix
+    target_link_libraries(game ${SDL2_LIBRARY} ${ZLIB_LIBRARIES} ${SDL2_MIXER_LIBRARY} m SDL2 SDL2_mixer z) # Link math library on Unix
 elseif (WIN32)
     target_link_libraries(game PRIVATE ${SDL2_LIBRARY} ${ZLIB_LIBRARIES} ${SDL2_MIXER_LIBRARY}) # Link SDL2main on Windows
 endif ()

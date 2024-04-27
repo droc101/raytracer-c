@@ -5,7 +5,7 @@
 #ifndef GAME_WALL_H
 #define GAME_WALL_H
 
-#include "../assets/Assets.h"
+#include "../Assets/Assets.h"
 
 // Create a wall with the given points and texture index
 Wall *CreateWall(Vector2 a, Vector2 b, uint tex);
