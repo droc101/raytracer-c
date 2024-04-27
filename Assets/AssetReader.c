@@ -10,6 +10,11 @@
 #include "../Helpers/DataReader.h"
 #include "Assets.h"
 
+uint AssetGetSize(const byte *asset) {
+    int offset = 0;
+    return ReadUint(asset, &offset);
+}
+
 byte *DecompressAsset(const byte *asset) {
     int offset = 0;
     // Read the first 4 bytes of the asset to get the size of the compressed data

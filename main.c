@@ -1,4 +1,5 @@
 #include <SDL.h>
+#include <SDL_mixer.h>
 #include <stdio.h>
 #include "Helpers/Drawing.h"
 #include "defines.h"
@@ -12,17 +13,31 @@
 #include "Debug/FrameGrapher.h"
 #include "GameStates/GMainState.h"
 #include "Debug/DPrint.h"
-
+#include "Assets/AssetReader.h"
 #include "Structs/Vector2.h"
 #include "Helpers/Timing.h"
 
 int main(int argc, char *argv[]) {
     printf("Build time: %s at %s\n", __DATE__, __TIME__);
 
-    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
         printf("SInit Error: %s\n", SDL_GetError());
         return 1;
     }
+
+    if (Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
+        printf("Mix_OpenAudio Error: %s\n", Mix_GetError());
+        return 1;
+    }
+
+    byte *mp3 = DecompressAsset(gzsnd_audio_field);
+    uint mp3Size = AssetGetSize(gzsnd_audio_field);
+    Mix_Music *mus = Mix_LoadMUS_RW(SDL_RWFromConstMem(mp3, mp3Size), 1);
+    if (mus == NULL) {
+        printf("Mix_LoadMUS_RW Error: %s\n", Mix_GetError());
+        return 1;
+    }
+    Mix_PlayMusic(mus, -1);
 
     SDL_Window *w = SDL_CreateWindow("game",SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,DEF_WIDTH, DEF_HEIGHT, SDL_WINDOW_RESIZABLE);
     if (w == NULL) {
@@ -112,6 +127,8 @@ int main(int argc, char *argv[]) {
 
     }
     DestroyLevel(l);
+
+    Mix_FreeMusic(mus);
 
     SDL_DestroyRenderer(GetRenderer());
     SDL_DestroyWindow(GetWindow());

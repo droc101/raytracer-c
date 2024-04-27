@@ -8,15 +8,19 @@ set(CMAKE_C_FLAGS_RELEASE "-g0 -O3 -s -DNDEBUG -Wl,--gc-sections -fdata-sections
 
 # Add --static flag when building on Windows to include libwinpthread-1.dll
 if (WIN32)
-    set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} --static")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --static")
 endif ()
 
 set(SDL2_PATH "${CMAKE_SOURCE_DIR}/SDL2/x86_64-w64-mingw32")
+set(SDL2_MIXER_PATH "${CMAKE_SOURCE_DIR}/SDL2_mixer/x86_64-w64-mingw32")
 set(ZLIB_ROOT "${CMAKE_SOURCE_DIR}/zlib")
 
 
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIR})
+
+find_package(SDL2_mixer REQUIRED)
+include_directories(${SDL2_MIXER_INCLUDE_DIR})
 
 find_package(ZLIB REQUIRED)
 include_directories(${ZLIB_INCLUDE_DIRS})
@@ -35,8 +39,8 @@ add_executable(game main.c Helpers/Input.h Helpers/Input.c defines.h Helpers/Dra
 )
 
 if (UNIX)
-    target_link_libraries(game ${SDL2_LIBRARY} ${ZLIB_LIBRARIES} m SDL2 ZLIB) # Link math library on Unix
+    target_link_libraries(game ${SDL2_LIBRARY} ${ZLIB_LIBRARIES} ${SDL2_MIXER_LIBRARY} m SDL2 SDL2_mixer ZLIB) # Link math library on Unix
 elseif (WIN32)
-    target_link_libraries(game ${SDL2_LIBRARY} ${ZLIB_LIBRARIES})
+    target_link_libraries(game PRIVATE ${SDL2_LIBRARY} ${ZLIB_LIBRARIES} ${SDL2_MIXER_LIBRARY}) # Link SDL2main on Windows
 endif ()
 

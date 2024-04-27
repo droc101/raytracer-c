@@ -7,6 +7,8 @@
 
 #include "../defines.h"
 
+uint AssetGetSize(const byte *asset);
+
 // Remember to free!
 byte *DecompressAsset(const byte *asset);
 
