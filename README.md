@@ -3,9 +3,9 @@ Old-School first-person raycaster game written in C using [SDL2](https://www.lib
 Runs on Windows and Linux.
 
 ### Setup
-Download [SDL2 2.30.2 w64](https://github.com/libsdl-org/SDL/releases/download/release-2.30.2/SDL2-devel-2.30.2-mingw.zip)
+- Download [SDL2 2.30.2 w64](https://github.com/libsdl-org/SDL/releases/download/release-2.30.2/SDL2-devel-2.30.2-mingw.zip)
 and extract it to the root of the project as "SDL2".
-Download [SDL2_Mixer 2.8.0 w64](https://github.com/libsdl-org/SDL_mixer/releases/download/release-2.8.0/SDL2_mixer-devel-2.8.0-mingw.zip) 
+- Download [SDL2_Mixer 2.8.0 w64](https://github.com/libsdl-org/SDL_mixer/releases/download/release-2.8.0/SDL2_mixer-devel-2.8.0-mingw.zip) 
 and extract it to the root of the project as "SDL2_Mixer".
 
 Make sure you have [FindSDL2.cmake](https://github.com/tcbrindle/sdl2-cmake-scripts/blob/master/FindSDL2.cmake) and [FindSDL2_mixer.cmake](https://github.com/tcbrindle/sdl2-cmake-scripts/blob/master/FindSDL2_mixer.cmake)
