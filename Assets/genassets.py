@@ -141,7 +141,7 @@ def bytes_to_c_array(data, name): # Convert the bytes to a C array (for the .c f
 def c_header_array(name, size): # Generate the header for the array (the actual array is in the .c file)
 	return 'extern const unsigned char ' + name + '[];\n'
 
-path = "./"
+path = sys.argv[1]
 
 assets_c = ""
 assets_h = ""
