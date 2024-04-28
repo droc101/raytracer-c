@@ -66,7 +66,8 @@ int main(int argc, char *argv[]) {
     Actor *a = CreateActor(vec2(5, -1), 0, 1);
     ListAdd(l->actors, a);
 
-    Wall *wl = CreateWall(vec2(20, -10), vec2(1, 10), 0);
+//    Wall *wl = CreateWall(vec2(20, -10), vec2(1, 10), 0);
+    Wall *wl = CreateWall(vec2(1, -10), vec2(1, 10), 0);
     ListAdd(l->walls, wl);
 
     ChangeLevel(l);

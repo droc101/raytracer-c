@@ -71,10 +71,11 @@ void GMainStateUpdate() {
         Vector2 pos = Vector2Add(l->position, moveVec);
         double angle = atan2(moveVec.y, moveVec.x);
         if (IsNearWall(*w, pos)) {
-            printf("oldX: %f oldY: %f newX: %f newY: %f\n", moveVec.x, moveVec.y, moveVec.x * cos(angle) * cos(WallGetAngle(*w)), moveVec.y * sin(angle) * sin(WallGetAngle(*w)));
-            fflush(stdout);
-            moveVec.x *= cos(angle) * cos(WallGetAngle(*w));
-            moveVec.y *= sin(angle) * sin(WallGetAngle(*w));
+//            printf("oldX: %f oldY: %f newX: %f newY: %f", moveVec.x, moveVec.y, moveVec.x * cos(angle) * cos(WallGetAngle(*w)), moveVec.y * sin(angle) * sin(WallGetAngle(*w)));
+//            printf("angleRad: %f angleDeg: %f wallAngle: %f\n", angle, radToDeg(angle), WallGetAngle(*w));
+//            fflush(stdout);
+            moveVec.x *= fabs(cos(angle) * cos(WallGetAngle(*w)));
+            moveVec.y *= fabs(sin(angle) * sin(WallGetAngle(*w)));
         }
     }
     l->position = Vector2Add(l->position, moveVec);
