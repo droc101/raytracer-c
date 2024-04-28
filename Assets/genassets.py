@@ -51,6 +51,12 @@ def png_to_bytes(path): # Convert a PNG file to bytes
 
 	header.extend(data)
 
+	# gzip timestamp is 18 bytes in
+	header[19] = 1
+	header[20] = 2
+	header[21] = 3
+	header[22] = 4
+
 	aid += 1
 
 	return header
@@ -90,6 +96,12 @@ def mp3_to_bytes(path): # Convert an MP3 file to bytes
 
 	aid += 1
 
+# gzip timestamp is 18 bytes in
+	header[19] = 1
+	header[20] = 2
+	header[21] = 3
+	header[22] = 4
+
 	return header
 
 def wav_to_bytes(path): # Convert an MP3 file to bytes
@@ -117,6 +129,8 @@ def wav_to_bytes(path): # Convert an MP3 file to bytes
 	# Gzip the data
 	data = gzip.compress(bytes(data))
 
+	
+
 	header = bytearray()
 	header.extend(int_to_bytes(len(data))) # Compressed length
 	header.extend(int_to_bytes(decompressed_len)) # Decompressed length
@@ -124,6 +138,12 @@ def wav_to_bytes(path): # Convert an MP3 file to bytes
 	header.extend(int_to_bytes(2)) # Asset Type (2 = wav)
 
 	header.extend(data)
+
+# gzip timestamp is 18 bytes in
+	header[19] = 1
+	header[20] = 2
+	header[21] = 3
+	header[22] = 4
 
 	aid += 1
 
