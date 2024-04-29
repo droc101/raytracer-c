@@ -67,15 +67,19 @@ void GMainStateUpdate() {
      * - Move to a better place so that other functions can use it (such as Actor movement)
     */
     for (int i = 0; i < l->walls->size; i++) {
+        if (moveVec.x == 0 && moveVec.y == 0) continue;
         Wall *w = ListGet(l->walls, i);
         Vector2 pos = Vector2Add(l->position, moveVec);
         double angle = atan2(moveVec.y, moveVec.x);
         if (IsNearWall(*w, pos)) {
-//            printf("oldX: %f oldY: %f newX: %f newY: %f", moveVec.x, moveVec.y, moveVec.x * cos(angle) * cos(WallGetAngle(*w)), moveVec.y * sin(angle) * sin(WallGetAngle(*w)));
+            double newX = moveVec.x * fabs(cos(angle)) * cos(WallGetAngle(*w));
+            double newY = moveVec.y * fabs(sin(angle)) * sin(WallGetAngle(*w));
+            printf("oldX: %f oldY: %f newX: %f newY: %f ", moveVec.x, moveVec.y, newX, newY);
+            printf("dx: %f dy: %f dx+dy: %f\n", fabs(moveVec.x - newX), fabs(moveVec.y - newY), fabs(moveVec.x - newX) + fabs(moveVec.y - newY));
 //            printf("angleRad: %f angleDeg: %f wallAngle: %f\n", angle, radToDeg(angle), WallGetAngle(*w));
-//            fflush(stdout);
-            moveVec.x *= fabs(cos(angle) * cos(WallGetAngle(*w)));
-            moveVec.y *= fabs(sin(angle) * sin(WallGetAngle(*w)));
+            fflush(stdout);
+            moveVec.x = newX;
+            moveVec.y = newY;
         }
     }
     l->position = Vector2Add(l->position, moveVec);
