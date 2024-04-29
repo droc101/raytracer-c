@@ -10,6 +10,7 @@
 #include "../Helpers/Error.h"
 #include "../Helpers/MathEx.h"
 #include "../Helpers/Drawing.h"
+#include "../Helpers/CollisionHelper.h"
 #include "../Debug/DPrint.h"
 
 #include "../GameStates/GPauseState.h"
@@ -18,20 +19,11 @@ SDL_Texture *skyTex;
 
 // TODO: Clean this up and move it to Wall.c/h
 bool IsNearWall(Wall wall, Vector2 position) {
-    bool abx = (wall.a.x + WALL_HITBOX_EXTENTS <= position.x || wall.a.x - WALL_HITBOX_EXTENTS <= position.x) && (
-                   wall.b.x + WALL_HITBOX_EXTENTS >= position.x || wall.b.x - WALL_HITBOX_EXTENTS >= position.x);
-    bool bax = (wall.b.x + WALL_HITBOX_EXTENTS <= position.x || wall.b.x - WALL_HITBOX_EXTENTS <= position.x) && (
-                   wall.a.x + WALL_HITBOX_EXTENTS >= position.x || wall.a.x - WALL_HITBOX_EXTENTS >= position.x);
-    bool aby = (wall.a.y + WALL_HITBOX_EXTENTS <= position.y || wall.a.y - WALL_HITBOX_EXTENTS <= position.y) && (
-                   wall.b.y + WALL_HITBOX_EXTENTS >= position.y || wall.b.y - WALL_HITBOX_EXTENTS >= position.y);
-    bool bay = (wall.b.y + WALL_HITBOX_EXTENTS <= position.y || wall.b.y - WALL_HITBOX_EXTENTS <= position.y) && (
-                   wall.a.y + WALL_HITBOX_EXTENTS >= position.y || wall.a.y - WALL_HITBOX_EXTENTS >= position.y);
-    return ((abx && aby) || (abx && bay) || (bax && aby) || (bax && bay)) && !(
-               wall.a.x != wall.b.x && wall.a.y != wall.b.y && (
-                   fabs((position.x - 1) * ((wall.b.y - wall.a.y) / (wall.b.x - wall.a.x)) + 10 - position.y) >
-                   WALL_HITBOX_EXTENTS && fabs(
-                       (position.y - 10) * ((wall.b.x - wall.a.x) / (wall.b.y - wall.a.y)) + 1 - position.x) >
-                   WALL_HITBOX_EXTENTS));
+    if (nearWall(wall, position) && isWallStraight(wall)) {
+        printf("near: %d straight: %d hitbox %d\n", nearWall(wall, position), isWallStraight(wall), notInHitbox(wall, position));
+        fflush(stdout);
+    }
+    return nearWall(wall, position) && isWallStraight(wall) && !notInHitbox(wall, position);
 }
 
 void GMainStateUpdate() {
@@ -74,8 +66,8 @@ void GMainStateUpdate() {
         if (IsNearWall(*w, pos)) {
             double newX = moveVec.x * fabs(cos(angle)) * cos(WallGetAngle(*w));
             double newY = moveVec.y * fabs(sin(angle)) * sin(WallGetAngle(*w));
-            printf("oldX: %f oldY: %f newX: %f newY: %f ", moveVec.x, moveVec.y, newX, newY);
-            printf("dx: %f dy: %f dx+dy: %f\n", fabs(moveVec.x - newX), fabs(moveVec.y - newY), fabs(moveVec.x - newX) + fabs(moveVec.y - newY));
+//            printf("oldX: %f oldY: %f newX: %f newY: %f ", moveVec.x, moveVec.y, newX, newY);
+//            printf("dx: %f dy: %f mag: %f\n", fabs(moveVec.x - newX), fabs(moveVec.y - newY), Vector2Length(vec2(moveVec.x - newX, moveVec.y - newY)));
 //            printf("angleRad: %f angleDeg: %f wallAngle: %f\n", angle, radToDeg(angle), WallGetAngle(*w));
             fflush(stdout);
             moveVec.x = newX;
