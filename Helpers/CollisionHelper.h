@@ -18,6 +18,7 @@
 #define dx(wall, position) (fabs((position.y - wall.a.y) * ((wall.b.x - wall.a.x) / (wall.b.y - wall.a.y)) + wall.a.x - position.x))
 
 // TODO: make this be inHitbox, not notInHitbox
+// TODO: You better make sure not to hardcode the player's movement speed in here
 #define notInHitbox(wall, position) (dy(wall, position) > WALL_HITBOX_EXTENTS && dx(wall, position) > WALL_HITBOX_EXTENTS && sqrt(pow(dx(wall, position), 2) + pow(dy(wall, position), 2)) > MOVE_SPEED)
 
 

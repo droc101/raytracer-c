@@ -36,15 +36,15 @@ void GMainStateUpdate() {
     //Vector2 oldPos = l->position;
     Vector2 moveVec = vec2(0, 0);
     if (IsKeyPressed(SDL_SCANCODE_W)) {
-        moveVec.x += MOVE_SPEED;
+        moveVec.x += 1;
     } else if (IsKeyPressed(SDL_SCANCODE_S)) {
-        moveVec.x -= MOVE_SPEED;
+        moveVec.x -= 1;
     }
 
     if (IsKeyPressed(SDL_SCANCODE_Q)) {
-        moveVec.y -= MOVE_SPEED;
+        moveVec.y -= 1;
     } else if (IsKeyPressed(SDL_SCANCODE_E)) {
-        moveVec.y += MOVE_SPEED;
+        moveVec.y += 1;
     }
 
     if (moveVec.x != 0 || moveVec.y != 0) {

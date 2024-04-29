@@ -96,7 +96,7 @@ void ChangeMusic(const byte *asset) {
         return;
     }
     state.music = mus;
-    Mix_PlayMusic(mus, -1);
+    Mix_FadeInMusic(mus, -1, 500);
 }
 
 void StopMusic() {
@@ -120,7 +120,7 @@ void PlaySoundEffect(byte *asset) {
         printf("Mix_LoadWAV_RW Error: %s\n", Mix_GetError());
         return;
     }
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < SFX_CHANNEL_COUNT; i++) {
         if (state.channels[i] == NULLPTR) {
             state.channels[i] = chunk;
             Mix_PlayChannel(i, chunk, 0);
@@ -139,7 +139,7 @@ void DestroyGlobalState() {
         Mix_FreeMusic(state.music);
     }
     // free sound effects
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < SFX_CHANNEL_COUNT; i++) {
         if (state.channels[i] != NULLPTR) {
             Mix_FreeChunk(state.channels[i]);
         }

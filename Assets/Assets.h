@@ -9,8 +9,6 @@ extern const unsigned char gztex_actor_monster1[];
 extern const unsigned char gztex_actor_monster2[];
 extern const unsigned char gztex_actor_monster3[];
 
-extern const unsigned char gzmpg_audio_field[];
-
 extern const unsigned char gztex_interface_barrel[];
 extern const unsigned char gztex_interface_font[];
 extern const unsigned char gztex_interface_icon[];
@@ -20,6 +18,8 @@ extern const unsigned char gztex_level_cross[];
 extern const unsigned char gztex_level_sky[];
 extern const unsigned char gztex_level_smile[];
 extern const unsigned char gztex_level_wall2[];
+
+extern const unsigned char gzmpg_audio_field[];
 
 extern const unsigned char gzwav_sfx_popdown[];
 extern const unsigned char gzwav_sfx_popup[];

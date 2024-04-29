@@ -25,6 +25,8 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    Mix_AllocateChannels(SFX_CHANNEL_COUNT);
+
     if (Mix_OpenAudio(22050, AUDIO_S16, 2, 2048) < 0) {
         printf("Mix_OpenAudio Error: %s\n", Mix_GetError());
         return 1;

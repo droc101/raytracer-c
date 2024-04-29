@@ -21,6 +21,8 @@
 
 #define NULLPTR NULL
 
+#define SFX_CHANNEL_COUNT 16
+
 // Utility functions are in Structs/Vector2.h
 typedef struct {
     double x;
@@ -66,7 +68,7 @@ typedef struct {
     ulong frame;
     bool requestExit;
     Mix_Music *music; // background music
-    Mix_Chunk *channels[8]; // sound effects
+    Mix_Chunk *channels[SFX_CHANNEL_COUNT]; // sound effects
 } GlobalState;
 
 // Actor (interactable/moving wall) struct
