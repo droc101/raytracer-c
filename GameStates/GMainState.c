@@ -18,12 +18,12 @@
 SDL_Texture *skyTex;
 
 // TODO: Clean this up and move it to Wall.c/h
-bool IsNearWall(Wall wall, Vector2 position) {
-    if (nearWall(wall, position) && isWallStraight(wall)) {
-        printf("near: %d straight: %d hitbox %d\n", nearWall(wall, position), isWallStraight(wall), notInHitbox(wall, position));
+bool IsNearWall(Wall wall, Vector2 position, Vector2 moveVec) {
+    if (nearWall(wall, position) && !isWallStraight(wall)) {
+        printf("dx: %f dy: %f mag: %f notInHitbox: %d\n", dx(wall, position), dy(wall, position), sqrt(pow(dx(wall, position), 2) + pow(dy(wall, position), 2)), notInHitbox(wall, position));
         fflush(stdout);
     }
-    return nearWall(wall, position) && isWallStraight(wall) && !notInHitbox(wall, position);
+    return nearWall(wall, position) && (isWallStraight(wall) || !notInHitbox(wall, position));
 }
 
 void GMainStateUpdate() {
@@ -63,11 +63,11 @@ void GMainStateUpdate() {
         Wall *w = ListGet(l->walls, i);
         Vector2 pos = Vector2Add(l->position, moveVec);
         double angle = atan2(moveVec.y, moveVec.x);
-        if (IsNearWall(*w, pos)) {
+        if (IsNearWall(*w, pos, moveVec)) {
             double newX = moveVec.x * fabs(cos(angle)) * cos(WallGetAngle(*w));
             double newY = moveVec.y * fabs(sin(angle)) * sin(WallGetAngle(*w));
-//            printf("oldX: %f oldY: %f newX: %f newY: %f ", moveVec.x, moveVec.y, newX, newY);
-//            printf("dx: %f dy: %f mag: %f\n", fabs(moveVec.x - newX), fabs(moveVec.y - newY), Vector2Length(vec2(moveVec.x - newX, moveVec.y - newY)));
+            printf("oldX: %f oldY: %f newX: %f newY: %f ", moveVec.x, moveVec.y, newX, newY);
+            printf("dx: %f dy: %f mag: %f\n", fabs(moveVec.x - newX), fabs(moveVec.y - newY), Vector2Length(vec2(moveVec.x - newX, moveVec.y - newY)));
 //            printf("angleRad: %f angleDeg: %f wallAngle: %f\n", angle, radToDeg(angle), WallGetAngle(*w));
             fflush(stdout);
             moveVec.x = newX;
