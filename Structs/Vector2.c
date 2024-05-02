@@ -92,8 +92,8 @@ double Vector2Dot(Vector2 a, Vector2 b) {
 
 Vector2 Vector2Rotate(Vector2 vec, double angle) {  // TODO Vec2o
     Vector2 result = vec2s(2);
-    float cosAngle = cos(angle);
-    float sinAngle = sin(angle);
+    double cosAngle = cos(angle);
+    double sinAngle = sin(angle);
 
     // Apply rotation transformation
     result.x = vec.x * cosAngle - vec.y * sinAngle;

@@ -18,11 +18,11 @@
 SDL_Texture *skyTex;
 
 // TODO: Clean this up and move it to Wall.c/h
-bool IsNearWall(Wall wall, Vector2 position, Vector2 moveVec) {
-    if (nearWall(wall, position) && !isWallStraight(wall)) {
-        printf("dx: %f dy: %f mag: %f notInHitbox: %d\n", dx(wall, position), dy(wall, position), sqrt(pow(dx(wall, position), 2) + pow(dy(wall, position), 2)), notInHitbox(wall, position));
-        fflush(stdout);
-    }
+bool IsNearWall(Wall wall, Vector2 position) {
+    // if (nearWall(wall, position)) {
+    //     printf("wall: {start: {x: %f, y: %f}, end: {x: %f, y: %f}} position: {x: %f, y: %f} nearWall: %d isWallStraight: %d inHitbox: %d\n", wall.a.x, wall.a.y, wall.b.x, wall.b.y, position.x, position.y, nearWall(wall, position), isWallStraight(wall), !notInHitbox(wall, position));
+    //     fflush(stdout);
+    // }
     return nearWall(wall, position) && (isWallStraight(wall) || !notInHitbox(wall, position));
 }
 
@@ -59,22 +59,38 @@ void GMainStateUpdate() {
      * - Move to a better place so that other functions can use it (such as Actor movement)
     */
     for (int i = 0; i < l->walls->size; i++) {
-        if (moveVec.x == 0 && moveVec.y == 0) continue;
+        // if (moveVec.x == 0 && moveVec.y == 0) continue;
         Wall *w = ListGet(l->walls, i);
         Vector2 pos = Vector2Add(l->position, moveVec);
-        double angle = atan2(moveVec.y, moveVec.x);
-        if (IsNearWall(*w, pos, moveVec)) {
-            double newX = moveVec.x * fabs(cos(angle)) * cos(WallGetAngle(*w));
-            double newY = moveVec.y * fabs(sin(angle)) * sin(WallGetAngle(*w));
-            printf("oldX: %f oldY: %f newX: %f newY: %f ", moveVec.x, moveVec.y, newX, newY);
-            printf("dx: %f dy: %f mag: %f\n", fabs(moveVec.x - newX), fabs(moveVec.y - newY), Vector2Length(vec2(moveVec.x - newX, moveVec.y - newY)));
-//            printf("angleRad: %f angleDeg: %f wallAngle: %f\n", angle, radToDeg(angle), WallGetAngle(*w));
+        if (IsNearWall(*w, pos)) {
+            double dx = w->b.x - w->a.x;
+            double dy = w->b.y - w->a.y;
+            double dxdy = dx / (dy == 0 ? 1 : dy);
+            double dydx = dy / (dx == 0 ? 1 : dx);
+            double wallLength = WallGetLength(*w);
+            double hitboxSize = (l->position.x - w->a.x) * (w->b.y - w->a.y) - (l->position.y - w->a.y) * (w->b.x - w->a.x) > 0 ? WALL_HITBOX_EXTENTS : -WALL_HITBOX_EXTENTS;
+
+            double newX = hitboxSize * dy / wallLength + (dx == 0 ? w->a.x : dy == 0 ? pos.x : (pos.y - w->a.y + w->a.x * dydx + pos.x * dxdy) / (dydx + dxdy)) - l->position.x;
+            double newY = -hitboxSize * dx / wallLength + (dx == 0 ? pos.y : dy == 0 ? w->a.y : (pos.x - w->a.x + w->a.y * dxdy + pos.y * dydx) / (dxdy + dydx)) - l->position.y;
+
+            // printf("pos: {x: %f, y: %f} nearWall %d\n", pos.x, pos.y, IsNearWall(*w, pos));
             fflush(stdout);
+            // Vector2 vec = Vector2Rotate(moveVec, -WallGetAngle(*w));
+            // double newX = vec.x * fabs(sin(angle - WallGetAngle(*w)));
+            // double newY = vec.y * fabs(cos(angle - WallGetAngle(*w)));
+            printf("oldX: %f\toldY: %f\tnewX: %f\tnewY: %f\t", moveVec.x, moveVec.y, newX, newY);
+            printf("dx: %f\tdy: %f\tmag: %f\n", fabs(moveVec.x - newX), fabs(moveVec.y - newY), Vector2Length(vec2(fabs(moveVec.x - newX), fabs(moveVec.y - newY))));
+            // printf("angleRad: %f angleDeg: %f changedAngle: %f\n", angle, radToDeg(angle), radToDeg((angle - WallGetAngle(*w))));
+            // printf("wallAngle: %f moveVec: {x: %f, y: %f} moveVecRot: {x: %f, y: %f}\n", WallGetAngle(*w), moveVec.x, moveVec.y, Vector2Rotate(moveVec, 0).x, Vector2Rotate(moveVec, 0).y);
+            fflush(stdout);
+            // moveVec = Vector2Rotate(vec2(newX, newY), WallGetAngle(*w));
             moveVec.x = newX;
             moveVec.y = newY;
+            // l->position = pos;
         }
     }
     l->position = Vector2Add(l->position, moveVec);
+    // l->position = Vector2Add(l->position, moveVec);
     // RayCastResult moveCheck = HitscanLevel(*l, oldPos, angle, true, true, false); // scan walls and actors
     // if (moveCheck.Collided) {
     //     double distance = fabs(Vector2Distance(oldPos, moveCheck.CollisionPoint));
