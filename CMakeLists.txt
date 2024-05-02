@@ -47,13 +47,13 @@ elseif (WIN32)
     target_link_libraries(game PRIVATE ${SDL2_LIBRARY} ${ZLIB_LIBRARIES} ${SDL2_MIXER_LIBRARY}) # Don't pass extra l* flags on Windows (it isn't happy with them)
 endif ()
 
-#add_custom_target(
-#        run ALL
-#        COMMAND "python" ${CMAKE_CURRENT_SOURCE_DIR}/Assets/genassets.py ${CMAKE_CURRENT_SOURCE_DIR}/Assets/
-#        COMMENT "Generating assets"
-#        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Assets/
-#        BYPRODUCTS ${CMAKE_CURRENT_SOURCE_DIR}/Assets/Assets.h ${CMAKE_CURRENT_SOURCE_DIR}/Assets/Assets.c
-#)
+add_custom_target(
+        run ALL
+        COMMAND "python" ${CMAKE_CURRENT_SOURCE_DIR}/Assets/genassets.py ${CMAKE_CURRENT_SOURCE_DIR}/Assets/
+        COMMENT "Generating assets"
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Assets/
+        BYPRODUCTS ${CMAKE_CURRENT_SOURCE_DIR}/Assets/Assets.h ${CMAKE_CURRENT_SOURCE_DIR}/Assets/Assets.c
+)
 
-#add_dependencies(game run)
+add_dependencies(game run)
 
