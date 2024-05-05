@@ -11,6 +11,7 @@
 #include "../Helpers/MathEx.h"
 #include "../Helpers/Error.h"
 #include "Actor.h"
+#include "GlobalState.h"
 
 Level *CreateLevel() {
     Level *l = (Level*)malloc(sizeof(Level));
@@ -63,6 +64,8 @@ void RenderCol(Level *l, int col) {
     double height = WindowHeight() / distance;
     int y = (WindowHeight() - height) / 2;
 
+    y += (GetState()->FakeHeight / distance);
+
     double shade = fabs(cos((l->rotation + (1.5 * PI)) - WallGetAngle(raycast.CollisionWall)));
     shade *= (1 - (distance / (WindowWidth() / 2)));
     shade = max(0.6, min(1, shade));
@@ -108,7 +111,11 @@ void RenderActorCol(Level *l, int col) {
     }
 
     double height = WindowHeight() / distance;
+
     int y = (WindowHeight() - height) / 2;
+
+    y += (GetState()->FakeHeight / distance);
+
 
     double shade = fabs(cos((l->rotation + (1.5 * PI)) - WallGetAngle(raycast.CollisionWall)));
     shade *= (1 - (distance / (WindowWidth() / 2)));

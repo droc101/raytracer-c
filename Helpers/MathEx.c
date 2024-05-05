@@ -26,3 +26,8 @@ double remap(double in, double in_min, double in_max, double out_min, double out
     return (in - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
+float lerp(float a, float b, float f)
+{
+    return a * (1.0 - f) + (b * f);
+}
+
