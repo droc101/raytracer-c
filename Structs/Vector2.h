@@ -11,8 +11,6 @@
 Vector2 vec2(double x, double y);
 // Create a 2D vector with the same x and y values
 Vector2 vec2s(double xy);
-// Create a 2D vector with a non-zero origin
-Vector2 vec2o(double x, double y, double originX, double originY);
 
 Vector2 Vector2RemoveOrigin(Vector2 vec);
 

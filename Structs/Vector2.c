@@ -11,8 +11,6 @@ Vector2 vec2(double x, double y) // Create a Vector2
     Vector2 v;
     v.x = x;
     v.y = y;
-    v.originX = 0;
-    v.originY = 0;
     return v;
 }
 
@@ -21,23 +19,7 @@ Vector2 vec2s(double xy) // Create a Vector2 with x and y set the same
     Vector2 v;
     v.x = xy;
     v.y = xy;
-    v.originX = 0;
-    v.originY = 0;
     return v;
-}
-
-Vector2 vec2o(double x, double y, double originX, double originY) // Create a Vector2 with a non-zero origin
-{
-    Vector2 v;
-    v.x = x;
-    v.y = y;
-    v.originX = originX;
-    v.originY = originY;
-    return v;
-}
-
-Vector2 Vector2RemoveOrigin(Vector2 vec) {
-    return vec2(vec.x + vec.originX, vec.y + vec.originY);
 }
 
 double Vector2Distance(Vector2 a, Vector2 b) // Get the distance between two Vector2s
@@ -48,25 +30,19 @@ double Vector2Distance(Vector2 a, Vector2 b) // Get the distance between two Vec
 }
 
 double Vector2Length(Vector2 vec) {
-    return sqrt((vec.x - vec.originX) * (vec.x - vec.originX) + (vec.y - vec.originY) * (vec.y - vec.originY));
+    return sqrt(vec.x * vec.x + vec.y * vec.y);
 }
 
 Vector2 Vector2Normalize(Vector2 vec) {
     // Calculate the length of the vector
     double length = Vector2Length(vec);
 
-    // If the length is non-zero, normalize the vector
-    if (length != 0) {
-        // Calculate the normalized components relative to the origin
-        double normalizedX = (vec.x - vec.originX) / length + vec.originX;
-        double normalizedY = (vec.y - vec.originY) / length + vec.originY;
-
-        // Return the normalized vector
-        return vec2o(normalizedX, normalizedY, vec.originX, vec.originY);
-    } else {
-        // If the vector has zero length, return the zero vector
-        return vec2o(0, 0, vec.originX, vec.originY);
+    // If the vector is able to be normalized, continue, otherwise return the input vector
+    if (length != 0 && length != 1) {
+        // Calculate the normalized components and return them as a vector
+        return vec2(vec.x / length, vec.y / length);
     }
+    return vec;
 }
 
 Vector2 Vector2FromAngle(double angle) {
@@ -74,35 +50,30 @@ Vector2 Vector2FromAngle(double angle) {
 }
 
 Vector2 Vector2Add(Vector2 a, Vector2 b) {
-    return vec2o(a.x + b.x - b.originX, a.y + b.y - b.originY, a.originX, a.originY);
+    return vec2(a.x + b.x, a.y + b.y);
 }
 
 Vector2 Vector2Sub(Vector2 a, Vector2 b) {
-    return vec2o(a.x - b.x + b.originX, a.y - b.y + b.originY, a.originX, a.originY);
+    return vec2(a.x - b.x, a.y - b.y);
 }
 
 Vector2 Vector2Scale(Vector2 vec, double scale) {
-    return vec2o(vec.x * scale, vec.y * scale, vec.originX, vec.originY);
+    return vec2(vec.x * scale, vec.y * scale);
 }
 
 
 double Vector2Dot(Vector2 a, Vector2 b) {
-    return (a.x - a.originX) * (b.x - b.originX) + (a.y - a.originY) * (b.y - b.originY);
+    return a.x * b.x + a.y * b.y;
 }
 
-Vector2 Vector2Rotate(Vector2 vec, double angle) {  // TODO Vec2o
-    Vector2 result = vec2s(2);
+Vector2 Vector2Rotate(Vector2 vec, double angle) {
     double cosAngle = cos(angle);
     double sinAngle = sin(angle);
 
-    // Apply rotation transformation
-    result.x = vec.x * cosAngle - vec.y * sinAngle;
-    result.y = vec.x * sinAngle + vec.y * cosAngle;
-
-    return result;
+    return vec2(vec.x * cosAngle - vec.y * sinAngle, vec.x * sinAngle + vec.y * cosAngle);
 }
 
-double Vector2Angle(Vector2 a, Vector2 b) {  // TODO Vec2o
+double Vector2Angle(Vector2 a, Vector2 b) {
     return acos(Vector2Dot(a, b) / (Vector2Length(a) * Vector2Length(b)));
 }
 

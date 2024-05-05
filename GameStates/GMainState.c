@@ -59,16 +59,21 @@ void GMainStateUpdate() {
      * - Move to a better place so that other functions can use it (such as Actor movement)
     */
     for (int i = 0; i < l->walls->size; i++) {
-        // if (moveVec.x == 0 && moveVec.y == 0) continue;
         Wall *w = ListGet(l->walls, i);
+        double dx = w->b.x - w->a.x;
+        double dy = w->b.y - w->a.y;
+        int mult = (l->position.x - w->a.x) * (w->b.y - w->a.y) - (l->position.y - w->a.y) * (w->b.x - w->a.x) < 0 ? -1 : 1;
+        double hitboxSize = mult * WALL_HITBOX_EXTENTS;
         Vector2 pos = Vector2Add(l->position, moveVec);
-        if (IsNearWall(*w, pos)) {
-            double dx = w->b.x - w->a.x;
-            double dy = w->b.y - w->a.y;
-            double dxdy = dx / (dy == 0 ? 1 : dy);
-            double dydx = dy / (dx == 0 ? 1 : dx);
+        Vector2 hitboxOffset = vec2(hitboxSize * dy / WallGetLength(*w), -hitboxSize * dy / WallGetLength(*w));
+        if (
+                (mult * ((pos.x - w->a.x - hitboxOffset.x) * (w->b.y - w->a.y) - (pos.y - w->a.y - hitboxOffset.y) * (w->b.x - w->a.x)) <= 0) &&
+                (mult * ((pos.x - w->a.x - hitboxOffset.x) * hitboxOffset.y - (pos.y - w->a.y - hitboxOffset.y) * hitboxOffset.x) <= 0) &&
+                (mult * ((pos.y - w->a.y - hitboxOffset.y) * hitboxOffset.x - (pos.x - w->a.x - hitboxOffset.x) * hitboxOffset.y) <= 0)
+            ) {
+            double dydx = dy / (dx ? dx : 1);
+            double dxdy = dx / (dy ? dy : 1);
             double wallLength = WallGetLength(*w);
-            double hitboxSize = (l->position.x - w->a.x) * (w->b.y - w->a.y) - (l->position.y - w->a.y) * (w->b.x - w->a.x) > 0 ? WALL_HITBOX_EXTENTS : -WALL_HITBOX_EXTENTS;
 
             double newX = hitboxSize * dy / wallLength + (dx == 0 ? w->a.x : dy == 0 ? pos.x : (pos.y - w->a.y + w->a.x * dydx + pos.x * dxdy) / (dydx + dxdy)) - l->position.x;
             double newY = -hitboxSize * dx / wallLength + (dx == 0 ? pos.y : dy == 0 ? w->a.y : (pos.x - w->a.x + w->a.y * dxdy + pos.y * dydx) / (dxdy + dydx)) - l->position.y;
