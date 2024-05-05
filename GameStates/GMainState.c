@@ -3,28 +3,16 @@
 //
 
 #include "GMainState.h"
-#include <stdio.h>
 #include <math.h>
 #include "../Helpers/Input.h"
-#include "../Structs/Ray.h"
 #include "../Helpers/Error.h"
 #include "../Helpers/MathEx.h"
 #include "../Helpers/Drawing.h"
-#include "../Helpers/CollisionHelper.h"
 #include "../Debug/DPrint.h"
 
 #include "../GameStates/GPauseState.h"
 
 SDL_Texture *skyTex;
-
-// TODO: Clean this up and move it to Wall.c/h
-bool IsNearWall(Wall wall, Vector2 position) {
-    // if (nearWall(wall, position)) {
-    //     printf("wall: {start: {x: %f, y: %f}, end: {x: %f, y: %f}} position: {x: %f, y: %f} nearWall: %d isWallStraight: %d inHitbox: %d\n", wall.a.x, wall.a.y, wall.b.x, wall.b.y, position.x, position.y, nearWall(wall, position), isWallStraight(wall), !notInHitbox(wall, position));
-    //     fflush(stdout);
-    // }
-    return nearWall(wall, position) && (isWallStraight(wall) || !notInHitbox(wall, position));
-}
 
 void GMainStateUpdate() {
     if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE)) {
@@ -57,9 +45,8 @@ void GMainStateUpdate() {
 
     /* TODO
      * - Check for Actor collisions too
-     * - Fix it
      * - Move to a better place so that other functions can use it (such as Actor movement)
-    */
+     */
     for (int i = 0; i < l->walls->size; i++) {
         Wall *w = ListGet(l->walls, i);
         double dx = w->b.x - w->a.x;
@@ -81,27 +68,12 @@ void GMainStateUpdate() {
         }
     }
     l->position = Vector2Add(l->position, moveVec);
-    // l->position = Vector2Add(l->position, moveVec);
-    // RayCastResult moveCheck = HitscanLevel(*l, oldPos, angle, true, true, false); // scan walls and actors
-    // if (moveCheck.Collided) {
-    //     double distance = fabs(Vector2Distance(oldPos, moveCheck.CollisionPoint));
-    //     if (distance <= WALL_HITBOX_EXTENTS) {
-    //         // push 0.5 units out of the wall
-    //         l->position = PushPointOutOfWallHitbox(moveCheck.CollisionWall,
-    //                                                vec2o(moveCheck.CollisionPoint.x, moveCheck.CollisionPoint.y,
-    //                                                      l->position.x, l->position.y));
-    //     } else {
-    //         l->position = moveVec; // not close enough to the wall to collide
-    //     }
-    // } else {
-    //     l->position = moveVec; // no collision, move freely
-    // }
 
-    // view bobbing (scam edition)
+    // view bobbing (scam edition) 💀
     if (isMoving) {
         GetState()->FakeHeight = sin(GetState()->frame / 7.0) * 40;
     } else {
-        GetState()->FakeHeight = lerp(GetState()->FakeHeight, 0, 0.1);
+        GetState()->FakeHeight = lerp(GetState()->FakeHeight, 0, 0.1); // NOLINT(*-narrowing-conversions)
     }
 
     if (IsKeyPressed(SDL_SCANCODE_A)) {
@@ -135,7 +107,7 @@ void GMainStateRender() {
     for (int i = -WindowWidth(); i < WindowWidth() * 3; i += 1) {
         double tuSize = 256.0 / WindowWidth();
         double tu = i * tuSize + skyPos;
-        SDL_Rect src = {fmod(tu, 256), 0, 1, 256};
+        SDL_Rect src = {fmod(tu, 256), 0, 1, 256}; // NOLINT(*-narrowing-conversions)
         SDL_Rect dest = {i, 0, 1, WindowHeight() / 2};
         SDL_RenderCopy(GetRenderer(), skyTex, &src, &dest);
     }

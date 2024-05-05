@@ -38,7 +38,6 @@ add_executable(game main.c Helpers/Input.h Helpers/Input.c defines.h Helpers/Dra
         Assets/AssetReader.h
         Helpers/DataReader.c
         Helpers/DataReader.h
-        Helpers/CollisionHelper.h
 )
 
 if (UNIX)
