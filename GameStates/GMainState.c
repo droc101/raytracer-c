@@ -71,7 +71,7 @@ void GMainStateUpdate() {
         if (
                 (mult * ((pos.x - w->a.x - hitboxOffset.x) * (w->b.y - w->a.y) - (pos.y - w->a.y - hitboxOffset.y) * (w->b.x - w->a.x)) <= 0) &&
                 (mult * ((pos.x - w->a.x - hitboxOffset.x) * hitboxOffset.y - (pos.y - w->a.y - hitboxOffset.y) * hitboxOffset.x) <= 0) &&
-                (-mult * ((pos.y - w->a.y - hitboxOffset.y) * hitboxOffset.x - (pos.x - w->a.x - hitboxOffset.x) * hitboxOffset.y) <= 0)
+                (mult * ((pos.y - w->b.y - hitboxOffset.y) * hitboxOffset.x - (pos.x - w->b.x - hitboxOffset.x) * hitboxOffset.y) <= 0)
             ) {
             double dydx = dy / (dx ? dx : 1);
             double dxdy = dx / (dy ? dy : 1);
