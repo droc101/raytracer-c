@@ -21,6 +21,11 @@ void InitState() {
     state.frame = 0;
     state.level = CreateLevel(); // empty level so we don't segfault
     state.requestExit = false;
+    state.music = NULLPTR;
+    for (int i = 0; i < SFX_CHANNEL_COUNT; i++) {
+        state.channels[i] = NULLPTR;
+    }
+    state.FakeHeight = 0;
     StopMusic();
     Mix_ChannelFinished(ChannelFinished);
 }

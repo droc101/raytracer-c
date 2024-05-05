@@ -47,7 +47,9 @@ void GMainStateUpdate() {
         moveVec.y += 1;
     }
 
-    if (moveVec.x != 0 || moveVec.y != 0) {
+    bool isMoving = moveVec.x != 0 || moveVec.y != 0;
+
+    if (isMoving) {
         moveVec = Vector2Normalize(moveVec);
     }
     moveVec = Vector2Scale(moveVec, MOVE_SPEED);
@@ -105,6 +107,13 @@ void GMainStateUpdate() {
     // } else {
     //     l->position = moveVec; // no collision, move freely
     // }
+
+    // view bobbing (scam edition)
+    if (isMoving) {
+        GetState()->FakeHeight = sin(GetState()->frame / 7.0) * 40;
+    } else {
+        GetState()->FakeHeight = lerp(GetState()->FakeHeight, 0, 0.1);
+    }
 
     if (IsKeyPressed(SDL_SCANCODE_A)) {
         l->rotation -= ROT_SPEED;
