@@ -67,33 +67,17 @@ void GMainStateUpdate() {
         int mult = (l->position.x - w->a.x) * (w->b.y - w->a.y) - (l->position.y - w->a.y) * (w->b.x - w->a.x) < 0 ? -1 : 1;
         double hitboxSize = mult * WALL_HITBOX_EXTENTS;
         Vector2 pos = Vector2Add(l->position, moveVec);
-        Vector2 hitboxOffset = vec2(hitboxSize * dy / WallGetLength(*w), -hitboxSize * dy / WallGetLength(*w));
+        Vector2 hitboxOffset = vec2(hitboxSize * dy / WallGetLength(*w), -hitboxSize * dx / WallGetLength(*w));
         if (
                 (mult * ((pos.x - w->a.x - hitboxOffset.x) * (w->b.y - w->a.y) - (pos.y - w->a.y - hitboxOffset.y) * (w->b.x - w->a.x)) <= 0) &&
                 (mult * ((pos.x - w->a.x - hitboxOffset.x) * hitboxOffset.y - (pos.y - w->a.y - hitboxOffset.y) * hitboxOffset.x) <= 0) &&
-                (mult * ((pos.y - w->a.y - hitboxOffset.y) * hitboxOffset.x - (pos.x - w->a.x - hitboxOffset.x) * hitboxOffset.y) <= 0)
+                (-mult * ((pos.y - w->a.y - hitboxOffset.y) * hitboxOffset.x - (pos.x - w->a.x - hitboxOffset.x) * hitboxOffset.y) <= 0)
             ) {
             double dydx = dy / (dx ? dx : 1);
             double dxdy = dx / (dy ? dy : 1);
             double wallLength = WallGetLength(*w);
-
-            double newX = hitboxSize * dy / wallLength + (dx == 0 ? w->a.x : dy == 0 ? pos.x : (pos.y - w->a.y + w->a.x * dydx + pos.x * dxdy) / (dydx + dxdy)) - l->position.x;
-            double newY = -hitboxSize * dx / wallLength + (dx == 0 ? pos.y : dy == 0 ? w->a.y : (pos.x - w->a.x + w->a.y * dxdy + pos.y * dydx) / (dxdy + dydx)) - l->position.y;
-
-            // printf("pos: {x: %f, y: %f} nearWall %d\n", pos.x, pos.y, IsNearWall(*w, pos));
-            fflush(stdout);
-            // Vector2 vec = Vector2Rotate(moveVec, -WallGetAngle(*w));
-            // double newX = vec.x * fabs(sin(angle - WallGetAngle(*w)));
-            // double newY = vec.y * fabs(cos(angle - WallGetAngle(*w)));
-            printf("oldX: %f\toldY: %f\tnewX: %f\tnewY: %f\t", moveVec.x, moveVec.y, newX, newY);
-            printf("dx: %f\tdy: %f\tmag: %f\n", fabs(moveVec.x - newX), fabs(moveVec.y - newY), Vector2Length(vec2(fabs(moveVec.x - newX), fabs(moveVec.y - newY))));
-            // printf("angleRad: %f angleDeg: %f changedAngle: %f\n", angle, radToDeg(angle), radToDeg((angle - WallGetAngle(*w))));
-            // printf("wallAngle: %f moveVec: {x: %f, y: %f} moveVecRot: {x: %f, y: %f}\n", WallGetAngle(*w), moveVec.x, moveVec.y, Vector2Rotate(moveVec, 0).x, Vector2Rotate(moveVec, 0).y);
-            fflush(stdout);
-            // moveVec = Vector2Rotate(vec2(newX, newY), WallGetAngle(*w));
-            moveVec.x = newX;
-            moveVec.y = newY;
-            // l->position = pos;
+            moveVec.x = hitboxSize * dy / wallLength + (dx == 0 ? w->a.x : dy == 0 ? pos.x : (pos.y - w->a.y + w->a.x * dydx + pos.x * dxdy) / (dydx + dxdy)) - l->position.x;
+            moveVec.y = -hitboxSize * dx / wallLength + (dx == 0 ? pos.y : dy == 0 ? w->a.y : (pos.x - w->a.x + w->a.y * dxdy + pos.y * dydx) / (dxdy + dydx)) - l->position.y;
         }
     }
     l->position = Vector2Add(l->position, moveVec);
