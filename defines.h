@@ -34,6 +34,7 @@ typedef struct {
     Vector2 a;
     Vector2 b;
     SDL_Texture *tex;
+    int texId;
 } Wall;
 
 // Utility functions are in Structs/level.h
@@ -85,6 +86,7 @@ typedef struct {
     void (*Init)(void *self);
     void (*Update)(void *self);
     void (*Destroy)(void *self);
+    int actorType;
 } Actor;
 
 // pi

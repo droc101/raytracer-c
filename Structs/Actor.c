@@ -39,6 +39,7 @@ Actor *CreateActor(Vector2 position, double rotation, int actorType) {
     actor->Update = (void (*)(void *)) ActorUpdateFuncs[actorType];
     actor->Destroy = (void (*)(void *)) ActorDestroyFuncs[actorType];
     actor->Init(actor); // kindly allow the Actor to initialize itself
+    actor->actorType = actorType;
     return actor;
 }
 

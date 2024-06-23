@@ -22,6 +22,9 @@ Level *CreateLevel() {
     l->SkyColor = 0xff82c5ff;
     l->FloorColor = 0xff36322f;
     l->MusicID = -1;
+    l->FogColor = 0xff000000;
+    l->FogStart = 10;
+    l->FogEnd = 30;
     return l;
 }
 

@@ -10,12 +10,16 @@
 #include "../Helpers/MathEx.h"
 #include <stdio.h>
 #include "../Helpers/Font.h"
+#include "../Structs/Actor.h"
 #include <math.h>
 
 double EditorZoom = 20.0;
 double EditorPanX = 0.0;
 double EditorPanY = 0.0;
 bool EditorInitComplete = false;
+bool EditorSnapToGrid = true;
+
+int EditorSelectedNode = -1;
 
 typedef enum {
     EDITOR_MODE_ADD,
@@ -38,12 +42,59 @@ typedef struct {
 
 List *EditorButtons;
 
+typedef enum {
+    NODE_WALL_A,
+    NODE_WALL_B,
+    NODE_ACTOR,
+    NODE_PLAYER
+} EditorNodeType;
+
+typedef struct {
+    EditorNodeType type;
+    int index;
+    Vector2 position;
+    double rotation;
+    uint extra; // actor type or wall texture
+} EditorNode;
+
+List *EditorNodes;
+
 void GEditorStateUpdate() {
     if (IsKeyJustPressed(SDL_SCANCODE_F6)) {
+
+        Level *l = CreateLevel();
+
+        // reconstruct the level from the editor nodes
+        for (int i = 0; i < EditorNodes->size; i++) {
+            EditorNode *node = ListGet(EditorNodes, i);
+            switch (node->type) {
+                case NODE_PLAYER:
+                    l->position = node->position;
+                    l->rotation = node->rotation;
+                    break;
+                case NODE_ACTOR: {
+                    Actor *a = CreateActor(node->position, node->rotation, node->extra);
+                    ListAdd(l->actors, a);
+                    break;
+                }
+                case NODE_WALL_A: {
+                    Wall *w = CreateWall(node->position, vec2(0, 0), node->extra);
+                    ListAdd(l->walls, w);
+                    break;
+                }
+                case NODE_WALL_B: {
+                    Wall *w = ListGet(l->walls, ListGetSize(l->walls) - 1);
+                    w->b = node->position;
+                    break;
+                }
+            }
+        }
+        ChangeLevel(l);
+
         GMainStateSet();
     }
 
-    if (IsMouseButtonPressed(SDL_BUTTON_LEFT)) {
+    if (IsMouseButtonPressed(SDL_BUTTON_RIGHT)) {
         Vector2 mouseDelta = GetMouseRel();
         EditorPanX += mouseDelta.x;
         EditorPanY += mouseDelta.y;
@@ -67,6 +118,39 @@ void GEditorStateUpdate() {
             if (button->callback != NULL) {
                 button->callback();
             }
+        }
+    }
+
+    // check if we are hovering over a node
+    for (int i = 0; i < EditorNodes->size; i++) {
+        EditorNode *node = ListGet(EditorNodes, i);
+        Vector2 screenPos = vec2((node->position.x * EditorZoom) + EditorPanX, (node->position.y * EditorZoom) + EditorPanY);
+
+        bool hovered = false;
+        Vector2 mousePos = GetMousePos();
+        if (mousePos.x >= screenPos.x - 5 && mousePos.x <= screenPos.x + 5 &&
+            mousePos.y >= screenPos.y - 5 && mousePos.y <= screenPos.y + 5) {
+            hovered = true;
+        }
+
+        if (hovered && IsMouseButtonJustPressed(SDL_BUTTON_LEFT)) {
+            EditorSelectedNode = i;
+        }
+    }
+
+    if (IsMouseButtonJustReleased(SDL_BUTTON_LEFT)) {
+        EditorSelectedNode = -1;
+    }
+
+    // move the selected node to the mouse position
+    if (EditorSelectedNode != -1) {
+        EditorNode *node = ListGet(EditorNodes, EditorSelectedNode);
+        Vector2 mousePos = GetMousePos();
+        node->position = vec2((mousePos.x - EditorPanX) / EditorZoom, (mousePos.y - EditorPanY) / EditorZoom);
+
+        if (EditorSnapToGrid) {
+            node->position.x = round(node->position.x);
+            node->position.y = round(node->position.y);
         }
     }
 }
@@ -156,70 +240,61 @@ void GEditorStateRender() {
 
     Level *l = GetState()->level;
 
-    for (int i = 0; i < ListGetSize(l->walls); i++) {
-        Wall *w = ListGet(l->walls, i);
+    // Draw nodes
+    for (int i = 0; i < EditorNodes->size; i++) {
+        EditorNode *node = ListGet(EditorNodes, i);
+        Vector2 screenPos = vec2((node->position.x * EditorZoom) + EditorPanX, (node->position.y * EditorZoom) + EditorPanY);
 
-        setColorUint(0xFFFFFFFF);
-        SDL_RenderDrawLine(GetRenderer(), w->a.x * EditorZoom + EditorPanX, w->a.y * EditorZoom + EditorPanY,
-                           w->b.x * EditorZoom + EditorPanX, w->b.y * EditorZoom + EditorPanY);
+        if (node->type == NODE_WALL_A) {
+            // draw a line to the other wall node
+            EditorNode *nodeB = ListGet(EditorNodes, i + 1);
+            Vector2 screenPosB = vec2((nodeB->position.x * EditorZoom) + EditorPanX, (nodeB->position.y * EditorZoom) + EditorPanY);
+            setColorUint(0xFFFFFFFF);
+            SDL_RenderDrawLine(GetRenderer(), screenPos.x, screenPos.y, screenPosB.x, screenPosB.y);
+        }
 
-        setColorUint(0xFF00FF00);
-        draw_rect((w->a.x * EditorZoom + EditorPanX) - 5, (w->a.y * EditorZoom + EditorPanY) - 5, 10, 10);
-        draw_rect((w->b.x * EditorZoom + EditorPanX) - 5, (w->b.y * EditorZoom + EditorPanY) - 5, 10, 10);
+        uint color;
+        switch (node->type) {
+            case NODE_PLAYER:
+                color = 0xFF00FF00;
+                break;
+            case NODE_ACTOR:
+                color = 0xFFFF0000;
+                break;
+            case NODE_WALL_A:
+                color = 0xFF0000FF;
+                break;
+            case NODE_WALL_B:
+                color = 0xFF0000FF;
+                break;
+        }
 
-        // calculate the midpoint
-        Vector2 mid = vec2((w->a.x + w->b.x) / 2, (w->a.y + w->b.y) / 2);
+        // check if hovered
+        bool hovered = false;
+        Vector2 mousePos = GetMousePos();
+        if (mousePos.x >= screenPos.x - 5 && mousePos.x <= screenPos.x + 5 &&
+            mousePos.y >= screenPos.y - 5 && mousePos.y <= screenPos.y + 5) {
+            hovered = true;
+        }
 
-        char buf[32];
-        sprintf(buf, "Wall %d", i);
+        // if hovered, color is white
+        if (hovered) {
+            color = 0xFFFFFFFF;
+        }
 
-        mid.x *= EditorZoom;
-        mid.y *= EditorZoom;
+        // if selected, color is yellow
+        if (EditorSelectedNode == i) {
+            color = 0xFFFFFF00;
+        }
 
-        mid.x += EditorPanX;
-        mid.y += EditorPanY;
+        setColorUint(color);
+        draw_rect(screenPos.x - 5, screenPos.y - 5, 10, 10);
 
-        // offset midpoint by text size
-        mid.x -= strlen(buf) * 8 / 2;
-        mid.y -= 8 / 2;
-
-        FontDrawString(vec2(mid.x, mid.y), buf, 16, 0xFFFFFFFF);
-    }
-
-    // draw the player
-    Vector2 player = l->position;
-    player.x *= EditorZoom;
-    player.y *= EditorZoom;
-    player.x += EditorPanX;
-    player.y += EditorPanY;
-
-    setColorUint(0xFFFF0000);
-    draw_rect(player.x - 5, player.y - 5, 10, 10);
-    // draw the player's direction
-    setColorUint(0xFF00FF00);
-    Vector2 playerDir = vec2(cos(l->rotation), sin(l->rotation));
-    playerDir = Vector2Scale(playerDir, 20);
-    Vector2 playerDirEnd = Vector2Add(player, playerDir);
-    SDL_RenderDrawLine(GetRenderer(), player.x, player.y, playerDirEnd.x, playerDirEnd.y);
-
-    // draw each actor
-    for (int i = 0; i < ListGetSize(l->actors); i++) {
-        Actor *a = ListGet(l->actors, i);
-        Vector2 actorPos = a->position;
-        actorPos.x *= EditorZoom;
-        actorPos.y *= EditorZoom;
-        actorPos.x += EditorPanX;
-        actorPos.y += EditorPanY;
-
-        setColorUint(0xFF00FFFF);
-        draw_rect(actorPos.x - 5, actorPos.y - 5, 10, 10);
-
-        // draw the actor's direction
-        setColorUint(0xFF00FF00);
-        Vector2 actorDir = vec2(cos(a->rotation), sin(a->rotation));
-        actorDir = Vector2Scale(actorDir, 20);
-        Vector2 actorDirEnd = Vector2Add(actorPos, actorDir);
-        SDL_RenderDrawLine(GetRenderer(), actorPos.x, actorPos.y, actorDirEnd.x, actorDirEnd.y);
+        // for player and actor nodes, draw a line indicating rotation
+        if (node->type == NODE_PLAYER || node->type == NODE_ACTOR) {
+            Vector2 lineEnd = vec2(screenPos.x + (cos(node->rotation) * 20), screenPos.y + (sin(node->rotation) * 20));
+            SDL_RenderDrawLine(GetRenderer(), screenPos.x, screenPos.y, lineEnd.x, lineEnd.y);
+        }
     }
 
     // Draw buttons
@@ -252,19 +327,61 @@ void BtnZoomOut() {
 }
 
 void GEditorStateSet() {
-
     if (!EditorInitComplete) {
         // center the view to 0,0
         EditorPanX = WindowWidth() / 2;
         EditorPanY = WindowHeight() / 2;
 
         EditorButtons = CreateList();
+        EditorNodes = CreateList(); // will be freed immediately after this function, but we create it here to avoid nullptr free
 
         // create buttons for zooming
         CreateButton("ZP", vec2(10, 50), vec2(40, 24), BtnZoomIn, true, false);
         CreateButton("ZM", vec2(10, 78), vec2(40, 24), BtnZoomOut, true, false);
 
         EditorInitComplete = true;
+    }
+
+    // clear all editor nodes
+    ListFreeWithData(EditorNodes);
+    EditorNodes = CreateList();
+
+    Level *l = GetState()->level;
+
+    // add a node for the player
+    EditorNode *playerNode = malloc(sizeof(EditorNode));
+    playerNode->type = NODE_PLAYER;
+    playerNode->position = l->position;
+    playerNode->rotation = l->rotation;
+    ListAdd(EditorNodes, playerNode);
+
+    // add a node for each actor
+    for (int i = 0; i < ListGetSize(l->actors); i++) {
+        Actor *a = ListGet(l->actors, i);
+        EditorNode *actorNode = malloc(sizeof(EditorNode));
+        actorNode->type = NODE_ACTOR;
+        actorNode->position = a->position;
+        actorNode->rotation = a->rotation;
+        actorNode->index = i;
+        actorNode->extra = a->actorType;
+        ListAdd(EditorNodes, actorNode);
+    }
+
+    // add a node for each wall
+    for (int i = 0; i < ListGetSize(l->walls); i++) {
+        Wall *w = ListGet(l->walls, i);
+        EditorNode *wallNodeA = malloc(sizeof(EditorNode));
+        wallNodeA->type = NODE_WALL_A;
+        wallNodeA->index = i;
+        wallNodeA->position = w->a;
+        wallNodeA->extra = w->texId;
+        ListAdd(EditorNodes, wallNodeA);
+
+        EditorNode *wallNodeB = malloc(sizeof(EditorNode));
+        wallNodeB->type = NODE_WALL_B;
+        wallNodeB->index = i;
+        wallNodeB->position = w->b;
+        ListAdd(EditorNodes, wallNodeB);
     }
 
     SetRenderCallback(GEditorStateRender);

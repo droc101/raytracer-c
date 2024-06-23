@@ -20,6 +20,7 @@ Wall *CreateWall(Vector2 a, Vector2 b, uint tex) {
     w->a = a;
     w->b = b;
     w->tex = ToSDLTexture((const unsigned char *) wallTextures[tex], FILTER_NEAREST);
+    w->texId = tex;
     return w;
 }
 
