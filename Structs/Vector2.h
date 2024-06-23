@@ -12,8 +12,6 @@ Vector2 vec2(double x, double y);
 // Create a 2D vector with the same x and y values
 Vector2 vec2s(double xy);
 
-Vector2 Vector2RemoveOrigin(Vector2 vec);
-
 // Get the distance between two vectors
 double Vector2Distance(Vector2 a, Vector2 b);
 
