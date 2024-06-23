@@ -42,7 +42,7 @@ void DestroyLevel(Level *l) {
 double DepthBuffer[8192]; // if you have a screen wider than 8192 pixels, you're on your own
 
 void RenderCol(Level *l, int col) {
-    setColorUint(0xFFFFFFFF);
+    //setColorUint(0xFFFFFFFF);
     double angle = atan2(col - WindowWidth() / 2, WindowWidth() / 2) + l->rotation;
 
     RayCastResult raycast = HitscanLevel(*l, l->position, angle, true, false, false); // scan walls only
@@ -98,6 +98,8 @@ void RenderCol(Level *l, int col) {
 
     setColorUint(fogColor);
     draw_rect(col, y, 1, height);
+
+    setColorUint(0xFFFFFFFF);
 }
 
 // TODO: Find a way to blend the fog color with the shade color so actors are affected by fog

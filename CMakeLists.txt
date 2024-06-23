@@ -40,6 +40,8 @@ add_executable(game main.c Helpers/Input.h Helpers/Input.c defines.h Helpers/Dra
         Helpers/DataReader.h
         Helpers/Collision.c
         Helpers/Collision.h
+        GameStates/GEditorState.c
+        GameStates/GEditorState.h
 )
 
 if (UNIX)

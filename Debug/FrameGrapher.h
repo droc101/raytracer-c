@@ -23,7 +23,7 @@
 #define FRAMEGRAPH_V_SCALE 2
 
 // Enable or disable the frame graph (just the rendering)
-#define FRAMEGRAPH_ENABLE 1
+//#define FRAMEGRAPH_ENABLE
 
 
 void FrameGraphUpdate(int ns);

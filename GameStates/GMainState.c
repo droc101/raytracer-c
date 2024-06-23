@@ -11,13 +11,19 @@
 #include "../Debug/DPrint.h"
 #include "../Helpers/Collision.h"
 
-#include "../GameStates/GPauseState.h"
+#include "GPauseState.h"
+#include "GEditorState.h"
 
 SDL_Texture *skyTex;
 
 void GMainStateUpdate() {
     if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE)) {
         GPauseStateSet();
+        return;
+    }
+
+    if (IsKeyJustPressed(SDL_SCANCODE_F6)) {
+        GEditorStateSet();
         return;
     }
 
@@ -106,10 +112,12 @@ void GMainStateRender() {
     draw_rect(0, WindowHeight() / 2, WindowWidth(), WindowHeight() / 2);
 
 
+    SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_BLEND);
     for (int col = 0; col < WindowWidth(); col++) {
         RenderCol(l, col);
         RenderActorCol(l, col);
     }
+    SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_NONE);
     DPrintF("Position: (%.2f, %.2f)\nRotation: %.4f (%.2fdeg)", 0xFFFFFFFF, false, l->position.x, l->position.y, l->rotation, radToDeg(l->rotation));
 
     DPrintF("Mouse Buttons: %d %d %d", 0xFFFFFFFF, false, IsMouseButtonPressed(1), IsMouseButtonPressed(2), IsMouseButtonPressed(3));
