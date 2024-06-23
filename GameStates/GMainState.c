@@ -31,11 +31,19 @@ void GMainStateUpdate() {
         moveVec.x -= 1;
     }
 
+#ifdef KEYBOARD_ROTATION
     if (IsKeyPressed(SDL_SCANCODE_Q)) {
         moveVec.y -= 1;
     } else if (IsKeyPressed(SDL_SCANCODE_E)) {
         moveVec.y += 1;
     }
+#else
+    if (IsKeyPressed(SDL_SCANCODE_A)) {
+        moveVec.y -= 1;
+    } else if (IsKeyPressed(SDL_SCANCODE_D)) {
+        moveVec.y += 1;
+    }
+#endif
 
     bool isMoving = moveVec.x != 0 || moveVec.y != 0;
 
