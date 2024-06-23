@@ -37,8 +37,10 @@ Vector2 Move(Vector2 position, Vector2 moveVec) {
     }
     for (int i = 0; i < l->actors->size; i++) {
         Actor *a = ListGet(l->actors, i);
-        Wall aWall = GetTransformedWall(a);
-        moveVec = CollideWall(&aWall, position, moveVec);
+        if (a->solid) {
+            Wall aWall = GetTransformedWall(a);
+            moveVec = CollideWall(&aWall, position, moveVec);
+        }
     }
     position = Vector2Add(position, moveVec);
     return position;
