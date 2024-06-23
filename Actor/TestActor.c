@@ -5,6 +5,7 @@
 #include "TestActor.h"
 #include "../Structs/Wall.h"
 #include "../Structs/Vector2.h"
+#include "../Helpers/Collision.h"
 
 void TestActorInit(Actor *this) {
     this->solid = true;
@@ -13,6 +14,13 @@ void TestActorInit(Actor *this) {
 
 void TestActorUpdate(Actor *this) {
     this->rotation += 0.01;
+
+    Vector2 MoveDir = vec2(0, 0.05);
+    MoveDir = Vector2Rotate(MoveDir, this->rotation);
+
+    MoveDir = Move(this->position, MoveDir, this);
+
+    this->position = MoveDir;
 }
 
 void TestActorDestroy(Actor *this) {

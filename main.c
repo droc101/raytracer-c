@@ -77,6 +77,9 @@ int main(int argc, char *argv[]) {
     Wall *wl = CreateWall(vec2(20, -10), vec2(1, 10), 0);
     ListAdd(l->walls, wl);
 
+    Wall *wl2 = CreateWall(vec2(20, 10), vec2(1, 10), 0);
+    ListAdd(l->walls, wl2);
+
     ChangeLevel(l);
 #pragma endregion
 
