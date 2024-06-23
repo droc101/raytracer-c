@@ -71,8 +71,14 @@ void RenderCol(Level *l, int col) {
     shade = max(0.6, min(1, shade));
     //shade = floor(shade * 16) / 16;
 
-    byte shadeByte = 255 * shade;
+    // calculate the fog color
+    double fogFactor = remap(distance, l->FogStart, l->FogEnd, 0, 1);
+    fogFactor = max(0, min(1, fogFactor));
+    fogFactor = floor(fogFactor * 16) / 16;
+    uint fogColor = l->FogColor;
+    fogColor = (fogColor & 0x00FFFFFF) | ((uint)(fogFactor * 255) << 24);
 
+    byte shadeByte = 255 * shade;
 
     SDL_Texture *texture = raycast.CollisionWall.tex;
     SDL_Point texSize = SDL_TextureSize(texture);
@@ -89,8 +95,12 @@ void RenderCol(Level *l, int col) {
 
     SDL_SetTextureColorMod(texture, shadeByte, shadeByte, shadeByte);
     DrawTextureColumn(texture, texCol, col, y, height);
+
+    setColorUint(fogColor);
+    draw_rect(col, y, 1, height);
 }
 
+// TODO: Find a way to blend the fog color with the shade color so actors are affected by fog
 void RenderActorCol(Level *l, int col) {
     double angle = atan2(col - WindowWidth() / 2, WindowWidth() / 2) + l->rotation;
 

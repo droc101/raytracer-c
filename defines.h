@@ -46,6 +46,9 @@ typedef struct {
     uint FloorColor;
     uint FloorLowerColor;
     uint MusicID;
+    uint FogColor;
+    double FogStart;
+    double FogEnd;
 } Level;
 
 // Utility functions are in Structs/ray.h
@@ -77,6 +80,7 @@ typedef struct {
     double rotation;
     Wall *actorWall;
     bool solid;
+    int health;
     void *extra_data;
     void (*Init)(void *self);
     void (*Update)(void *self);

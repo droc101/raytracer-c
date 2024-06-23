@@ -24,11 +24,17 @@ void(*ActorDestroyFuncs[])(Actor *) = {
         TestActorDestroy
 };
 
+int ActorHealths[] = {
+        1,
+        1
+};
+
 Actor *CreateActor(Vector2 position, double rotation, int actorType) {
     Actor *actor = malloc(sizeof(Actor));
     actor->position = position;
     actor->rotation = rotation;
     actor->solid = false;
+    actor->health = ActorHealths[actorType];
     actor->Init = (void (*)(void *)) ActorInitFuncs[actorType];
     actor->Update = (void (*)(void *)) ActorUpdateFuncs[actorType];
     actor->Destroy = (void (*)(void *)) ActorDestroyFuncs[actorType];

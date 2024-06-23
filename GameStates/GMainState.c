@@ -111,6 +111,8 @@ void GMainStateRender() {
         RenderActorCol(l, col);
     }
     DPrintF("Position: (%.2f, %.2f)\nRotation: %.4f (%.2fdeg)", 0xFFFFFFFF, false, l->position.x, l->position.y, l->rotation, radToDeg(l->rotation));
+
+    DPrintF("Mouse Buttons: %d %d %d", 0xFFFFFFFF, false, IsMouseButtonPressed(1), IsMouseButtonPressed(2), IsMouseButtonPressed(3));
 }
 
 void GMainStateSet() {

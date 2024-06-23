@@ -144,3 +144,19 @@ SDL_Texture *GetScreenshot() {
 
     return texture;
 }
+
+uint MixColors(uint color_a, uint color_b) {
+    // Mix color_a onto color_b, accounting for the alpha of color_a
+    byte *a = getColorUint(color_a);
+    byte *b = getColorUint(color_b);
+
+    uint r = (a[0] * a[3] + b[0] * (255 - a[3])) / 255;
+    uint g = (a[1] * a[3] + b[1] * (255 - a[3])) / 255;
+    uint bl = (a[2] * a[3] + b[2] * (255 - a[3])) / 255;
+    uint al = a[3] + b[3] * (255 - a[3]) / 255;
+
+    free(a);
+    free(b);
+
+    return (r << 16) | (g << 8) | bl | (al << 24);
+}

@@ -55,8 +55,6 @@ int main(int argc, char *argv[]) {
     }
     SetRenderer(tr);
 
-    SDL_SetRelativeMouseMode(SDL_TRUE);
-
     printf("Initializing Engine\n");
     FontInit();
     InitState();
@@ -68,6 +66,10 @@ int main(int argc, char *argv[]) {
 
     Level *l = LoadLevel(levelData);
     l->MusicID = 0;
+
+    l->FogColor = 0xFF8040FF;
+    l->FogStart = 1;
+    l->FogEnd = 20;
 
     Actor *a = CreateActor(vec2(5, -1), 0, 1);
     ListAdd(l->actors, a);

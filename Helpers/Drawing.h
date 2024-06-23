@@ -49,4 +49,6 @@ byte* getColorUint(uint color);
 // Get a screenshot of the current window
 SDL_Texture *GetScreenshot();
 
+uint MixColors(uint color_a, uint color_b);
+
 #endif //GAME_DRAWING_H
