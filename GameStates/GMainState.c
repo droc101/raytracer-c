@@ -9,6 +9,7 @@
 #include "../Helpers/MathEx.h"
 #include "../Helpers/Drawing.h"
 #include "../Debug/DPrint.h"
+#include "../Helpers/Collision.h"
 
 #include "../GameStates/GPauseState.h"
 
@@ -43,31 +44,7 @@ void GMainStateUpdate() {
     moveVec = Vector2Scale(moveVec, MOVE_SPEED);
     moveVec = Vector2Rotate(moveVec, l->rotation);
 
-    /* TODO
-     * - Check for Actor collisions too
-     * - Move to a better place so that other functions can use it (such as Actor movement)
-     */
-    for (int i = 0; i < l->walls->size; i++) {
-        Wall *w = ListGet(l->walls, i);
-        double dx = w->b.x - w->a.x;
-        double dy = w->b.y - w->a.y;
-        int mult = (l->position.x - w->a.x) * (w->b.y - w->a.y) - (l->position.y - w->a.y) * (w->b.x - w->a.x) < 0 ? -1 : 1;
-        double hitboxSize = mult * WALL_HITBOX_EXTENTS;
-        Vector2 pos = Vector2Add(l->position, moveVec);
-        Vector2 hitboxOffset = vec2(hitboxSize * dy / WallGetLength(*w), -hitboxSize * dx / WallGetLength(*w));
-        if (
-                (mult * ((pos.x - w->a.x - hitboxOffset.x) * (w->b.y - w->a.y) - (pos.y - w->a.y - hitboxOffset.y) * (w->b.x - w->a.x)) <= 0) &&
-                (mult * ((pos.x - w->a.x - hitboxOffset.x) * hitboxOffset.y - (pos.y - w->a.y - hitboxOffset.y) * hitboxOffset.x) <= 0) &&
-                (mult * ((pos.y - w->b.y - hitboxOffset.y) * hitboxOffset.x - (pos.x - w->b.x - hitboxOffset.x) * hitboxOffset.y) <= 0)
-            ) {
-            double dydx = dy / (dx ? dx : 1);
-            double dxdy = dx / (dy ? dy : 1);
-            double wallLength = WallGetLength(*w);
-            moveVec.x = hitboxSize * dy / wallLength + (dx == 0 ? w->a.x : dy == 0 ? pos.x : (pos.y - w->a.y + w->a.x * dydx + pos.x * dxdy) / (dydx + dxdy)) - l->position.x;
-            moveVec.y = -hitboxSize * dx / wallLength + (dx == 0 ? pos.y : dy == 0 ? w->a.y : (pos.x - w->a.x + w->a.y * dxdy + pos.y * dydx) / (dxdy + dydx)) - l->position.y;
-        }
-    }
-    l->position = Vector2Add(l->position, moveVec);
+    l->position = Move(l->position, moveVec);
 
     // view bobbing (scam edition) 💀
     if (isMoving) {
