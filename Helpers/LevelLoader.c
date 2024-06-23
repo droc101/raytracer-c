@@ -56,6 +56,15 @@ Level *LoadLevel(byte *data) {
                 done = true;
                 break;
             }
+            case LEVEL_CMD_FOG: {
+                uint color = ReadUint(data, &i);
+                double start = ReadDouble(data, &i);
+                double end = ReadDouble(data, &i);
+                l->FogColor = color;
+                l->FogStart = start;
+                l->FogEnd = end;
+                break;
+            }
             default:
                 printf("Unknown level opcode %u at offset %u", opcode, i);
                 fflush(stdout);

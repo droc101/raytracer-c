@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
     l->MusicID = 0;
 
     l->FogColor = 0xFF8040FF;
-    l->FogStart = 1;
+    l->FogStart = 5;
     l->FogEnd = 20;
 
     Actor *a = CreateActor(vec2(5, -1), 0, 1);
