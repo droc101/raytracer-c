@@ -18,6 +18,7 @@ SDL_Texture *skyTex;
 void GMainStateUpdate() {
     if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE)) {
         GPauseStateSet();
+        return;
     }
 
     Level *l = GetState()->level;
@@ -53,11 +54,15 @@ void GMainStateUpdate() {
         GetState()->FakeHeight = lerp(GetState()->FakeHeight, 0, 0.1); // NOLINT(*-narrowing-conversions)
     }
 
+#ifdef KEYBOARD_ROTATION
     if (IsKeyPressed(SDL_SCANCODE_A)) {
         l->rotation -= ROT_SPEED;
     } else if (IsKeyPressed(SDL_SCANCODE_D)) {
         l->rotation += ROT_SPEED;
     }
+#else
+    l->rotation += ((double)GetMouseRel().x) / MOUSE_SENSITIVITY;
+#endif
 
     if (IsKeyJustPressed(SDL_SCANCODE_C)) {
         Error("Manually triggered error.");

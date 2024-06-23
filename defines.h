@@ -98,5 +98,6 @@ typedef struct {
 // Player movement speed
 #define MOVE_SPEED 0.125
 #define ROT_SPEED 0.04
+#define MOUSE_SENSITIVITY 100 // higher is less sensitive
 
 #endif //GAME_DEFINES_H

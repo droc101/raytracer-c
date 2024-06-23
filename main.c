@@ -55,6 +55,8 @@ int main(int argc, char *argv[]) {
     }
     SetRenderer(tr);
 
+    SDL_SetRelativeMouseMode(SDL_TRUE);
+
     printf("Initializing Engine\n");
     FontInit();
     InitState();
@@ -93,12 +95,20 @@ int main(int argc, char *argv[]) {
             } else if (e.type == SDL_KEYDOWN) {
                 SDL_Scancode scancode = e.key.keysym.scancode;
                 HandleKeyDown(scancode);
+            } else if (e.type == SDL_MOUSEMOTION) {
+                HandleMouseMotion(e.motion.x, e.motion.y, e.motion.xrel, e.motion.yrel);
+            } else if (e.type == SDL_MOUSEBUTTONDOWN) {
+                HandleMouseDown(e.button.button);
+            } else if (e.type == SDL_MOUSEBUTTONUP) {
+                HandleMouseUp(e.button.button);
             }
         }
 
         ResetDPrintYPos();
 
         GlobalState *g = GetState();
+
+        SDL_SetRelativeMouseMode(g->UpdateGame == GMainStateUpdate ? SDL_TRUE : SDL_FALSE);
 
         g->UpdateGame();
 
@@ -108,7 +118,7 @@ int main(int argc, char *argv[]) {
 
         SDL_RenderPresent(GetRenderer());
 
-        UpdateKeyStates();
+        UpdateInputStates();
         g->frame++;
 
         if (g->requestExit) {

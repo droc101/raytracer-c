@@ -8,22 +8,30 @@
 #include "SDL.h"
 #include "../defines.h"
 
-#define KS_RELEASED 0
-#define KS_JUST_PRESSED 1
-#define KS_PRESSED 2
-#define KS_JUST_RELEASED 3
+#define INP_RELEASED 0
+#define INP_JUST_PRESSED 1
+#define INP_PRESSED 2
+#define INP_JUST_RELEASED 3
 
 // Event handlers
 void HandleKeyDown(int code);
 void HandleKeyUp(int code);
+void HandleMouseMotion(int x, int y, int xrel, int yrel);
+void HandleMouseDown(int button);
+void HandleMouseUp(int button);
 
 // State update
-void UpdateKeyStates();
+void UpdateInputStates();
 
 // Exposed methods
 // Use SDL_SCANCODE_* codes
 bool IsKeyPressed(int code);
 bool IsKeyJustPressed(int code);
 bool IsKeyJustReleased(int code);
+bool IsMouseButtonPressed(int button);
+bool IsMouseButtonJustPressed(int button);
+bool IsMouseButtonJustReleased(int button);
+Vector2 GetMousePos();
+Vector2 GetMouseRel();
 
 #endif //GAME_INPUT_H

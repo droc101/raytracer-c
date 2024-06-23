@@ -9,6 +9,9 @@
 #include "../Structs/GlobalState.h"
 #include "../Structs/Level.h"
 
+// Don't call. Exposed for state checking.
+void GMainStateUpdate();
+
 void GMainStateSet();
 
 void InitSkyTex();

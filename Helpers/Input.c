@@ -3,38 +3,89 @@
 //
 
 #include "Input.h"
+#include "../Structs/Vector2.h"
 
 // every key is tracked, even if it's not used
 // this *could* be optimized, but it's not necessary
 // on modern systems where memory is not a concern
 byte keys[SDL_NUM_SCANCODES];
 
+byte mouseButtons[4];
+
+int mouseX, mouseY, mouseXrel, mouseYrel;
+
+void HandleMouseMotion(int x, int y, int xrel, int yrel) {
+    mouseX = x;
+    mouseY = y;
+    mouseXrel = xrel;
+    mouseYrel = yrel;
+}
+
+void HandleMouseDown(int button) {
+    mouseButtons[button] = INP_JUST_PRESSED;
+}
+
+void HandleMouseUp(int button) {
+    mouseButtons[button] = INP_JUST_RELEASED;
+}
+
 void HandleKeyDown(int code) {
-    keys[code] = KS_JUST_PRESSED;
+    keys[code] = INP_JUST_PRESSED;
 }
 
 void HandleKeyUp(int code) {
-    keys[code] = KS_JUST_RELEASED;
+    keys[code] = INP_JUST_RELEASED;
 }
 
-void UpdateKeyStates() {
+void UpdateInputStates() {
     for (int i = 0; i < SDL_NUM_SCANCODES; i++) {
-        if (keys[i] == KS_JUST_RELEASED) {
-            keys[i] = KS_RELEASED;
-        } else if (keys[i] == KS_JUST_PRESSED) {
-            keys[i] = KS_PRESSED;
+        if (keys[i] == INP_JUST_RELEASED) {
+            keys[i] = INP_RELEASED;
+        } else if (keys[i] == INP_JUST_PRESSED) {
+            keys[i] = INP_PRESSED;
         }
     }
+
+    for (int i = 0; i < 4; i++) {
+        if (mouseButtons[i] == INP_JUST_RELEASED) {
+            mouseButtons[i] = INP_RELEASED;
+        } else if (mouseButtons[i] == INP_JUST_PRESSED) {
+            mouseButtons[i] = INP_PRESSED;
+        }
+    }
+
+    mouseXrel = 0;
+    mouseYrel = 0;
 }
 
 bool IsKeyPressed(int code) {
-    return keys[code] == KS_PRESSED || keys[code] == KS_JUST_PRESSED;
+    return keys[code] == INP_PRESSED || keys[code] == INP_JUST_PRESSED;
 }
 
 bool IsKeyJustPressed(int code) {
-    return keys[code] == KS_JUST_PRESSED;
+    return keys[code] == INP_JUST_PRESSED;
 }
 
 bool IsKeyJustReleased(int code) {
-    return keys[code] == KS_JUST_RELEASED;
+    return keys[code] == INP_JUST_RELEASED;
+}
+
+bool IsMouseButtonPressed(int button) {
+    return mouseButtons[button] == INP_PRESSED || mouseButtons[button] == INP_JUST_PRESSED;
+}
+
+bool IsMouseButtonJustPressed(int button) {
+    return mouseButtons[button] == INP_JUST_PRESSED;
+}
+
+bool IsMouseButtonJustReleased(int button) {
+    return mouseButtons[button] == INP_JUST_RELEASED;
+}
+
+Vector2 GetMousePos() {
+    return vec2(mouseX, mouseY);
+}
+
+Vector2 GetMouseRel() {
+    return vec2(mouseXrel, mouseYrel);
 }
