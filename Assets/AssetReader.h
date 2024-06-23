@@ -20,5 +20,6 @@ byte *DecompressAsset(const byte *asset);
 #define ASSET_TYPE_TEXTURE 0
 #define ASSET_TYPE_MP3 1
 #define ASSET_TYPE_WAV 2
+#define ASSET_TYPE_LEVEL 3 // TODO: Level editor & loading
 
 #endif //GAME_ASSETREADER_H

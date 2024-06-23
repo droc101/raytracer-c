@@ -29,14 +29,20 @@ Vector2 CollideWall(Wall *w, Vector2 position, Vector2 moveVec) {
     return moveVec;
 }
 
-Vector2 Move(Vector2 position, Vector2 moveVec) {
+Vector2 Move(Vector2 position, Vector2 moveVec, void *ignore) {
     Level *l = GetState()->level;
     for (int i = 0; i < l->walls->size; i++) {
         Wall *w = ListGet(l->walls, i);
+        if (w == ignore) {
+            continue;
+        }
         moveVec = CollideWall(w, position, moveVec);
     }
     for (int i = 0; i < l->actors->size; i++) {
         Actor *a = ListGet(l->actors, i);
+        if (a == ignore) {
+            continue;
+        }
         if (a->solid) {
             Wall aWall = GetTransformedWall(a);
             moveVec = CollideWall(&aWall, position, moveVec);
@@ -44,4 +50,14 @@ Vector2 Move(Vector2 position, Vector2 moveVec) {
     }
     position = Vector2Add(position, moveVec);
     return position;
+}
+
+bool CollideCylinder(Vector2 cylOrigin, double cylRadius, Vector2 testPoint) {
+    return Vector2Distance(cylOrigin, testPoint) < cylRadius;
+}
+
+bool CollideActorCylinder(Actor *a, Vector2 testPoint) {
+    Wall transformedWall = GetTransformedWall(a);
+    double radius = WallGetLength(transformedWall) / 2;
+    return CollideCylinder(a->position, radius, testPoint);
 }

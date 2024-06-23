@@ -44,6 +44,7 @@ typedef struct {
     double rotation;
     uint SkyColor;
     uint FloorColor;
+    uint FloorLowerColor;
     uint MusicID;
 } Level;
 

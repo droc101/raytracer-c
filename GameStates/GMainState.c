@@ -44,7 +44,7 @@ void GMainStateUpdate() {
     moveVec = Vector2Scale(moveVec, MOVE_SPEED);
     moveVec = Vector2Rotate(moveVec, l->rotation);
 
-    l->position = Move(l->position, moveVec);
+    l->position = Move(l->position, moveVec, NULL);
 
     // view bobbing (scam edition) 💀
     if (isMoving) {
