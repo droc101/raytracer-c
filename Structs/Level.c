@@ -77,7 +77,7 @@ void RenderCol(Level *l, int col) {
     // calculate the fog color
     double fogFactor = remap(distance, l->FogStart, l->FogEnd, 0, 1);
     fogFactor = max(0, min(1, fogFactor));
-    fogFactor = floor(fogFactor * 16) / 16;
+//    fogFactor = floor(fogFactor * 16) / 16;
     uint fogColor = l->FogColor;
     fogColor = (fogColor & 0x00FFFFFF) | ((uint)(fogFactor * 255) << 24);
 

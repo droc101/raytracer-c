@@ -22,12 +22,14 @@ bool EditorSnapToGrid = true;
 int EditorSelectedNode = -1;
 
 typedef enum {
-    EDITOR_MODE_ADD,
-    EDITOR_MODE_SELECT,
-    EDITOR_MODE_DELETE
+    EDITOR_MODE_ADD, // click to add a node
+    EDITOR_MODE_MOVE, // move nodes around
+    EDITOR_MODE_DELETE, // delete nodes
+    EDITOR_MODE_PROPERTIES, // edit node properties
+    EDITOR_MODE_LEVEL // edit level properties
 } EditorMode;
 
-EditorMode CurrentEditorMode = EDITOR_MODE_SELECT;
+EditorMode CurrentEditorMode = EDITOR_MODE_MOVE;
 
 typedef struct {
     void *icon;
@@ -169,32 +171,34 @@ void DrawEditorButton(EditorButton *btn) {
     uint btnColor;
     if (btn->toggled) {
         if (pressed) {
-            btnColor = 0xFFFF0000;
+            btnColor = 0xFF6ebcff;
         } else if (hovered) {
-            btnColor = 0xFF0000FF;
+            btnColor = 0xFF7dc3ff;
         } else {
-            btnColor = 0xFF000080;
+            btnColor = 0xFF8ac9ff;
         }
     } else if (pressed) {
-        btnColor = 0xFF00FF00;
+        btnColor = 0xFF8ac9ff;
     } else if (hovered) {
-        btnColor = 0xFF8080FF;
+        btnColor = 0xFFa1d4ff;
     } else {
+        btnColor = 0xFFc2e3ff;
+    }
+
+    if (!btn->enabled) {
         btnColor = 0xFF808080;
     }
 
     setColorUint(btnColor);
     draw_rect(btn->position.x, btn->position.y, btn->size.x, btn->size.y);
 
-    FontDrawString(vec2(btn->position.x + 5, btn->position.y + 5), btn->text, 16, 0xFFFFFFFF);
+    DrawTextAligned(btn->text, 16, 0xFFFFFFFF, btn->position, btn->size, FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE);
 }
 
 void GEditorStateRender() {
     setColorUint(0xFF123456);
     SDL_RenderClear(GetRenderer());
 
-    // Draw a unit grid with the scale of 20px = 1 unit at 1.0 zoom
-    // account for zoom and pan
     int gridSpacing = EditorZoom;
     int gridOffsetX = (int)EditorPanX % gridSpacing;
     int gridOffsetY = (int)EditorPanY % gridSpacing;
@@ -207,7 +211,6 @@ void GEditorStateRender() {
         draw_rect(0, y, WindowWidth(), 1);
     }
 
-    // draw special grid lines for 0,0
     setColorUint(0xFF0000FF);
     draw_rect((int)EditorPanX, 0, 1, WindowHeight());
     setColorUint(0xFFFF0000);
@@ -220,33 +223,33 @@ void GEditorStateRender() {
         int worldSpaceX = (int)((x - EditorPanX) / EditorZoom);
 
         if (worldSpaceX % 5 != 0) {
-            continue; // only draw every 5th unit
+            continue;
         }
         sprintf(buf, "%d", worldSpaceX);
-        FontDrawString(vec2(x, WindowHeight() - 20), buf, 16, 0xFFFFFFFF);
+        DrawTextAligned(buf, 16, 0xFFFFFFFF, vec2(x-50, WindowHeight() - 25), vec2(100, 20), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE);
     }
     for (int y = gridOffsetY; y < WindowHeight(); y += gridSpacing) {
         int worldSpaceY = (int)((y - EditorPanY) / EditorZoom);
 
         if (worldSpaceY % 5 != 0) {
-            continue; // only draw every 5th unit
+            continue;
         }
         sprintf(buf, "%d", worldSpaceY);
-        FontDrawString(vec2(WindowWidth() - 60, y), buf, 16, 0xFFFFFFFF);
+        DrawTextAligned(buf, 16, 0xFFFFFFFF, vec2(WindowWidth() - 110, y - 10), vec2(100, 20), FONT_HALIGN_RIGHT, FONT_VALIGN_MIDDLE);
     }
 
-    sprintf(buf, "Position: (%.2f, %.2f)\nZoom: %.1f", EditorPanX, EditorPanY, EditorZoom);
-    FontDrawString(vec2(10, 10), buf, 16, 0xFFFFFFFF);
-
-    Level *l = GetState()->level;
+    double worldSpaceX = (WindowWidth() / 2 - EditorPanX) / EditorZoom;
+    double worldSpaceY = (WindowHeight() / 2 - EditorPanY) / EditorZoom;
+    sprintf(buf, "Position: (%.2f, %.2f)", worldSpaceX, worldSpaceY);
+    DrawTextAligned(buf, 16, 0xFFFFFFFF, vec2(560, 10), vec2(200, 24), FONT_HALIGN_LEFT, FONT_VALIGN_MIDDLE);
 
     // Draw nodes
+    int hoveredNode = -1;
     for (int i = 0; i < EditorNodes->size; i++) {
         EditorNode *node = ListGet(EditorNodes, i);
         Vector2 screenPos = vec2((node->position.x * EditorZoom) + EditorPanX, (node->position.y * EditorZoom) + EditorPanY);
 
-        if (node->type == NODE_WALL_A) {
-            // draw a line to the other wall node
+        if (node->type == NODE_WALL_A) { // Draw a line to the next node, which should be the wall's other end
             EditorNode *nodeB = ListGet(EditorNodes, i + 1);
             Vector2 screenPosB = vec2((nodeB->position.x * EditorZoom) + EditorPanX, (nodeB->position.y * EditorZoom) + EditorPanY);
             setColorUint(0xFFFFFFFF);
@@ -269,22 +272,21 @@ void GEditorStateRender() {
                 break;
         }
 
-        // check if hovered
         bool hovered = false;
         Vector2 mousePos = GetMousePos();
         if (mousePos.x >= screenPos.x - 5 && mousePos.x <= screenPos.x + 5 &&
             mousePos.y >= screenPos.y - 5 && mousePos.y <= screenPos.y + 5) {
             hovered = true;
+            hoveredNode = i;
         }
 
-        // if hovered, color is white
-        if (hovered) {
-            color = 0xFFFFFFFF;
-        }
-
-        // if selected, color is yellow
         if (EditorSelectedNode == i) {
             color = 0xFFFFFF00;
+        }
+
+        if (hovered || EditorSelectedNode == i) {
+            setColorUint(0xFFFFFFFF);
+            draw_rect(screenPos.x - 6, screenPos.y - 6, 12, 12);
         }
 
         setColorUint(color);
@@ -295,6 +297,36 @@ void GEditorStateRender() {
             Vector2 lineEnd = vec2(screenPos.x + (cos(node->rotation) * 20), screenPos.y + (sin(node->rotation) * 20));
             SDL_RenderDrawLine(GetRenderer(), screenPos.x, screenPos.y, lineEnd.x, lineEnd.y);
         }
+    }
+
+    if (hoveredNode != -1) {
+        EditorNode *node = ListGet(EditorNodes, hoveredNode);
+        Vector2 screenPos = vec2((node->position.x * EditorZoom) + EditorPanX, (node->position.y * EditorZoom) + EditorPanY);
+
+        char nodeInfo[96];
+        switch (node->type) {
+            case NODE_PLAYER:
+                sprintf(nodeInfo, "Player: %.2f, %.2f\nRotation: %.2f", node->position.x, node->position.y, radToDeg(node->rotation));
+                break;
+            case NODE_ACTOR:
+                sprintf(nodeInfo, "Actor: 0x%04x\nPosition: %.2f, %.2f\nRotation: %.2f", node->extra, node->position.x, node->position.y, radToDeg(node->rotation));
+                break;
+            case NODE_WALL_A:
+                sprintf(nodeInfo, "Wall (A): %.2f, %.2f\nTexture: 0x%04x", node->position.x, node->position.y, node->extra);
+                break;
+            case NODE_WALL_B:
+                sprintf(nodeInfo, "Wall (B): %.2f, %.2f", node->position.x, node->position.y);
+                break;
+        }
+
+        Vector2 measuredText = MeasureText(nodeInfo, 16);
+        int textWidth = measuredText.x;
+        int textHeight = measuredText.y;
+        SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_BLEND);
+        setColorUint(0x80000000);
+        draw_rect(screenPos.x + 10, screenPos.y, textWidth + 20, textHeight + 20);
+        SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_NONE);
+        FontDrawString(vec2(screenPos.x + 20, screenPos.y + 10), nodeInfo, 16, 0xFFFFFFFF);
     }
 
     // Draw buttons
@@ -326,6 +358,10 @@ void BtnZoomOut() {
     EditorZoom = clampf(EditorZoom, 10.0, 60.0);
 }
 
+void BtnZoomReset() {
+    EditorZoom = 20.0;
+}
+
 void GEditorStateSet() {
     if (!EditorInitComplete) {
         // center the view to 0,0
@@ -336,8 +372,16 @@ void GEditorStateSet() {
         EditorNodes = CreateList(); // will be freed immediately after this function, but we create it here to avoid nullptr free
 
         // create buttons for zooming
-        CreateButton("ZP", vec2(10, 50), vec2(40, 24), BtnZoomIn, true, false);
-        CreateButton("ZM", vec2(10, 78), vec2(40, 24), BtnZoomOut, true, false);
+        CreateButton("+", vec2(10, 50), vec2(40, 24), BtnZoomIn, true, false);
+        CreateButton("-", vec2(10, 78), vec2(40, 24), BtnZoomOut, true, false);
+        CreateButton("0", vec2(10, 106), vec2(40, 24), BtnZoomReset, true, false);
+
+        // Create buttons for editor modes horizontal along the top size 100x24
+        CreateButton("Add", vec2(10, 10), vec2(100, 24), NULL, true, true);
+        CreateButton("Move", vec2(120, 10), vec2(100, 24), NULL, true, true);
+        CreateButton("Delete", vec2(230, 10), vec2(100, 24), NULL, true, true);
+        CreateButton("Prop", vec2(340, 10), vec2(100, 24), NULL, true, true);
+        CreateButton("Level", vec2(450, 10), vec2(100, 24), NULL, true, true);
 
         EditorInitComplete = true;
     }
