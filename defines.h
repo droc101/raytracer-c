@@ -97,17 +97,4 @@ typedef struct {
 #define TARGET_MS (1000 / TARGET_FPS)
 #define TARGET_NS (1000000000 / TARGET_FPS) // nanoseconds because precision
 
-// Default window size
-#define DEF_WIDTH 1280
-#define DEF_HEIGHT 720
-
-// Player movement speed
-#define MOVE_SPEED 0.125
-#define ROT_SPEED 0.04
-#define MOUSE_SENSITIVITY 100 // higher is less sensitive
-
-#define VERSION "0.0.1"
-#define COPYRIGHT "2024 Droc101 Development"
-#define GAME_TITLE "Game."
-
 #endif //GAME_DEFINES_H

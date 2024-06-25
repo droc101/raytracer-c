@@ -10,6 +10,7 @@
 #include "../Helpers/Font.h"
 #include "../Structs/GlobalState.h"
 #include "GMainState.h"
+#include "../config.h"
 
 //#define GMENUSTATE_WALL_DEBUG
 

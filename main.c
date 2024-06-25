@@ -16,6 +16,7 @@
 #include "Assets/AssetReader.h"
 #include "Structs/Vector2.h"
 #include "Helpers/Timing.h"
+#include "config.h"
 
 int main(int argc, char *argv[]) {
     printf("Build time: %s at %s\n", __DATE__, __TIME__);

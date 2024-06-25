@@ -10,7 +10,7 @@
 #include "../Helpers/Drawing.h"
 #include "../Debug/DPrint.h"
 #include "../Helpers/Collision.h"
-
+#include "../config.h"
 #include "GPauseState.h"
 #include "GEditorState.h"
 
