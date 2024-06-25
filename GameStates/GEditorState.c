@@ -118,7 +118,7 @@ void GEditorStateUpdate() {
                 button->toggled = !button->toggled;
             }
             if (button->callback != NULL) {
-                button->callback();
+                button->callback(button);
             }
         }
     }
@@ -348,18 +348,42 @@ void CreateButton(char *text, Vector2 position, Vector2 size, void (*callback)()
     ListAdd(EditorButtons, button);
 }
 
-void BtnZoomIn() {
+void BtnZoomIn(EditorButton *btn) {
     EditorZoom += 2.0;
     EditorZoom = clampf(EditorZoom, 10.0, 60.0);
 }
 
-void BtnZoomOut() {
+void BtnZoomOut(EditorButton *btn) {
     EditorZoom -= 2.0;
     EditorZoom = clampf(EditorZoom, 10.0, 60.0);
 }
 
-void BtnZoomReset() {
+void BtnZoomReset(EditorButton *btn) {
     EditorZoom = 20.0;
+}
+
+void ToggleSnapToGrid(EditorButton *btn) {
+    EditorSnapToGrid = btn->toggled;
+}
+
+void SetEditorMode(EditorButton *btn) {
+    for (int i = 0; i < EditorButtons->size; i++) {
+        EditorButton *button = ListGet(EditorButtons, i);
+        button->toggled = false;
+    }
+    btn->toggled = true;
+
+    if (strcmp(btn->text, "Add") == 0) {
+        CurrentEditorMode = EDITOR_MODE_ADD;
+    } else if (strcmp(btn->text, "Move") == 0) {
+        CurrentEditorMode = EDITOR_MODE_MOVE;
+    } else if (strcmp(btn->text, "Delete") == 0) {
+        CurrentEditorMode = EDITOR_MODE_DELETE;
+    } else if (strcmp(btn->text, "Prop") == 0) {
+        CurrentEditorMode = EDITOR_MODE_PROPERTIES;
+    } else if (strcmp(btn->text, "Level") == 0) {
+        CurrentEditorMode = EDITOR_MODE_LEVEL;
+    }
 }
 
 void GEditorStateSet() {
@@ -377,11 +401,20 @@ void GEditorStateSet() {
         CreateButton("0", vec2(10, 106), vec2(40, 24), BtnZoomReset, true, false);
 
         // Create buttons for editor modes horizontal along the top size 100x24
-        CreateButton("Add", vec2(10, 10), vec2(100, 24), NULL, true, true);
-        CreateButton("Move", vec2(120, 10), vec2(100, 24), NULL, true, true);
-        CreateButton("Delete", vec2(230, 10), vec2(100, 24), NULL, true, true);
-        CreateButton("Prop", vec2(340, 10), vec2(100, 24), NULL, true, true);
-        CreateButton("Level", vec2(450, 10), vec2(100, 24), NULL, true, true);
+        CreateButton("Add", vec2(10, 10), vec2(100, 24), SetEditorMode, true, true);
+        CreateButton("Move", vec2(120, 10), vec2(100, 24), SetEditorMode, true, true);
+        CreateButton("Delete", vec2(230, 10), vec2(100, 24), SetEditorMode, true, true);
+        CreateButton("Prop", vec2(340, 10), vec2(100, 24), SetEditorMode, true, true);
+        CreateButton("Level", vec2(450, 10), vec2(100, 24), SetEditorMode, true, true);
+        // Set the move button to toggled
+        EditorButton *moveButton = ListGet(EditorButtons, 4);
+        moveButton->toggled = true;
+
+        // Create a snap to grid button below the zoom buttons with some space
+        CreateButton("Snap", vec2(10, 154), vec2(40, 24), ToggleSnapToGrid, true, true);
+        // set snap button to toggled
+        EditorButton *snapButton = ListGet(EditorButtons, EditorButtons->size - 1);
+        snapButton->toggled = EditorSnapToGrid;
 
         EditorInitComplete = true;
     }
