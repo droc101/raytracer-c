@@ -106,4 +106,8 @@ typedef struct {
 #define ROT_SPEED 0.04
 #define MOUSE_SENSITIVITY 100 // higher is less sensitive
 
+#define VERSION "0.0.1"
+#define COPYRIGHT "2024 Droc101 Development"
+#define GAME_TITLE "Game."
+
 #endif //GAME_DEFINES_H

@@ -114,6 +114,10 @@ int main(int argc, char *argv[]) {
         GlobalState *g = GetState();
 
         SDL_SetRelativeMouseMode(g->UpdateGame == GMainStateUpdate ? SDL_TRUE : SDL_FALSE);
+        // warp the mouse to the center of the screen if we are in the main game state
+        if (g->UpdateGame == GMainStateUpdate) {
+            SDL_WarpMouseInWindow(GetWindow(), WindowWidth() / 2, WindowHeight() / 2);
+        }
 
         g->UpdateGame();
 

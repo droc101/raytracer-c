@@ -51,43 +51,18 @@ void GMenuStateRender() {
     setColorUint(0xFF123456);
     SDL_RenderClear(GetRenderer());
 
-    FontDrawString(vec2(20, 20), "GAME.", 128, 0xFFFFFFFF);
+    FontDrawString(vec2(20, 20), GAME_TITLE, 128, 0xFFFFFFFF);
     FontDrawString(vec2(20, 150), "Press Space to start.", 32, 0xFFa0a0a0);
 
-
-#ifdef GMENUSTATE_WALL_DEBUG
-    FontDrawString(vec2(10, 10), "wasd to move test player, mouse to look, space to start", 16, 0xFFFFFFFF);
-
-    setColorUint(0xFFFFFFFF);
-    SDL_RenderDrawLine(GetRenderer(), tWall->a.x, tWall->a.y, tWall->b.x, tWall->b.y);
-
-    setColorUint(0xFF00FF00);
-    draw_rect(tPlayerPos.x - 5, tPlayerPos.y - 5, 10, 10);
-
-    RayCastResult rc = Intersect(*tWall, tPlayerPos, tPlayerRot);
-    if (rc.Collided) {
-        setColorUint(0xFFFF00FF);
-        draw_rect(rc.CollisionPoint.x - 5, rc.CollisionPoint.y - 5, 10, 10);
-
-        Vector2 PushedPos = PushPointOutOfWallHitbox(*tWall, vec2o(rc.CollisionPoint.x, rc.CollisionPoint.y, tPlayerPos.x, tPlayerPos.y));
-        setColorUint(0xFF000000);
-        draw_rect(PushedPos.x - 5, PushedPos.y - 5, 10, 10);
-
-        char buffer[256];
-        sprintf(buffer, "Collision Point: %f, %f\nPushed Point: %f, %f", rc.CollisionPoint.x, rc.CollisionPoint.y, PushedPos.x, PushedPos.y, 0xFF00FF00);
-        FontDrawString(vec2(20, 200), buffer, 16, 0xFF00FF00);
-
-        setColorUint(0xFF0000FF);
-        SDL_RenderDrawLine(GetRenderer(), tPlayerPos.x, tPlayerPos.y, rc.CollisionPoint.x, rc.CollisionPoint.y);
-    } else {
-        FontDrawString(vec2(20, 200), "No Collision", 16, 0xFF808080);
-        Vector2 dir = vec2(cos(tPlayerRot), sin(tPlayerRot));
-        dir = Vector2Scale(dir, 10000);
-        dir = Vector2Add(tPlayerPos, dir);
-        setColorUint(0xFF0000FF);
-        SDL_RenderDrawLine(GetRenderer(), tPlayerPos.x, tPlayerPos.y, dir.x, dir.y);
-    }
+    // __OPTIMIZE__ is a compiler flag that is set when the code is optimized. We can use it to check if we are in a debug build, as only release builds are optimized.
+#ifndef __OPTIMIZE__
+    FontDrawString(vec2(20, 200), "DEBUG BUILD", 16, 0xFF00FF00);
 #endif
+
+    // draw version and copyright info
+    char buffer[256];
+    sprintf(buffer, "RayCaster Engine %s\n%s", VERSION, COPYRIGHT);
+    DrawTextAligned(buffer, 16, 0xFF808080, vec2(10, WindowHeight() - 210), vec2(200, 200), FONT_HALIGN_LEFT, FONT_VALIGN_BOTTOM);
 }
 
 void GMenuStateSet() {

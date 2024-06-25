@@ -16,15 +16,20 @@ SDL_Texture *pauseTexture;
 void GPauseStateUpdate() {
     if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE)) {
         PlaySoundEffect(gzwav_sfx_popdown);
-        SDL_DestroyTexture(pauseTexture); // free the screenshot texture (we don't want to leak memory)
-        // change to the main game state
+        SDL_DestroyTexture(pauseTexture);
         GMainStateSet();
     }
 }
 
 void GPauseStateRender() {
     SDL_RenderCopy(GetRenderer(), pauseTexture, NULL, NULL);
-    FontDrawString(vec2(20, 150), "Game Paused\nPress escape to resume", 32, 0xFFFFFFFF);
+
+    SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_BLEND);
+    setColorUint(0x80000000);
+    draw_rect(0, 0, WindowWidth(), WindowHeight());
+    SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_NONE);
+
+    DrawTextAligned("Game Paused\nPress escape to resume", 32, 0xFFFFFFFF, vec2s(0), vec2(WindowWidth(), 300), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE);
 }
 
 void GPauseStateSet() {

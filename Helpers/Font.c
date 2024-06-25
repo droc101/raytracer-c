@@ -119,7 +119,7 @@ int MeasureLine(char *str, int line) {
 void DrawTextAligned(char* str, uint size, uint color, Vector2 rect_pos, Vector2 rect_size, byte h_align, byte v_align) {
     int lines = StringLineCount(str);
     Vector2 textSize = MeasureText(str, size);
-    int x = rect_pos.x;
+    int x;
     int y = rect_pos.y;
     if (v_align == FONT_VALIGN_MIDDLE) {
         y += (rect_size.y - (lines * size)) / 2;
@@ -142,7 +142,7 @@ void DrawTextAligned(char* str, uint size, uint color, Vector2 rect_pos, Vector2
             x = rect_pos.x;
         }
         FontDrawString(vec2(x, y), line, size, color);
-//        y += size;
+        if (i != 0) y += size; // why not the first line? who knows, but it breaks if you don't do this
     }
 
 }
