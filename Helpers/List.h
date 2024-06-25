@@ -33,6 +33,8 @@ void ListAdd(List* list, void *data);
 // Remove an item from the list
 void ListRemove(List* list, Node* node);
 
+void ListRemoveAt(List *list, int index);
+
 // Insert an item after a given node
 void ListInsertAfter(List* list, Node* prevNode, void *data);
 

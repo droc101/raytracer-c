@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include "List.h"
 #include "../defines.h"
+#include "Error.h"
 
 Node* createNode(void *data) {
     Node* newNode = (Node*)malloc(sizeof(Node));
@@ -59,6 +60,19 @@ void ListRemove(List* list, Node* node) {
         list->tail = node->prev;
     list->size--;
     free(node);
+}
+
+void ListRemoveAt(List *list, int index) {
+    Node* current = list->head;
+    int i = 0;
+    while (current != NULLPTR && i < index) {
+        current = current->next;
+        i++;
+    }
+    if (current == NULLPTR) {
+        Error("List: Index out of bounds");
+    }
+    ListRemove(list, current);
 }
 
 void ListInsertAfter(List* list, Node* prevNode, void *data) {

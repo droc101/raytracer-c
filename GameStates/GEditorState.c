@@ -123,36 +123,67 @@ void GEditorStateUpdate() {
         }
     }
 
-    // check if we are hovering over a node
-    for (int i = 0; i < EditorNodes->size; i++) {
-        EditorNode *node = ListGet(EditorNodes, i);
-        Vector2 screenPos = vec2((node->position.x * EditorZoom) + EditorPanX, (node->position.y * EditorZoom) + EditorPanY);
+    if (CurrentEditorMode == EDITOR_MODE_MOVE) {
+        // check if we are hovering over a node
+        for (int i = 0; i < EditorNodes->size; i++) {
+            EditorNode *node = ListGet(EditorNodes, i);
+            Vector2 screenPos = vec2((node->position.x * EditorZoom) + EditorPanX,
+                                     (node->position.y * EditorZoom) + EditorPanY);
 
-        bool hovered = false;
-        Vector2 mousePos = GetMousePos();
-        if (mousePos.x >= screenPos.x - 5 && mousePos.x <= screenPos.x + 5 &&
-            mousePos.y >= screenPos.y - 5 && mousePos.y <= screenPos.y + 5) {
-            hovered = true;
+            bool hovered = false;
+            Vector2 mousePos = GetMousePos();
+            if (mousePos.x >= screenPos.x - 5 && mousePos.x <= screenPos.x + 5 &&
+                mousePos.y >= screenPos.y - 5 && mousePos.y <= screenPos.y + 5) {
+                hovered = true;
+            }
+
+            if (hovered && IsMouseButtonJustPressed(SDL_BUTTON_LEFT)) {
+                EditorSelectedNode = i;
+            }
         }
 
-        if (hovered && IsMouseButtonJustPressed(SDL_BUTTON_LEFT)) {
-            EditorSelectedNode = i;
+        if (IsMouseButtonJustReleased(SDL_BUTTON_LEFT)) {
+            EditorSelectedNode = -1;
         }
-    }
 
-    if (IsMouseButtonJustReleased(SDL_BUTTON_LEFT)) {
-        EditorSelectedNode = -1;
-    }
+        // move the selected node to the mouse position
+        if (EditorSelectedNode != -1) {
+            EditorNode *node = ListGet(EditorNodes, EditorSelectedNode);
+            Vector2 mousePos = GetMousePos();
+            node->position = vec2((mousePos.x - EditorPanX) / EditorZoom, (mousePos.y - EditorPanY) / EditorZoom);
 
-    // move the selected node to the mouse position
-    if (EditorSelectedNode != -1) {
-        EditorNode *node = ListGet(EditorNodes, EditorSelectedNode);
-        Vector2 mousePos = GetMousePos();
-        node->position = vec2((mousePos.x - EditorPanX) / EditorZoom, (mousePos.y - EditorPanY) / EditorZoom);
+            if (EditorSnapToGrid) {
+                node->position.x = round(node->position.x);
+                node->position.y = round(node->position.y);
+            }
+        }
+    } else if (CurrentEditorMode == EDITOR_MODE_DELETE) {
+        for (int i = 0; i < EditorNodes->size; i++) {
+            EditorNode *node = ListGet(EditorNodes, i);
+            Vector2 screenPos = vec2((node->position.x * EditorZoom) + EditorPanX,
+                                     (node->position.y * EditorZoom) + EditorPanY);
 
-        if (EditorSnapToGrid) {
-            node->position.x = round(node->position.x);
-            node->position.y = round(node->position.y);
+            bool hovered = false;
+            Vector2 mousePos = GetMousePos();
+            if (mousePos.x >= screenPos.x - 5 && mousePos.x <= screenPos.x + 5 &&
+                mousePos.y >= screenPos.y - 5 && mousePos.y <= screenPos.y + 5) {
+                hovered = true;
+            }
+
+            if (hovered && IsMouseButtonJustPressed(SDL_BUTTON_LEFT)) {
+                if (node->type != NODE_PLAYER) {
+                    ListRemoveAt(EditorNodes, i);
+                    // if we are deleting a wall, we need to delete both nodes
+                    if (node->type == NODE_WALL_A) {
+                        ListRemoveAt(EditorNodes, i);
+                        i--;
+                    } else if (node->type == NODE_WALL_B) {
+                        ListRemoveAt(EditorNodes, i - 1);
+                        i--;
+                    }
+                }
+                break; // don't delete more than one node per click
+            }
         }
     }
 }
