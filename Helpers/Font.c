@@ -6,6 +6,7 @@
 #include <ctype.h>
 #include <math.h>
 #include <string.h>
+#include <stdio.h>
 #include "MathEx.h"
 #include "SDL.h"
 #include "Drawing.h"
@@ -14,7 +15,7 @@
 
 SDL_Texture *fontTexture;
 
-const char fontChars[] = "abcdefghijklmnopqrstuvwxyz0123456789.:-,/\\|[]{}();'\"<>`~!@#$%^&*()_=+?";
+const char fontChars[] = "abcdefghijklmnopqrstuvwxyz0123456789.:-,/\\|[]{}();'\"<>`~!@#$%^*_=+?";
 
 void FontInit() {
     fontTexture = ToSDLTexture((const unsigned char *) gztex_interface_font, FILTER_LINEAR);
@@ -32,6 +33,7 @@ int findChar(char target) {
 }
 
 void FontDrawChar(Vector2 pos, char c, uint size) {
+    if (c == '?') printf("%c,%d,%d\n", c, findChar(c), findChar(tolower(c)));
     int index = findChar(tolower(c));
     if (index == -1) {
         index = findChar('U');

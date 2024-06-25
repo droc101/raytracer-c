@@ -54,10 +54,6 @@ void GMenuStateRender() {
     FontDrawString(vec2(20, 20), "GAME.", 128, 0xFFFFFFFF);
     FontDrawString(vec2(20, 150), "Press Space to start.", 32, 0xFFa0a0a0);
 
-    setColorUint(0xFF00FF00);
-    draw_rect(0, 0, 300, 300);
-    DrawTextAligned("Hello, World!\nLine 2", 20, 0xFFFFFFFF, vec2s(0), vec2(300, 300), FONT_HALIGN_RIGHT, FONT_VALIGN_TOP);
-
 
 #ifdef GMENUSTATE_WALL_DEBUG
     FontDrawString(vec2(10, 10), "wasd to move test player, mouse to look, space to start", 16, 0xFFFFFFFF);
