@@ -61,6 +61,8 @@ typedef struct {
 
 List *EditorNodes;
 
+bool isAddModeDragging = false;
+
 void GEditorStateUpdate() {
     if (IsKeyJustPressed(SDL_SCANCODE_F6)) {
 
@@ -114,6 +116,7 @@ void GEditorStateUpdate() {
         pressed = IsMouseButtonJustPressed(SDL_BUTTON_LEFT) && hovered;
 
         if (pressed) {
+            ConsumeMouseButton(SDL_BUTTON_LEFT);
             if (button->toggle_mode) {
                 button->toggled = !button->toggled;
             }
@@ -184,6 +187,52 @@ void GEditorStateUpdate() {
                 }
                 break; // don't delete more than one node per click
             }
+        }
+    } else if (CurrentEditorMode == EDITOR_MODE_ADD) {
+        if (IsMouseButtonJustPressed(SDL_BUTTON_LEFT)) {
+            Vector2 mousePos = GetMousePos();
+            Vector2 worldPos = vec2((mousePos.x - EditorPanX) / EditorZoom, (mousePos.y - EditorPanY) / EditorZoom);
+
+            if (EditorSnapToGrid) {
+                worldPos.x = round(worldPos.x);
+                worldPos.y = round(worldPos.y);
+            }
+
+            // Create 2 nodes for a wall
+            EditorNode *nodeA = malloc(sizeof(EditorNode));
+            nodeA->type = NODE_WALL_A;
+            nodeA->position = worldPos;
+            nodeA->extra = 0;
+            ListAdd(EditorNodes, nodeA);
+
+            EditorNode *nodeB = malloc(sizeof(EditorNode));
+            nodeB->type = NODE_WALL_B;
+            nodeB->position = worldPos;
+            ListAdd(EditorNodes, nodeB);
+
+            isAddModeDragging = true;
+        } else if (IsMouseButtonJustReleased(SDL_BUTTON_LEFT)) {
+            isAddModeDragging = false;
+        } else if (isAddModeDragging) {
+
+            // delete the 2 nodes we just created if escape is pressed
+            if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE)) {
+                ListRemoveAt(EditorNodes, EditorNodes->size - 1);
+                ListRemoveAt(EditorNodes, EditorNodes->size - 1);
+                isAddModeDragging = false;
+                return;
+            }
+
+            Vector2 mousePos = GetMousePos();
+            Vector2 worldPos = vec2((mousePos.x - EditorPanX) / EditorZoom, (mousePos.y - EditorPanY) / EditorZoom);
+
+            if (EditorSnapToGrid) {
+                worldPos.x = round(worldPos.x);
+                worldPos.y = round(worldPos.y);
+            }
+
+            EditorNode *nodeB = ListGet(EditorNodes, EditorNodes->size - 1);
+            nodeB->position = worldPos;
         }
     }
 }
@@ -287,7 +336,7 @@ void GEditorStateRender() {
             SDL_RenderDrawLine(GetRenderer(), screenPos.x, screenPos.y, screenPosB.x, screenPosB.y);
         }
 
-        uint color;
+        uint color = 0;
         switch (node->type) {
             case NODE_PLAYER:
                 color = 0xFF00FF00;

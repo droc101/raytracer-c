@@ -89,3 +89,23 @@ Vector2 GetMousePos() {
 Vector2 GetMouseRel() {
     return vec2(mouseXrel, mouseYrel);
 }
+
+void ConsumeKey(int code) {
+    keys[code] = INP_RELEASED;
+}
+
+void ConsumeMouseButton(int button) {
+    mouseButtons[button] = INP_RELEASED;
+}
+
+void ConsumeAllKeys() {
+    for (int i = 0; i < SDL_NUM_SCANCODES; i++) {
+        keys[i] = INP_RELEASED;
+    }
+}
+
+void ConsumeAllMouseButtons() {
+    for (int i = 0; i < 4; i++) {
+        mouseButtons[i] = INP_RELEASED;
+    }
+}

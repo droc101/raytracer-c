@@ -28,10 +28,17 @@ void UpdateInputStates();
 bool IsKeyPressed(int code);
 bool IsKeyJustPressed(int code);
 bool IsKeyJustReleased(int code);
+
 bool IsMouseButtonPressed(int button);
 bool IsMouseButtonJustPressed(int button);
 bool IsMouseButtonJustReleased(int button);
+
 Vector2 GetMousePos();
 Vector2 GetMouseRel();
+
+void ConsumeKey(int code);
+void ConsumeMouseButton(int button);
+void ConsumeAllKeys();
+void ConsumeAllMouseButtons();
 
 #endif //GAME_INPUT_H
