@@ -6,6 +6,7 @@
 #include <math.h>
 #include "Vector2.h"
 #include "Actor.h"
+#include "Level.h"
 
 // Perform a ray cast from a position and rotation into a wall. Don't forget to free the result!
 RayCastResult Intersect(Wall wall, Vector2 from, double direction)
@@ -41,13 +42,17 @@ RayCastResult Intersect(Wall wall, Vector2 from, double direction)
 
 RayCastResult HitscanLevel(Level l, Vector2 pos, double angle, bool scanWalls, bool scanActors, bool alwaysCollideActors) {
 
+    if (l.staticWalls == NULLPTR) {
+        BakeWallArray(&l);
+    }
+
     RayCastResult closestResult;
     closestResult.Collided = false;
     double closestDist = 999999;
 
     if (scanWalls) {
-        for (int i = 0; i < l.walls->size; i++) {
-            Wall *w = (Wall *) ListGet(l.walls, i);
+        for (int i = 0; i < l.staticWalls->size; i++) {
+            Wall *w = SizedArrayGet(l.staticWalls, i);
             RayCastResult r = Intersect(*w, pos, angle);
             if (r.Collided) {
                 double dist = Vector2Distance(l.position, r.CollisionPoint);

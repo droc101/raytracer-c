@@ -50,6 +50,7 @@ typedef struct {
     uint FogColor;
     double FogStart;
     double FogEnd;
+    SizedArray *staticWalls;
 } Level;
 
 // Utility functions are in Structs/ray.h

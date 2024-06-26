@@ -12,6 +12,7 @@
 #include "../Helpers/Error.h"
 #include "Actor.h"
 #include "GlobalState.h"
+#include "../Helpers/List.h"
 
 Level *CreateLevel() {
     Level *l = (Level*)malloc(sizeof(Level));
@@ -25,6 +26,7 @@ Level *CreateLevel() {
     l->FogColor = 0xff000000;
     l->FogStart = 10;
     l->FogEnd = 30;
+    l->staticWalls = NULLPTR;
     return l;
 }
 
@@ -37,14 +39,24 @@ void DestroyLevel(Level *l) {
         Actor *a = (Actor *) ListGet(l->actors, i);
         FreeActor(a);
     }
+
+    if (l->staticWalls != NULL) {
+        DestroySizedArray(l->staticWalls);
+    }
+
     ListFreeWithData(l->walls);
     ListFree(l->actors); // actors are freed above (FreeActor)
     free(l);
 }
 
+void BakeWallArray(Level *l) {
+    l->staticWalls = ToSizedArray(l->walls);
+}
+
 double DepthBuffer[8192]; // if you have a screen wider than 8192 pixels, you're on your own
 
 void RenderCol(Level *l, int col) {
+
     //setColorUint(0xFFFFFFFF);
     double angle = atan2(col - WindowWidth() / 2, WindowWidth() / 2) + l->rotation;
 
