@@ -81,7 +81,7 @@ void RenderCol(Level *l, int col) {
 
     y += (GetState()->FakeHeight / distance);
 
-    double shade = fabs(cos((l->rotation + (1.5 * PI)) - WallGetAngle(raycast.CollisionWall)));
+    double shade = fabs(cos((l->rotation + (1.5 * PI)) - raycast.CollisionWall.Angle));
     shade *= (1 - (distance / (WindowWidth() / 2)));
     shade = max(0.6, min(1, shade));
     //shade = floor(shade * 16) / 16;
@@ -99,9 +99,9 @@ void RenderCol(Level *l, int col) {
     SDL_Point texSize = SDL_TextureSize(texture);
     uint texW = texSize.x;
 
-    double wallLength = WallGetLength(raycast.CollisionWall);
+    double wallLength = raycast.CollisionWall.Length;
     double localX = Vector2Distance(raycast.CollisionWall.a, raycast.CollisionPoint);
-    double texCol = (localX / WallGetLength(raycast.CollisionWall)) * texW;
+    double texCol = (localX / wallLength) * texW;
 
     texCol *= (wallLength / 2);
     texCol = fmod(texCol, texW);
@@ -144,7 +144,7 @@ void RenderActorCol(Level *l, int col) {
     y += (GetState()->FakeHeight / distance);
 
 
-    double shade = fabs(cos((l->rotation + (1.5 * PI)) - WallGetAngle(raycast.CollisionWall)));
+    double shade = fabs(cos((l->rotation + (1.5 * PI)) - raycast.CollisionWall.Angle));
     shade *= (1 - (distance / (WindowWidth() / 2)));
     shade = max(0.6, min(1, shade));
     //shade = floor(shade * 16) / 16;
@@ -155,9 +155,9 @@ void RenderActorCol(Level *l, int col) {
     SDL_Point texSize = SDL_TextureSize(texture);
     uint texW = texSize.x;
 
-    double wallLength = WallGetLength(raycast.CollisionWall);
+    double wallLength = raycast.CollisionWall.Length;
     double localX = Vector2Distance(raycast.CollisionWall.a, raycast.CollisionPoint);
-    double texCol = (localX / WallGetLength(raycast.CollisionWall)) * texW;
+    double texCol = (localX / raycast.CollisionWall.Length) * texW;
 
     texCol *= (wallLength / 2);
     texCol = fmod(texCol, texW);

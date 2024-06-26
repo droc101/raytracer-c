@@ -35,6 +35,8 @@ typedef struct {
     Vector2 b;
     SDL_Texture *tex;
     int texId;
+    double Length;
+    double Angle;
 } Wall;
 
 // Utility functions are in Structs/level.h

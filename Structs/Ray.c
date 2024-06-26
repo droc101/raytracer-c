@@ -42,10 +42,6 @@ RayCastResult Intersect(Wall wall, Vector2 from, double direction)
 
 RayCastResult HitscanLevel(Level l, Vector2 pos, double angle, bool scanWalls, bool scanActors, bool alwaysCollideActors) {
 
-    if (l.staticWalls == NULLPTR) {
-        BakeWallArray(&l);
-    }
-
     RayCastResult closestResult;
     closestResult.Collided = false;
     double closestDist = 999999;

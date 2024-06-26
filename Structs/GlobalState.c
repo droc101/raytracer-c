@@ -6,6 +6,7 @@
 #include "GlobalState.h"
 #include "../Structs/Level.h"
 #include "../Assets/AssetReader.h"
+#include "../Structs/Wall.h"
 
 GlobalState state;
 
@@ -83,6 +84,16 @@ void ChangeLevel(Level *l) {
     } else {
         StopMusic();
     }
+
+    for (int i = 0; i < l->walls->size; i++) {
+        Wall *w = (Wall *) ListGet(l->walls, i);
+        WallBake(w);
+    }
+
+    if (l->staticWalls != NULLPTR) {
+        DestroySizedArray(l->staticWalls);
+    }
+    BakeWallArray(l);
 }
 
 void ChangeMusic(const byte *asset) {
