@@ -37,6 +37,8 @@ typedef struct {
     int texId;
     double Length;
     double Angle;
+    double dx;
+    double dy;
 } Wall;
 
 // Utility functions are in Structs/level.h
@@ -58,6 +60,7 @@ typedef struct {
 // Utility functions are in Structs/ray.h
 typedef struct {
     Vector2 CollisionPoint;
+    double Distance;
     bool Collided;
     Wall CollisionWall;
 } RayCastResult;

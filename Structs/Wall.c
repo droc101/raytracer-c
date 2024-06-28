@@ -39,6 +39,8 @@ double WallGetAngle(Wall w) {
 double WallBake(Wall *w) {
     w->Length = WallGetLength(*w);
     w->Angle = WallGetAngle(*w);
+    w->dx = w->a.x - w->b.x;
+    w->dy = w->a.y - w->b.y;
     return w->Length;
 }
 

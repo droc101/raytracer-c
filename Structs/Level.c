@@ -67,7 +67,7 @@ void RenderCol(Level *l, int col) {
         return; // nothing else to do
     }
 
-    double distance = Vector2Distance(l->position, raycast.CollisionPoint) * cos(angle - l->rotation);
+    double distance = raycast.Distance * cos(angle - l->rotation);
 
     if (distance == 0) {
         distance = 0.000001;
@@ -127,7 +127,7 @@ void RenderActorCol(Level *l, int col) {
         return; // nothing else to do
     }
 
-    double distance = Vector2Distance(l->position, raycast.CollisionPoint) * cos(angle - l->rotation);
+    double distance = raycast.Distance * cos(angle - l->rotation);
 
     if (distance == 0) {
         distance = 0.000001;
