@@ -65,8 +65,8 @@ RayCastResult HitscanLevel(Level l, Vector2 pos, double angle, bool scanWalls, b
     }
 
     if (scanActors) {
-        for (int i = 0; i < l.actors->size; i++) {
-            Actor *a = (Actor *) ListGet(l.actors, i);
+        for (int i = 0; i < l.staticActors->size; i++) {
+            Actor *a = SizedArrayGet(l.staticActors, i);
             if (!a->solid && !alwaysCollideActors) {
                 continue;
             }

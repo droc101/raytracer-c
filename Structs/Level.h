@@ -24,5 +24,6 @@ void RenderCol(Level *l, int col);
 void RenderActorCol(Level *l, int col);
 
 void BakeWallArray(Level *l);
+void BakeActorArray(Level *l);
 
 #endif //GAME_LEVEL_H

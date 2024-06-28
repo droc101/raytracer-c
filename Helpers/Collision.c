@@ -2,6 +2,7 @@
 // Created by droc101 on 6/22/2024.
 //
 
+#include <stdio.h>
 #include "Collision.h"
 #include "../Structs/Wall.h"
 #include "../Structs/GlobalState.h"
@@ -31,15 +32,15 @@ Vector2 CollideWall(Wall *w, Vector2 position, Vector2 moveVec) {
 
 Vector2 Move(Vector2 position, Vector2 moveVec, void *ignore) {
     Level *l = GetState()->level;
-    for (int i = 0; i < l->walls->size; i++) {
-        Wall *w = ListGet(l->walls, i);
+    for (int i = 0; i < l->staticWalls->size; i++) {
+        Wall *w = SizedArrayGet(l->staticWalls, i);
         if (w == ignore) {
             continue;
         }
         moveVec = CollideWall(w, position, moveVec);
     }
-    for (int i = 0; i < l->actors->size; i++) {
-        Actor *a = ListGet(l->actors, i);
+    for (int i = 0; i < l->staticActors->size; i++) {
+        Actor *a = SizedArrayGet(l->staticActors, i);
         if (a == ignore) {
             continue;
         }

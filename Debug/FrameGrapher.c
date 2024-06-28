@@ -18,7 +18,7 @@ void FG_PushIntoArray(double value) {
     framerates[FRAMEGRAPH_HISTORY_SIZE-1] = value;
 }
 
-void FrameGraphUpdate(int ns) {
+void FrameGraphUpdate(unsigned long ns) {
     if (GetState()->frame % FRAMEGRAPH_INTERVAL == 0) {
         if (ns == 0) { ns = 1; }
         double fps = 1000000000.0 / ns;

@@ -94,6 +94,7 @@ void ChangeLevel(Level *l) {
         DestroySizedArray(l->staticWalls);
     }
     BakeWallArray(l);
+    BakeActorArray(l);
 }
 
 void ChangeMusic(const byte *asset) {

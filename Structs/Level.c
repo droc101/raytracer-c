@@ -27,6 +27,7 @@ Level *CreateLevel() {
     l->FogStart = 10;
     l->FogEnd = 30;
     l->staticWalls = NULLPTR;
+    l->staticActors = NULLPTR;
     return l;
 }
 
@@ -44,6 +45,10 @@ void DestroyLevel(Level *l) {
         DestroySizedArray(l->staticWalls);
     }
 
+    if (l->staticActors != NULL) {
+        DestroySizedArray(l->staticActors);
+    }
+
     ListFreeWithData(l->walls);
     ListFree(l->actors); // actors are freed above (FreeActor)
     free(l);
@@ -51,6 +56,10 @@ void DestroyLevel(Level *l) {
 
 void BakeWallArray(Level *l) {
     l->staticWalls = ToSizedArray(l->walls);
+}
+
+void BakeActorArray(Level *l) {
+    l->staticActors = ToSizedArray(l->actors);
 }
 
 double DepthBuffer[8192]; // if you have a screen wider than 8192 pixels, you're on your own

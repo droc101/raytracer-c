@@ -55,6 +55,7 @@ typedef struct {
     double FogStart;
     double FogEnd;
     SizedArray *staticWalls;
+    SizedArray *staticActors;
 } Level;
 
 // Utility functions are in Structs/ray.h
