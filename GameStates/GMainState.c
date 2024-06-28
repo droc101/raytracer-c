@@ -21,11 +21,12 @@ void GMainStateUpdate() {
         GPauseStateSet();
         return;
     }
-
+#ifdef ENABLE_LEVEL_EDITOR
     if (IsKeyJustPressed(SDL_SCANCODE_F6)) {
         GEditorStateSet();
         return;
     }
+#endif
 
     Level *l = GetState()->level;
 

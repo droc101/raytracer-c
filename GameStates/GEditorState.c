@@ -2,6 +2,7 @@
 // Created by droc101 on 6/23/2024.
 //
 
+#include "../config.h"
 #include "GEditorState.h"
 #include "../Structs/GlobalState.h"
 #include "../Helpers/Input.h"
@@ -64,6 +65,7 @@ List *EditorNodes;
 bool isAddModeDragging = false;
 
 void GEditorStateUpdate() {
+#ifdef ENABLE_LEVEL_EDITOR
     if (IsKeyJustPressed(SDL_SCANCODE_F6)) {
 
         Level *l = CreateLevel();
@@ -235,6 +237,7 @@ void GEditorStateUpdate() {
             nodeB->position = worldPos;
         }
     }
+#endif
 }
 
 void DrawEditorButton(EditorButton *btn) {
@@ -276,6 +279,7 @@ void DrawEditorButton(EditorButton *btn) {
 }
 
 void GEditorStateRender() {
+#ifdef ENABLE_LEVEL_EDITOR
     setColorUint(0xFF123456);
     SDL_RenderClear(GetRenderer());
 
@@ -414,6 +418,7 @@ void GEditorStateRender() {
         EditorButton *button = ListGet(EditorButtons, i);
         DrawEditorButton(button);
     }
+#endif
 }
 
 void CreateButton(char *text, Vector2 position, Vector2 size, void (*callback)(), bool enabled, bool toggle_mode) {

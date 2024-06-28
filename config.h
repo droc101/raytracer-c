@@ -21,4 +21,6 @@
 
 // See /Debug/FrameGrapher.h for frame grapher settings
 
+#define ENABLE_LEVEL_EDITOR
+
 #endif //GAME_CONFIG_H
