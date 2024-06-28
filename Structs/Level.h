@@ -26,4 +26,8 @@ void RenderActorCol(Level *l, int col);
 void BakeWallArray(Level *l);
 void BakeActorArray(Level *l);
 
+// To be used at runtime, not during level loading
+void AddActor(Actor* actor);
+void RemoveActor(Actor* actor);
+
 #endif //GAME_LEVEL_H

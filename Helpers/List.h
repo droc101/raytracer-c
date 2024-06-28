@@ -55,6 +55,8 @@ void ListFreeWithData(List* list);
 // Get the size of the list (you could also use list->size, that would be faster)
 int ListGetSize(List* list);
 
+int ListFind(List *list, void *data);
+
 SizedArray* ToSizedArray(List *list);
 
 #define SizedArrayGet(array, index) ((array)->elements[(index)])

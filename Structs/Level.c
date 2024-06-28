@@ -176,3 +176,20 @@ void RenderActorCol(Level *l, int col) {
     SDL_SetTextureColorMod(texture, shadeByte, shadeByte, shadeByte);
     DrawTextureColumn(texture, texCol, col, y, height);
 }
+
+void AddActor(Actor* actor) {
+    Level *l = GetState()->level;
+    ListAdd(l->actors, actor);
+    BakeActorArray(l);
+}
+
+void RemoveActor(Actor* actor) {
+    Level *l = GetState()->level;
+    int idx = ListFind(l->actors, actor);
+    if (idx == -1) {
+        return;
+    }
+    ListRemoveAt(l->actors, idx);
+    FreeActor(actor);
+    BakeActorArray(l);
+}
