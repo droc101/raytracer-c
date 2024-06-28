@@ -26,7 +26,7 @@
 #define FRAMEGRAPH_ENABLE
 
 
-void FrameGraphUpdate(int ns);
+void FrameGraphUpdate(unsigned long ns);
 void FrameGraphDraw();
 
 #endif //GAME_FRAMEGRAPHER_H

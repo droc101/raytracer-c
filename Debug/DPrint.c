@@ -6,6 +6,7 @@
 #include "../Helpers/Font.h"
 #include <stdarg.h>
 #include <stdio.h>
+#include "../config.h"
 
 int DPrintYPos = 10;
 
@@ -14,10 +15,13 @@ void ResetDPrintYPos() {
 }
 
 void DPrint(char *str, uint color) {
-    DPrintYPos += FontDrawString((Vector2) {10, DPrintYPos}, str, 16, color).y;
+#ifdef ENABLE_DEBUG_PRINT
+    DPrintYPos += (FontDrawString((Vector2) {10, DPrintYPos}, str, 16, color).y - DPrintYPos) + 8;
+#endif
 }
 
 void DPrintF(char *str, uint color, bool con, ...) {
+#ifdef ENABLE_DEBUG_PRINT
     char buffer[256];
     va_list args;
     va_start(args, con);
@@ -27,5 +31,6 @@ void DPrintF(char *str, uint color, bool con, ...) {
     if (con) {
         printf("%s\n", buffer);
     }
+#endif
 }
 

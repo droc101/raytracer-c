@@ -12,6 +12,7 @@
 #include "../Helpers/Error.h"
 #include "Actor.h"
 #include "GlobalState.h"
+#include "../Helpers/List.h"
 
 Level *CreateLevel() {
     Level *l = (Level*)malloc(sizeof(Level));
@@ -25,6 +26,8 @@ Level *CreateLevel() {
     l->FogColor = 0xff000000;
     l->FogStart = 10;
     l->FogEnd = 30;
+    l->staticWalls = NULLPTR;
+    l->staticActors = NULLPTR;
     return l;
 }
 
@@ -37,14 +40,32 @@ void DestroyLevel(Level *l) {
         Actor *a = (Actor *) ListGet(l->actors, i);
         FreeActor(a);
     }
+
+    if (l->staticWalls != NULL) {
+        DestroySizedArray(l->staticWalls);
+    }
+
+    if (l->staticActors != NULL) {
+        DestroySizedArray(l->staticActors);
+    }
+
     ListFreeWithData(l->walls);
     ListFree(l->actors); // actors are freed above (FreeActor)
     free(l);
 }
 
+void BakeWallArray(Level *l) {
+    l->staticWalls = ToSizedArray(l->walls);
+}
+
+void BakeActorArray(Level *l) {
+    l->staticActors = ToSizedArray(l->actors);
+}
+
 double DepthBuffer[8192]; // if you have a screen wider than 8192 pixels, you're on your own
 
 void RenderCol(Level *l, int col) {
+
     //setColorUint(0xFFFFFFFF);
     double angle = atan2(col - WindowWidth() / 2, WindowWidth() / 2) + l->rotation;
 
@@ -55,7 +76,7 @@ void RenderCol(Level *l, int col) {
         return; // nothing else to do
     }
 
-    double distance = Vector2Distance(l->position, raycast.CollisionPoint) * cos(angle - l->rotation);
+    double distance = raycast.Distance * cos(angle - l->rotation);
 
     if (distance == 0) {
         distance = 0.000001;
@@ -69,7 +90,7 @@ void RenderCol(Level *l, int col) {
 
     y += (GetState()->FakeHeight / distance);
 
-    double shade = fabs(cos((l->rotation + (1.5 * PI)) - WallGetAngle(raycast.CollisionWall)));
+    double shade = fabs(cos((l->rotation + (1.5 * PI)) - raycast.CollisionWall.Angle));
     shade *= (1 - (distance / (WindowWidth() / 2)));
     shade = max(0.6, min(1, shade));
     //shade = floor(shade * 16) / 16;
@@ -87,9 +108,9 @@ void RenderCol(Level *l, int col) {
     SDL_Point texSize = SDL_TextureSize(texture);
     uint texW = texSize.x;
 
-    double wallLength = WallGetLength(raycast.CollisionWall);
+    double wallLength = raycast.CollisionWall.Length;
     double localX = Vector2Distance(raycast.CollisionWall.a, raycast.CollisionPoint);
-    double texCol = (localX / WallGetLength(raycast.CollisionWall)) * texW;
+    double texCol = (localX / wallLength) * texW;
 
     texCol *= (wallLength / 2);
     texCol = fmod(texCol, texW);
@@ -115,7 +136,7 @@ void RenderActorCol(Level *l, int col) {
         return; // nothing else to do
     }
 
-    double distance = Vector2Distance(l->position, raycast.CollisionPoint) * cos(angle - l->rotation);
+    double distance = raycast.Distance * cos(angle - l->rotation);
 
     if (distance == 0) {
         distance = 0.000001;
@@ -132,7 +153,7 @@ void RenderActorCol(Level *l, int col) {
     y += (GetState()->FakeHeight / distance);
 
 
-    double shade = fabs(cos((l->rotation + (1.5 * PI)) - WallGetAngle(raycast.CollisionWall)));
+    double shade = fabs(cos((l->rotation + (1.5 * PI)) - raycast.CollisionWall.Angle));
     shade *= (1 - (distance / (WindowWidth() / 2)));
     shade = max(0.6, min(1, shade));
     //shade = floor(shade * 16) / 16;
@@ -143,9 +164,9 @@ void RenderActorCol(Level *l, int col) {
     SDL_Point texSize = SDL_TextureSize(texture);
     uint texW = texSize.x;
 
-    double wallLength = WallGetLength(raycast.CollisionWall);
+    double wallLength = raycast.CollisionWall.Length;
     double localX = Vector2Distance(raycast.CollisionWall.a, raycast.CollisionPoint);
-    double texCol = (localX / WallGetLength(raycast.CollisionWall)) * texW;
+    double texCol = (localX / raycast.CollisionWall.Length) * texW;
 
     texCol *= (wallLength / 2);
     texCol = fmod(texCol, texW);
@@ -154,4 +175,21 @@ void RenderActorCol(Level *l, int col) {
 
     SDL_SetTextureColorMod(texture, shadeByte, shadeByte, shadeByte);
     DrawTextureColumn(texture, texCol, col, y, height);
+}
+
+void AddActor(Actor* actor) {
+    Level *l = GetState()->level;
+    ListAdd(l->actors, actor);
+    BakeActorArray(l);
+}
+
+void RemoveActor(Actor* actor) {
+    Level *l = GetState()->level;
+    int idx = ListFind(l->actors, actor);
+    if (idx == -1) {
+        return;
+    }
+    ListRemoveAt(l->actors, idx);
+    FreeActor(actor);
+    BakeActorArray(l);
 }

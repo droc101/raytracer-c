@@ -130,3 +130,34 @@ void ListFreeWithData(List* list) {
 int ListGetSize(List* list) {
     return list->size;
 }
+
+int ListFind(List *list, void *data) {
+    Node* current = list->head;
+    int i = 0;
+    while (current != NULLPTR) {
+        if (current->data == data) {
+            return i;
+        }
+        current = current->next;
+        i++;
+    }
+    return -1;
+}
+
+SizedArray *ToSizedArray(List *list) {
+    SizedArray *array = malloc(sizeof(SizedArray));
+    array->size = list->size;
+    array->elements = malloc(list->size * sizeof(void*));
+
+    for (int i = 0; i < list->size; i++) {
+        array->elements[i] = ListGet(list, i);
+    }
+
+    return array;
+}
+
+void DestroySizedArray(SizedArray *array) {
+    free(array->elements);
+    free(array);
+}
+

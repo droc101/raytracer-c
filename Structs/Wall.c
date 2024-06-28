@@ -35,3 +35,12 @@ double WallGetLength(Wall w) {
 double WallGetAngle(Wall w) {
     return atan2(w.b.y - w.a.y, w.b.x - w.a.x);
 }
+
+double WallBake(Wall *w) {
+    w->Length = WallGetLength(*w);
+    w->Angle = WallGetAngle(*w);
+    w->dx = w->a.x - w->b.x;
+    w->dy = w->a.y - w->b.y;
+    return w->Length;
+}
+

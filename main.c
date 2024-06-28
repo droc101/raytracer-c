@@ -81,6 +81,13 @@ int main(int argc, char *argv[]) {
     Wall *wl2 = CreateWall(vec2(20, 10), vec2(1, 10), 0);
     ListAdd(l->walls, wl2);
 
+//#define r (rand() % 2 ? rand() % 20 + 1 : -(rand() % 20 + 1))
+//
+//    for (int i = 3; i < 2700; i++) {
+//        Wall *wall = CreateWall(vec2(r, r), vec2(r, r), 0);
+//        ListAdd(l->walls, wall);
+//    }
+
     ChangeLevel(l);
 #pragma endregion
 

@@ -2,6 +2,7 @@
 // Created by droc101 on 6/22/2024.
 //
 
+#include <stdio.h>
 #include "Collision.h"
 #include "../Structs/Wall.h"
 #include "../Structs/GlobalState.h"
@@ -14,7 +15,7 @@ Vector2 CollideWall(Wall *w, Vector2 position, Vector2 moveVec) {
     int mult = (position.x - w->a.x) * (w->b.y - w->a.y) - (position.y - w->a.y) * (w->b.x - w->a.x) < 0 ? -1 : 1;
     double hitboxSize = mult * WALL_HITBOX_EXTENTS;
     Vector2 pos = Vector2Add(position, moveVec);
-    Vector2 hitboxOffset = vec2(hitboxSize * dy / WallGetLength(*w), -hitboxSize * dx / WallGetLength(*w));
+    Vector2 hitboxOffset = vec2(hitboxSize * dy / w->Length, -hitboxSize * dx / w->Length);
     if (
             (mult * ((pos.x - w->a.x - hitboxOffset.x) * (w->b.y - w->a.y) - (pos.y - w->a.y - hitboxOffset.y) * (w->b.x - w->a.x)) <= 0) &&
             (mult * ((pos.x - w->a.x - hitboxOffset.x) * hitboxOffset.y - (pos.y - w->a.y - hitboxOffset.y) * hitboxOffset.x) <= 0) &&
@@ -22,7 +23,7 @@ Vector2 CollideWall(Wall *w, Vector2 position, Vector2 moveVec) {
             ) {
         double dydx = dy / (dx ? dx : 1);
         double dxdy = dx / (dy ? dy : 1);
-        double wallLength = WallGetLength(*w);
+        double wallLength = w->Length;
         moveVec.x = hitboxSize * dy / wallLength + (dx == 0 ? w->a.x : dy == 0 ? pos.x : (pos.y - w->a.y + w->a.x * dydx + pos.x * dxdy) / (dydx + dxdy)) - position.x;
         moveVec.y = -hitboxSize * dx / wallLength + (dx == 0 ? pos.y : dy == 0 ? w->a.y : (pos.x - w->a.x + w->a.y * dxdy + pos.y * dydx) / (dxdy + dydx)) - position.y;
     }
@@ -31,15 +32,15 @@ Vector2 CollideWall(Wall *w, Vector2 position, Vector2 moveVec) {
 
 Vector2 Move(Vector2 position, Vector2 moveVec, void *ignore) {
     Level *l = GetState()->level;
-    for (int i = 0; i < l->walls->size; i++) {
-        Wall *w = ListGet(l->walls, i);
+    for (int i = 0; i < l->staticWalls->size; i++) {
+        Wall *w = SizedArrayGet(l->staticWalls, i);
         if (w == ignore) {
             continue;
         }
         moveVec = CollideWall(w, position, moveVec);
     }
-    for (int i = 0; i < l->actors->size; i++) {
-        Actor *a = ListGet(l->actors, i);
+    for (int i = 0; i < l->staticActors->size; i++) {
+        Actor *a = SizedArrayGet(l->staticActors, i);
         if (a == ignore) {
             continue;
         }
@@ -58,6 +59,6 @@ bool CollideCylinder(Vector2 cylOrigin, double cylRadius, Vector2 testPoint) {
 
 bool CollideActorCylinder(Actor *a, Vector2 testPoint) {
     Wall transformedWall = GetTransformedWall(a);
-    double radius = WallGetLength(transformedWall) / 2;
+    double radius = transformedWall.Length / 2;
     return CollideCylinder(a->position, radius, testPoint);
 }

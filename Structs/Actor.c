@@ -3,6 +3,7 @@
 //
 
 #include "Actor.h"
+#include "Wall.h"
 
 // Empty template functions
 void ActorInit(Actor *this) {}
@@ -58,6 +59,8 @@ Wall GetTransformedWall(Actor *actor) {
     // Translate the wall
     wall.a = Vector2Add(wall.a, actor->position);
     wall.b = Vector2Add(wall.b, actor->position);
+
+    WallBake(&wall);
 
     return wall;
 }

@@ -21,11 +21,12 @@ void GMainStateUpdate() {
         GPauseStateSet();
         return;
     }
-
+#ifdef ENABLE_LEVEL_EDITOR
     if (IsKeyJustPressed(SDL_SCANCODE_F6)) {
         GEditorStateSet();
         return;
     }
+#endif
 
     Level *l = GetState()->level;
 
@@ -84,8 +85,8 @@ void GMainStateUpdate() {
 
     l->rotation = wrap(l->rotation, 0, 2 * PI);
 
-    for (int i = 0; i < l->actors->size; i++) {
-        Actor *a = (Actor *) ListGet(l->actors, i);
+    for (int i = 0; i < l->staticActors->size; i++) {
+        Actor *a = SizedArrayGet(l->staticActors, i);
         a->Update(a);
     }
 }
@@ -122,7 +123,8 @@ void GMainStateRender() {
 
     DPrintF("Mouse Buttons: %d %d %d", 0xFFFFFFFF, false, IsMouseButtonPressed(1), IsMouseButtonPressed(2), IsMouseButtonPressed(3));
 
-    DPrintF("Walls: %d", 0xFFFFFFFF, false, l->walls->size);
+    DPrintF("Walls: %d", 0xFFFFFFFF, false, l->staticWalls->size);
+    DPrintF("Actors: %d", 0xFFFFFFFF, false, l->staticActors->size);
 }
 
 void GMainStateSet() {

@@ -17,9 +17,11 @@ void FreeWall(Wall *w);
 #define WALL_HITBOX_EXTENTS 0.4
 
 // Get the length of a wall
-double WallGetLength(Wall w);
+//double WallGetLength(Wall w);
 
 // Get the angle of a wall
-double WallGetAngle(Wall w);
+//double WallGetAngle(Wall w);
+
+double WallBake(Wall *w);
 
 #endif //GAME_WALL_H

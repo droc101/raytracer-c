@@ -23,4 +23,11 @@ void RenderCol(Level *l, int col);
 // Render 1 column of the level (actors only, checks depth buffer)
 void RenderActorCol(Level *l, int col);
 
+void BakeWallArray(Level *l);
+void BakeActorArray(Level *l);
+
+// To be used at runtime, not during level loading
+void AddActor(Actor* actor);
+void RemoveActor(Actor* actor);
+
 #endif //GAME_LEVEL_H
