@@ -17,6 +17,7 @@
 #include "Structs/Vector2.h"
 #include "Helpers/Timing.h"
 #include "config.h"
+#include "Helpers/Error.h"
 
 int main(int argc, char *argv[]) {
     printf("Build time: %s at %s\n", __DATE__, __TIME__);
