@@ -10,7 +10,7 @@
 #include "Level.h"
 
 // Perform a ray cast from a position and rotation into a wall. Don't forget to free the result!
-inline RayCastResult Intersect(Wall wall, Vector2 from, double direction)
+RayCastResult Intersect(Wall wall, Vector2 from, double direction)
 {
     RayCastResult rr;
     rr.Collided = false;
