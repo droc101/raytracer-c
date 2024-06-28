@@ -23,4 +23,6 @@
 
 #define ENABLE_LEVEL_EDITOR
 
+#define ENABLE_DEBUG_PRINT
+
 #endif //GAME_CONFIG_H

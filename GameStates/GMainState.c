@@ -123,7 +123,8 @@ void GMainStateRender() {
 
     DPrintF("Mouse Buttons: %d %d %d", 0xFFFFFFFF, false, IsMouseButtonPressed(1), IsMouseButtonPressed(2), IsMouseButtonPressed(3));
 
-    DPrintF("Walls: %d", 0xFFFFFFFF, false, l->walls->size);
+    DPrintF("Walls: %d", 0xFFFFFFFF, false, l->staticWalls->size);
+    DPrintF("Actors: %d", 0xFFFFFFFF, false, l->staticActors->size);
 }
 
 void GMainStateSet() {
