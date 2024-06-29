@@ -180,7 +180,7 @@ def file_to_bytes(path): # Convert a file to bytes (raw)
 	header.extend(int_to_bytes(len(data))) # Compressed length
 	header.extend(int_to_bytes(decompressed_len)) # Decompressed length
 	header.extend(int_to_bytes(aid)) # Asset ID
-	header.extend(int_to_bytes(2)) # Asset Type (2 = wav)
+	header.extend(int_to_bytes(3)) # Asset Type (3 = bin)
 
 	header.extend(data)
 
