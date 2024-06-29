@@ -462,6 +462,10 @@ void BtnCopyBytecode() {
     // copy to clipboard
     SDL_SetClipboardText(buf);
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Bytecode copied", "The level bytecode has been copied to the clipboard.", NULL);
+
+    free(bc->data);
+    free(bc);
+    free(buf);
 }
 
 void ToggleSnapToGrid(EditorButton *btn) {
