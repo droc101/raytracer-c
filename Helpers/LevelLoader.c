@@ -75,7 +75,7 @@ Level *LoadLevel(byte *data) {
 }
 
 LevelBytecode* GenerateBytecode(Level *l) {
-    byte *data = malloc(1024);
+    byte *data = malloc(1048576);
     int i = 0;
     for (int j = 0; j < l->walls->size; j++) {
         Wall *w = ListGet(l->walls, j);
