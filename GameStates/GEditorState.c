@@ -13,6 +13,7 @@
 #include "../Helpers/Font.h"
 #include "../Structs/Actor.h"
 #include <math.h>
+#include "../Helpers/LevelLoader.h"
 
 double EditorZoom = 20.0;
 double EditorPanX = 0.0;
@@ -64,39 +65,43 @@ List *EditorNodes;
 
 bool isAddModeDragging = false;
 
+Level* NodesToLevel() {
+    Level *l = CreateLevel();
+
+    // reconstruct the level from the editor nodes
+    for (int i = 0; i < EditorNodes->size; i++) {
+        EditorNode *node = ListGet(EditorNodes, i);
+        switch (node->type) {
+            case NODE_PLAYER:
+                l->position = node->position;
+                l->rotation = node->rotation;
+                break;
+            case NODE_ACTOR: {
+                Actor *a = CreateActor(node->position, node->rotation, node->extra);
+                ListAdd(l->actors, a);
+                break;
+            }
+            case NODE_WALL_A: {
+                Wall *w = CreateWall(node->position, vec2(0, 0), node->extra);
+                ListAdd(l->walls, w);
+                break;
+            }
+            case NODE_WALL_B: {
+                Wall *w = ListGet(l->walls, ListGetSize(l->walls) - 1);
+                w->b = node->position;
+                break;
+            }
+        }
+    }
+
+    return l;
+}
+
 void GEditorStateUpdate() {
 #ifdef ENABLE_LEVEL_EDITOR
     if (IsKeyJustPressed(SDL_SCANCODE_F6)) {
-
-        Level *l = CreateLevel();
-
-        // reconstruct the level from the editor nodes
-        for (int i = 0; i < EditorNodes->size; i++) {
-            EditorNode *node = ListGet(EditorNodes, i);
-            switch (node->type) {
-                case NODE_PLAYER:
-                    l->position = node->position;
-                    l->rotation = node->rotation;
-                    break;
-                case NODE_ACTOR: {
-                    Actor *a = CreateActor(node->position, node->rotation, node->extra);
-                    ListAdd(l->actors, a);
-                    break;
-                }
-                case NODE_WALL_A: {
-                    Wall *w = CreateWall(node->position, vec2(0, 0), node->extra);
-                    ListAdd(l->walls, w);
-                    break;
-                }
-                case NODE_WALL_B: {
-                    Wall *w = ListGet(l->walls, ListGetSize(l->walls) - 1);
-                    w->b = node->position;
-                    break;
-                }
-            }
-        }
+        Level *l = NodesToLevel();
         ChangeLevel(l);
-
         GMainStateSet();
     }
 
@@ -447,6 +452,18 @@ void BtnZoomReset(EditorButton *btn) {
     EditorZoom = 20.0;
 }
 
+void BtnCopyBytecode() {
+    LevelBytecode *bc = GenerateBytecode(GetState()->level);
+    char *buf = malloc(bc->size * 2 + 1);
+    for (int i = 0; i < bc->size; i++) {
+        sprintf(buf + i * 2, "%02x", bc->data[i]);
+    }
+    buf[bc->size * 2] = '\0';
+    // copy to clipboard
+    SDL_SetClipboardText(buf);
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Bytecode copied", "The level bytecode has been copied to the clipboard.", NULL);
+}
+
 void ToggleSnapToGrid(EditorButton *btn) {
     EditorSnapToGrid = btn->toggled;
 }
@@ -500,6 +517,10 @@ void GEditorStateSet() {
         // set snap button to toggled
         EditorButton *snapButton = ListGet(EditorButtons, EditorButtons->size - 1);
         snapButton->toggled = EditorSnapToGrid;
+
+        // Create a button to copy the level bytecode
+        CreateButton("Build", vec2(10, 182), vec2(40, 24), BtnCopyBytecode, true, false);
+
 
         EditorInitComplete = true;
     }

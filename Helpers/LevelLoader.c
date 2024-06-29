@@ -73,3 +73,51 @@ Level *LoadLevel(byte *data) {
     }
     return l;
 }
+
+LevelBytecode* GenerateBytecode(Level *l) {
+    byte *data = malloc(1024);
+    int i = 0;
+    for (int j = 0; j < l->walls->size; j++) {
+        Wall *w = ListGet(l->walls, j);
+        data[i] = LEVEL_CMD_WALL;
+        i++;
+        WriteDouble(data, &i, w->a.x);
+        WriteDouble(data, &i, w->a.y);
+        WriteDouble(data, &i, w->b.x);
+        WriteDouble(data, &i, w->b.y);
+        WriteUint(data, &i, w->texId);
+    }
+    for (int j = 0; j < l->actors->size; j++) {
+        Actor *a = ListGet(l->actors, j);
+        data[i] = LEVEL_CMD_ACTOR;
+        i++;
+        WriteDouble(data, &i, a->position.x);
+        WriteDouble(data, &i, a->position.y);
+        WriteDouble(data, &i, a->rotation);
+        WriteUint(data, &i, a->actorType);
+    }
+    data[i] = LEVEL_CMD_PLAYER;
+    i++;
+    WriteDouble(data, &i, l->position.x);
+    WriteDouble(data, &i, l->position.y);
+    WriteDouble(data, &i, l->rotation);
+    data[i] = LEVEL_CMD_COLORS;
+    i++;
+    WriteUint(data, &i, l->SkyColor);
+    WriteUint(data, &i, l->FloorColor);
+    data[i] = LEVEL_CMD_FOG;
+    i++;
+    WriteUint(data, &i, l->FogColor);
+    WriteDouble(data, &i, l->FogStart);
+    WriteDouble(data, &i, l->FogEnd);
+    data[i] = LEVEL_CMD_FINISH;
+    i++;
+
+    data = realloc(data, i);
+
+    LevelBytecode *lb = malloc(sizeof(LevelBytecode));
+    lb->data = data;
+    lb->size = i;
+
+    return lb;
+}

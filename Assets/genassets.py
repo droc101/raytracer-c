@@ -149,6 +149,51 @@ def wav_to_bytes(path): # Convert an MP3 file to bytes
 
 	return header
 
+def file_to_bytes(path): # Convert a file to bytes (raw)
+	global aid
+	
+	file = open(path, 'rb')
+	data = list(file.read())
+	
+ 
+	data += int_to_bytes(len(data)) # array size (excluding header)
+	data += int_to_bytes(0) # unused
+	data += int_to_bytes(0) # unused
+	data += int_to_bytes(aid) # Padding
+
+	# check that everything is in the right range
+	for i in range(0, len(data)):
+		if data[i] < 0 or data[i] > 255:
+			print('Error: BIN data out of range')
+			sys.exit(1)
+
+	#data = bytearray(data)
+
+	decompressed_len = len(data)
+
+	# Gzip the data
+	data = gzip.compress(bytes(data))
+
+	
+
+	header = bytearray()
+	header.extend(int_to_bytes(len(data))) # Compressed length
+	header.extend(int_to_bytes(decompressed_len)) # Decompressed length
+	header.extend(int_to_bytes(aid)) # Asset ID
+	header.extend(int_to_bytes(2)) # Asset Type (2 = wav)
+
+	header.extend(data)
+
+# gzip timestamp is 18 bytes in
+	header[19] = 1
+	header[20] = 2
+	header[21] = 3
+	header[22] = 4
+
+	aid += 1
+
+	return header
+
 def bytes_to_c_array(data, name): # Convert the bytes to a C array (for the .c file)
 	output = 'const unsigned char ' + name + '[] = {\n'
 	for i in range(0, len(data)):
@@ -202,6 +247,13 @@ def recursive_search(path):
 				print('Converting ' + path + file)
 				data = wav_to_bytes(path + file)
 				name = "gzwav_" + foldername + '_' + file.split('.')[0]
+				assets_c += bytes_to_c_array(data, name)
+				assets_h += c_header_array(name, len(data))
+			elif file.endswith('.bin'):
+				count += 1
+				print('Converting ' + path + file)
+				data = file_to_bytes(path + file)
+				name = "gzbin_" + foldername + '_' + file.split('.')[0]
 				assets_c += bytes_to_c_array(data, name)
 				assets_h += c_header_array(name, len(data))
 
