@@ -9,6 +9,7 @@
 #include "Drawing.h"
 #include "Font.h"
 #include <string.h>
+#include <signal.h>
 
 const char* basename(const char* path) {
     const char* base = strrchr(path, '/');
@@ -37,4 +38,19 @@ _Noreturn void _Error_Internal(char* error, const char* file, int line, const ch
         DrawTextAligned(buf, 32, 0xFFFF0000, vec2s(30), vec2(WindowWidth() - 60, WindowHeight() - 60), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE);
         SDL_RenderPresent(GetRenderer());
     }
+}
+
+void _SignalHandler(int sig) {
+    if (sig == SIGSEGV) {
+        Error("Segmentation Fault");
+    } else if (sig == SIGFPE) {
+        Error("Floating Point Exception");
+    }
+}
+
+void SetSignalHandler() {
+#ifdef __OPTIMIZE__
+    signal(SIGSEGV, _SignalHandler);
+    signal(SIGFPE, _SignalHandler);
+#endif
 }

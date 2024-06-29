@@ -14,4 +14,6 @@
 // Print an error message on screen and lock up
 _Noreturn void _Error_Internal(char* error, const char* file, int line, const char* function);
 
+void SetSignalHandler();
+
 #endif //GAME_ERROR_H

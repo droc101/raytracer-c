@@ -20,6 +20,7 @@
 #include "Helpers/Error.h"
 
 int main(int argc, char *argv[]) {
+
     printf("Build time: %s at %s\n", __DATE__, __TIME__);
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
@@ -56,6 +57,8 @@ int main(int argc, char *argv[]) {
         return 1;
     }
     SetRenderer(tr);
+
+    SetSignalHandler(); // catch exceptions in release mode
 
     printf("Initializing Engine\n");
     FontInit();
