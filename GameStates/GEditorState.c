@@ -242,14 +242,36 @@ void GEditorStateUpdate() {
         EditorSlider *slider = ListGet(EditorSliders, i);
         bool hovered = false;
         bool pressed = false;
+        bool rpressed = false;
         Vector2 mousePos = GetMousePos();
         if (mousePos.x >= slider->position.x && mousePos.x <= slider->position.x + slider->size.x &&
             mousePos.y >= slider->position.y && mousePos.y <= slider->position.y + slider->size.y) {
             hovered = true;
         }
         pressed = IsMouseButtonPressed(SDL_BUTTON_LEFT) && hovered;
+        rpressed = IsMouseButtonJustPressed(SDL_BUTTON_RIGHT) && hovered;
 
-        if (pressed) {
+        if (rpressed) {
+            // increment or decrement the slider value by 1 depending on which side of the slider box the mouse is on (go from midpoint, not knob)
+            double localMouseX = mousePos.x - slider->position.x;
+            localMouseX /= slider->size.x;
+            localMouseX -= 0.5;
+            if (localMouseX < 0) {
+                slider->value -= min(1, slider->step);
+                slider->value = max(slider->min, slider->value);
+                if (slider->callback != NULL) {
+                    slider->callback(slider->value);
+                }
+                return;
+            } else {
+                slider->value += max(1, slider->step);
+                slider->value = min(slider->max, slider->value);
+                if (slider->callback != NULL) {
+                    slider->callback(slider->value);
+                }
+                return;
+            }
+        } else if (pressed) {
             double knobPos = remap(slider->value, slider->min, slider->max, 0, slider->size.x);
             double newValue = remap(mousePos.x - slider->position.x, 0, slider->size.x, slider->min, slider->max);
 
@@ -812,7 +834,7 @@ void GEditorStateSet() {
     EditorNode *playerNode = malloc(sizeof(EditorNode));
     playerNode->type = NODE_PLAYER;
     playerNode->position = l->position;
-    playerNode->rotation = l->rotation;
+    playerNode->rotation = fmod(l->rotation, 2*PI);
     ListAdd(EditorNodes, playerNode);
 
     // add a node for each actor
@@ -821,7 +843,7 @@ void GEditorStateSet() {
         EditorNode *actorNode = malloc(sizeof(EditorNode));
         actorNode->type = NODE_ACTOR;
         actorNode->position = a->position;
-        actorNode->rotation = a->rotation;
+        actorNode->rotation = fmod(a->rotation, 2*PI);
         actorNode->index = i;
         actorNode->extra = a->actorType;
         ListAdd(EditorNodes, actorNode);
