@@ -161,3 +161,15 @@ void DestroySizedArray(SizedArray *array) {
     free(array);
 }
 
+void ListClear(List *list) {
+    Node* current = list->head;
+    while (current != NULLPTR) {
+        Node* next = current->next;
+        free(current);
+        current = next;
+    }
+    list->head = NULLPTR;
+    list->tail = NULLPTR;
+    list->size = 0;
+}
+

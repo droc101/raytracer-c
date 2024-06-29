@@ -57,6 +57,8 @@ int ListGetSize(List* list);
 
 int ListFind(List *list, void *data);
 
+void ListClear(List *list);
+
 SizedArray* ToSizedArray(List *list);
 
 #define SizedArrayGet(array, index) ((array)->elements[(index)])

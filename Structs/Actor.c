@@ -30,6 +30,10 @@ int ActorHealths[] = {
         1
 };
 
+int GetActorTypeCount() {
+    return sizeof(ActorInitFuncs) / sizeof(void *);
+}
+
 Actor *CreateActor(Vector2 position, double rotation, int actorType) {
     Actor *actor = malloc(sizeof(Actor));
     actor->position = position;

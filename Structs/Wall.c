@@ -13,7 +13,17 @@ const byte *wallTextures[] = {
         gztex_level_cross,
         gztex_level_wall2,
         gztex_actor_iq,
+        gztex_actor_BLOB2,
+        gztex_actor_demon,
+        gztex_actor_monster1,
+        gztex_actor_monster2,
+        gztex_actor_monster3,
+        gztex_actor_key
 };
+
+int GetTextureCount() {
+    return sizeof(wallTextures) / sizeof(byte *);
+}
 
 Wall *CreateWall(Vector2 a, Vector2 b, uint tex) {
     Wall *w = malloc(sizeof(Wall));

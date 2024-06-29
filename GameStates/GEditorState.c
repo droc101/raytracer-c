@@ -46,6 +46,20 @@ typedef struct {
 
 List *EditorButtons;
 
+typedef struct {
+    char *label;
+    double min;
+    double max;
+    double value;
+    double step;
+    double altStep; // step when shift is held
+    Vector2 position;
+    Vector2 size;
+    void (*callback)(double value);
+} EditorSlider;
+
+List *EditorSliders;
+
 typedef enum {
     NODE_WALL_A,
     NODE_WALL_B,
@@ -65,8 +79,30 @@ List *EditorNodes;
 
 bool isAddModeDragging = false;
 
+byte level_fogR;
+byte level_fogG;
+byte level_fogB;
+
+double level_fogStart;
+double level_fogEnd;
+
+byte level_floorR;
+byte level_floorG;
+byte level_floorB;
+
+byte level_skyR;
+byte level_skyG;
+byte level_skyB;
+
 Level* NodesToLevel() {
     Level *l = CreateLevel();
+
+    l->FogColor = 0xFF << 24 | level_fogR << 16 | level_fogG << 8 | level_fogB;
+    l->FogStart = level_fogStart;
+    l->FogEnd = level_fogEnd;
+
+    l->FloorColor = 0xFF << 24 | level_floorR << 16 | level_floorG << 8 | level_floorB;
+    l->SkyColor = 0xFF << 24 | level_skyR << 16 | level_skyG << 8 | level_skyB;
 
     // reconstruct the level from the editor nodes
     for (int i = 0; i < EditorNodes->size; i++) {
@@ -95,6 +131,75 @@ Level* NodesToLevel() {
     }
 
     return l;
+}
+
+void CreateSlider(char *label, double min, double max, double value, double step, double altStep, Vector2 position, Vector2 size, void (*callback)(double value)){
+    EditorSlider *slider = malloc(sizeof(EditorSlider));
+    slider->label = label;
+    slider->min = min;
+    slider->max = max;
+    slider->value = value;
+    slider->step = step;
+    slider->altStep = altStep;
+    slider->position = position;
+    slider->size = size;
+    slider->size.y = 48; // 24px for the label, 24px for the slider
+    slider->callback = callback;
+    ListAdd(EditorSliders, slider);
+}
+
+void slider_setNodeRotation(double value) {
+    EditorNode *node = ListGet(EditorNodes, EditorSelectedNode);
+    node->rotation = degToRad(value);
+}
+
+void slider_setNodeExtra(double value) {
+    EditorNode *node = ListGet(EditorNodes, EditorSelectedNode);
+    node->extra = (uint)value;
+}
+
+void slider_setFogR(double value) {
+    level_fogR = (byte)value;
+}
+
+void slider_setFogG(double value) {
+    level_fogG = (byte)value;
+}
+
+void slider_setFogB(double value) {
+    level_fogB = (byte)value;
+}
+
+void slider_setFogStart(double value) {
+    level_fogStart = value;
+}
+
+void slider_setFogEnd(double value) {
+    level_fogEnd = value;
+}
+
+void slider_setFloorR(double value) {
+    level_floorR = (byte)value;
+}
+
+void slider_setFloorG(double value) {
+    level_floorG = (byte)value;
+}
+
+void slider_setFloorB(double value) {
+    level_floorB = (byte)value;
+}
+
+void slider_setSkyR(double value) {
+    level_skyR = (byte)value;
+}
+
+void slider_setSkyG(double value) {
+    level_skyG = (byte)value;
+}
+
+void slider_setSkyB(double value) {
+    level_skyB = (byte)value;
 }
 
 void GEditorStateUpdate() {
@@ -130,6 +235,43 @@ void GEditorStateUpdate() {
             if (button->callback != NULL) {
                 button->callback(button);
             }
+        }
+    }
+
+    for (int i = 0; i < EditorSliders->size; i++) {
+        EditorSlider *slider = ListGet(EditorSliders, i);
+        bool hovered = false;
+        bool pressed = false;
+        Vector2 mousePos = GetMousePos();
+        if (mousePos.x >= slider->position.x && mousePos.x <= slider->position.x + slider->size.x &&
+            mousePos.y >= slider->position.y && mousePos.y <= slider->position.y + slider->size.y) {
+            hovered = true;
+        }
+        pressed = IsMouseButtonPressed(SDL_BUTTON_LEFT) && hovered;
+
+        if (pressed) {
+            double knobPos = remap(slider->value, slider->min, slider->max, 0, slider->size.x);
+            double newValue = remap(mousePos.x - slider->position.x, 0, slider->size.x, slider->min, slider->max);
+
+
+            if (IsKeyPressed(SDL_SCANCODE_LSHIFT) || IsKeyPressed(SDL_SCANCODE_RSHIFT)) {
+                newValue = round(newValue / slider->altStep) * slider->altStep;
+            } else {
+                newValue = round(newValue / slider->step) * slider->step;
+            }
+
+            if (newValue < slider->min) {
+                newValue = slider->min;
+            } else if (newValue > slider->max) {
+                newValue = slider->max;
+            }
+
+            slider->value = newValue;
+            if (slider->callback != NULL) {
+                slider->callback(newValue);
+            }
+
+            return; // don't allow anything else to be clicked while dragging a slider
         }
     }
 
@@ -196,50 +338,113 @@ void GEditorStateUpdate() {
             }
         }
     } else if (CurrentEditorMode == EDITOR_MODE_ADD) {
-        if (IsMouseButtonJustPressed(SDL_BUTTON_LEFT)) {
+        EditorSlider *modeSld = ListGet(EditorSliders, 0);
+        int mode = modeSld->value;
+        switch (mode) {
+            case 0: {
+                if (IsMouseButtonJustPressed(SDL_BUTTON_LEFT)) {
+                    Vector2 mousePos = GetMousePos();
+                    Vector2 worldPos = vec2((mousePos.x - EditorPanX) / EditorZoom, (mousePos.y - EditorPanY) / EditorZoom);
+
+                    if (EditorSnapToGrid) {
+                        worldPos.x = round(worldPos.x);
+                        worldPos.y = round(worldPos.y);
+                    }
+
+
+                    // Create 2 nodes for a wall
+                    EditorNode *nodeA = malloc(sizeof(EditorNode));
+                    nodeA->type = NODE_WALL_A;
+                    nodeA->position = worldPos;
+                    nodeA->extra = 0;
+                    ListAdd(EditorNodes, nodeA);
+
+                    EditorNode *nodeB = malloc(sizeof(EditorNode));
+                    nodeB->type = NODE_WALL_B;
+                    nodeB->position = worldPos;
+                    ListAdd(EditorNodes, nodeB);
+
+                    isAddModeDragging = true;
+                } else if (IsMouseButtonJustReleased(SDL_BUTTON_LEFT)) {
+                    isAddModeDragging = false;
+                } else if (isAddModeDragging) {
+
+                    // delete the 2 nodes we just created if escape is pressed
+                    if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE)) {
+                        ListRemoveAt(EditorNodes, EditorNodes->size - 1);
+                        ListRemoveAt(EditorNodes, EditorNodes->size - 1);
+                        isAddModeDragging = false;
+                        return;
+                    }
+
+                    Vector2 mousePos = GetMousePos();
+                    Vector2 worldPos = vec2((mousePos.x - EditorPanX) / EditorZoom, (mousePos.y - EditorPanY) / EditorZoom);
+
+                    if (EditorSnapToGrid) {
+                        worldPos.x = round(worldPos.x);
+                        worldPos.y = round(worldPos.y);
+                    }
+
+                    EditorNode *nodeB = ListGet(EditorNodes, EditorNodes->size - 1);
+                    nodeB->position = worldPos;
+                }
+                break;
+            }
+            case 1: {
+                if (IsMouseButtonJustPressed(SDL_BUTTON_LEFT)) {
+                    EditorNode *node = malloc(sizeof(EditorNode));
+                    node->type = NODE_ACTOR;
+                    Vector2 mousePos = GetMousePos();
+                    Vector2 worldPos = vec2((mousePos.x - EditorPanX) / EditorZoom, (mousePos.y - EditorPanY) / EditorZoom);
+
+                    if (EditorSnapToGrid) {
+                        worldPos.x = round(worldPos.x);
+                        worldPos.y = round(worldPos.y);
+                    }
+
+                    node->position = worldPos;
+                    node->rotation = 0;
+                    node->extra = 1;
+                    ListAdd(EditorNodes, node);
+                }
+                break;
+            }
+        }
+
+    } else if (CurrentEditorMode == EDITOR_MODE_PROPERTIES) {
+        for (int i = 0; i < EditorNodes->size; i++) {
+            EditorNode *node = ListGet(EditorNodes, i);
+            Vector2 screenPos = vec2((node->position.x * EditorZoom) + EditorPanX,
+                                     (node->position.y * EditorZoom) + EditorPanY);
+
+            bool hovered = false;
             Vector2 mousePos = GetMousePos();
-            Vector2 worldPos = vec2((mousePos.x - EditorPanX) / EditorZoom, (mousePos.y - EditorPanY) / EditorZoom);
-
-            if (EditorSnapToGrid) {
-                worldPos.x = round(worldPos.x);
-                worldPos.y = round(worldPos.y);
+            if (mousePos.x >= screenPos.x - 5 && mousePos.x <= screenPos.x + 5 &&
+                mousePos.y >= screenPos.y - 5 && mousePos.y <= screenPos.y + 5) {
+                hovered = true;
             }
 
-            // Create 2 nodes for a wall
-            EditorNode *nodeA = malloc(sizeof(EditorNode));
-            nodeA->type = NODE_WALL_A;
-            nodeA->position = worldPos;
-            nodeA->extra = 0;
-            ListAdd(EditorNodes, nodeA);
-
-            EditorNode *nodeB = malloc(sizeof(EditorNode));
-            nodeB->type = NODE_WALL_B;
-            nodeB->position = worldPos;
-            ListAdd(EditorNodes, nodeB);
-
-            isAddModeDragging = true;
-        } else if (IsMouseButtonJustReleased(SDL_BUTTON_LEFT)) {
-            isAddModeDragging = false;
-        } else if (isAddModeDragging) {
-
-            // delete the 2 nodes we just created if escape is pressed
-            if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE)) {
-                ListRemoveAt(EditorNodes, EditorNodes->size - 1);
-                ListRemoveAt(EditorNodes, EditorNodes->size - 1);
-                isAddModeDragging = false;
-                return;
+            if (hovered && IsMouseButtonJustPressed(SDL_BUTTON_LEFT)) {
+                EditorSelectedNode = i;
             }
+        }
 
-            Vector2 mousePos = GetMousePos();
-            Vector2 worldPos = vec2((mousePos.x - EditorPanX) / EditorZoom, (mousePos.y - EditorPanY) / EditorZoom);
+        ListClear(EditorSliders);
 
-            if (EditorSnapToGrid) {
-                worldPos.x = round(worldPos.x);
-                worldPos.y = round(worldPos.y);
-            }
-
-            EditorNode *nodeB = ListGet(EditorNodes, EditorNodes->size - 1);
-            nodeB->position = worldPos;
+        EditorNode *node = ListGet(EditorNodes, EditorSelectedNode);
+        switch (node->type) {
+            case NODE_PLAYER:
+                CreateSlider("ang", 0, 359, radToDeg(node->rotation), 1, 45, vec2(10, 250), vec2(200, 24), slider_setNodeRotation);
+                break;
+            case NODE_ACTOR:
+                CreateSlider("ang", 0, 359, radToDeg(node->rotation), 1, 45, vec2(10, 250), vec2(200, 24), slider_setNodeRotation);
+                CreateSlider("Type", 0, GetActorTypeCount() - 1, node->extra, 1, 16, vec2(10, 300), vec2(200, 24), slider_setNodeExtra);
+                break;
+            case NODE_WALL_A:
+                CreateSlider("Tex", 0, GetTextureCount() - 1, node->extra, 1, 16, vec2(10, 250), vec2(200, 24), slider_setNodeExtra);
+                break;
+            default:
+                break;
         }
     }
 #endif
@@ -281,6 +486,42 @@ void DrawEditorButton(EditorButton *btn) {
     draw_rect(btn->position.x, btn->position.y, btn->size.x, btn->size.y);
 
     DrawTextAligned(btn->text, 16, 0xFFFFFFFF, btn->position, btn->size, FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE);
+}
+
+void DrawEditorSlider(EditorSlider *sld) {
+    SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_BLEND);
+
+    setColorUint(0x80000000);
+    draw_rect(sld->position.x, sld->position.y, sld->size.x, sld->size.y);
+
+    setColorUint(0xFF808080);
+    draw_rect(sld->position.x, sld->position.y + 32, sld->size.x, 2);
+
+    bool hovered = false;
+    bool pressed = false;
+    Vector2 mousePos = GetMousePos();
+    if (mousePos.x >= sld->position.x && mousePos.x <= sld->position.x + sld->size.x &&
+        mousePos.y >= sld->position.y && mousePos.y <= sld->position.y + sld->size.y) {
+        hovered = true;
+    }
+    pressed = IsMouseButtonPressed(SDL_BUTTON_LEFT) && hovered;
+
+    uint btnColor;
+    if (pressed) {
+        btnColor = 0xFF8ac9ff;
+    } else if (hovered) {
+        btnColor = 0xFFa1d4ff;
+    } else {
+        btnColor = 0xFFc2e3ff;
+    }
+
+    double knobPos = remap(sld->value, sld->min, sld->max, 0, sld->size.x);
+    setColorUint(btnColor);
+    draw_rect(sld->position.x + knobPos - 8, sld->position.y + 24, 16, 16);
+
+    char buf[32];
+    sprintf(buf, "%s: %.0f", sld->label, sld->value);
+    DrawTextAligned(buf, 16, 0xFFFFFFFF, vec2(sld->position.x, sld->position.y), vec2(sld->size.x, 24), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE);
 }
 
 void GEditorStateRender() {
@@ -423,6 +664,12 @@ void GEditorStateRender() {
         EditorButton *button = ListGet(EditorButtons, i);
         DrawEditorButton(button);
     }
+
+    // Draw sliders
+    for (int i = 0; i < EditorSliders->size; i++) {
+        EditorSlider *slider = ListGet(EditorSliders, i);
+        DrawEditorSlider(slider);
+    }
 #endif
 }
 
@@ -459,7 +706,7 @@ void BtnCopyBytecode() {
         sprintf(buf + i * 2, "%02x", bc->data[i]);
     }
     buf[bc->size * 2] = '\0';
-    // copy to clipboard
+
     SDL_SetClipboardText(buf);
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Bytecode copied", "The level bytecode has been copied to the clipboard.", NULL);
 
@@ -473,22 +720,38 @@ void ToggleSnapToGrid(EditorButton *btn) {
 }
 
 void SetEditorMode(EditorButton *btn) {
-    for (int i = 0; i < EditorButtons->size; i++) {
+    for (int i = 0; i < 5; i++) {
         EditorButton *button = ListGet(EditorButtons, i);
         button->toggled = false;
     }
     btn->toggled = true;
 
+    ListClear(EditorSliders);
+
     if (strcmp(btn->text, "Add") == 0) {
         CurrentEditorMode = EDITOR_MODE_ADD;
+        CreateSlider("Add Actor?", 0, 1, 0, 1, 1, vec2(10, 250), vec2(200, 24), NULL);
     } else if (strcmp(btn->text, "Move") == 0) {
+        EditorSelectedNode = -1;
         CurrentEditorMode = EDITOR_MODE_MOVE;
     } else if (strcmp(btn->text, "Delete") == 0) {
         CurrentEditorMode = EDITOR_MODE_DELETE;
     } else if (strcmp(btn->text, "Prop") == 0) {
         CurrentEditorMode = EDITOR_MODE_PROPERTIES;
+        EditorSelectedNode = 0;
     } else if (strcmp(btn->text, "Level") == 0) {
         CurrentEditorMode = EDITOR_MODE_LEVEL;
+        CreateSlider("Fog R", 0, 255, level_fogR, 1, 16, vec2(10, 250), vec2(200, 24), slider_setFogR);
+        CreateSlider("Fog G", 0, 255, level_fogG, 1, 16, vec2(10, 300), vec2(200, 24), slider_setFogG);
+        CreateSlider("Fog B", 0, 255, level_fogB, 1, 16, vec2(10, 350), vec2(200, 24), slider_setFogB);
+        CreateSlider("Fog Start", -50, 200, level_fogStart, 1, 50, vec2(10, 400), vec2(200, 24), slider_setFogStart);
+        CreateSlider("Fog End", 0, 300, level_fogEnd, 1, 50, vec2(10, 450), vec2(200, 24), slider_setFogEnd);
+        CreateSlider("Floor R", 0, 255, level_floorR, 1, 16, vec2(10, 500), vec2(200, 24), slider_setFloorR);
+        CreateSlider("Floor G", 0, 255, level_floorG, 1, 16, vec2(10, 550), vec2(200, 24), slider_setFloorG);
+        CreateSlider("Floor B", 0, 255, level_floorB, 1, 16, vec2(10, 600), vec2(200, 24), slider_setFloorB);
+        CreateSlider("Sky R", 0, 255, level_skyR, 1, 16, vec2(10, 650), vec2(200, 24), slider_setSkyR);
+        CreateSlider("Sky G", 0, 255, level_skyG, 1, 16, vec2(10, 700), vec2(200, 24), slider_setSkyG);
+        CreateSlider("Sky B", 0, 255, level_skyB, 1, 16, vec2(10, 750), vec2(200, 24), slider_setSkyB);
     }
 }
 
@@ -499,32 +762,29 @@ void GEditorStateSet() {
         EditorPanY = WindowHeight() / 2;
 
         EditorButtons = CreateList();
+        EditorSliders = CreateList();
         EditorNodes = CreateList(); // will be freed immediately after this function, but we create it here to avoid nullptr free
 
-        // create buttons for zooming
-        CreateButton("+", vec2(10, 50), vec2(40, 24), BtnZoomIn, true, false);
-        CreateButton("-", vec2(10, 78), vec2(40, 24), BtnZoomOut, true, false);
-        CreateButton("0", vec2(10, 106), vec2(40, 24), BtnZoomReset, true, false);
-
-        // Create buttons for editor modes horizontal along the top size 100x24
         CreateButton("Add", vec2(10, 10), vec2(100, 24), SetEditorMode, true, true);
         CreateButton("Move", vec2(120, 10), vec2(100, 24), SetEditorMode, true, true);
         CreateButton("Delete", vec2(230, 10), vec2(100, 24), SetEditorMode, true, true);
         CreateButton("Prop", vec2(340, 10), vec2(100, 24), SetEditorMode, true, true);
         CreateButton("Level", vec2(450, 10), vec2(100, 24), SetEditorMode, true, true);
-        // Set the move button to toggled
+
+        CreateButton("+", vec2(10, 50), vec2(80, 24), BtnZoomIn, true, false);
+        CreateButton("-", vec2(10, 78), vec2(80, 24), BtnZoomOut, true, false);
+        CreateButton("0", vec2(10, 106), vec2(80, 24), BtnZoomReset, true, false);
+
         EditorButton *moveButton = ListGet(EditorButtons, 4);
         moveButton->toggled = true;
 
-        // Create a snap to grid button below the zoom buttons with some space
-        CreateButton("Snap", vec2(10, 154), vec2(40, 24), ToggleSnapToGrid, true, true);
-        // set snap button to toggled
+        CreateButton("Snap", vec2(10, 154), vec2(80, 24), ToggleSnapToGrid, true, true);
         EditorButton *snapButton = ListGet(EditorButtons, EditorButtons->size - 1);
         snapButton->toggled = EditorSnapToGrid;
 
-        // Create a button to copy the level bytecode
-        CreateButton("Build", vec2(10, 182), vec2(40, 24), BtnCopyBytecode, true, false);
+        CreateButton("Build", vec2(10, 182), vec2(80, 24), BtnCopyBytecode, true, false);
 
+        SetEditorMode(ListGet(EditorButtons, 1));
 
         EditorInitComplete = true;
     }
@@ -534,6 +794,19 @@ void GEditorStateSet() {
     EditorNodes = CreateList();
 
     Level *l = GetState()->level;
+
+    // load level properties
+    level_fogR = l->FogColor >> 16;
+    level_fogG = l->FogColor >> 8;
+    level_fogB = l->FogColor;
+    level_fogStart = l->FogStart;
+    level_fogEnd = l->FogEnd;
+    level_floorR = l->FloorColor >> 16;
+    level_floorG = l->FloorColor >> 8;
+    level_floorB = l->FloorColor;
+    level_skyR = l->SkyColor >> 16;
+    level_skyG = l->SkyColor >> 8;
+    level_skyB = l->SkyColor;
 
     // add a node for the player
     EditorNode *playerNode = malloc(sizeof(EditorNode));
@@ -573,5 +846,7 @@ void GEditorStateSet() {
 
     SetRenderCallback(GEditorStateRender);
     SetUpdateCallback(GEditorStateUpdate);
+
+
 }
 

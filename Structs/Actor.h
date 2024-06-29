@@ -8,6 +8,8 @@
 #include "../defines.h"
 #include "../Structs/Vector2.h"
 
+int GetActorTypeCount();
+
 // Create a new Actor and return a pointer to it
 Actor *CreateActor(Vector2 position, double rotation, int actorType);
 

@@ -25,9 +25,9 @@ def png_to_bytes(path): # Convert a PNG file to bytes
 	
 
 	for pixel in img_dta:
-		data.append(pixel[0])
-		data.append(pixel[1])
 		data.append(pixel[2])
+		data.append(pixel[1])
+		data.append(pixel[0])
 		data.append(pixel[3])
 
 	# check that everything is in the right range
