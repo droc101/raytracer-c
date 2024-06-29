@@ -25,6 +25,10 @@ int GetTextureCount() {
     return sizeof(wallTextures) / sizeof(byte *);
 }
 
+SDL_Texture *LoadWallTexture(int index) {
+    return ToSDLTexture(wallTextures[index], FILTER_NEAREST);
+}
+
 Wall *CreateWall(Vector2 a, Vector2 b, uint tex, float uvScale) {
     Wall *w = malloc(sizeof(Wall));
     w->a = a;

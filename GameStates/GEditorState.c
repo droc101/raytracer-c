@@ -95,6 +95,8 @@ byte level_skyR;
 byte level_skyG;
 byte level_skyB;
 
+SDL_Texture** editorWallTextures;
+
 Level* NodesToLevel() {
     Level *l = CreateLevel();
 
@@ -735,6 +737,21 @@ void GEditorStateRender() {
         EditorSlider *slider = ListGet(EditorSliders, i);
         DrawEditorSlider(slider);
     }
+
+    // if we are editing the properties of a wall a node, draw its texture
+    if (EditorSelectedNode != -1) {
+        EditorNode *node = ListGet(EditorNodes, EditorSelectedNode);
+        if (node->type == NODE_WALL_A) {
+            SDL_Texture *tex = editorWallTextures[node->extra];
+            if (tex != NULL) {
+                SDL_Point texSize = SDL_TextureSize(tex);
+                SDL_Rect src = {0, 0, texSize.x, texSize.y};
+                SDL_Rect dst = {10, 310, 64, 64};
+                SDL_RenderCopy(GetRenderer(), tex, &src, &dst);
+            }
+        }
+    }
+
 #endif
 }
 
@@ -850,6 +867,12 @@ void GEditorStateSet() {
         CreateButton("Build", vec2(10, 182), vec2(80, 24), BtnCopyBytecode, true, false);
 
         SetEditorMode(ListGet(EditorButtons, 1));
+
+        editorWallTextures = malloc(sizeof(SDL_Texture*) * GetTextureCount());
+
+        for (int i = 0; i < GetTextureCount(); i++) {
+            editorWallTextures[i] = LoadWallTexture(i);
+        }
 
         EditorInitComplete = true;
     }

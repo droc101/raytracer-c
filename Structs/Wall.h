@@ -9,6 +9,8 @@
 
 int GetTextureCount();
 
+SDL_Texture *LoadWallTexture(int index);
+
 // Create a wall with the given points and texture index
 Wall *CreateWall(Vector2 a, Vector2 b, uint tex, float uvScale);
 
