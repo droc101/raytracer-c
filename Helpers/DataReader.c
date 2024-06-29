@@ -60,6 +60,27 @@ uint ReadUintA(byte *data, int offset) {
     return i;
 }
 
+float ReadFloat(byte *data, int *offset) {
+    float f;
+    memcpy(&f, data + *offset, sizeof(float));
+    *offset += sizeof(float);
+
+    // Reverse the byte order
+    for (int i = 0; i < sizeof(float) / 2; i++) {
+        byte temp = ((byte *) &f)[i];
+        ((byte *) &f)[i] = ((byte *) &f)[sizeof(float) - i - 1];
+        ((byte *) &f)[sizeof(float) - i - 1] = temp;
+    }
+
+    return f;
+}
+
+byte ReadByte(byte *data, int *offset) {
+    byte b = data[*offset];
+    *offset += sizeof(byte);
+    return b;
+}
+
 void WriteDouble(byte *data, int *offset, double d) {
     // Reverse the byte order
     for (int i = 0; i < sizeof(double) / 2; i++) {
@@ -81,4 +102,21 @@ void WriteUint(byte *data, int *offset, uint i) {
 
     memcpy(data + *offset, &i, sizeof(uint));
     *offset += sizeof(uint);
+}
+
+void WriteFloat(byte *data, int *offset, float f) {
+    // Reverse the byte order
+    for (int i = 0; i < sizeof(float) / 2; i++) {
+        byte temp = ((byte *) &f)[i];
+        ((byte *) &f)[i] = ((byte *) &f)[sizeof(float) - i - 1];
+        ((byte *) &f)[sizeof(float) - i - 1] = temp;
+    }
+
+    memcpy(data + *offset, &f, sizeof(float));
+    *offset += sizeof(float);
+}
+
+void WriteByte(byte *data, int *offset, byte b) {
+    data[*offset] = b;
+    *offset += sizeof(byte);
 }

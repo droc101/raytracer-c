@@ -39,6 +39,7 @@ typedef struct {
     double Angle;
     double dx;
     double dy;
+    float uvScale;
 } Wall;
 
 // Utility functions are in Structs/level.h
@@ -94,6 +95,10 @@ typedef struct {
     void (*Update)(void *self);
     void (*Destroy)(void *self);
     int actorType;
+    byte paramA;
+    byte paramB;
+    byte paramC;
+    byte paramD;
 } Actor;
 
 // pi

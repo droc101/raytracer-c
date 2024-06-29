@@ -11,7 +11,7 @@
 int GetActorTypeCount();
 
 // Create a new Actor and return a pointer to it
-Actor *CreateActor(Vector2 position, double rotation, int actorType);
+Actor *CreateActor(Vector2 position, double rotation, int actorType, byte paramA, byte paramB, byte paramC, byte paramD);
 
 // Free the Actor from memory
 void FreeActor(Actor *actor);

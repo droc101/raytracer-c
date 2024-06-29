@@ -62,35 +62,9 @@ int main(int argc, char *argv[]) {
     InitState();
     InitSkyTex();
 
-#pragma region Debug Level
-    // TODO: Level editor so I don't have to write bytecode by hand
-    byte *levelData = DecompressAsset(gzbin_leveldata_test_level);//{ 0x00, 0xc0, 0x24, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3f, 0xf0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x24, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3f, 0xf0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3f, 0xf9, 0x21, 0xfb, 0x55, 0x20, 0x6d, 0xdf, 0x03, 0xff, 0xeb, 0x40, 0x34, 0xff, 0x33, 0x28, 0x00, 0x04};
-
+    byte *levelData = DecompressAsset(gzbin_leveldata_test_level);
     Level *l = LoadLevel(levelData);
-//    l->MusicID = 0;
-
-//    l->FogColor = 0xFF8040FF;
-//    l->FogStart = 5;
-//    l->FogEnd = 20;
-
-//    Actor *a = CreateActor(vec2(5, -1), 0, 1);
-//    ListAdd(l->actors, a);
-//
-//    Wall *wl = CreateWall(vec2(20, -10), vec2(1, 10), 0);
-//    ListAdd(l->walls, wl);
-//
-//    Wall *wl2 = CreateWall(vec2(20, 10), vec2(1, 10), 0);
-//    ListAdd(l->walls, wl2);
-
-//#define r (rand() % 2 ? rand() % 20 + 1 : -(rand() % 20 + 1))
-//
-//    for (int i = 3; i < 2700; i++) {
-//        Wall *wall = CreateWall(vec2(r, r), vec2(r, r), 0);
-//        ListAdd(l->walls, wall);
-//    }
-
     ChangeLevel(l);
-#pragma endregion
 
     GMenuStateSet();
 

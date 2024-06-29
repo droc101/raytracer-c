@@ -22,9 +22,10 @@ Level *LoadLevel(byte *data) {
                 double v3 = ReadDouble(data, &i);
                 double v4 = ReadDouble(data, &i);
                 uint tid = ReadUint(data, &i);
+                float uvScale = ReadFloat(data, &i);
                 Vector2 va = vec2(v1, v2);
                 Vector2 vb = vec2(v3, v4);
-                Wall *w = CreateWall(va, vb, tid);
+                Wall *w = CreateWall(va, vb, tid, uvScale);
                 ListAdd(l->walls, w);
                 break;
             }
@@ -48,7 +49,11 @@ Level *LoadLevel(byte *data) {
                 double y = ReadDouble(data, &i);
                 double r = ReadDouble(data, &i);
                 int type = ReadUint(data, &i);
-                Actor *a = CreateActor(vec2(x, y), r, type);
+                byte paramA = ReadByte(data, &i);
+                byte paramB = ReadByte(data, &i);
+                byte paramC = ReadByte(data, &i);
+                byte paramD = ReadByte(data, &i);
+                Actor *a = CreateActor(vec2(x, y), r, type, paramA, paramB, paramC, paramD);
                 ListAdd(l->actors, a);
                 break;
             }
@@ -86,6 +91,7 @@ LevelBytecode* GenerateBytecode(Level *l) {
         WriteDouble(data, &i, w->b.x);
         WriteDouble(data, &i, w->b.y);
         WriteUint(data, &i, w->texId);
+        WriteFloat(data, &i, w->uvScale);
     }
     for (int j = 0; j < l->actors->size; j++) {
         Actor *a = ListGet(l->actors, j);
@@ -95,6 +101,10 @@ LevelBytecode* GenerateBytecode(Level *l) {
         WriteDouble(data, &i, a->position.y);
         WriteDouble(data, &i, a->rotation);
         WriteUint(data, &i, a->actorType);
+        WriteByte(data, &i, a->paramA);
+        WriteByte(data, &i, a->paramB);
+        WriteByte(data, &i, a->paramC);
+        WriteByte(data, &i, a->paramD);
     }
     data[i] = LEVEL_CMD_PLAYER;
     i++;

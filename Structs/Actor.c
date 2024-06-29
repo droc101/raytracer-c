@@ -34,12 +34,16 @@ int GetActorTypeCount() {
     return sizeof(ActorInitFuncs) / sizeof(void *);
 }
 
-Actor *CreateActor(Vector2 position, double rotation, int actorType) {
+Actor *CreateActor(Vector2 position, double rotation, int actorType, byte paramA, byte paramB, byte paramC, byte paramD) {
     Actor *actor = malloc(sizeof(Actor));
     actor->position = position;
     actor->rotation = rotation;
     actor->solid = false;
     actor->health = ActorHealths[actorType];
+    actor->paramA = paramA;
+    actor->paramB = paramB;
+    actor->paramC = paramC;
+    actor->paramD = paramD;
     actor->Init = (void (*)(void *)) ActorInitFuncs[actorType];
     actor->Update = (void (*)(void *)) ActorUpdateFuncs[actorType];
     actor->Destroy = (void (*)(void *)) ActorDestroyFuncs[actorType];

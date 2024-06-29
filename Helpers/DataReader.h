@@ -17,8 +17,16 @@ uint ReadUint(byte *data, int *offset);
 
 uint ReadUintA(byte *data, int offset);
 
+float ReadFloat(byte *data, int *offset);
+
+byte ReadByte(byte *data, int *offset);
+
 void WriteDouble(byte *data, int *offset, double d);
 
 void WriteUint(byte *data, int *offset, uint i);
+
+void WriteFloat(byte *data, int *offset, float f);
+
+void WriteByte(byte *data, int *offset, byte b);
 
 #endif //GAME_DATAREADER_H

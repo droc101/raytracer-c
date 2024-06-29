@@ -73,6 +73,7 @@ typedef struct {
     Vector2 position;
     double rotation;
     uint extra; // actor type or wall texture
+    uint extra2; // wall uv (float) or actor params (4 bytes)
 } EditorNode;
 
 List *EditorNodes;
@@ -113,12 +114,16 @@ Level* NodesToLevel() {
                 l->rotation = node->rotation;
                 break;
             case NODE_ACTOR: {
-                Actor *a = CreateActor(node->position, node->rotation, node->extra);
+                byte paramA = (node->extra2 >> 24) & 0xFF;
+                byte paramB = (node->extra2 >> 16) & 0xFF;
+                byte paramC = (node->extra2 >> 8) & 0xFF;
+                byte paramD = node->extra2 & 0xFF;
+                Actor *a = CreateActor(node->position, node->rotation, node->extra, paramA, paramB, paramC, paramD);
                 ListAdd(l->actors, a);
                 break;
             }
             case NODE_WALL_A: {
-                Wall *w = CreateWall(node->position, vec2(0, 0), node->extra);
+                Wall *w = CreateWall(node->position, vec2(0, 0), node->extra, node->extra2);
                 ListAdd(l->walls, w);
                 break;
             }
@@ -200,6 +205,31 @@ void slider_setSkyG(double value) {
 
 void slider_setSkyB(double value) {
     level_skyB = (byte)value;
+}
+
+void slider_setWallUv(double value) {
+    EditorNode *node = ListGet(EditorNodes, EditorSelectedNode);
+    node->extra2 = value;
+}
+
+void slider_setActorParamA(double value) {
+    EditorNode *node = ListGet(EditorNodes, EditorSelectedNode);
+    node->extra2 = (node->extra2 & 0x00FFFFFF) | ((byte)value << 24);
+}
+
+void slider_setActorParamB(double value) {
+    EditorNode *node = ListGet(EditorNodes, EditorSelectedNode);
+    node->extra2 = (node->extra2 & 0xFF00FFFF) | ((byte)value << 16);
+}
+
+void slider_setActorParamC(double value) {
+    EditorNode *node = ListGet(EditorNodes, EditorSelectedNode);
+    node->extra2 = (node->extra2 & 0xFFFF00FF) | ((byte)value << 8);
+}
+
+void slider_setActorParamD(double value) {
+    EditorNode *node = ListGet(EditorNodes, EditorSelectedNode);
+    node->extra2 = (node->extra2 & 0xFFFFFF00) | (byte)value;
 }
 
 void GEditorStateUpdate() {
@@ -379,6 +409,8 @@ void GEditorStateUpdate() {
                     nodeA->type = NODE_WALL_A;
                     nodeA->position = worldPos;
                     nodeA->extra = 0;
+                    float uv = 1.0;
+                    nodeA->extra2 = uv;
                     ListAdd(EditorNodes, nodeA);
 
                     EditorNode *nodeB = malloc(sizeof(EditorNode));
@@ -409,6 +441,7 @@ void GEditorStateUpdate() {
 
                     EditorNode *nodeB = ListGet(EditorNodes, EditorNodes->size - 1);
                     nodeB->position = worldPos;
+
                 }
                 break;
             }
@@ -427,6 +460,7 @@ void GEditorStateUpdate() {
                     node->position = worldPos;
                     node->rotation = 0;
                     node->extra = 1;
+                    node->extra2 = 0;
                     ListAdd(EditorNodes, node);
                 }
                 break;
@@ -461,6 +495,10 @@ void GEditorStateUpdate() {
             case NODE_ACTOR:
                 CreateSlider("ang", 0, 359, radToDeg(node->rotation), 1, 45, vec2(10, 250), vec2(200, 24), slider_setNodeRotation);
                 CreateSlider("Type", 0, GetActorTypeCount() - 1, node->extra, 1, 16, vec2(10, 300), vec2(200, 24), slider_setNodeExtra);
+                CreateSlider("Param A", 0, 255, (node->extra2 >> 24) & 0xFF, 1, 16, vec2(10, 350), vec2(200, 24), slider_setActorParamA);
+                CreateSlider("Param B", 0, 255, (node->extra2 >> 16) & 0xFF, 1, 16, vec2(10, 400), vec2(200, 24), slider_setActorParamB);
+                CreateSlider("Param C", 0, 255, (node->extra2 >> 8) & 0xFF, 1, 16, vec2(10, 450), vec2(200, 24), slider_setActorParamC);
+                CreateSlider("Param D", 0, 255, node->extra2 & 0xFF, 1, 16, vec2(10, 500), vec2(200, 24), slider_setActorParamD);
                 break;
             case NODE_WALL_A:
                 CreateSlider("Tex", 0, GetTextureCount() - 1, node->extra, 1, 16, vec2(10, 250), vec2(200, 24), slider_setNodeExtra);
@@ -542,7 +580,12 @@ void DrawEditorSlider(EditorSlider *sld) {
     draw_rect(sld->position.x + knobPos - 8, sld->position.y + 24, 16, 16);
 
     char buf[32];
-    sprintf(buf, "%s: %.0f", sld->label, sld->value);
+    if (sld->step >= 1 && sld->altStep > 1) {
+        sprintf(buf, "%s: %.0f", sld->label, sld->value);
+    } else {
+        sprintf(buf, "%s: %.2f", sld->label, sld->value);
+    }
+
     DrawTextAligned(buf, 16, 0xFFFFFFFF, vec2(sld->position.x, sld->position.y), vec2(sld->size.x, 24), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE);
 }
 
@@ -846,6 +889,12 @@ void GEditorStateSet() {
         actorNode->rotation = fmod(a->rotation, 2*PI);
         actorNode->index = i;
         actorNode->extra = a->actorType;
+        uint extra2 = 0;
+        extra2 |= (a->paramA & 0xFF) << 24;
+        extra2 |= (a->paramB & 0xFF) << 16;
+        extra2 |= (a->paramC & 0xFF) << 8;
+        extra2 |= (a->paramD & 0xFF);
+        actorNode->extra2 = extra2;
         ListAdd(EditorNodes, actorNode);
     }
 
@@ -857,6 +906,7 @@ void GEditorStateSet() {
         wallNodeA->index = i;
         wallNodeA->position = w->a;
         wallNodeA->extra = w->texId;
+        wallNodeA->extra2 = w->uvScale;
         ListAdd(EditorNodes, wallNodeA);
 
         EditorNode *wallNodeB = malloc(sizeof(EditorNode));
