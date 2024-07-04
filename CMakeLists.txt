@@ -43,6 +43,8 @@ add_executable(game main.c Helpers/Input.h Helpers/Input.c defines.h Helpers/Dra
         GameStates/GEditorState.c
         GameStates/GEditorState.h
         config.h
+        GameStates/GLevelSelectState.c
+        GameStates/GLevelSelectState.h
 )
 
 if (UNIX)
