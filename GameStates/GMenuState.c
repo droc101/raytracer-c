@@ -11,6 +11,7 @@
 #include "../Structs/GlobalState.h"
 #include "GMainState.h"
 #include "../config.h"
+#include "GLevelSelectState.h"
 
 //#define GMENUSTATE_WALL_DEBUG
 
@@ -44,7 +45,11 @@ void GMenuStateUpdate() {
 
     if (IsKeyJustPressed(SDL_SCANCODE_SPACE)) {
         // change to the main game state
+#ifdef USE_LEVEL_SELECT
+        GLevelSelectStateSet();
+#else
         GMainStateSet();
+#endif
     }
 }
 

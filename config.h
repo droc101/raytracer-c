@@ -25,4 +25,6 @@
 
 #define ENABLE_DEBUG_PRINT
 
+#define USE_LEVEL_SELECT
+
 #endif //GAME_CONFIG_H

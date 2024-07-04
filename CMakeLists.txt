@@ -6,7 +6,7 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_FLAGS "-Wno-discarded-qualifiers") # shut.
 
 set(CMAKE_C_FLAGS_DEBUG "-g -O0 -Wall")
-set(CMAKE_C_FLAGS_RELEASE "-g -Ofast -Wall")
+set(CMAKE_C_FLAGS_RELEASE "-g0 -O3 -s -DNDEBUG -Wl,--gc-sections -fdata-sections -ffunction-sections -Wall")
 
 # Add --static flag when building on Windows to include libwinpthread-1.dll
 if (WIN32)
@@ -47,6 +47,8 @@ add_executable(game main.c Helpers/Input.h Helpers/Input.c defines.h Helpers/Dra
         GameStates/GEditorState.c
         GameStates/GEditorState.h
         config.h
+        GameStates/GLevelSelectState.c
+        GameStates/GLevelSelectState.h
         Helpers/Vulkan.c
         Helpers/Vulkan.h
 )
