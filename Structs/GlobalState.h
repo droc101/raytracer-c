@@ -36,4 +36,6 @@ void PlaySoundEffect(byte *asset);
 
 void DestroyGlobalState();
 
+void ChangeLevelByID(int id);
+
 #endif //GAME_GLOBALSTATE_H

@@ -27,4 +27,6 @@
 
 #define USE_LEVEL_SELECT
 
+#define PAUSE_EXIT_LEVEL 0
+
 #endif //GAME_CONFIG_H

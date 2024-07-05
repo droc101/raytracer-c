@@ -7,6 +7,8 @@
 #include "../Structs/Level.h"
 #include "../Assets/AssetReader.h"
 #include "../Structs/Wall.h"
+#include "../Helpers/LevelEntries.h"
+#include "../Helpers/LevelLoader.h"
 
 GlobalState state;
 
@@ -161,4 +163,11 @@ void DestroyGlobalState() {
             Mix_FreeChunk(state.channels[i]);
         }
     }
+}
+
+void ChangeLevelByID(int id) {
+    void *levelData = DecompressAsset(gLevelEntries[id].levelData);
+    Level *l = LoadLevel(levelData);
+    GetState()->levelID = id;
+    ChangeLevel(l);
 }
