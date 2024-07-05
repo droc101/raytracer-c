@@ -81,6 +81,7 @@ typedef struct {
     Mix_Music *music; // background music
     Mix_Chunk *channels[SFX_CHANNEL_COUNT]; // sound effects
     double FakeHeight; // fake camera height for rendering
+    int levelID;
 } GlobalState;
 
 // Actor (interactable/moving wall) struct

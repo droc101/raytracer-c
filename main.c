@@ -65,9 +65,7 @@ int main(int argc, char *argv[]) {
     InitState();
     InitSkyTex();
 
-    byte *levelData = DecompressAsset(gzbin_leveldata_test_level);
-    Level *l = LoadLevel(levelData);
-    ChangeLevel(l);
+    ChangeLevelByID(0);
 
     GMenuStateSet();
 
