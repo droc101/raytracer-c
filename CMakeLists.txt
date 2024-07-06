@@ -16,7 +16,6 @@ endif ()
 set(SDL2_PATH "${CMAKE_SOURCE_DIR}/SDL2/x86_64-w64-mingw32")
 set(SDL2_MIXER_PATH "${CMAKE_SOURCE_DIR}/SDL2_mixer/x86_64-w64-mingw32")
 set(ZLIB_ROOT "${CMAKE_SOURCE_DIR}/zlib")
-set(ENV{VULKAN_SDK} "${CMAKE_SOURCE_DIR}/Vulkan-1.3.283.0")
 
 find_package(SDL2 REQUIRED) # Graphics
 include_directories(${SDL2_INCLUDE_DIR})
