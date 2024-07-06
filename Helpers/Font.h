@@ -11,15 +11,17 @@
 void FontInit();
 
 // Draw a string to the screen
-Vector2 FontDrawString(Vector2 pos, char* str, uint size, uint color);
+Vector2 FontDrawString(Vector2 pos, char* str, uint size, uint color, bool small);
 
-Vector2 MeasureText(char* str, uint size);
+Vector2 MeasureText(char* str, uint size, bool small);
 
-void DrawTextAligned(char* str, uint size, uint color, Vector2 rect_pos, Vector2 rect_size, byte h_align, byte v_align);
+void DrawTextAligned(char* str, uint size, uint color, Vector2 rect_pos, Vector2 rect_size, byte h_align, byte v_align, bool small);
 
 // Texture sizes of the font
 #define FONT_CHAR_WIDTH 16
 #define FONT_CHAR_HEIGHT 16
+
+#define SMALL_FONT_CHAR_WIDTH 12
 
 #define FONT_HALIGN_LEFT 0
 #define FONT_HALIGN_CENTER 1

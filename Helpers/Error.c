@@ -33,9 +33,9 @@ _Noreturn void _Error_Internal(char* error, const char* file, int line, const ch
         }
         SDL_RenderCopy(GetRenderer(), bgTexture, NULL, NULL);
         SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_BLEND);
-        setColorUint(0x80000000);
+        setColorUint(0xa0000000);
         draw_rect(20, 20, WindowWidth() - 40, WindowHeight() - 40);
-        DrawTextAligned(buf, 32, 0xFFFF0000, vec2s(30), vec2(WindowWidth() - 60, WindowHeight() - 60), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE);
+        DrawTextAligned(buf, 32, 0xFFFF0000, vec2s(30), vec2(WindowWidth() - 60, WindowHeight() - 60), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
         SDL_RenderPresent(GetRenderer());
     }
 }

@@ -547,7 +547,7 @@ void DrawEditorButton(EditorButton *btn) {
     setColorUint(btnColor);
     draw_rect(btn->position.x, btn->position.y, btn->size.x, btn->size.y);
 
-    DrawTextAligned(btn->text, 16, 0xFFFFFFFF, btn->position, btn->size, FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE);
+    DrawTextAligned(btn->text, 16, 0xFF000000, btn->position, btn->size, FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
 }
 
 void DrawEditorSlider(EditorSlider *sld) {
@@ -588,7 +588,7 @@ void DrawEditorSlider(EditorSlider *sld) {
         sprintf(buf, "%s: %.2f", sld->label, sld->value);
     }
 
-    DrawTextAligned(buf, 16, 0xFFFFFFFF, vec2(sld->position.x, sld->position.y), vec2(sld->size.x, 24), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE);
+    DrawTextAligned(buf, 16, 0xFFFFFFFF, vec2(sld->position.x, sld->position.y), vec2(sld->size.x, 24), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
 }
 
 void GEditorStateRender() {
@@ -623,7 +623,7 @@ void GEditorStateRender() {
             continue;
         }
         sprintf(buf, "%d", worldSpaceX);
-        DrawTextAligned(buf, 16, 0xFFFFFFFF, vec2(x-50, WindowHeight() - 25), vec2(100, 20), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE);
+        DrawTextAligned(buf, 16, 0xFFFFFFFF, vec2(x-50, WindowHeight() - 25), vec2(100, 20), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, false);
     }
     for (int y = gridOffsetY; y < WindowHeight(); y += gridSpacing) {
         int worldSpaceY = (int)((y - EditorPanY) / EditorZoom);
@@ -632,13 +632,13 @@ void GEditorStateRender() {
             continue;
         }
         sprintf(buf, "%d", worldSpaceY);
-        DrawTextAligned(buf, 16, 0xFFFFFFFF, vec2(WindowWidth() - 110, y - 10), vec2(100, 20), FONT_HALIGN_RIGHT, FONT_VALIGN_MIDDLE);
+        DrawTextAligned(buf, 16, 0xFFFFFFFF, vec2(WindowWidth() - 110, y - 10), vec2(100, 20), FONT_HALIGN_RIGHT, FONT_VALIGN_MIDDLE, false);
     }
 
     double worldSpaceX = (WindowWidth() / 2 - EditorPanX) / EditorZoom;
     double worldSpaceY = (WindowHeight() / 2 - EditorPanY) / EditorZoom;
     sprintf(buf, "Position: (%.2f, %.2f)", worldSpaceX, worldSpaceY);
-    DrawTextAligned(buf, 16, 0xFFFFFFFF, vec2(560, 10), vec2(200, 24), FONT_HALIGN_LEFT, FONT_VALIGN_MIDDLE);
+    DrawTextAligned(buf, 16, 0xFFFFFFFF, vec2(560, 10), vec2(200, 24), FONT_HALIGN_LEFT, FONT_VALIGN_MIDDLE, false);
 
     // Draw nodes
     int hoveredNode = -1;
@@ -716,14 +716,14 @@ void GEditorStateRender() {
                 break;
         }
 
-        Vector2 measuredText = MeasureText(nodeInfo, 16);
+        Vector2 measuredText = MeasureText(nodeInfo, 16, false);
         int textWidth = measuredText.x;
         int textHeight = measuredText.y;
         SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_BLEND);
         setColorUint(0x80000000);
         draw_rect(screenPos.x + 10, screenPos.y, textWidth + 20, textHeight + 20);
         SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_NONE);
-        FontDrawString(vec2(screenPos.x + 20, screenPos.y + 10), nodeInfo, 16, 0xFFFFFFFF);
+        FontDrawString(vec2(screenPos.x + 20, screenPos.y + 10), nodeInfo, 16, 0xFFFFFFFF, false);
     }
 
     // Draw buttons

@@ -16,7 +16,8 @@ void ResetDPrintYPos() {
 
 void DPrint(char *str, uint color) {
 #ifdef ENABLE_DEBUG_PRINT
-    DPrintYPos += (FontDrawString((Vector2) {10, DPrintYPos}, str, 16, color).y - DPrintYPos) + 8;
+    FontDrawString((Vector2) {12, DPrintYPos + 2}, str, 16, 0xFF000000, true);
+    DPrintYPos += (FontDrawString((Vector2) {10, DPrintYPos}, str, 16, color, true).y - DPrintYPos) + 8;
 #endif
 }
 

@@ -70,16 +70,16 @@ void GPauseStateRender() {
     draw_rect(0, 0, WindowWidth(), WindowHeight());
     SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_NONE);
 
-    DrawTextAligned("Game Paused", 32, 0xFFFFFFFF, vec2s(0), vec2(WindowWidth(), 300), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE);
+    DrawTextAligned("Game Paused", 32, 0xFFFFFFFF, vec2s(0), vec2(WindowWidth(), 300), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, false);
 
     char *levelID = gLevelEntries[GetState()->levelID].displayName;
-    DrawTextAligned(levelID, 32, 0xFFFFFFFF, vec2(0,  200), vec2(WindowWidth(), 40), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE);
+    DrawTextAligned(levelID, 32, 0xFFFFFFFF, vec2(0,  200), vec2(WindowWidth(), 40), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
 
     for (int i = 0; i < 3; i++) {
         if (i == pauseSelected) {
-            DrawTextAligned(pauseOptions[i], 24, 0xFF00FF00, vec2(0,  300 + (30 * (i + 1))), vec2(WindowWidth(), 30), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE);
+            DrawTextAligned(pauseOptions[i], 24, 0xFFFFFFFF, vec2(0,  300 + (30 * (i + 1))), vec2(WindowWidth(), 30), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
         } else {
-            DrawTextAligned(pauseOptions[i], 24, 0xFFFFFFFF, vec2(0,  300 + (30 * (i + 1))), vec2(WindowWidth(), 30), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE);
+            DrawTextAligned(pauseOptions[i], 24, 0x80a0a0a0, vec2(0,  300 + (30 * (i + 1))), vec2(WindowWidth(), 30), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
         }
     }
 }

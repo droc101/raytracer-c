@@ -14,11 +14,13 @@
 #include "../Assets/AssetReader.h"
 
 SDL_Texture *fontTexture;
+SDL_Texture *smallFontTexture;
 
 const char fontChars[] = "abcdefghijklmnopqrstuvwxyz0123456789.:-,/\\|[]{}();'\"<>`~!@#$%^*_=+?";
 
 void FontInit() {
     fontTexture = ToSDLTexture((const unsigned char *) gztex_interface_font, FILTER_LINEAR);
+    smallFontTexture = ToSDLTexture((const unsigned char *) gztex_interface_small_fonts, FILTER_NEAREST);
 }
 
 int findChar(char target) {
@@ -32,54 +34,56 @@ int findChar(char target) {
     return -1;  // Character not found
 }
 
-void FontDrawChar(Vector2 pos, char c, uint size) {
+void FontDrawChar(Vector2 pos, char c, uint size, bool small) {
     if (c == '?') printf("%c,%d,%d\n", c, findChar(c), findChar(tolower(c)));
     int index = findChar(tolower(c));
     if (index == -1) {
         index = findChar('U');
     }
     SDL_Rect srcRect;
-    srcRect.x = index * FONT_CHAR_WIDTH;
+    srcRect.x = index * (small ? SMALL_FONT_CHAR_WIDTH : FONT_CHAR_WIDTH);
     srcRect.y = 0;
-    srcRect.w = FONT_CHAR_WIDTH;
+    srcRect.w = small ? SMALL_FONT_CHAR_WIDTH : FONT_CHAR_WIDTH;
     srcRect.h = FONT_CHAR_HEIGHT;
     SDL_Rect dstRect;
     dstRect.x = pos.x;
     dstRect.y = pos.y;
-    dstRect.w = size;
+    dstRect.w = small ? size * 0.75 : size;
     dstRect.h = size;
-    SDL_RenderCopy(GetRenderer(), fontTexture, &srcRect, &dstRect);
+    SDL_RenderCopy(GetRenderer(), small ? smallFontTexture : fontTexture, &srcRect, &dstRect);
 }
 
-Vector2 FontDrawString(Vector2 pos, char* str, uint size, uint color) {
-    SDL_SetTextureColorMod(fontTexture, (color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF);
+Vector2 FontDrawString(Vector2 pos, char* str, uint size, uint color, bool small) {
+    SDL_SetTextureColorMod(small ? smallFontTexture : fontTexture, (color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF);
     int x = pos.x;
     int y = pos.y;
     int i = 0;
+    int sizeX = small ? size * 0.75 : size;
     while (str[i] != '\0') {
         if (str[i] == ' ') {
             i++;
-            x += size;
+            x += sizeX;
         } else if (str[i] == '\n') {
             i++;
             x = pos.x;
             y += size;
         }
-        FontDrawChar(vec2(x, y), str[i], size);
-        x += size;
+        FontDrawChar(vec2(x, y), str[i], size, small);
+        x += sizeX;
         i++;
     }
-    return vec2(x+size, y+size); // Return the bottom right corner of the text
+    return vec2(x+sizeX, y+size); // Return the bottom right corner of the text
 }
 
-Vector2 MeasureText(char* str, uint size) {
+Vector2 MeasureText(char* str, uint size, bool small) {
     int textWidth = 0;
     int textHeight = size;
     int tempWidth = 0;
+    int sizeX = small ? size * 0.75 : size;
     for (int j = 0; j < strlen(str); j++) {
-        tempWidth += size;
+        tempWidth += sizeX;
         if (str[j] == '\n') {
-            tempWidth -= size;
+            tempWidth -= sizeX;
             textWidth = max(textWidth, tempWidth);
             tempWidth = 0;
             textHeight += size;
@@ -116,9 +120,9 @@ int MeasureLine(char *str, int line) {
     return i;
 }
 
-void DrawTextAligned(char* str, uint size, uint color, Vector2 rect_pos, Vector2 rect_size, byte h_align, byte v_align) {
+void DrawTextAligned(char* str, uint size, uint color, Vector2 rect_pos, Vector2 rect_size, byte h_align, byte v_align, bool small) {
     int lines = StringLineCount(str);
-    Vector2 textSize = MeasureText(str, size);
+    Vector2 textSize = MeasureText(str, size, small);
     int x;
     int y = rect_pos.y;
     if (v_align == FONT_VALIGN_MIDDLE) {
@@ -133,7 +137,7 @@ void DrawTextAligned(char* str, uint size, uint color, Vector2 rect_pos, Vector2
         char line[256];
         strncpy(line, str + lineStart, lineEnd - lineStart);
         line[lineEnd - lineStart] = '\0';
-        textSize = MeasureText(line, size);
+        textSize = MeasureText(line, size, small);
         if (h_align == FONT_HALIGN_CENTER) {
             x = rect_pos.x + (rect_size.x - textSize.x) / 2;
         } else if (h_align == FONT_HALIGN_RIGHT) {
@@ -141,7 +145,7 @@ void DrawTextAligned(char* str, uint size, uint color, Vector2 rect_pos, Vector2
         } else {
             x = rect_pos.x;
         }
-        FontDrawString(vec2(x, y), line, size, color);
+        FontDrawString(vec2(x, y), line, size, color, small);
         if (i != 0) y += size; // why not the first line? who knows, but it breaks if you don't do this
     }
 
