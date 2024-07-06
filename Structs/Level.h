@@ -17,12 +17,6 @@ Level * CreateLevel();
 // Free all the memory used by a level
 void DestroyLevel(Level *l);
 
-// Render 1 column of the level
-//void RenderCol(Level *l, int col);
-
-// Render 1 column of the level (actors only, checks depth buffer)
-//void RenderActorCol(Level *l, int col);
-
 void BakeWallArray(Level *l);
 void BakeActorArray(Level *l);
 
