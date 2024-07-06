@@ -304,7 +304,6 @@ void GEditorStateUpdate() {
                 return;
             }
         } else if (pressed) {
-            double knobPos = remap(slider->value, slider->min, slider->max, 0, slider->size.x);
             double newValue = remap(mousePos.x - slider->position.x, 0, slider->size.x, slider->min, slider->max);
 
 
