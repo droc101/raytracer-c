@@ -9,6 +9,12 @@
 #define DEF_WIDTH 1280
 #define DEF_HEIGHT 720
 
+#define MIN_WIDTH 800
+#define MIN_HEIGHT 600
+
+#define MAX_WIDTH 9999
+#define MAX_HEIGHT 9999
+
 #define MOVE_SPEED 0.125 // Player movement speed
 #define MOUSE_SENSITIVITY 100 // higher is less sensitive
 

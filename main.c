@@ -43,8 +43,8 @@ int main(int argc, char *argv[]) {
     }
     SetWindow(w);
 
-    SDL_SetWindowMinimumSize(w, 800, 600);
-    SDL_SetWindowMaximumSize(w, 8192, 8192);
+    SDL_SetWindowMinimumSize(w, MIN_WIDTH, MIN_HEIGHT);
+    SDL_SetWindowMaximumSize(w, MAX_WIDTH, MAX_HEIGHT);
 
     SDL_Surface *icon = ToSDLSurface((const unsigned char *) gztex_interface_icon, FILTER_LINEAR);
     SDL_SetWindowIcon(w, icon);
@@ -97,11 +97,13 @@ int main(int argc, char *argv[]) {
 
         GlobalState *g = GetState();
 
+#ifndef KEYBOARD_ROTATION
         SDL_SetRelativeMouseMode(g->UpdateGame == GMainStateUpdate ? SDL_TRUE : SDL_FALSE);
         // warp the mouse to the center of the screen if we are in the main game state
         if (g->UpdateGame == GMainStateUpdate) {
             SDL_WarpMouseInWindow(GetWindow(), WindowWidth() / 2, WindowHeight() / 2);
         }
+#endif
 
         g->UpdateGame();
 
