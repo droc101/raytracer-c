@@ -49,7 +49,7 @@ void _SignalHandler(int sig) {
 }
 
 void SetSignalHandler() {
-#ifdef __OPTIMIZE__
+#ifdef NDEBUG
     signal(SIGSEGV, _SignalHandler);
     signal(SIGFPE, _SignalHandler);
 #endif

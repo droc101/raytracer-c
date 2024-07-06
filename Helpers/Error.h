@@ -5,7 +5,7 @@
 #ifndef GAME_ERROR_H
 #define GAME_ERROR_H
 
-#ifndef __OPTIMIZE__
+#ifndef NDEBUG
 #define Error(error) _Error_Internal(error, __FILE_NAME__, __LINE__, __func__)
 #else
 #define Error(error) _Error_Internal(error, "none", 0, "none")
