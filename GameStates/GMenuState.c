@@ -76,8 +76,7 @@ void GMenuStateRender() {
                         FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, false);
     }
 
-    // __OPTIMIZE__ is a compiler flag that is set when the code is optimized. We can use it to check if we are in a debug build, as only release builds are optimized.
-#ifndef __OPTIMIZE__
+#ifndef NDEBUG
     FontDrawString(vec2(20, 200), "DEBUG BUILD", 16, 0xFF00FF00, true);
 #endif
 
