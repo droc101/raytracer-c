@@ -18,6 +18,7 @@
 #include "Helpers/Timing.h"
 #include "config.h"
 #include "Helpers/Error.h"
+#include "Helpers/Vulkan.h"
 
 int main(int argc, char *argv[]) {
 
@@ -35,7 +36,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    SDL_Window *w = SDL_CreateWindow("game",SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,DEF_WIDTH, DEF_HEIGHT, SDL_WINDOW_RESIZABLE);
+    SDL_Window *w = SDL_CreateWindow("game",SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,DEF_WIDTH, DEF_HEIGHT, SDL_WINDOW_RESIZABLE & SDL_WINDOW_VULKAN);
     if (w == NULL) {
         printf("SCreateWindow Error: %s\n", SDL_GetError());
         SDL_Quit();
@@ -74,6 +75,9 @@ int main(int argc, char *argv[]) {
     SDL_Event e;
     bool quit = false;
     ulong frameStart, frameTime;
+
+    InitVulkan(w);
+
     while (!quit) {
         frameStart = GetTimeNs();
 
@@ -107,7 +111,7 @@ int main(int argc, char *argv[]) {
 
         g->UpdateGame();
 
-        g->RenderGame();
+        g->RenderGame(GetVulkanInstance(), GetVulkanSurface());
 
         FrameGraphDraw();
 

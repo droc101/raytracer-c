@@ -34,3 +34,5 @@ cmake-build-*/
 # SDL2 files
 /SDL2/
 /SDL2_mixer/
+
+/Vulkan-1.3.283.0/

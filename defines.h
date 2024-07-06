@@ -8,6 +8,8 @@
 #include "Helpers/List.h"
 #include <SDL.h>
 #include <SDL_mixer.h>
+#include <SDL_vulkan.h>
+#include <vulkan/vulkan.h>
 
 // "boolean"
 #define bool unsigned char // unsigned 8-bit integer (nonzero is true)
@@ -71,7 +73,7 @@ typedef struct {
 typedef struct {
     Level *level;
     void (*UpdateGame)();
-    void (*RenderGame)();
+    void (*RenderGame)(VkInstance* instance, VkSurfaceKHR* surface);
     int hp;
     int maxHp;
     int ammo;
