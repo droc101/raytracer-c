@@ -15,8 +15,6 @@
 #include "../config.h"
 #include "../Helpers/LevelEntries.h"
 
-SDL_Texture *pauseTexture;
-
 char pauseOptions[3][32] = {
         "Resume",
         "Exit Level",
@@ -28,7 +26,6 @@ int pauseSelected = 0;
 void GPauseStateUpdate() {
     if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE)) {
         PlaySoundEffect(gzwav_sfx_popdown);
-        SDL_DestroyTexture(pauseTexture);
         GMainStateSet();
         return;
     }
@@ -44,18 +41,15 @@ void GPauseStateUpdate() {
         switch (pauseSelected) {
             case 0:
                 PlaySoundEffect(gzwav_sfx_popdown);
-                SDL_DestroyTexture(pauseTexture);
                 GMainStateSet();
                 break;
             case 1:
                 PlaySoundEffect(gzwav_sfx_popdown);
-                SDL_DestroyTexture(pauseTexture);
                 ChangeLevelByID(PAUSE_EXIT_LEVEL);
                 GMainStateSet();
                 break;
             case 2:
                 PlaySoundEffect(gzwav_sfx_popdown);
-                SDL_DestroyTexture(pauseTexture);
                 GMenuStateSet();
                 break;
         }
@@ -63,7 +57,10 @@ void GPauseStateUpdate() {
 }
 
 void GPauseStateRender() {
-    SDL_RenderCopy(GetRenderer(), pauseTexture, NULL, NULL);
+    GlobalState *state = GetState();
+    Level *l = state->level;
+
+    RenderLevel(l->position, l->rotation, state->FakeHeight);
 
     SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_BLEND);
     setColorUint(0x80000000);
@@ -86,7 +83,6 @@ void GPauseStateRender() {
 
 void GPauseStateSet() {
     PlaySoundEffect(gzwav_sfx_popup);
-    pauseTexture = GetScreenshot();
     SetRenderCallback(GPauseStateRender);
     SetUpdateCallback(GPauseStateUpdate);
     pauseSelected = 0;

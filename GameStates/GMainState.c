@@ -8,12 +8,11 @@
 #include "../Helpers/Error.h"
 #include "../Helpers/MathEx.h"
 #include "../Helpers/Drawing.h"
+#include "../Debug/DPrint.h"
 #include "../Helpers/Collision.h"
 #include "../config.h"
 #include "GPauseState.h"
 #include "GEditorState.h"
-
-SDL_Texture *skyTex;
 
 void GMainStateUpdate() {
     if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE)) {
@@ -90,44 +89,24 @@ void GMainStateUpdate() {
     }
 }
 
-void GMainStateRender(VkInstance instance, VkSurfaceKHR surface) {
-    Level *l = GetState()->level;
+void GMainStateRender() {
 
-    byte *sc = getColorUint(l->SkyColor);
-    SDL_SetTextureColorMod(skyTex, sc[0], sc[1], sc[2]);
-    free(sc);
+    GlobalState *state = GetState();
+    Level *l = state->level;
 
-    int skyPos = (int)(l->rotation * 256 / (2 * PI)) % 256;
+    RenderLevel(l->position, l->rotation, state->FakeHeight);
 
-//    SDL_Rect src1 = {0, 0, skyPos, 128};
-//    SDL_Rect dest1 = {(int)(WindowWidth() * (1 - skyPos / 256.0)), 0, WindowWidth() * skyPos / 256, WindowHeight() / 2};
-//    SDL_Rect src2 = {skyPos, 0, 256 - skyPos, 128};
-//    SDL_Rect dest2 = {0, 0, (int)(WindowWidth() * (1 - skyPos / 256.0)), WindowHeight() / 2};
-//    SDL_RenderCopy(GetRenderer(), skyTex, &src1, &dest1);
-//    SDL_RenderCopy(GetRenderer(), skyTex, &src2, &dest2);
+    SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_NONE);
+    DPrintF("Position: (%.2f, %.2f)\nRotation: %.4f (%.2fdeg)", 0xFFFFFFFF, false, l->position.x, l->position.y, l->rotation, radToDeg(l->rotation));
 
+    DPrintF("Mouse Buttons: %d %d %d", 0xFFFFFFFF, false, IsMouseButtonPressed(1), IsMouseButtonPressed(2), IsMouseButtonPressed(3));
 
-
-//    SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_BLEND);
-//    for (int col = 0; col < WindowWidth(); col++) {
-//        RenderCol(l, col);
-//        RenderActorCol(l, col);
-//    }
-//    SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_NONE);
-//    DPrintF("Position: (%.2f, %.2f)\nRotation: %.4f (%.2fdeg)", 0xFFFFFFFF, false, l->position.x, l->position.y, l->rotation, radToDeg(l->rotation));
-//
-//    DPrintF("Mouse Buttons: %d %d %d", 0xFFFFFFFF, false, IsMouseButtonPressed(1), IsMouseButtonPressed(2), IsMouseButtonPressed(3));
-//
-//    DPrintF("Walls: %d", 0xFFFFFFFF, false, l->staticWalls->size);
-//    DPrintF("Actors: %d", 0xFFFFFFFF, false, l->staticActors->size);
+    DPrintF("Walls: %d", 0xFFFFFFFF, false, l->staticWalls->size);
+    DPrintF("Actors: %d", 0xFFFFFFFF, false, l->staticActors->size);
 }
 
 void GMainStateSet() {
     SetRenderCallback(GMainStateRender);
     SetUpdateCallback(GMainStateUpdate);
-}
-
-void InitSkyTex() {
-    skyTex = ToSDLTexture((const unsigned char *) gztex_level_sky, FILTER_LINEAR);
 }
 
