@@ -84,6 +84,7 @@ void GMenuStateRender() {
     // draw version and copyright info
     char buffer[256];
     sprintf(buffer, "RayCaster Engine %s\n%s", VERSION, COPYRIGHT);
+    DrawTextAligned(buffer, 16, 0xFF000000, vec2(WindowWidth() - 208, WindowHeight() - 208), vec2(200, 200), FONT_HALIGN_RIGHT, FONT_VALIGN_BOTTOM, true);
     DrawTextAligned(buffer, 16, 0xFFa0a0a0, vec2(WindowWidth() - 210, WindowHeight() - 210), vec2(200, 200), FONT_HALIGN_RIGHT, FONT_VALIGN_BOTTOM, true);
 }
 
