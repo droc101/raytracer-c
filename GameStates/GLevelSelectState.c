@@ -14,13 +14,12 @@
 #include "../config.h"
 #include "../Helpers/MathEx.h"
 #include "../Helpers/LevelEntries.h"
+#include "GMenuState.h"
 
 int GLevelSelectState_SelectedLevel = 0;
 
 void GLevelSelectStateUpdate() {
-    if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE)) {
-        GMainStateSet();
-    } else if (IsKeyJustPressed(SDL_SCANCODE_DOWN)) {
+    if (IsKeyJustPressed(SDL_SCANCODE_DOWN)) {
         GLevelSelectState_SelectedLevel--;
         GLevelSelectState_SelectedLevel = wrap(GLevelSelectState_SelectedLevel, 0, LEVEL_COUNT);
     } else if (IsKeyJustPressed(SDL_SCANCODE_UP)) {
@@ -36,13 +35,20 @@ void GLevelSelectStateRender() {
     setColorUint(0xFF123456);
     SDL_RenderClear(GetRenderer());
 
-    FontDrawString(vec2(20, 20), GAME_TITLE, 128, 0xFFFFFFFF);
-    FontDrawString(vec2(20, 150), "Press Space to start.", 32, 0xFFa0a0a0);
+    Vector2 bg_tile_size = vec2(320, 240);
+    for (int x = 0; x < WindowWidth(); x += bg_tile_size.x) {
+        for (int y = 0; y < WindowHeight(); y += bg_tile_size.y) {
+            SDL_RenderCopy(GetRenderer(), gztex_bg, NULL, &(SDL_Rect){x, y, bg_tile_size.x, bg_tile_size.y});
+        }
+    }
+
+    FontDrawString(vec2(20, 20), GAME_TITLE, 128, 0xFFFFFFFF, false);
+    FontDrawString(vec2(20, 150), "Press Space to start.", 32, 0xFFa0a0a0, false);
 
     char * levelName = gLevelEntries[GLevelSelectState_SelectedLevel].internalName;
     char levelNameBuffer[64];
     sprintf(levelNameBuffer, "%02x  %s", GLevelSelectState_SelectedLevel+1, levelName);
-    DrawTextAligned(levelNameBuffer, 32, 0xFFFFFFFF, vec2(50, 300), vec2(WindowWidth() - 50, 300), FONT_HALIGN_LEFT, FONT_VALIGN_MIDDLE);
+    DrawTextAligned(levelNameBuffer, 32, 0xFFFFFFFF, vec2(50, 300), vec2(WindowWidth() - 50, 300), FONT_HALIGN_LEFT, FONT_VALIGN_MIDDLE, false);
 }
 
 void GLevelSelectStateSet() {

@@ -9,4 +9,6 @@
 
 ulong GetTimeNs();
 
+ulong GetTimeS();
+
 #endif //GAME_TIMING_H
