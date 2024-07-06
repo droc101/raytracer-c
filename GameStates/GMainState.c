@@ -14,8 +14,6 @@
 #include "GPauseState.h"
 #include "GEditorState.h"
 
-SDL_Texture *skyTex;
-
 void GMainStateUpdate() {
     if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE)) {
         GPauseStateSet();
@@ -92,32 +90,12 @@ void GMainStateUpdate() {
 }
 
 void GMainStateRender() {
-    Level *l = GetState()->level;
 
-    byte *sc = getColorUint(l->SkyColor);
-    SDL_SetTextureColorMod(skyTex, sc[0], sc[1], sc[2]);
-    free(sc);
+    GlobalState *state = GetState();
+    Level *l = state->level;
 
-    double skyPos = remap(l->rotation, 0, 2 * PI, 0, 256);
-    skyPos = (int) skyPos % 256;
+    RenderLevel(l->position, l->rotation, state->FakeHeight);
 
-    for (int i = -WindowWidth(); i < WindowWidth() * 3; i += 1) {
-        double tuSize = 256.0 / WindowWidth();
-        double tu = i * tuSize + skyPos;
-        SDL_Rect src = {fmod(tu, 256), 0, 1, 256}; // NOLINT(*-narrowing-conversions)
-        SDL_Rect dest = {i, 0, 1, WindowHeight() / 2};
-        SDL_RenderCopy(GetRenderer(), skyTex, &src, &dest);
-    }
-
-    setColorUint(l->FloorColor);
-    draw_rect(0, WindowHeight() / 2, WindowWidth(), WindowHeight() / 2);
-
-
-    SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_BLEND);
-    for (int col = 0; col < WindowWidth(); col++) {
-        RenderCol(l, col);
-        RenderActorCol(l, col);
-    }
     SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_NONE);
     DPrintF("Position: (%.2f, %.2f)\nRotation: %.4f (%.2fdeg)", 0xFFFFFFFF, false, l->position.x, l->position.y, l->rotation, radToDeg(l->rotation));
 
@@ -130,9 +108,5 @@ void GMainStateRender() {
 void GMainStateSet() {
     SetRenderCallback(GMainStateRender);
     SetUpdateCallback(GMainStateUpdate);
-}
-
-void InitSkyTex() {
-    skyTex = ToSDLTexture((const unsigned char *) gztex_level_sky, FILTER_LINEAR);
 }
 

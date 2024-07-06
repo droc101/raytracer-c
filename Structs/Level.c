@@ -14,6 +14,8 @@
 #include "GlobalState.h"
 #include "../Helpers/List.h"
 
+SDL_Texture *skyTex;
+
 Level *CreateLevel() {
     Level *l = (Level*)malloc(sizeof(Level));
     l->actors = CreateList();
@@ -64,12 +66,12 @@ void BakeActorArray(Level *l) {
 
 double DepthBuffer[8192]; // if you have a screen wider than 8192 pixels, you're on your own
 
-void RenderCol(Level *l, int col) {
+void RenderCol(Level *l, int col, Vector2 position, double rotation) {
 
     //setColorUint(0xFFFFFFFF);
-    double angle = atan2(col - WindowWidth() / 2, WindowWidth() / 2) + l->rotation;
+    double angle = atan2(col - WindowWidth() / 2, WindowWidth() / 2) + rotation;
 
-    RayCastResult raycast = HitscanLevel(*l, l->position, angle, true, false, false); // scan walls only
+    RayCastResult raycast = HitscanLevel(*l, position, angle, true, false, false); // scan walls only
 
     if (!raycast.Collided) {
         DepthBuffer[col] = 999999; // no wall hit, set to unreasonably far away
@@ -127,10 +129,10 @@ void RenderCol(Level *l, int col) {
 }
 
 // TODO: Find a way to blend the fog color with the shade color so actors are affected by fog
-void RenderActorCol(Level *l, int col) {
-    double angle = atan2(col - WindowWidth() / 2, WindowWidth() / 2) + l->rotation;
+void RenderActorCol(Level *l, int col, Vector2 position, double rotation) {
+    double angle = atan2(col - WindowWidth() / 2, WindowWidth() / 2) + rotation;
 
-    RayCastResult raycast = HitscanLevel(*l, l->position, angle, false, true, true); // scan actors only
+    RayCastResult raycast = HitscanLevel(*l, position, angle, false, true, true); // scan actors only
 
     if (!raycast.Collided) {
         return; // nothing else to do
@@ -193,3 +195,37 @@ void RemoveActor(Actor* actor) {
     FreeActor(actor);
     BakeActorArray(l);
 }
+
+void RenderLevel(Vector2 camPos, double camRot, double fakeHeight) {
+    Level *l = GetState()->level;
+
+    byte *sc = getColorUint(l->SkyColor);
+    SDL_SetTextureColorMod(skyTex, sc[0], sc[1], sc[2]);
+    free(sc);
+
+    double skyPos = remap(camRot, 0, 2 * PI, 0, 256);
+    skyPos = (int) skyPos % 256;
+
+    for (int i = -WindowWidth(); i < WindowWidth() * 3; i += 1) {
+        double tuSize = 256.0 / WindowWidth();
+        double tu = i * tuSize + skyPos;
+        SDL_Rect src = {fmod(tu, 256), 0, 1, 256}; // NOLINT(*-narrowing-conversions)
+        SDL_Rect dest = {i, 0, 1, WindowHeight() / 2};
+        SDL_RenderCopy(GetRenderer(), skyTex, &src, &dest);
+    }
+
+    setColorUint(l->FloorColor);
+    draw_rect(0, WindowHeight() / 2, WindowWidth(), WindowHeight() / 2);
+
+
+    SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_BLEND);
+    for (int col = 0; col < WindowWidth(); col++) {
+        RenderCol(l, col, camPos, camRot);
+        RenderActorCol(l, col, camPos, camRot);
+    }
+}
+
+void InitSkyTex() {
+    skyTex = ToSDLTexture((const unsigned char *) gztex_level_sky, FILTER_LINEAR);
+}
+
