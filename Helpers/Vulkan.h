@@ -6,13 +6,20 @@
 #define GAME_VULKAN_H
 
 #include "../defines.h"
+#include "../config.h"
 
-/// Extra verification, mainly for debugging (slower)
-/// @see https://docs.vulkan.org/guide/latest/validation_overview.html
-/// @see https://vulkan.lunarg.com/doc/sdk/1.3.283.0/windows/khronos_validation_layer.html
-//#define VALIDATION_ENABLE
+#define VULKAN_VERSION VK_MAKE_VERSION(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH)
+/**
+ * Extra verification, mainly for debugging (slower)
+ * This will only work if the LunarG Vulkan SDK is installed on the device running the program.
+ * @warning NOT FOR RELEASE BUILDS
+ * @see https://docs.vulkan.org/guide/latest/validation_overview.html
+ * @see https://vulkan.lunarg.com/doc/sdk/1.3.283.0/windows/khronos_validation_layer.html
+ */
+#define VALIDATION_ENABLE
 
-void initVulkan(SDL_Window *window);
+void InitVulkan(SDL_Window *window);
+void CleanupVulkan();
 
 VkInstance* GetVulkanInstance();
 VkSurfaceKHR* GetVulkanSurface();

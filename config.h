@@ -15,7 +15,13 @@
 //#define KEYBOARD_ROTATION // Uncomment to enable keyboard rotation and disable mouse rotation
 #define ROT_SPEED 0.04 // Keyboard rotation speed
 
-#define VERSION "0.0.1"
+#define STR(x) #x
+#define TO_STR(x) STR(x)
+#define VERSION_MAJOR 0
+#define VERSION_MINOR 0
+#define VERSION_PATCH 1
+#define VERSION TO_STR(VERSION_MAJOR) "." TO_STR(VERSION_MINOR) "." TO_STR(VERSION_PATCH)
+
 #define COPYRIGHT "2024 Droc101 Development"
 #define GAME_TITLE "Game."
 
