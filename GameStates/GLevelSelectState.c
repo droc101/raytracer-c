@@ -26,6 +26,11 @@ void GLevelSelectStateUpdate() {
         GLevelSelectState_SelectedLevel++;
         GLevelSelectState_SelectedLevel = wrap(GLevelSelectState_SelectedLevel, 0, LEVEL_COUNT);
     } else if (IsKeyJustPressed(SDL_SCANCODE_SPACE)) {
+        // check if the level is a stub
+        if (gLevelEntries[GLevelSelectState_SelectedLevel].levelData == NULLPTR) {
+            GMenuStateSet();
+            return;
+        }
         ChangeLevelByID(GLevelSelectState_SelectedLevel);
         GMainStateSet();
     }
@@ -47,7 +52,7 @@ void GLevelSelectStateRender() {
 
     char * levelName = gLevelEntries[GLevelSelectState_SelectedLevel].internalName;
     char levelNameBuffer[64];
-    sprintf(levelNameBuffer, "%02x  %s", GLevelSelectState_SelectedLevel+1, levelName);
+    sprintf(levelNameBuffer, "%02d  %s", GLevelSelectState_SelectedLevel+1, levelName);
     DrawTextAligned(levelNameBuffer, 32, 0xFFFFFFFF, vec2(50, 300), vec2(WindowWidth() - 50, 300), FONT_HALIGN_LEFT, FONT_VALIGN_MIDDLE, false);
 }
 

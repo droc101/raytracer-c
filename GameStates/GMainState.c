@@ -99,8 +99,6 @@ void GMainStateRender() {
     SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_NONE);
     DPrintF("Position: (%.2f, %.2f)\nRotation: %.4f (%.2fdeg)", 0xFFFFFFFF, false, l->position.x, l->position.y, l->rotation, radToDeg(l->rotation));
 
-    DPrintF("Mouse Buttons: %d %d %d", 0xFFFFFFFF, false, IsMouseButtonPressed(1), IsMouseButtonPressed(2), IsMouseButtonPressed(3));
-
     DPrintF("Walls: %d", 0xFFFFFFFF, false, l->staticWalls->size);
     DPrintF("Actors: %d", 0xFFFFFFFF, false, l->staticActors->size);
 }
