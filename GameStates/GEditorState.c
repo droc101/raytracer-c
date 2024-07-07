@@ -404,12 +404,15 @@ void GEditorStateUpdate() {
                         worldPos.y = round(worldPos.y);
                     }
 
+                    EditorSlider *texSld = ListGet(EditorSliders, 1);
+                    int tex = texSld->value;
+
 
                     // Create 2 nodes for a wall
                     EditorNode *nodeA = malloc(sizeof(EditorNode));
                     nodeA->type = NODE_WALL_A;
                     nodeA->position = worldPos;
-                    nodeA->extra = 0;
+                    nodeA->extra = tex;
                     float uv = 1.0;
                     nodeA->extra2 = uv;
                     ListAdd(EditorNodes, nodeA);
@@ -738,7 +741,7 @@ void GEditorStateRender() {
     }
 
     // if we are editing the properties of a wall a node, draw its texture
-    if (EditorSelectedNode != -1) {
+    if (CurrentEditorMode == EDITOR_MODE_PROPERTIES && EditorSelectedNode != -1) {
         EditorNode *node = ListGet(EditorNodes, EditorSelectedNode);
         if (node->type == NODE_WALL_A) {
             SDL_Texture *tex = editorWallTextures[node->extra];
@@ -748,6 +751,16 @@ void GEditorStateRender() {
                 SDL_Rect dst = {10, 310, 64, 64};
                 SDL_RenderCopy(GetRenderer(), tex, &src, &dst);
             }
+        }
+    } else if (CurrentEditorMode == EDITOR_MODE_ADD) {
+        EditorSlider *texSld = ListGet(EditorSliders, 1);
+
+        SDL_Texture *tex = editorWallTextures[(int)(texSld->value)];
+        if (tex != NULL) {
+            SDL_Point texSize = SDL_TextureSize(tex);
+            SDL_Rect src = {0, 0, texSize.x, texSize.y};
+            SDL_Rect dst = {10, 360, 64, 64};
+            SDL_RenderCopy(GetRenderer(), tex, &src, &dst);
         }
     }
 
@@ -800,6 +813,24 @@ void ToggleSnapToGrid(EditorButton *btn) {
     EditorSnapToGrid = btn->toggled;
 }
 
+void BtnPrevNode() {
+    if (CurrentEditorMode == EDITOR_MODE_PROPERTIES) {
+        EditorSelectedNode--;
+        if (EditorSelectedNode < 0) {
+            EditorSelectedNode = EditorNodes->size - 1;
+        }
+    }
+}
+
+void BtnNextNode() {
+    if (CurrentEditorMode == EDITOR_MODE_PROPERTIES) {
+        EditorSelectedNode++;
+        if (EditorSelectedNode >= EditorNodes->size) {
+            EditorSelectedNode = 0;
+        }
+    }
+}
+
 void SetEditorMode(EditorButton *btn) {
     for (int i = 0; i < 5; i++) {
         EditorButton *button = ListGet(EditorButtons, i);
@@ -812,6 +843,7 @@ void SetEditorMode(EditorButton *btn) {
     if (strcmp(btn->text, "Add") == 0) {
         CurrentEditorMode = EDITOR_MODE_ADD;
         CreateSlider("Add Actor?", 0, 1, 0, 1, 1, vec2(10, 250), vec2(200, 24), NULL);
+        CreateSlider("Wall Tex", 0, GetTextureCount() - 1, 0, 1, 16, vec2(10, 300), vec2(200, 24), NULL);
     } else if (strcmp(btn->text, "Move") == 0) {
         EditorSelectedNode = -1;
         CurrentEditorMode = EDITOR_MODE_MOVE;
@@ -855,6 +887,9 @@ void GEditorStateSet() {
         CreateButton("+", vec2(10, 50), vec2(80, 24), BtnZoomIn, true, false);
         CreateButton("-", vec2(10, 78), vec2(80, 24), BtnZoomOut, true, false);
         CreateButton("0", vec2(10, 106), vec2(80, 24), BtnZoomReset, true, false);
+
+        CreateButton("PREV", vec2(100, 50), vec2(80, 24), BtnPrevNode, true, false);
+        CreateButton("NEXT", vec2(100, 78), vec2(80, 24), BtnNextNode, true, false);
 
         EditorButton *moveButton = ListGet(EditorButtons, 4);
         moveButton->toggled = true;
