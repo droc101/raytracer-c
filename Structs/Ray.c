@@ -4,10 +4,8 @@
 
 #include "../defines.h"
 #include <math.h>
-#include <stdio.h>
 #include "Vector2.h"
 #include "Actor.h"
-#include "Level.h"
 
 // Perform a ray cast from a position and rotation into a wall. Don't forget to free the result!
 RayCastResult Intersect(Wall wall, Vector2 from, double direction)

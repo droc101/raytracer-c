@@ -9,12 +9,10 @@
 #include "../Structs/GlobalState.h"
 #include <stdio.h>
 #include "GMainState.h"
-#include "../Assets/AssetReader.h"
-#include "../Helpers/LevelLoader.h"
-#include "../config.h"
 #include "../Helpers/MathEx.h"
 #include "../Helpers/LevelEntries.h"
 #include "GMenuState.h"
+#include "../Helpers/CommonAssets.h"
 
 int GLevelSelectState_SelectedLevel = 0;
 
@@ -43,7 +41,7 @@ void GLevelSelectStateRender() {
     Vector2 bg_tile_size = vec2(320, 240);
     for (int x = 0; x < WindowWidth(); x += bg_tile_size.x) {
         for (int y = 0; y < WindowHeight(); y += bg_tile_size.y) {
-            SDL_RenderCopy(GetRenderer(), gztex_bg, NULL, &(SDL_Rect){x, y, bg_tile_size.x, bg_tile_size.y});
+            SDL_RenderCopy(GetRenderer(), menu_bg_tex, NULL, &(SDL_Rect){x, y, bg_tile_size.x, bg_tile_size.y});
         }
     }
 

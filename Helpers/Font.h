@@ -7,9 +7,6 @@
 
 #include "../Structs/Vector2.h"
 
-// Set up the font system
-void FontInit();
-
 // Draw a string to the screen
 Vector2 FontDrawString(Vector2 pos, char* str, uint size, uint color, bool small);
 

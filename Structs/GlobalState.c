@@ -6,7 +6,6 @@
 #include "GlobalState.h"
 #include "../Structs/Level.h"
 #include "../Assets/AssetReader.h"
-#include "../Structs/Wall.h"
 #include "../Helpers/LevelEntries.h"
 #include "../Helpers/LevelLoader.h"
 

@@ -2,7 +2,6 @@
 // Created by droc101 on 6/22/2024.
 //
 
-#include <stdio.h>
 #include "Collision.h"
 #include "../Structs/Wall.h"
 #include "../Structs/GlobalState.h"

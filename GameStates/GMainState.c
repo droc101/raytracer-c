@@ -10,7 +10,6 @@
 #include "../Helpers/Drawing.h"
 #include "../Debug/DPrint.h"
 #include "../Helpers/Collision.h"
-#include "../config.h"
 #include "GPauseState.h"
 #include "GEditorState.h"
 
@@ -28,7 +27,6 @@ void GMainStateUpdate() {
 
     Level *l = GetState()->level;
 
-    //Vector2 oldPos = l->position;
     Vector2 moveVec = vec2(0, 0);
     if (IsKeyPressed(SDL_SCANCODE_W)) {
         moveVec.x += 1;

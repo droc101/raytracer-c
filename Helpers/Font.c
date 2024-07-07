@@ -4,24 +4,14 @@
 
 #include "Font.h"
 #include <ctype.h>
-#include <math.h>
 #include <string.h>
 #include <stdio.h>
 #include "MathEx.h"
 #include "SDL.h"
 #include "Drawing.h"
-#include "../Assets/Assets.h"
-#include "../Assets/AssetReader.h"
-
-SDL_Texture *fontTexture;
-SDL_Texture *smallFontTexture;
+#include "CommonAssets.h"
 
 const char fontChars[] = "abcdefghijklmnopqrstuvwxyz0123456789.:-,/\\|[]{}();'\"<>`~!@#$%^*_=+?";
-
-void FontInit() {
-    fontTexture = ToSDLTexture((const unsigned char *) gztex_interface_font, FILTER_LINEAR);
-    smallFontTexture = ToSDLTexture((const unsigned char *) gztex_interface_small_fonts, FILTER_NEAREST);
-}
 
 int findChar(char target) {
     int i = 0;
