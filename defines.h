@@ -11,6 +11,7 @@
 #include <SDL_vulkan.h>
 #include <vulkan/vulkan.h>
 #include <stdint.h>
+#include "config.h"
 
 // "boolean"
 #define bool unsigned char // unsigned 8-bit integer (nonzero is true)
@@ -23,8 +24,6 @@
 #define ulong uint64_t // unsigned 64-bit integer
 
 #define NULLPTR NULL
-
-#define SFX_CHANNEL_COUNT 16
 
 // Utility functions are in Structs/Vector2.h
 typedef struct {
@@ -74,7 +73,7 @@ typedef struct {
 typedef struct {
     Level *level;
     void (*UpdateGame)();
-    void (*RenderGame)(VkInstance instance, VkSurfaceKHR surface);
+    void (*RenderGame)();
     int hp;
     int maxHp;
     int ammo;
@@ -105,11 +104,9 @@ typedef struct {
     byte paramD;
 } Actor;
 
-// pi
+// pi 🥧
 #define PI 3.14159265358979323846
 
-// Target frame rate (the game is tied to this :D)
-#define TARGET_FPS 60
 #define TARGET_MS (1000 / TARGET_FPS)
 #define TARGET_NS (1000000000 / TARGET_FPS) // nanoseconds because precision
 

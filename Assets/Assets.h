@@ -16,6 +16,7 @@ extern const unsigned char gztex_interface_barrel[];
 extern const unsigned char gztex_interface_font[];
 extern const unsigned char gztex_interface_icon[];
 extern const unsigned char gztex_interface_menu_bg_tile[];
+extern const unsigned char gztex_interface_menu_logo[];
 extern const unsigned char gztex_interface_small_fonts[];
 
 extern const unsigned char gztex_level_bricks[];

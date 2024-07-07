@@ -18,6 +18,7 @@
 //#define GMENUSTATE_WALL_DEBUG
 
 SDL_Texture *gztex_bg;
+SDL_Texture *menu_logo_tex;
 
 #ifdef GMENUSTATE_WALL_DEBUG
 Wall *tWall;
@@ -68,8 +69,13 @@ void GMenuStateRender() {
 
     //RenderLevel(vec2(9.63, -3.15), 3.25, 0);
 
-    DrawTextAligned(GAME_TITLE, 128, 0xFFFFFFFF, vec2(0, 96), vec2(WindowWidth(), 128),
-                    FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, false);
+    // draw the logo
+    SDL_Rect logoRect;
+    logoRect.x = (WindowWidth() - 480) / 2;
+    logoRect.y = 32;
+    logoRect.w = 480;
+    logoRect.h = 320;
+    SDL_RenderCopy(GetRenderer(), menu_logo_tex, NULL, &logoRect);
 
     if (GetState()->frame % 60 < 30) {
         DrawTextAligned("Press Space", 32, 0xFFFFFFFF, vec2(0, WindowHeight() - 150), vec2(WindowWidth(), 32),
@@ -91,6 +97,7 @@ void GMenuStateSet() {
 
     if (gztex_bg == NULLPTR) {
         gztex_bg = ToSDLTexture(gztex_interface_menu_bg_tile, FILTER_LINEAR);
+        menu_logo_tex = ToSDLTexture(gztex_interface_menu_logo, FILTER_LINEAR);
     }
 
 #ifdef GMENUSTATE_WALL_DEBUG
