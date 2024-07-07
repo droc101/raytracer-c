@@ -12,7 +12,7 @@
 #include "config.h"
 
 // "boolean"
-#define bool unsigned char // unsigned 8-bit integer (nonzero is true)
+#define bool uint8_t // unsigned 8-bit integer (nonzero is true)
 #define true 1
 #define false 0
 
