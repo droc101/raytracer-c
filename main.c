@@ -23,6 +23,8 @@
 int main(int argc, char *argv[]) {
 
     printf("Build time: %s at %s\n", __DATE__, __TIME__);
+    printf("Version: %s\n", VERSION);
+    printf("SDL Version: %d.%d.%d\n", SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_PATCHLEVEL);
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
         printf("SInit Error: %s\n", SDL_GetError());
