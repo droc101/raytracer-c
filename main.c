@@ -46,6 +46,8 @@ int main(int argc, char *argv[]) {
     SDL_SetWindowMinimumSize(w, MIN_WIDTH, MIN_HEIGHT);
     SDL_SetWindowMaximumSize(w, MAX_WIDTH, MAX_HEIGHT);
 
+
+
     SDL_Surface *icon = ToSDLSurface((const unsigned char *) gztex_interface_icon, FILTER_LINEAR);
     SDL_SetWindowIcon(w, icon);
 
@@ -57,7 +59,6 @@ int main(int argc, char *argv[]) {
         return 1;
     }
     SetRenderer(tr);
-
     SetSignalHandler(); // catch exceptions in release mode
 
     printf("Initializing Engine\n");
