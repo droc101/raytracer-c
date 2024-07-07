@@ -14,6 +14,7 @@
 #include "GLevelSelectState.h"
 #include "../Assets/AssetReader.h"
 #include "../Helpers/Timing.h"
+#include "../Helpers/Error.h"
 
 //#define GMENUSTATE_WALL_DEBUG
 
@@ -27,6 +28,7 @@ double tPlayerRot;
 #endif
 
 void GMenuStateUpdate() {
+
 #ifdef GMENUSTATE_WALL_DEBUG
     // get the current mouse position
     int x, y;
