@@ -13,11 +13,11 @@
 #include "../Helpers/MathEx.h"
 #include "../Helpers/LevelEntries.h"
 #include "GLevelSelectState.h"
+#include <stdio.h>
 
-char pauseOptions[3][32] = {
+char pauseOptions[2][32] = {
         "Resume",
-        "Exit Level",
-        "Quit"
+        "Exit Level"
 };
 
 int pauseSelected = 0;
@@ -32,10 +32,10 @@ void GPauseStateUpdate() {
 
     if (IsKeyJustPressed(SDL_SCANCODE_DOWN)) {
         pauseSelected++;
-        pauseSelected = wrap(pauseSelected, 0, 3);
+        pauseSelected = wrap(pauseSelected, 0, 2);
     } else if (IsKeyJustPressed(SDL_SCANCODE_UP)) {
         pauseSelected--;
-        pauseSelected = wrap(pauseSelected, 0, 3);
+        pauseSelected = wrap(pauseSelected, 0, 2);
     } else if (IsKeyJustPressed(SDL_SCANCODE_SPACE)) {
         switch (pauseSelected) {
             case 0:
@@ -50,10 +50,6 @@ void GPauseStateUpdate() {
 #else
                 GLevelSelectStateSet();
 #endif
-                break;
-            case 2:
-                PlaySoundEffect(gzwav_sfx_popdown);
-                GMenuStateSet();
                 break;
         }
     }
@@ -70,13 +66,22 @@ void GPauseStateRender() {
     draw_rect(0, 0, WindowWidth(), WindowHeight());
     SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_NONE);
 
-    DrawTextAligned("Game Paused", 32, 0xFFFFFFFF, vec2s(0), vec2(WindowWidth(), 300), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, false);
+    DrawTextAligned("Game Paused", 32, 0xFFFFFFFF, vec2s(0), vec2(WindowWidth(), 250), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, false);
 
     char *levelID = gLevelEntries[GetState()->levelID].displayName;
+    int cNum = gLevelEntries[GetState()->levelID].courseNum;
+
+    if (cNum != -1) {
+        char buf[64];
+        sprintf(buf, "Level %d", cNum);
+        DrawTextAligned(buf, 16, 0xFF000000, vec2(4,  164), vec2(WindowWidth(), 40), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
+        DrawTextAligned(buf, 16, 0xFFFFFFFF, vec2(0,  160), vec2(WindowWidth(), 40), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
+    }
+
     DrawTextAligned(levelID, 32, 0xFF000000, vec2(4,  204), vec2(WindowWidth(), 40), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
     DrawTextAligned(levelID, 32, 0xFFFFFFFF, vec2(0,  200), vec2(WindowWidth(), 40), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
 
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 2; i++) {
         if (i == pauseSelected) {
             DrawTextAligned(pauseOptions[i], 24, 0xFF000000, vec2(2,  322 + (30 * (i + 1))), vec2(WindowWidth(), 30), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
             DrawTextAligned(pauseOptions[i], 24, 0xFFFFFFFF, vec2(0,  320 + (30 * (i + 1))), vec2(WindowWidth(), 30), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);

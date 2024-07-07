@@ -5,9 +5,9 @@
 #include "LevelEntries.h"
 
 LevelEntry gLevelEntries[LEVEL_COUNT] = {
-        DEFINE_LEVEL("stage1", test_level, "Test Level", true),
-        DEFINE_LEVEL("stage2", hallway, "Hallway", true),
-        DEFINE_LEVEL("indoor", hub, "Indoor Test", false),
+        DEFINE_LEVEL("stage1", test_level, "Test Level", true, 1),
+        DEFINE_LEVEL("stage2", hallway, "Hallway", true, 2),
+        DEFINE_LEVEL("indoor", hub, "Indoor Test", false, -1),
         STUB_LEVEL(),
         STUB_LEVEL(),
         STUB_LEVEL(),
