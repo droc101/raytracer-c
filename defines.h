@@ -68,13 +68,13 @@ typedef struct {
 
 // Global state of the game
 typedef struct {
-    Level *level;
-    void (*UpdateGame)();
-    void (*RenderGame)();
-    int hp;
-    int maxHp;
-    int ammo;
-    int maxAmmo;
+    Level *level; // Current level
+    void (*UpdateGame)(); // State update function
+    void (*RenderGame)(); // State render function
+    int hp; // Player health
+    int maxHp; // Player max health
+    int ammo; // Player ammo
+    int maxAmmo; // Player max ammo
     ulong frame;
     bool requestExit;
     Mix_Music *music; // background music
@@ -87,15 +87,15 @@ typedef struct {
 typedef struct {
     Vector2 position;
     double rotation;
-    Wall *actorWall;
-    bool solid;
-    int health;
-    void *extra_data;
-    void (*Init)(void *self);
-    void (*Update)(void *self);
-    void (*Destroy)(void *self);
-    int actorType;
-    byte paramA;
+    Wall *actorWall; // (0,0) in this wall is the actor's position (also transformed by rotation)
+    bool solid; // can the player walk through this actor?
+    int health; // health. may be unused for some actors
+    void *extra_data; // extra data for the actor
+    void (*Init)(void *self); // call once to set up the actor
+    void (*Update)(void *self); // call every frame to update the actor
+    void (*Destroy)(void *self); // call once to clean up the actor
+    int actorType; // type of actor. do not change this after creation.
+    byte paramA; // extra parameters for the actor. saved in level data, so can be used during Init
     byte paramB;
     byte paramC;
     byte paramD;
