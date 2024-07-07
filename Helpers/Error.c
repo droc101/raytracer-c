@@ -42,7 +42,7 @@ _Noreturn void _Error_Internal(char* error, const char* file, int line, const ch
 }
 
 _Noreturn void FriendlyError(char* title, char* description) {
-
+    SDL_SetTextureColorMod(menu_bg_tex_red, 0x20, 0x20, 0x20);
     char dbgInfoBuf[256];
     sprintf(dbgInfoBuf, "Engine Version: %s\nSDL Version: %d.%d.%d\nSDL_Mixer Version: %d.%d.%d\nZlib Version: %s", VERSION, SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_PATCHLEVEL, SDL_MIXER_MAJOR_VERSION, SDL_MIXER_MINOR_VERSION, SDL_MIXER_PATCHLEVEL, ZLIB_VERSION);
     SDL_SetRelativeMouseMode(SDL_FALSE); // release mouse
