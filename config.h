@@ -42,7 +42,7 @@
 #define ENABLE_DEBUG_PRINT
 
 // Shows a level select after main menu and pause exit course.
-#define USE_LEVEL_SELECT
+//#define USE_LEVEL_SELECT
 
 // Show error trace in release builds (function, source, and line #)
 #define ERROR_TRACE_IN_RELEASE
@@ -61,7 +61,7 @@
 #define GAME_TITLE "Game." // Used for window title
 
 // The level ID to load when pause exiting
-#define PAUSE_EXIT_LEVEL 0
+#define PAUSE_EXIT_LEVEL 2
 
 // Number of sound effect channels
 // (sound effects that can play at the same time)
