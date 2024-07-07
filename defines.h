@@ -8,8 +8,6 @@
 #include "Helpers/List.h"
 #include <SDL.h>
 #include <SDL_mixer.h>
-#include <SDL_vulkan.h>
-#include <vulkan/vulkan.h>
 #include <stdint.h>
 #include "config.h"
 
