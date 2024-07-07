@@ -42,7 +42,7 @@
 #define ENABLE_DEBUG_PRINT
 
 // Shows a level select after main menu and pause exit course.
-//#define USE_LEVEL_SELECT
+#define USE_LEVEL_SELECT
 
 // Show error trace in release builds (function, source, and line #)
 #define ERROR_TRACE_IN_RELEASE
