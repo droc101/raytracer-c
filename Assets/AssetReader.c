@@ -40,7 +40,6 @@ byte *DecompressAsset(const byte *asset) {
     if (assetId >= ASSET_COUNT) {
         printf("Asset ID %d is out of range\n", assetId);
         Error("Asset ID out of range");
-        return NULL;
     }
 
     if (AssetCache[assetId] != NULLPTR) {
@@ -66,7 +65,6 @@ byte *DecompressAsset(const byte *asset) {
         free(decompressedData);
         printf("Failed to initialize zlib stream: %s\n", stream.msg);
         Error("Failed to initialize zlib stream");
-        return NULLPTR;
     }
 
     // Decompress the data
@@ -77,7 +75,6 @@ byte *DecompressAsset(const byte *asset) {
             free(decompressedData);
             printf("Failed to decompress zlib stream: %s\n", stream.msg);
             Error("Failed to decompress zlib stream");
-            return NULLPTR;
         }
     } while (ret != Z_STREAM_END);
 

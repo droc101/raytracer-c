@@ -105,7 +105,7 @@ void ChangeMusic(const byte *asset) {
         return;
     }
 
-    StopMusic(); // stop the current music and free it's data
+    StopMusic(); // stop the current music and free its data
     byte *mp3 = DecompressAsset(asset);
     uint mp3Size = AssetGetSize(asset);
     Mix_Music *mus = Mix_LoadMUS_RW(SDL_RWFromConstMem(mp3, mp3Size), 1);

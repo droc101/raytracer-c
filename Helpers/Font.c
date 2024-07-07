@@ -112,7 +112,7 @@ int MeasureLine(char *str, int line) {
 
 void DrawTextAligned(char* str, uint size, uint color, Vector2 rect_pos, Vector2 rect_size, byte h_align, byte v_align, bool small) {
     int lines = StringLineCount(str);
-    Vector2 textSize = MeasureText(str, size, small);
+    Vector2 textSize;
     int x;
     int y = rect_pos.y;
     if (v_align == FONT_VALIGN_MIDDLE) {

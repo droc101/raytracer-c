@@ -79,7 +79,6 @@ void RenderCol(Level *l, int col, Vector2 position, double rotation) {
     double distance = raycast.Distance * cos(angle - l->rotation);
 
     if (distance == 0) {
-        distance = 0.000001;
         Error("Distance to wall is 0");
     }
 
