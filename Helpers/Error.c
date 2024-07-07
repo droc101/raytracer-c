@@ -13,11 +13,6 @@
 #include <zlib.h>
 #include "CommonAssets.h"
 
-const char* basename(const char* path) {
-    const char* base = strrchr(path, '/');
-    return base ? base + 1 : path;
-}
-
 _Noreturn void _Error_Internal(char* error, const char* file, int line, const char* function) {
     char buf[256];
     sprintf(buf, "Error: %s\n \n%s:%d (%s)", error, file, line, function);
