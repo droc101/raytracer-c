@@ -63,6 +63,9 @@
 // The level ID to load when pause exiting
 #define PAUSE_EXIT_LEVEL 2
 
+// The level to start on when the game loads
+#define STARTING_LEVEL 2
+
 // Number of sound effect channels
 // (sound effects that can play at the same time)
 #define SFX_CHANNEL_COUNT 16

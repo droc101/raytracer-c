@@ -67,7 +67,7 @@ int main(int argc, char *argv[]) {
     InitState();
     InitSkyTex();
 
-    ChangeLevelByID(0);
+    ChangeLevelByID(STARTING_LEVEL);
 
     GMenuStateSet();
 
