@@ -3,7 +3,6 @@
 //
 
 #include "GPauseState.h"
-#include <stdio.h>
 #include "../Helpers/Input.h"
 #include "../Structs/Ray.h"
 #include "../Helpers/Drawing.h"
@@ -12,7 +11,6 @@
 #include "GMainState.h"
 #include "GMenuState.h"
 #include "../Helpers/MathEx.h"
-#include "../config.h"
 #include "../Helpers/LevelEntries.h"
 #include "GLevelSelectState.h"
 

@@ -10,9 +10,8 @@
 #include "Font.h"
 #include <string.h>
 #include <signal.h>
-#include "../Assets/Assets.h"
-#include "../Assets/AssetReader.h"
 #include <zlib.h>
+#include "CommonAssets.h"
 
 const char* basename(const char* path) {
     const char* base = strrchr(path, '/');
@@ -51,8 +50,6 @@ _Noreturn void FriendlyError(char* title, char* description) {
 
     char dbgInfoBuf[256];
     sprintf(dbgInfoBuf, "Engine Version: %s\nSDL Version: %d.%d.%d\nSDL_Mixer Version: %d.%d.%d\nZlib Version: %s", VERSION, SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_PATCHLEVEL, SDL_MIXER_MAJOR_VERSION, SDL_MIXER_MINOR_VERSION, SDL_MIXER_PATCHLEVEL, ZLIB_VERSION);
-
-    SDL_Texture *bgTexture = ToSDLTexture(gztex_interface_menu_bg_tile_red, FILTER_LINEAR);
     SDL_SetRelativeMouseMode(SDL_FALSE); // release mouse
     while (1) {
         SDL_Event e;
@@ -65,7 +62,7 @@ _Noreturn void FriendlyError(char* title, char* description) {
         Vector2 bg_tile_size = vec2(320, 240);
         for (int x = 0; x < WindowWidth(); x += bg_tile_size.x) {
             for (int y = 0; y < WindowHeight(); y += bg_tile_size.y) {
-                SDL_RenderCopy(GetRenderer(), bgTexture, NULL, &(SDL_Rect){x, y, bg_tile_size.x, bg_tile_size.y});
+                SDL_RenderCopy(GetRenderer(), menu_bg_tex_red, NULL, &(SDL_Rect){x, y, bg_tile_size.x, bg_tile_size.y});
             }
         }
 

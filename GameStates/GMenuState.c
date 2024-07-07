@@ -9,17 +9,10 @@
 #include "../Helpers/Drawing.h"
 #include "../Helpers/Font.h"
 #include "../Structs/GlobalState.h"
-#include "GMainState.h"
-#include "../config.h"
 #include "GLevelSelectState.h"
-#include "../Assets/AssetReader.h"
-#include "../Helpers/Timing.h"
-#include "../Helpers/Error.h"
+#include "../Helpers/CommonAssets.h"
 
 //#define GMENUSTATE_WALL_DEBUG
-
-SDL_Texture *gztex_bg;
-SDL_Texture *menu_logo_tex;
 
 #ifdef GMENUSTATE_WALL_DEBUG
 Wall *tWall;
@@ -65,7 +58,7 @@ void GMenuStateRender() {
     Vector2 bg_tile_size = vec2(320, 240);
     for (int x = 0; x < WindowWidth(); x += bg_tile_size.x) {
         for (int y = 0; y < WindowHeight(); y += bg_tile_size.y) {
-            SDL_RenderCopy(GetRenderer(), gztex_bg, NULL, &(SDL_Rect){x, y, bg_tile_size.x, bg_tile_size.y});
+            SDL_RenderCopy(GetRenderer(), menu_bg_tex, NULL, &(SDL_Rect){x, y, bg_tile_size.x, bg_tile_size.y});
         }
     }
 
@@ -96,12 +89,6 @@ void GMenuStateRender() {
 }
 
 void GMenuStateSet() {
-
-    if (gztex_bg == NULLPTR) {
-        gztex_bg = ToSDLTexture(gztex_interface_menu_bg_tile, FILTER_LINEAR);
-        menu_logo_tex = ToSDLTexture(gztex_interface_menu_logo, FILTER_LINEAR);
-    }
-
 #ifdef GMENUSTATE_WALL_DEBUG
     tWall = CreateWall(vec2(300, 400), vec2(600, 650), 0);
     tPlayerPos = vec2(400, 600);

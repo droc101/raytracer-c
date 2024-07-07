@@ -8,8 +8,6 @@
 #include "../Assets/Assets.h"
 #include "../defines.h"
 
-
-
 void GLevelSelectStateSet();
 
 #endif //GAME_GLEVELSELECTSTATE_H

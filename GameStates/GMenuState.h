@@ -9,8 +9,4 @@
 
 void GMenuStateSet();
 
-extern SDL_Texture *gztex_bg;
-
-extern SDL_Texture *menu_logo_tex;
-
 #endif //GAME_GMENUSTATE_H

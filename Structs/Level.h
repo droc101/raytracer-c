@@ -26,6 +26,4 @@ void RemoveActor(Actor* actor);
 
 void RenderLevel(Vector2 camPos, double camRot, double fakeHeight);
 
-void InitSkyTex();
-
 #endif //GAME_LEVEL_H

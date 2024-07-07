@@ -12,9 +12,7 @@
 #include "../Helpers/Error.h"
 #include "Actor.h"
 #include "GlobalState.h"
-#include "../Helpers/List.h"
-
-SDL_Texture *skyTex;
+#include "../Helpers/CommonAssets.h"
 
 Level *CreateLevel() {
     Level *l = (Level*)malloc(sizeof(Level));
@@ -222,9 +220,5 @@ void RenderLevel(Vector2 camPos, double camRot, double fakeHeight) {
         RenderCol(l, col, camPos, camRot);
         RenderActorCol(l, col, camPos, camRot);
     }
-}
-
-void InitSkyTex() {
-    skyTex = ToSDLTexture((const unsigned char *) gztex_level_sky, FILTER_LINEAR);
 }
 

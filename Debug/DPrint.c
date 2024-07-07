@@ -6,7 +6,6 @@
 #include "../Helpers/Font.h"
 #include <stdarg.h>
 #include <stdio.h>
-#include "../config.h"
 
 int DPrintYPos = 10;
 

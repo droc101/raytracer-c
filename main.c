@@ -4,30 +4,26 @@
 #include "Helpers/Drawing.h"
 #include "defines.h"
 #include "Helpers/Input.h"
-#include "Helpers/Font.h"
 #include "Structs/Level.h"
-#include "Helpers/LevelLoader.h"
 #include "Structs/GlobalState.h"
 #include "GameStates/GMenuState.h"
-#include "Structs/Actor.h"
 #include "Debug/FrameGrapher.h"
 #include "GameStates/GMainState.h"
 #include "Debug/DPrint.h"
 #include "Assets/AssetReader.h"
-#include "Structs/Vector2.h"
 #include "Helpers/Timing.h"
 #include "config.h"
 #include "Helpers/Error.h"
+#include "Helpers/CommonAssets.h"
 #include "Helpers/Vulkan.h"
 
 int main(int argc, char *argv[]) {
 
     printf("Build time: %s at %s\n", __DATE__, __TIME__);
     printf("Version: %s\n", VERSION);
-    printf("SDL Version: %d.%d.%d\n", SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_PATCHLEVEL);
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
-        printf("SInit Error: %s\n", SDL_GetError());
+        printf("SDL_Init Error: %s\n", SDL_GetError());
         return 1;
     }
 
@@ -40,7 +36,7 @@ int main(int argc, char *argv[]) {
 
     SDL_Window *w = SDL_CreateWindow(GAME_TITLE,SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,DEF_WIDTH, DEF_HEIGHT, SDL_WINDOW_RESIZABLE | SDL_WINDOW_VULKAN);
     if (w == NULL) {
-        printf("SCreateWindow Error: %s\n", SDL_GetError());
+        printf("SDL_CreateWindow Error: %s\n", SDL_GetError());
         SDL_Quit();
         return 1;
     }
@@ -49,15 +45,13 @@ int main(int argc, char *argv[]) {
     SDL_SetWindowMinimumSize(w, MIN_WIDTH, MIN_HEIGHT);
     SDL_SetWindowMaximumSize(w, MAX_WIDTH, MAX_HEIGHT);
 
-
-
     SDL_Surface *icon = ToSDLSurface((const unsigned char *) gztex_interface_icon, FILTER_LINEAR);
     SDL_SetWindowIcon(w, icon);
 
     SDL_Renderer *tr = SDL_CreateRenderer(GetWindow(), -1, SDL_RENDERER_ACCELERATED);
     if (tr == NULL) {
         SDL_DestroyWindow(GetWindow());
-        printf("SCreateRenderer Error: %s\n", SDL_GetError());
+        printf("SDL_CreateRenderer Error: %s\n", SDL_GetError());
         SDL_Quit();
         return 1;
     }
@@ -65,9 +59,8 @@ int main(int argc, char *argv[]) {
     SetSignalHandler(); // catch exceptions in release mode
 
     printf("Initializing Engine\n");
-    FontInit();
+    InitCommonAssets();
     InitState();
-    InitSkyTex();
 
     ChangeLevelByID(STARTING_LEVEL);
 
@@ -114,7 +107,7 @@ int main(int argc, char *argv[]) {
 
         g->UpdateGame();
 
-        g->RenderGame(GetVulkanInstance(), GetVulkanSurface());
+        g->RenderGame();
 
         FrameGraphDraw();
 

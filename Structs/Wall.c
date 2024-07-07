@@ -6,7 +6,6 @@
 #include "Wall.h"
 #include <math.h>
 #include "../Helpers/Drawing.h"
-#include "Vector2.h"
 
 const byte *wallTextures[] = {
         gztex_level_bricks,
