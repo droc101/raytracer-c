@@ -18,7 +18,7 @@
 #define byte unsigned char // unsigned 8-bit integer
 #define ushort unsigned short // unsigned 16-bit integer
 #define uint unsigned int // unsigned 32-bit integer
-#define ulong unsigned long // unsigned 64-bit integer
+#define ulong unsigned long long // unsigned 64-bit integer
 
 #define NULLPTR NULL
 
