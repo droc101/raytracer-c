@@ -53,16 +53,30 @@ void GMainStateUpdate() {
     if (isMoving) {
         moveVec = Vector2Normalize(moveVec);
     }
-    moveVec = Vector2Scale(moveVec, MOVE_SPEED);
+
+    double spd = MOVE_SPEED;
+    if (IsKeyPressed(SDL_SCANCODE_LSHIFT)) {
+        spd = SLOW_MOVE_SPEED;
+    }
+
+    moveVec = Vector2Scale(moveVec, spd);
     moveVec = Vector2Rotate(moveVec, l->rotation);
 
     l->position = Move(l->position, moveVec, NULL);
 
     // view bobbing (scam edition) 💀
-    if (isMoving) {
-        GetState()->FakeHeight = sin(GetState()->frame / 7.0) * 40;
+    if (spd == SLOW_MOVE_SPEED) {
+        if (isMoving) {
+            GetState()->FakeHeight = sin(GetState()->frame / 7.0) * 10;
+        } else {
+            GetState()->FakeHeight = lerp(GetState()->FakeHeight, 0, 0.1); // NOLINT(*-narrowing-conversions)
+        }
     } else {
-        GetState()->FakeHeight = lerp(GetState()->FakeHeight, 0, 0.1); // NOLINT(*-narrowing-conversions)
+        if (isMoving) {
+            GetState()->FakeHeight = sin(GetState()->frame / 7.0) * 40;
+        } else {
+            GetState()->FakeHeight = lerp(GetState()->FakeHeight, 0, 0.1); // NOLINT(*-narrowing-conversions)
+        }
     }
 
 #ifdef KEYBOARD_ROTATION
