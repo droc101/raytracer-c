@@ -129,12 +129,13 @@ int main(int argc, char *argv[]) {
 
     }
     printf("Destructing Engine\n");
-    CleanupVulkan();
     DestroyGlobalState();
     SDL_DestroyRenderer(GetRenderer());
     SDL_DestroyWindow(GetWindow());
     SDL_FreeSurface(icon);
     InvalidateAssetCache(); // Free all assets
+    vkDeviceWaitIdle(GetVulkanDevice());
+    CleanupVulkan();
     SDL_Quit();
     return 0;
 }

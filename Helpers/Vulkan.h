@@ -10,6 +10,7 @@
 #include <vulkan/vulkan.h>
 
 #define VULKAN_VERSION VK_MAKE_VERSION(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH)
+#ifndef NDEBUG
 /**
  * Extra verification, mainly for debugging (slower)
  * This will only work if the LunarG Vulkan SDK is installed on the device running the program.
@@ -18,6 +19,8 @@
  * @see https://vulkan.lunarg.com/doc/sdk/1.3.283.0/windows/khronos_validation_layer.html
  */
 #define VALIDATION_ENABLE
+#endif
+#define MAX_FRAMES_IN_FLIGHT 2
 
 typedef struct {
     unsigned int graphicsFamily;
@@ -34,9 +37,11 @@ typedef struct {
 
 
 void InitVulkan(SDL_Window *window);
+void DrawFrame();
 void CleanupVulkan();
 
 VkInstance GetVulkanInstance();
 VkSurfaceKHR GetVulkanSurface();
+VkDevice GetVulkanDevice();
 
 #endif //GAME_VULKAN_H

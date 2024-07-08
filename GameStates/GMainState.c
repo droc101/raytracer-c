@@ -12,8 +12,10 @@
 #include "../Helpers/Collision.h"
 #include "GPauseState.h"
 #include "GEditorState.h"
+#include "../helpers/Vulkan.h"
 
 void GMainStateUpdate() {
+    return;
     if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE)) {
         GPauseStateSet();
         return;
@@ -103,16 +105,17 @@ void GMainStateUpdate() {
 
 void GMainStateRender() {
 
-    GlobalState *state = GetState();
-    Level *l = state->level;
+//    GlobalState *state = GetState();
+//    Level *l = state->level;
 
-    RenderLevel(l->position, l->rotation, state->FakeHeight);
+//    RenderLevel(l->position, l->rotation, state->FakeHeight);
+    DrawFrame();
 
-    SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_NONE);
-    DPrintF("Position: (%.2f, %.2f)\nRotation: %.4f (%.2fdeg)", 0xFFFFFFFF, false, l->position.x, l->position.y, l->rotation, radToDeg(l->rotation));
-
-    DPrintF("Walls: %d", 0xFFFFFFFF, false, l->staticWalls->size);
-    DPrintF("Actors: %d", 0xFFFFFFFF, false, l->staticActors->size);
+//    SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_NONE);
+//    DPrintF("Position: (%.2f, %.2f)\nRotation: %.4f (%.2fdeg)", 0xFFFFFFFF, false, l->position.x, l->position.y, l->rotation, radToDeg(l->rotation));
+//
+//    DPrintF("Walls: %d", 0xFFFFFFFF, false, l->staticWalls->size);
+//    DPrintF("Actors: %d", 0xFFFFFFFF, false, l->staticActors->size);
 }
 
 void GMainStateSet() {

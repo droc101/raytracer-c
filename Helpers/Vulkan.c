@@ -34,7 +34,11 @@ VkPipelineLayout pipelineLayout;
 VkPipeline graphicsPipeline;
 VkFramebuffer *swapChainFramebuffers;
 VkCommandPool commandPool;
-VkCommandBuffer commandBuffer;
+VkCommandBuffer *commandBuffers;
+VkSemaphore *imageAvailableSemaphores;
+VkSemaphore *renderFinishedSemaphores;
+VkFence *inFlightFences;
+unsigned int currentFrame = 0;
 
 /**
  * This function finds the indices of the queue families in QueueFamilyIndices.
@@ -112,7 +116,7 @@ static inline void CreateInstance(SDL_Window *window) {
             extensionCount,
             extensionNames
     };
-#if !defined(NDEBUG) && defined(VALIDATION_ENABLE)
+#ifdef VALIDATION_ENABLE
     createInfo.enabledLayerCount = 1;
     createInfo.ppEnabledLayerNames = (const char *const[1]) {"VK_LAYER_KHRONOS_validation"};
 #endif
@@ -222,7 +226,7 @@ static inline void CreateLogicalDevice() {
             (const char *const[1]) {VK_KHR_SWAPCHAIN_EXTENSION_NAME},
             &deviceFeatures
     };
-#if !defined(NDEBUG) && defined(VALIDATION_ENABLE)
+#ifdef VALIDATION_ENABLE
     createInfo.enabledLayerCount = 1;
     createInfo.ppEnabledLayerNames = (const char *const[1]) {"VK_LAYER_KHRONOS_validation"};
 #endif
@@ -374,6 +378,15 @@ static inline void CreateRenderPass() {
             0,
             NULL
     };
+    VkSubpassDependency dependency = {
+            VK_SUBPASS_EXTERNAL,
+            0,
+            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+            0,
+            VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+            0
+    };
     VkRenderPassCreateInfo renderPassInfo = {
             VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
             NULL,
@@ -382,8 +395,8 @@ static inline void CreateRenderPass() {
             &colorAttachment,
             1,
             &subpass,
-            0,
-            NULL
+            1,
+            &dependency
     };
     if (vkCreateRenderPass(device, &renderPassInfo, NULL, &renderPass) != VK_SUCCESS) {
         Error("Failed to create Vulkan render pass!");
@@ -570,17 +583,42 @@ static inline void CreateCommandPool() {
     }
 }
 
-static inline void CreateCommandBuffer() {
+static inline void CreateCommandBuffers() {
+    commandBuffers = malloc(sizeof(VkCommandBuffer *) * MAX_FRAMES_IN_FLIGHT);
     VkCommandBufferAllocateInfo allocateInfo = {
             VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
             NULL,
             commandPool,
             VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-            1
+            MAX_FRAMES_IN_FLIGHT
     };
-    if (vkAllocateCommandBuffers(device, &allocateInfo, &commandBuffer) != VK_SUCCESS) {
+    if (vkAllocateCommandBuffers(device, &allocateInfo, commandBuffers) != VK_SUCCESS) {
         Error("Failed to allocate Vulkan command buffers!");
     }
+}
+
+static inline void CreateSyncObjects() {
+    imageAvailableSemaphores = malloc(sizeof(VkSemaphore *) * MAX_FRAMES_IN_FLIGHT);
+    renderFinishedSemaphores = malloc(sizeof(VkSemaphore *) * MAX_FRAMES_IN_FLIGHT);
+    inFlightFences = malloc(sizeof(VkFence *) * MAX_FRAMES_IN_FLIGHT);
+    VkSemaphoreCreateInfo semaphoreInfo = {
+            VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
+            NULL,
+            0
+    };
+    VkFenceCreateInfo fenceInfo = {
+            VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+            NULL,
+            VK_FENCE_CREATE_SIGNALED_BIT
+    };
+    for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+        if (vkCreateSemaphore(device, &semaphoreInfo, NULL, &imageAvailableSemaphores[i]) != VK_SUCCESS ||
+            vkCreateSemaphore(device, &semaphoreInfo, NULL, &renderFinishedSemaphores[i]) != VK_SUCCESS ||
+            vkCreateFence(device, &fenceInfo, NULL, &inFlightFences[i]) != VK_SUCCESS) {
+            Error("Failed to create Vulkan semaphores!");
+        }
+    }
+
 }
 
 static inline void RecordCommandBuffer(VkCommandBuffer buffer, unsigned int imageIndex) {
@@ -651,11 +689,56 @@ void InitVulkan(SDL_Window *window) {
     CreateGraphicsPipeline();
     CreateFramebuffers();
     CreateCommandPool();
-    CreateCommandBuffer();
+    CreateCommandBuffers();
+    CreateSyncObjects();
+}
+
+void DrawFrame() {
+    vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
+    vkResetFences(device, 1, &inFlightFences[currentFrame]);
+    unsigned int imageIndex;
+    vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+    vkResetCommandBuffer(commandBuffers[currentFrame], 0);
+    RecordCommandBuffer(commandBuffers[currentFrame], imageIndex);
+    VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]};
+    VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+    VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[currentFrame]};
+    VkSubmitInfo submitInfo = {
+            VK_STRUCTURE_TYPE_SUBMIT_INFO,
+            NULL,
+            1,
+            waitSemaphores,
+            waitStages,
+            1,
+            &commandBuffers[currentFrame],
+            1,
+            signalSemaphores
+    };
+    if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) {
+        Error("Failed to submit Vulkan draw command buffer!");
+    }
+    VkSwapchainKHR swapChains[] = {swapChain};
+    VkPresentInfoKHR presentInfo = {
+            VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+            NULL,
+            1,
+            signalSemaphores,
+            1,
+            swapChains,
+            &imageIndex,
+            NULL
+    };
+    vkQueuePresentKHR(presentQueue, &presentInfo);
+    currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
 /// A function used to destroy the Vulkan objects when they are no longer needed.
 void CleanupVulkan() {
+    for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+        vkDestroySemaphore(device, imageAvailableSemaphores[i], NULL);
+        vkDestroySemaphore(device, renderFinishedSemaphores[i], NULL);
+        vkDestroyFence(device, inFlightFences[i], NULL);
+    }
     vkDestroyCommandPool(device, commandPool, NULL);
     for (unsigned int i = 0; i < swapChainCount; i++) {
         vkDestroyFramebuffer(device, swapChainFramebuffers[i], NULL);
@@ -672,12 +755,17 @@ void CleanupVulkan() {
     vkDestroyInstance(instance, NULL);
 }
 
-/// Gets a pointer to the Vulkan instance
+/// @return The Vulkan instance
 VkInstance GetVulkanInstance() {
     return instance;
 }
 
-/// Gets a pointer to the Vulkan surface
+/// @return The Vulkan surface
 VkSurfaceKHR GetVulkanSurface() {
     return surface;
+}
+
+/// @return The Vulkan device
+VkDevice GetVulkanDevice() {
+    return device;
 }
