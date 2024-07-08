@@ -6,7 +6,8 @@
 #define GAME_VULKAN_H
 
 #include "../defines.h"
-#include "../config.h"
+#include <SDL_vulkan.h>
+#include <vulkan/vulkan.h>
 
 #define VULKAN_VERSION VK_MAKE_VERSION(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH)
 /**

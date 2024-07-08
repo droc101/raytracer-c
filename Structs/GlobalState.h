@@ -23,7 +23,7 @@ void UseAmmo(int amount);
 
 // Set the update and render functions
 void SetUpdateCallback(void (*UpdateGame)());
-void SetRenderCallback(void (*RenderGame)(VkInstance instance, VkSurfaceKHR surface));
+void SetRenderCallback(void (*RenderGame)());
 
 // Set the level
 void ChangeLevel(Level *l);
