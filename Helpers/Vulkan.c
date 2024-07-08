@@ -4,19 +4,8 @@
 
 #include "Vulkan.h"
 #include "Error.h"
-
-typedef struct {
-    unsigned int graphicsFamily;
-    unsigned int presentFamily;
-} QueueFamilyIndices;
-
-typedef struct {
-    unsigned int formatCount;
-    VkSurfaceFormatKHR *formats;
-    unsigned int presentModeCount;
-    VkPresentModeKHR *presentMode;
-    VkSurfaceCapabilitiesKHR capabilities;
-} SwapChainSupportDetails;
+#include "../Assets/AssetReader.h"
+#include "../Assets/Assets.h"
 
 /// A Vulkan instance is the connection between the game and the driver, through Vulkan.
 /// The creation of it requires configuring Vulkan for the app, allowing for better driver performance.
@@ -36,10 +25,16 @@ VkQueue presentQueue;
 /// Allows Vulkan to give a surface the rendered image.
 VkSwapchainKHR swapChain;
 VkImage *swapChainImages;
-unsigned int swapChainImageCount;
+unsigned int swapChainCount;
 VkFormat swapChainImageFormat;
 VkExtent2D swapChainExtent;
 VkImageView *swapChainImageViews;
+VkRenderPass renderPass;
+VkPipelineLayout pipelineLayout;
+VkPipeline graphicsPipeline;
+VkFramebuffer *swapChainFramebuffers;
+VkCommandPool commandPool;
+VkCommandBuffer commandBuffer;
 
 /**
  * This function finds the indices of the queue families in QueueFamilyIndices.
@@ -68,7 +63,7 @@ static inline QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice pDevice) {
 }
 
 /**
- * Provides information about the physical device's support for swapchain.
+ * Provides information about the physical device's support for the swap chain.
  * @param pDevice The physical device to query for
  * @return A @c SwapChainSupportDetails struct
  */
@@ -142,7 +137,7 @@ static inline void CreateSurface(SDL_Window *window) {
  * Assuming I did it right, it will pick the best GPU available.
  * @see FindQueueFamilies
  */
-void PickPhysicalDevice() {
+static inline void PickPhysicalDevice() {
     unsigned int deviceCount = 0;
     vkEnumeratePhysicalDevices(instance, &deviceCount, NULL);
     if (deviceCount == 0) {
@@ -191,7 +186,7 @@ void PickPhysicalDevice() {
  * Creates the logical device that is used to interface with the physical device.
  * @see FindQueueFamilies
  */
-void CreateLogicalDevice() {
+static inline void CreateLogicalDevice() {
     float queuePriority = 1;
     unsigned int queueCount = 1;
     VkDeviceQueueCreateInfo queueCreateInfo[2];
@@ -214,6 +209,7 @@ void CreateLogicalDevice() {
         };
     }
     VkPhysicalDeviceFeatures deviceFeatures = {VK_FALSE};
+    deviceFeatures.logicOp = true;
     VkDeviceCreateInfo createInfo = {
             VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
             NULL,
@@ -237,22 +233,28 @@ void CreateLogicalDevice() {
     vkGetDeviceQueue(device, queueFamilyIndices.presentFamily, 0, &presentQueue);
 }
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "NullDereference"
-
-static inline VkSurfaceFormatKHR GetSwapSurfaceFormat(SwapChainSupportDetails details) {
-    for (unsigned int i = 0; i < details.formatCount; i++) {
-        VkSurfaceFormatKHR format = details.formats[i];
-        if (format.format == VK_FORMAT_B8G8R8A8_SRGB && format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
+/**
+ * A helper function used in @c CreateSwapChain used to find the color format for the surface to use.
+ * If found, the function will pick R8G8B8A8_SRGB, otherwise it will simply use the first format found.
+ * @return A @c VkSurfaceFormatKHR struct that contains the format.
+ */
+static inline VkSurfaceFormatKHR GetSwapSurfaceFormat() {
+    for (unsigned int i = 0; i < swapChainSupport.formatCount; i++) {
+        VkSurfaceFormatKHR format = swapChainSupport.formats[i];
+        if (format.format == VK_FORMAT_R8G8B8A8_SRGB && format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
             return format;
         }
     }
-    return details.formats[0];
+    return swapChainSupport.formats[0];
 }
 
-static inline VkPresentModeKHR GetSwapPresentMode(SwapChainSupportDetails details) {
-    for (unsigned int i = 0; i < details.presentModeCount; i++) {
-        VkPresentModeKHR presentMode = details.presentMode[i];
+/**
+ * A helper function used in @c CreateSwapChain used to find the present mode for the surface to use.
+ * @return The best present mode available
+ */
+static inline VkPresentModeKHR GetSwapPresentMode() {
+    for (unsigned int i = 0; i < swapChainSupport.presentModeCount; i++) {
+        VkPresentModeKHR presentMode = swapChainSupport.presentMode[i];
         if (presentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
             return presentMode;
         }
@@ -260,12 +262,9 @@ static inline VkPresentModeKHR GetSwapPresentMode(SwapChainSupportDetails detail
     return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-#pragma clang diagnostic pop
-
 static inline void CreateSwapChain() {
-    VkSurfaceFormatKHR surfaceFormat = GetSwapSurfaceFormat(swapChainSupport);
-    VkPresentModeKHR presentMode = GetSwapPresentMode(swapChainSupport);
-
+    VkSurfaceFormatKHR surfaceFormat = GetSwapSurfaceFormat();
+    VkPresentModeKHR presentMode = GetSwapPresentMode();
     unsigned int imageCount = swapChainSupport.capabilities.minImageCount + 1;
     if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount) {
         imageCount = swapChainSupport.capabilities.maxImageCount;
@@ -301,15 +300,15 @@ static inline void CreateSwapChain() {
     }
     vkGetSwapchainImagesKHR(device, swapChain, &imageCount, NULL);
     swapChainImages = malloc(sizeof(VkImage *) * imageCount);
-    swapChainImageCount = imageCount;
+    swapChainCount = imageCount;
     vkGetSwapchainImagesKHR(device, swapChain, &imageCount, swapChainImages);
     swapChainImageFormat = surfaceFormat.format;
     swapChainExtent = swapChainSupport.capabilities.currentExtent;
 }
 
 static inline void CreateImageViews() {
-    swapChainImageViews = malloc(sizeof(VkImageView *) * swapChainImageCount);
-    for (unsigned int i = 0; i < swapChainImageCount; i++) {
+    swapChainImageViews = malloc(sizeof(VkImageView *) * swapChainCount);
+    for (unsigned int i = 0; i < swapChainCount; i++) {
         VkImageViewCreateInfo createInfo = {
                 VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
                 NULL,
@@ -332,6 +331,307 @@ static inline void CreateImageViews() {
     }
 }
 
+static inline VkShaderModule CreateShaderModule(const unsigned int *code, unsigned long long size) {
+    VkShaderModuleCreateInfo createInfo = {
+            VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
+            NULL,
+            0,
+            size - 16,
+            code
+    };
+    VkShaderModule shaderModule;
+    if (vkCreateShaderModule(device, &createInfo, NULL, &shaderModule) != VK_SUCCESS) {
+        Error("Failed to create shader module!");
+    }
+    return shaderModule;
+}
+
+static inline void CreateRenderPass() {
+    VkAttachmentDescription colorAttachment = {
+            0,
+            swapChainImageFormat,
+            VK_SAMPLE_COUNT_1_BIT,
+            VK_ATTACHMENT_LOAD_OP_CLEAR,
+            VK_ATTACHMENT_STORE_OP_STORE,
+            VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+            VK_ATTACHMENT_STORE_OP_DONT_CARE,
+            VK_IMAGE_LAYOUT_UNDEFINED,
+            VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+    };
+    VkAttachmentReference colorAttachmentRef = {
+            0,
+            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+    };
+    VkSubpassDescription subpass = {
+            0,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            0,
+            NULL,
+            1,
+            &colorAttachmentRef,
+            NULL,
+            NULL,
+            0,
+            NULL
+    };
+    VkRenderPassCreateInfo renderPassInfo = {
+            VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+            NULL,
+            0,
+            1,
+            &colorAttachment,
+            1,
+            &subpass,
+            0,
+            NULL
+    };
+    if (vkCreateRenderPass(device, &renderPassInfo, NULL, &renderPass) != VK_SUCCESS) {
+        Error("Failed to create Vulkan render pass!");
+    }
+}
+
+static inline void CreateGraphicsPipeline() {
+    unsigned char *vertShaderCode = DecompressAsset(gzvert_shader_basic);
+    unsigned char *fragShaderCode = DecompressAsset(gzfrag_shader_basic);
+    VkShaderModule vertShaderModule = CreateShaderModule((unsigned int *) vertShaderCode,
+                                                         AssetGetSize(gzvert_shader_basic));
+    VkShaderModule fragShaderModule = CreateShaderModule((unsigned int *) fragShaderCode,
+                                                         AssetGetSize(gzfrag_shader_basic));
+    VkPipelineShaderStageCreateInfo vertShaderStageInfo = {
+            VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+            NULL,
+            0,
+            VK_SHADER_STAGE_VERTEX_BIT,
+            vertShaderModule,
+            "main",
+            NULL
+    };
+    VkPipelineShaderStageCreateInfo fragShaderStageInfo = {
+            VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+            NULL,
+            0,
+            VK_SHADER_STAGE_FRAGMENT_BIT,
+            fragShaderModule,
+            "main",
+            NULL
+    };
+    VkPipelineShaderStageCreateInfo shaderStages[2] = {vertShaderStageInfo, fragShaderStageInfo};
+    VkPipelineVertexInputStateCreateInfo vertexInputInfo = {
+            VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
+            NULL,
+            0,
+            0,
+            NULL,
+            0,
+            NULL
+    };
+    VkPipelineInputAssemblyStateCreateInfo inputAssembly = {
+            VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
+            NULL,
+            0,
+            VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
+            VK_FALSE
+    };
+    VkPipelineViewportStateCreateInfo viewportState = {
+            VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
+            NULL,
+            0,
+            1,
+            NULL,
+            1,
+            NULL
+    };
+    VkPipelineRasterizationStateCreateInfo rasterizer = {
+            VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
+            NULL,
+            0,
+            VK_FALSE,
+            VK_FALSE,
+            VK_POLYGON_MODE_FILL,
+            VK_CULL_MODE_BACK_BIT,
+            VK_FRONT_FACE_CLOCKWISE,
+            VK_FALSE,
+            0,
+            0,
+            0,
+            1
+    };
+    VkPipelineMultisampleStateCreateInfo multisampling = {
+            VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
+            NULL,
+            0,
+            VK_SAMPLE_COUNT_1_BIT,
+            VK_FALSE,
+            1,
+            NULL,
+            VK_FALSE,
+            VK_FALSE
+    };
+    VkPipelineColorBlendAttachmentState colorBlendAttachment = {
+            VK_TRUE,
+            VK_BLEND_FACTOR_SRC_ALPHA,
+            VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+            VK_BLEND_OP_ADD,
+            VK_BLEND_FACTOR_ONE,
+            VK_BLEND_FACTOR_ZERO,
+            VK_BLEND_OP_ADD,
+            VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT
+    };
+    VkPipelineColorBlendStateCreateInfo colorBlending = {
+            VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
+            NULL,
+            0,
+            VK_TRUE,
+            VK_LOGIC_OP_COPY,
+            1,
+            &colorBlendAttachment,
+            {0, 0, 0, 0}
+    };
+#define dynamicStateCount 2 // Yes, this is somewhat cursed, but if I used a const instead of a #define it makes dynamicStates become a dynamic length array
+    VkDynamicState dynamicStates[dynamicStateCount] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
+    VkPipelineDynamicStateCreateInfo dynamicState = {
+            VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
+            NULL,
+            0,
+            dynamicStateCount,
+            dynamicStates
+    };
+    VkPipelineLayoutCreateInfo pipelineLayoutInfo = {
+            VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+            NULL,
+            0,
+            0,
+            NULL,
+            0,
+            NULL
+    };
+    if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, NULL, &pipelineLayout) != VK_SUCCESS) {
+        Error("Failed to create pipeline layout!");
+    }
+
+    VkGraphicsPipelineCreateInfo pipelineInfo = {
+            VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
+            NULL,
+            0,
+            2,
+            shaderStages,
+            &vertexInputInfo,
+            &inputAssembly,
+            NULL,
+            &viewportState,
+            &rasterizer,
+            &multisampling,
+            NULL,
+            &colorBlending,
+            &dynamicState,
+            pipelineLayout,
+            renderPass,
+            0,
+            VK_NULL_HANDLE,
+            -1
+    };
+    if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, NULL, &graphicsPipeline) != VK_SUCCESS) {
+        Error("Failed to create graphics pipeline!");
+    }
+    vkDestroyShaderModule(device, vertShaderModule, NULL);
+    vkDestroyShaderModule(device, fragShaderModule, NULL);
+}
+
+static inline void CreateFramebuffers() {
+    swapChainFramebuffers = malloc(sizeof(VkFramebuffer *) * swapChainCount);
+    for (unsigned int i = 0; i < swapChainCount; i++) {
+        VkImageView attachments[] = {swapChainImageViews[i]};
+        VkFramebufferCreateInfo framebufferInfo = {
+                VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+                NULL,
+                0,
+                renderPass,
+                1,
+                attachments,
+                swapChainExtent.width,
+                swapChainExtent.height,
+                1
+        };
+        if (vkCreateFramebuffer(device, &framebufferInfo, NULL, &swapChainFramebuffers[i]) != VK_SUCCESS) {
+            Error("Failed to create Vulkan framebuffer!");
+        }
+    }
+}
+
+static inline void CreateCommandPool() {
+    VkCommandPoolCreateInfo poolInfo = {
+            VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+            NULL,
+            VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
+            queueFamilyIndices.graphicsFamily
+    };
+    if (vkCreateCommandPool(device, &poolInfo, NULL, &commandPool) != VK_SUCCESS) {
+        Error("Failed to create Vulkan command pool!");
+    }
+}
+
+static inline void CreateCommandBuffer() {
+    VkCommandBufferAllocateInfo allocateInfo = {
+            VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+            NULL,
+            commandPool,
+            VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+            1
+    };
+    if (vkAllocateCommandBuffers(device, &allocateInfo, &commandBuffer) != VK_SUCCESS) {
+        Error("Failed to allocate Vulkan command buffers!");
+    }
+}
+
+static inline void RecordCommandBuffer(VkCommandBuffer buffer, unsigned int imageIndex) {
+    VkCommandBufferBeginInfo beginInfo = {
+            VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+            NULL,
+            0,
+            NULL
+    };
+    if (vkBeginCommandBuffer(buffer, &beginInfo) != VK_SUCCESS) {
+        Error("Failed to begin recording Vulkan command buffer!");
+    }
+    VkClearValue clearColor = {{{0, 0, 0}}};
+    VkRenderPassBeginInfo renderPassInfo = {
+            VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+            NULL,
+            renderPass,
+            swapChainFramebuffers[imageIndex],
+            {
+                    {0, 0},
+                    swapChainExtent
+            },
+            1,
+            &clearColor
+    };
+    vkCmdBeginRenderPass(buffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdBindPipeline(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+    VkViewport viewport = {
+            0,
+            0,
+            (float) swapChainExtent.width,
+            (float) swapChainExtent.height,
+            0,
+            1
+    };
+    vkCmdSetViewport(buffer, 0, 1, &viewport);
+    VkRect2D scissor = {
+            {
+                    0,
+                    0
+            },
+            swapChainExtent
+    };
+    vkCmdSetScissor(buffer, 0, 1, &scissor);
+    vkCmdDraw(buffer, 3, 1, 0, 0);
+    vkCmdEndRenderPass(buffer);
+    if (vkEndCommandBuffer(buffer) != VK_SUCCESS) {
+        Error("Failed to record the Vulkan command buffer!");
+    }
+}
+
 /**
  * This function is used to to create the Vulkan instance and surface, as well as configuring the environment properly.
  * This function (and the functions it calls) do NOT perform any drawing, though the framebuffers are initialized here.
@@ -347,11 +647,23 @@ void InitVulkan(SDL_Window *window) {
     CreateLogicalDevice();
     CreateSwapChain();
     CreateImageViews();
+    CreateRenderPass();
+    CreateGraphicsPipeline();
+    CreateFramebuffers();
+    CreateCommandPool();
+    CreateCommandBuffer();
 }
 
 /// A function used to destroy the Vulkan objects when they are no longer needed.
 void CleanupVulkan() {
-    for (unsigned int i = 0; i < swapChainImageCount; i++) {
+    vkDestroyCommandPool(device, commandPool, NULL);
+    for (unsigned int i = 0; i < swapChainCount; i++) {
+        vkDestroyFramebuffer(device, swapChainFramebuffers[i], NULL);
+    }
+    vkDestroyPipeline(device, graphicsPipeline, NULL);
+    vkDestroyPipelineLayout(device, pipelineLayout, NULL);
+    vkDestroyRenderPass(device, renderPass, NULL);
+    for (unsigned int i = 0; i < swapChainCount; i++) {
         vkDestroyImageView(device, swapChainImageViews[i], NULL);
     }
     vkDestroySwapchainKHR(device, swapChain, NULL);
@@ -361,11 +673,11 @@ void CleanupVulkan() {
 }
 
 /// Gets a pointer to the Vulkan instance
-VkInstance *GetVulkanInstance() {
-    return &instance;
+VkInstance GetVulkanInstance() {
+    return instance;
 }
 
 /// Gets a pointer to the Vulkan surface
-VkSurfaceKHR *GetVulkanSurface() {
-    return &surface;
+VkSurfaceKHR GetVulkanSurface() {
+    return surface;
 }

@@ -90,7 +90,7 @@ void GMainStateUpdate() {
     }
 }
 
-void GMainStateRender(VkInstance* instance, VkSurfaceKHR* surface) {
+void GMainStateRender(VkInstance instance, VkSurfaceKHR surface) {
     Level *l = GetState()->level;
 
     byte *sc = getColorUint(l->SkyColor);

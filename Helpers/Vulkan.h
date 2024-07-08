@@ -18,10 +18,24 @@
  */
 #define VALIDATION_ENABLE
 
+typedef struct {
+    unsigned int graphicsFamily;
+    unsigned int presentFamily;
+} QueueFamilyIndices;
+
+typedef struct {
+    unsigned int formatCount;
+    VkSurfaceFormatKHR *formats;
+    unsigned int presentModeCount;
+    VkPresentModeKHR *presentMode;
+    VkSurfaceCapabilitiesKHR capabilities;
+} SwapChainSupportDetails;
+
+
 void InitVulkan(SDL_Window *window);
 void CleanupVulkan();
 
-VkInstance* GetVulkanInstance();
-VkSurfaceKHR* GetVulkanSurface();
+VkInstance GetVulkanInstance();
+VkSurfaceKHR GetVulkanSurface();
 
 #endif //GAME_VULKAN_H

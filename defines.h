@@ -10,16 +10,17 @@
 #include <SDL_mixer.h>
 #include <SDL_vulkan.h>
 #include <vulkan/vulkan.h>
+#include <stdint.h>
 
 // "boolean"
 #define bool unsigned char // unsigned 8-bit integer (nonzero is true)
 #define true 1
 #define false 0
 
-#define byte unsigned char // unsigned 8-bit integer
-#define ushort unsigned short // unsigned 16-bit integer
-#define uint unsigned int // unsigned 32-bit integer
-#define ulong unsigned long // unsigned 64-bit integer
+#define byte uint8_t // unsigned 8-bit integer
+#define ushort uint16_t // unsigned 16-bit integer
+#define uint uint32_t // unsigned 32-bit integer
+#define ulong uint64_t // unsigned 64-bit integer
 
 #define NULLPTR NULL
 
@@ -73,7 +74,7 @@ typedef struct {
 typedef struct {
     Level *level;
     void (*UpdateGame)();
-    void (*RenderGame)(VkInstance* instance, VkSurfaceKHR* surface);
+    void (*RenderGame)(VkInstance instance, VkSurfaceKHR surface);
     int hp;
     int maxHp;
     int ammo;

@@ -70,7 +70,7 @@ void SetUpdateCallback(void (*UpdateGame)()) {
     state.UpdateGame = UpdateGame;
 }
 
-void SetRenderCallback(void (*RenderGame)(VkInstance* instance, VkSurfaceKHR* surface)) {
+void SetRenderCallback(void (*RenderGame)(VkInstance instance, VkSurfaceKHR surface)) {
     state.RenderGame = RenderGame;
 }
 
