@@ -24,6 +24,7 @@
 #pragma region Movement
 
 #define MOVE_SPEED 0.125 // Player movement speed
+#define SLOW_MOVE_SPEED 0.025 // Player movement speed when shift is held
 #define MOUSE_SENSITIVITY 100 // higher is less sensitive
 
 //#define KEYBOARD_ROTATION // Uncomment to enable keyboard rotation and disable mouse rotation
