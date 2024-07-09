@@ -21,7 +21,9 @@ int main(int argc, char *argv[]) {
 
     printf("Build time: %s at %s\n", __DATE__, __TIME__);
     printf("Version: %s\n", VERSION);
-
+#ifdef __LINUX__
+    setenv("SDL_VIDEODRIVER", "wayland", 1);
+#endif
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
         printf("SDL_Init Error: %s\n", SDL_GetError());
         return 1;
@@ -48,94 +50,97 @@ int main(int argc, char *argv[]) {
     SDL_Surface *icon = ToSDLSurface((const unsigned char *) gztex_interface_icon, FILTER_LINEAR);
     SDL_SetWindowIcon(w, icon);
 
-    SDL_Renderer *tr = SDL_CreateRenderer(GetWindow(), -1, SDL_RENDERER_ACCELERATED);
-    if (tr == NULL) {
-        SDL_DestroyWindow(GetWindow());
-        printf("SDL_CreateRenderer Error: %s\n", SDL_GetError());
-        SDL_Quit();
-        return 1;
-    }
-    SetRenderer(tr);
-    SetSignalHandler(); // catch exceptions in release mode
+    // SDL_Renderer *tr = SDL_CreateRenderer(GetWindow(), -1, SDL_RENDERER_ACCELERATED);
+    // if (tr == NULL) {
+    //     SDL_DestroyWindow(GetWindow());
+    //     printf("SDL_CreateRenderer Error: %s\n", SDL_GetError());
+    //     SDL_Quit();
+    //     return 1;
+    // }
+    // SetRenderer(tr);
+    // SetSignalHandler(); // catch exceptions in release mode
 
     printf("Initializing Engine\n");
-    InitCommonAssets();
-    InitState();
+    // InitCommonAssets();
+    // InitState();
 
-    ChangeLevelByID(STARTING_LEVEL);
+    // ChangeLevelByID(STARTING_LEVEL);
 
-    GMenuStateSet();
+    // GMenuStateSet();
 
     SDL_Event e;
     bool quit = false;
-    ulong frameStart, frameTime;
+    // ulong frameStart, frameTime;
 
     InitVulkan(w);
 
     while (!quit) {
-        frameStart = GetTimeNs();
+        // frameStart = GetTimeNs();
 
         while (SDL_PollEvent(&e) != 0) {
             if (e.type == SDL_QUIT) {
                 quit = 1;
-            } else if (e.type == SDL_KEYUP) {
-                SDL_Scancode scancode = e.key.keysym.scancode;
-                HandleKeyUp(scancode);
-            } else if (e.type == SDL_KEYDOWN) {
-                SDL_Scancode scancode = e.key.keysym.scancode;
-                HandleKeyDown(scancode);
-            } else if (e.type == SDL_MOUSEMOTION) {
-                HandleMouseMotion(e.motion.x, e.motion.y, e.motion.xrel, e.motion.yrel);
-            } else if (e.type == SDL_MOUSEBUTTONDOWN) {
-                HandleMouseDown(e.button.button);
-            } else if (e.type == SDL_MOUSEBUTTONUP) {
-                HandleMouseUp(e.button.button);
             }
+            // else if (e.type == SDL_KEYUP) {
+            //     SDL_Scancode scancode = e.key.keysym.scancode;
+            //     HandleKeyUp(scancode);
+            // } else if (e.type == SDL_KEYDOWN) {
+            //     SDL_Scancode scancode = e.key.keysym.scancode;
+            //     HandleKeyDown(scancode);
+            // } else if (e.type == SDL_MOUSEMOTION) {
+            //     HandleMouseMotion(e.motion.x, e.motion.y, e.motion.xrel, e.motion.yrel);
+            // } else if (e.type == SDL_MOUSEBUTTONDOWN) {
+            //     HandleMouseDown(e.button.button);
+            // } else if (e.type == SDL_MOUSEBUTTONUP) {
+            //     HandleMouseUp(e.button.button);
+            // }
         }
 
-        ResetDPrintYPos();
+        DrawFrame();
 
-        GlobalState *g = GetState();
+        // ResetDPrintYPos();
 
-#ifndef KEYBOARD_ROTATION
-        SDL_SetRelativeMouseMode(g->UpdateGame == GMainStateUpdate ? SDL_TRUE : SDL_FALSE);
-        // warp the mouse to the center of the screen if we are in the main game state
-        if (g->UpdateGame == GMainStateUpdate) {
-            SDL_WarpMouseInWindow(GetWindow(), WindowWidth() / 2, WindowHeight() / 2);
-        }
-#endif
+        // GlobalState *g = GetState();
 
-        g->UpdateGame();
+// #ifndef KEYBOARD_ROTATION
+//         SDL_SetRelativeMouseMode(g->UpdateGame == GMainStateUpdate ? SDL_TRUE : SDL_FALSE);
+//         // warp the mouse to the center of the screen if we are in the main game state
+//         if (g->UpdateGame == GMainStateUpdate) {
+//             SDL_WarpMouseInWindow(GetWindow(), WindowWidth() / 2, WindowHeight() / 2);
+//         }
+// #endif
 
-        g->RenderGame();
+        // g->UpdateGame();
+        //
+        // g->RenderGame();
 
-        FrameGraphDraw();
+        // FrameGraphDraw();
 
-        SDL_RenderPresent(GetRenderer());
+        // SDL_RenderPresent(GetRenderer());
 
-        UpdateInputStates();
-        g->frame++;
+        // UpdateInputStates();
+        // g->frame++;
 
-        if (g->requestExit) {
-            quit = true;
-        }
+        // if (g->requestExit) {
+        //     quit = true;
+        // }
 
-        frameTime = GetTimeNs() - frameStart;
-        FrameGraphUpdate(frameTime);
-        if (frameTime < TARGET_NS) {
-            ulong sleepTime = (TARGET_NS - frameTime) / 1000000;
-            SDL_Delay(sleepTime);
-        }
+        // frameTime = GetTimeNs() - frameStart;
+        // FrameGraphUpdate(frameTime);
+        // if (frameTime < TARGET_NS) {
+        //     ulong sleepTime = (TARGET_NS - frameTime) / 1000000;
+        //     SDL_Delay(sleepTime);
+        // }
 
     }
     printf("Destructing Engine\n");
-    DestroyGlobalState();
-    SDL_DestroyRenderer(GetRenderer());
-    SDL_DestroyWindow(GetWindow());
-    SDL_FreeSurface(icon);
-    InvalidateAssetCache(); // Free all assets
+    // DestroyGlobalState();
+    // SDL_DestroyRenderer(GetRenderer());
+    // InvalidateAssetCache(); // Free all assets
     vkDeviceWaitIdle(GetVulkanDevice());
     CleanupVulkan();
+    SDL_DestroyWindow(GetWindow());
+    SDL_FreeSurface(icon);
     SDL_Quit();
     return 0;
 }

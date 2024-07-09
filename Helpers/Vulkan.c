@@ -93,7 +93,7 @@ static inline SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice pDe
  * @see instance
  */
 static inline void CreateInstance(SDL_Window *window) {
-    unsigned int extensionCount = 0;
+    unsigned int extensionCount;
     SDL_Vulkan_GetInstanceExtensions(window, &extensionCount, NULL);
     const char *extensionNames[extensionCount];
     SDL_Vulkan_GetInstanceExtensions(window, &extensionCount, extensionNames);
@@ -266,9 +266,17 @@ static inline VkPresentModeKHR GetSwapPresentMode() {
     return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-static inline void CreateSwapChain() {
+static inline void CreateSwapChain(SDL_Window *window) {
     VkSurfaceFormatKHR surfaceFormat = GetSwapSurfaceFormat();
     VkPresentModeKHR presentMode = GetSwapPresentMode();
+    VkExtent2D extent = swapChainSupport.capabilities.currentExtent;
+    if (extent.width == UINT32_MAX || extent.height == UINT32_MAX)
+    {
+        int width, height;
+        SDL_Vulkan_GetDrawableSize(window, &width, &height);
+        extent.width = clamp(width, swapChainSupport.capabilities.minImageExtent.width, swapChainSupport.capabilities.maxImageExtent.width);
+        extent.height = clamp(height, swapChainSupport.capabilities.minImageExtent.height, swapChainSupport.capabilities.maxImageExtent.height);
+    }
     unsigned int imageCount = swapChainSupport.capabilities.minImageCount + 1;
     if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount) {
         imageCount = swapChainSupport.capabilities.maxImageCount;
@@ -281,7 +289,7 @@ static inline void CreateSwapChain() {
             imageCount,
             surfaceFormat.format,
             surfaceFormat.colorSpace,
-            swapChainSupport.capabilities.currentExtent,
+            extent,
             1,
             VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
             VK_SHARING_MODE_EXCLUSIVE,
@@ -307,7 +315,7 @@ static inline void CreateSwapChain() {
     swapChainCount = imageCount;
     vkGetSwapchainImagesKHR(device, swapChain, &imageCount, swapChainImages);
     swapChainImageFormat = surfaceFormat.format;
-    swapChainExtent = swapChainSupport.capabilities.currentExtent;
+    swapChainExtent = extent;
 }
 
 static inline void CreateImageViews() {
@@ -683,7 +691,7 @@ void InitVulkan(SDL_Window *window) {
     CreateSurface(window);
     PickPhysicalDevice();
     CreateLogicalDevice();
-    CreateSwapChain();
+    CreateSwapChain(window);
     CreateImageViews();
     CreateRenderPass();
     CreateGraphicsPipeline();

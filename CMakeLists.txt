@@ -57,7 +57,7 @@ add_executable(game main.c Helpers/Input.h Helpers/Input.c defines.h Helpers/Dra
 )
 
 if (UNIX)
-    target_link_libraries(game ${SDL2_LIBRARY} ${ZLIB_LIBRARIES} ${SDL2_MIXER_LIBRARY} m SDL2 SDL2_mixer z) # extra l* flags are needed on Linux
+    target_link_libraries(game ${SDL2_LIBRARY} ${ZLIB_LIBRARIES} ${SDL2_MIXER_LIBRARY} ${Vulkan_LIBRARIES} m SDL2 SDL2_mixer z) # extra l* flags are needed on Linux
 elseif (WIN32)
     target_link_libraries(game PRIVATE ${SDL2_LIBRARY} ${ZLIB_LIBRARIES} ${SDL2_MIXER_LIBRARY} ${Vulkan_LIBRARIES}) # Don't pass extra l* flags on Windows (it isn't happy with them)
 endif ()

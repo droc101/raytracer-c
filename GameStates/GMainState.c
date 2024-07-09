@@ -12,7 +12,7 @@
 #include "../Helpers/Collision.h"
 #include "GPauseState.h"
 #include "GEditorState.h"
-#include "../helpers/Vulkan.h"
+#include "../Helpers/Vulkan.h"
 
 void GMainStateUpdate() {
     return;
