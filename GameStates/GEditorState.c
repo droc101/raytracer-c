@@ -125,7 +125,7 @@ Level* NodesToLevel() {
                 break;
             }
             case NODE_WALL_A: {
-                Wall *w = CreateWall(node->position, vec2(0, 0), node->extra, node->extra2);
+                Wall *w = CreateWall(node->position, vec2(0, 0), node->extra, node->extra2, 1.0);
                 ListAdd(l->walls, w);
                 break;
             }

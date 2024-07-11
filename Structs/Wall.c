@@ -17,7 +17,9 @@ const byte *wallTextures[] = {
         gztex_actor_monster1,
         gztex_actor_monster2,
         gztex_actor_monster3,
-        gztex_actor_key
+        gztex_actor_key,
+        gztex_actor_coin,
+        gztex_actor_bluecoin
 };
 
 int GetTextureCount() {
@@ -28,13 +30,14 @@ SDL_Texture *LoadWallTexture(int index) {
     return ToSDLTexture(wallTextures[index], FILTER_NEAREST);
 }
 
-Wall *CreateWall(Vector2 a, Vector2 b, uint tex, float uvScale) {
+Wall *CreateWall(Vector2 a, Vector2 b, uint tex, float uvScale, float uvOffset) {
     Wall *w = malloc(sizeof(Wall));
     w->a = a;
     w->b = b;
     w->tex = ToSDLTexture((const unsigned char *) wallTextures[tex], FILTER_NEAREST);
     w->texId = tex;
     w->uvScale = uvScale;
+    w->uvOffset = uvOffset;
     return w;
 }
 

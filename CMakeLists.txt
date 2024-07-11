@@ -49,6 +49,8 @@ add_executable(game main.c Helpers/Input.h Helpers/Input.c defines.h Helpers/Dra
         Helpers/LevelEntries.h
         Helpers/CommonAssets.c
         Helpers/CommonAssets.h
+        Actor/Coin.c
+        Actor/Coin.h
 )
 
 if (UNIX)

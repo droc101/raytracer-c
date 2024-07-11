@@ -12,6 +12,9 @@
 #include "../Helpers/Collision.h"
 #include "GPauseState.h"
 #include "GEditorState.h"
+#include "../Helpers/CommonAssets.h"
+#include <stdio.h>
+#include "../Helpers/Font.h"
 
 void GMainStateUpdate() {
     if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE)) {
@@ -107,6 +110,19 @@ void GMainStateRender() {
     Level *l = state->level;
 
     RenderLevel(l->position, l->rotation, state->FakeHeight);
+
+    SDL_Rect coinIconRect = {WindowWidth() - 200, 16, 40, 40};
+    SDL_RenderCopy(GetRenderer(), hudCoinTexture, NULL, &coinIconRect);
+
+    char coinStr[16];
+    sprintf(coinStr, "%d", state->coins);
+    FontDrawString(vec2(WindowWidth() - 150, 16), coinStr, 40, 0xFFFFFFFF, false);
+
+    coinIconRect.y += 48;
+    SDL_RenderCopy(GetRenderer(), hudBlueCoinTexture, NULL, &coinIconRect);
+
+    sprintf(coinStr, "%d", state->blueCoins);
+    FontDrawString(vec2(WindowWidth() - 150, 64), coinStr, 40, 0xFFFFFFFF, false);
 
     SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_NONE);
     DPrintF("Position: (%.2f, %.2f)\nRotation: %.4f (%.2fdeg)", 0xFFFFFFFF, false, l->position.x, l->position.y, l->rotation, radToDeg(l->rotation));

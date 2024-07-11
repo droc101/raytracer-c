@@ -13,6 +13,8 @@ extern SDL_Texture *skyTex;
 extern SDL_Texture *menu_bg_tex_red;
 extern SDL_Texture *fontTexture;
 extern SDL_Texture *smallFontTexture;
+extern SDL_Texture *hudCoinTexture;
+extern SDL_Texture *hudBlueCoinTexture;
 
 void InitCommonAssets();
 

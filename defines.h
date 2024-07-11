@@ -40,6 +40,7 @@ typedef struct {
     double dx;
     double dy;
     float uvScale;
+    float uvOffset;
 } Wall;
 
 // Utility functions are in Structs/level.h
@@ -76,6 +77,8 @@ typedef struct {
     int maxHp; // Player max health
     int ammo; // Player ammo
     int maxAmmo; // Player max ammo
+    int coins;
+    int blueCoins;
     ulong frame;
     bool requestExit;
     Mix_Music *music; // background music

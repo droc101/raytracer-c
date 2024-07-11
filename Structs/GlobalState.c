@@ -20,6 +20,8 @@ void InitState() {
     state.maxHp = 100;
     state.ammo = 100;
     state.maxAmmo = 100;
+    state.coins = 0;
+    state.blueCoins = 0;
     state.frame = 0;
     state.level = CreateLevel(); // empty level so we don't segfault
     state.requestExit = false;

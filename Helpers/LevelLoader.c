@@ -25,7 +25,7 @@ Level *LoadLevel(byte *data) {
                 float uvScale = ReadFloat(data, &i);
                 Vector2 va = vec2(v1, v2);
                 Vector2 vb = vec2(v3, v4);
-                Wall *w = CreateWall(va, vb, tid, uvScale);
+                Wall *w = CreateWall(va, vb, tid, uvScale, 0.0);
                 ListAdd(l->walls, w);
                 break;
             }

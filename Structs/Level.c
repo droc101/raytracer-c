@@ -109,7 +109,7 @@ void RenderCol(Level *l, int col, Vector2 position, double rotation) {
 
     double wallLength = raycast.CollisionWall.Length;
     double localX = Vector2Distance(raycast.CollisionWall.a, raycast.CollisionPoint);
-    double texCol = (localX / wallLength) * texW;
+    double texCol = (raycast.CollisionWall.uvOffset * texW) + ((localX / wallLength) * texW);
 
     texCol *= (wallLength * raycast.CollisionWall.uvScale);
     texCol = fmod(texCol, texW);
@@ -165,10 +165,13 @@ void RenderActorCol(Level *l, int col, Vector2 position, double rotation) {
 
     double wallLength = raycast.CollisionWall.Length;
     double localX = Vector2Distance(raycast.CollisionWall.a, raycast.CollisionPoint);
-    double texCol = (localX / raycast.CollisionWall.Length) * texW;
+    double texCol = (localX / wallLength);
 
     texCol *= (wallLength * raycast.CollisionWall.uvScale);
-    texCol = fmod(texCol, texW);
+
+    texCol += raycast.CollisionWall.uvOffset;
+
+    texCol *= texW;
 
     texCol = wrap(texCol, 0, texW - 1);
 

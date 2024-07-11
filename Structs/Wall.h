@@ -12,7 +12,7 @@ int GetTextureCount();
 SDL_Texture *LoadWallTexture(int index);
 
 // Create a wall with the given points and texture index
-Wall *CreateWall(Vector2 a, Vector2 b, uint tex, float uvScale);
+Wall *CreateWall(Vector2 a, Vector2 b, uint tex, float uvScale, float uvOffset);
 
 // Free the memory used by a wall (be warned, this also frees the texture)
 void FreeWall(Wall *w);
