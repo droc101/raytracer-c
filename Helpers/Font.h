@@ -10,7 +10,11 @@
 // Draw a string to the screen
 Vector2 FontDrawString(Vector2 pos, char* str, uint size, uint color, bool small);
 
+int StringLineCount(char *str);
+
 Vector2 MeasureText(char* str, uint size, bool small);
+
+void TextGetLine(char *str, int line, char *out);
 
 void DrawTextAligned(char* str, uint size, uint color, Vector2 rect_pos, Vector2 rect_size, byte h_align, byte v_align, bool small);
 

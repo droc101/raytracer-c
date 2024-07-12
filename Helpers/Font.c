@@ -110,6 +110,26 @@ int MeasureLine(char *str, int line) {
     return i;
 }
 
+void TextGetLine(char *str, int line, char *out) {
+    int start = MeasureLine(str, line);
+
+    // if the start is a newline, skip it
+    if (str[start] == '\n') {
+        start++;
+    }
+
+    int end = MeasureLine(str, line+1);
+
+    // ensure start is less than end
+    if (start > end) {
+        out[0] = '\0';
+        return;
+    }
+
+    strncpy(out, str + start, end - start);
+    out[end - start] = '\0';
+}
+
 void DrawTextAligned(char* str, uint size, uint color, Vector2 rect_pos, Vector2 rect_size, byte h_align, byte v_align, bool small) {
     int lines = StringLineCount(str);
     Vector2 textSize;
@@ -122,11 +142,8 @@ void DrawTextAligned(char* str, uint size, uint color, Vector2 rect_pos, Vector2
     }
 
     for (int i = 0; i < lines; i++) {
-        int lineStart = MeasureLine(str, i);
-        int lineEnd = MeasureLine(str, i+1);
         char line[256];
-        strncpy(line, str + lineStart, lineEnd - lineStart);
-        line[lineEnd - lineStart] = '\0';
+        TextGetLine(str, i, line);
         textSize = MeasureText(line, size, small);
         if (h_align == FONT_HALIGN_CENTER) {
             x = rect_pos.x + (rect_size.x - textSize.x) / 2;
@@ -136,7 +153,7 @@ void DrawTextAligned(char* str, uint size, uint color, Vector2 rect_pos, Vector2
             x = rect_pos.x;
         }
         FontDrawString(vec2(x, y), line, size, color, small);
-        if (i != 0) y += size; // why not the first line? who knows, but it breaks if you don't do this
+        y += size;
     }
 
 }

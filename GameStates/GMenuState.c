@@ -11,6 +11,7 @@
 #include "../Structs/GlobalState.h"
 #include "GLevelSelectState.h"
 #include "../Helpers/CommonAssets.h"
+#include "../Helpers/TextBox.h"
 
 //#define GMENUSTATE_WALL_DEBUG
 
