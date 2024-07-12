@@ -19,7 +19,11 @@
 uint ReadUint(byte *data, int *offset);
 uint ReadUintA(byte *data, int offset);
 
-// Load a level from bytecode
+/**
+ * Load a level from level bytecode
+ * @param data Level bytecode
+ * @return Level struct
+ */
 Level *LoadLevel(byte *data);
 
 typedef struct {
@@ -27,6 +31,11 @@ typedef struct {
     int size;
 } LevelBytecode;
 
+/**
+ * Generate level bytecode from a level struct
+ * @param l Level struct
+ * @return Bytecode struct
+ */
 LevelBytecode* GenerateBytecode(Level *l);
 
 #endif //GAME_LEVELLOADER_H

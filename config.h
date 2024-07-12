@@ -55,6 +55,9 @@
 #define COPYRIGHT "2024 Droc101 Development"
 #define GAME_TITLE "Game." // Used for window title
 
+#define APPDATA_ORG_NAME "Droc101 Development"
+#define APPDATA_APP_NAME "Game"
+
 // The level ID to load when pause exiting
 #define PAUSE_EXIT_LEVEL 2
 

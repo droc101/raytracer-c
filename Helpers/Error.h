@@ -13,11 +13,27 @@
 #define Error(error) _Error_Internal(error, "none", 0, "none")
 #endif
 
-// Print an error message on screen and lock up
+/**
+ * Internal error handler
+ * @param error Error message
+ * @param file File name
+ * @param line Line number
+ * @param function Function name
+ * @warning Do not use this function directly, use the Error macro instead
+ */
 _Noreturn void _Error_Internal(char* error, const char* file, int line, const char* function);
 
+/**
+ * Friendly error handler
+ * @param title Friendly title
+ * @param description Friendly description
+ */
 _Noreturn void FriendlyError(char* title, char* description);
 
+/**
+ * Sets the signal handler to catch @c SIGSEGV and @c SIGFPE
+ * @note This intentionally only functions in release mode
+ */
 void SetSignalHandler();
 
 #endif //GAME_ERROR_H

@@ -7,10 +7,20 @@
 
 #include "../defines.h"
 
-// Called to reset the Y position of the debug print (use only once at the start of the frame)
+/**
+ * Resets the DPrint Y position to the top of the screen
+ * @note Should only be called once at the start of the frame
+ */
 void ResetDPrintYPos();
 
 // Prints a string to the screen and optionally to the console (stdout) (uses printf style formatting)
+/**
+ * Prints a string to the screen and optionally to the console (stdout)
+ * @param str Format string
+ * @param color Text color
+ * @param con Whether to print to the console
+ * @param ... Parameters to be formatted
+ */
 void DPrintF(char *str, uint color, bool con, ...);
 
 #endif //GAME_DPRINT_H

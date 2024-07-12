@@ -7,14 +7,34 @@
 
 #include "../defines.h"
 
-// Get the **DECOMPRESSED** size of the asset
+/**
+ * Get the DECOMPRESSED size of the asset
+ * @param asset The compressed asset to get the size of
+ * @return The decompressed size of the asset, header included
+ * @note Subtract 16 bytes if you don't want the header
+ */
 uint AssetGetSize(const byte *asset);
 
+/**
+ * Get the type of the asset
+ * @param asset The asset to check the type of
+ * @return The asset's type
+ * @see ASSET_TYPE_* defines
+ */
 uint AssetGetType(const byte *asset);
 
-// Dangerous! If anything is still using the asset, it will almost certainly crash!
+/**
+ * Invalidate the asset cache
+ * @warning If anything still has a pointer to an asset, it will become invalid!
+ */
 void InvalidateAssetCache();
 
+/**
+ * Decompress an asset and cache it
+ * @param asset The asset to decompress
+ * @return Decompressed asset, including header
+ * @note The asset is cached
+ */
 byte *DecompressAsset(const byte *asset);
 
 #define ASSET_TYPE_TEXTURE 0

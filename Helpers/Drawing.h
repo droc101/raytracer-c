@@ -11,44 +11,111 @@
 #define FILTER_NEAREST "0" // pixelated texture (nearest neighbor)
 #define FILTER_LINEAR "1" // smooth texture (linear)
 
-// Set the renderer to draw to
+/**
+ * Set the renderer to draw to
+ * @param r The renderer to use
+ */
 void SetRenderer(SDL_Renderer *r);
 
-// Get the renderer to draw to
+/**
+ * Get the renderer to draw to
+ * @return the renderer
+ */
 SDL_Renderer *GetRenderer();
 
-// Set the window to draw to
+/**
+ * Set the main window
+ * @param w The window to use
+ */
 void SetWindow(SDL_Window *w);
 
-// Get the window to draw to
+/**
+ * Get the main window
+ * @return the window
+ */
 SDL_Window *GetWindow();
 
-// Get the window size
+/**
+ * Get the width of the window
+ * @return width of the window
+ */
 int WindowWidth();
+
+/**
+ * Get the height of the window
+ * @return height of the window
+ */
 int WindowHeight();
 
-// Draw a rectangle at the given position
+/**
+ * Draw a solid color rectangle
+ * @param x X position
+ * @param y Y position
+ * @param w Width
+ * @param h Height
+ * @note Call @c setColorUint before calling this function
+ */
 void draw_rect(int x, int y, int w, int h);
 
-// Convert a texture from Assets.h to an SDL_Texture
+/**
+ * Convert a texture asset to an SDL_Surface
+ * @param imageData Decompressed image data
+ * @param filterMode Texture filtering mode
+ * @return The @c SDL_Surface
+ */
 SDL_Surface* ToSDLSurface(const unsigned char* imageData, char *filterMode);
+
+/**
+ * Convert a texture asset to an SDL_Texture
+ * @param imageData Decompressed image data
+ * @param filterMode Texture filtering mode
+ * @return The @c SDL_Texture
+ */
 SDL_Texture* ToSDLTexture(const unsigned char* imageData, char *filterMode);
 
-// Get the size of a texture
+/**
+ * Get the size of a texture
+ * @param texture The texture to get the size of
+ * @return Size of the texture as an @c SDL_Point
+ */
 SDL_Point SDL_TextureSize(SDL_Texture *texture);
 
-// Draw a column of a texture to the screen (used in raycaster)
+/**
+ * Draw one column of a texture to the screen
+ * @param texture The texture to draw
+ * @param sx Source X position
+ * @param dx Destination X position
+ * @param dy Destination Y position
+ * @param dh Destination height
+ * @note Soruce = texture, Destination = screen
+ */
 void DrawTextureColumn(SDL_Texture* texture, int sx, int dx, int dy, int dh);
 
-// Set the renderer color from an uint
+/**
+ * Set the color to draw with
+ * @param color Color as uint, @c 0xAARRGGBB
+ */
 void setColorUint(uint color);
 
-// Split an uint into its color components
+/**
+ * Split a color into its components
+ * @param color Color as uint, @c 0xAARRGGBB
+ * @return Four byte array with the color components
+ */
 byte* getColorUint(uint color);
 
-// Get a screenshot of the current window
+/**
+ * Take a screenshot of the current window and return it as a texture
+ * @return window screenshot as a texture
+ */
 SDL_Texture *GetScreenshot();
 
+/**
+ * Mix two colors together
+ * @param color_a Color A
+ * @param color_b Color B
+ * @return Color A mixed with Color B
+ */
 uint MixColors(uint color_a, uint color_b);
 
 #endif //GAME_DRAWING_H

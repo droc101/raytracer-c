@@ -36,7 +36,9 @@ EditorMode CurrentEditorMode = EDITOR_MODE_MOVE;
 typedef struct {
     void *icon;
     char *text;
+
     void (*callback)();
+
     bool enabled;
     bool toggled;
     bool toggle_mode;
@@ -55,6 +57,7 @@ typedef struct {
     double altStep; // step when shift is held
     Vector2 position;
     Vector2 size;
+
     void (*callback)(double value);
 } EditorSlider;
 
@@ -95,9 +98,9 @@ byte level_skyR;
 byte level_skyG;
 byte level_skyB;
 
-SDL_Texture** editorWallTextures;
+SDL_Texture **editorWallTextures;
 
-Level* NodesToLevel() {
+Level *NodesToLevel() {
     Level *l = CreateLevel();
 
     l->FogColor = 0xFF << 24 | level_fogR << 16 | level_fogG << 8 | level_fogB;
@@ -140,7 +143,8 @@ Level* NodesToLevel() {
     return l;
 }
 
-void CreateSlider(char *label, double min, double max, double value, double step, double altStep, Vector2 position, Vector2 size, void (*callback)(double value)){
+void CreateSlider(char *label, double min, double max, double value, double step, double altStep, Vector2 position,
+                  Vector2 size, void (*callback)(double value)) {
     EditorSlider *slider = malloc(sizeof(EditorSlider));
     slider->label = label;
     slider->min = min;
@@ -162,19 +166,19 @@ void slider_setNodeRotation(double value) {
 
 void slider_setNodeExtra(double value) {
     EditorNode *node = ListGet(EditorNodes, EditorSelectedNode);
-    node->extra = (uint)value;
+    node->extra = (uint) value;
 }
 
 void slider_setFogR(double value) {
-    level_fogR = (byte)value;
+    level_fogR = (byte) value;
 }
 
 void slider_setFogG(double value) {
-    level_fogG = (byte)value;
+    level_fogG = (byte) value;
 }
 
 void slider_setFogB(double value) {
-    level_fogB = (byte)value;
+    level_fogB = (byte) value;
 }
 
 void slider_setFogStart(double value) {
@@ -186,27 +190,27 @@ void slider_setFogEnd(double value) {
 }
 
 void slider_setFloorR(double value) {
-    level_floorR = (byte)value;
+    level_floorR = (byte) value;
 }
 
 void slider_setFloorG(double value) {
-    level_floorG = (byte)value;
+    level_floorG = (byte) value;
 }
 
 void slider_setFloorB(double value) {
-    level_floorB = (byte)value;
+    level_floorB = (byte) value;
 }
 
 void slider_setSkyR(double value) {
-    level_skyR = (byte)value;
+    level_skyR = (byte) value;
 }
 
 void slider_setSkyG(double value) {
-    level_skyG = (byte)value;
+    level_skyG = (byte) value;
 }
 
 void slider_setSkyB(double value) {
-    level_skyB = (byte)value;
+    level_skyB = (byte) value;
 }
 
 void slider_setWallUv(double value) {
@@ -216,22 +220,22 @@ void slider_setWallUv(double value) {
 
 void slider_setActorParamA(double value) {
     EditorNode *node = ListGet(EditorNodes, EditorSelectedNode);
-    node->extra2 = (node->extra2 & 0x00FFFFFF) | ((byte)value << 24);
+    node->extra2 = (node->extra2 & 0x00FFFFFF) | ((byte) value << 24);
 }
 
 void slider_setActorParamB(double value) {
     EditorNode *node = ListGet(EditorNodes, EditorSelectedNode);
-    node->extra2 = (node->extra2 & 0xFF00FFFF) | ((byte)value << 16);
+    node->extra2 = (node->extra2 & 0xFF00FFFF) | ((byte) value << 16);
 }
 
 void slider_setActorParamC(double value) {
     EditorNode *node = ListGet(EditorNodes, EditorSelectedNode);
-    node->extra2 = (node->extra2 & 0xFFFF00FF) | ((byte)value << 8);
+    node->extra2 = (node->extra2 & 0xFFFF00FF) | ((byte) value << 8);
 }
 
 void slider_setActorParamD(double value) {
     EditorNode *node = ListGet(EditorNodes, EditorSelectedNode);
-    node->extra2 = (node->extra2 & 0xFFFFFF00) | (byte)value;
+    node->extra2 = (node->extra2 & 0xFFFFFF00) | (byte) value;
 }
 
 void GEditorStateUpdate() {
@@ -397,7 +401,8 @@ void GEditorStateUpdate() {
             case 0: {
                 if (IsMouseButtonJustPressed(SDL_BUTTON_LEFT)) {
                     Vector2 mousePos = GetMousePos();
-                    Vector2 worldPos = vec2((mousePos.x - EditorPanX) / EditorZoom, (mousePos.y - EditorPanY) / EditorZoom);
+                    Vector2 worldPos = vec2((mousePos.x - EditorPanX) / EditorZoom,
+                                            (mousePos.y - EditorPanY) / EditorZoom);
 
                     if (EditorSnapToGrid) {
                         worldPos.x = round(worldPos.x);
@@ -436,7 +441,8 @@ void GEditorStateUpdate() {
                     }
 
                     Vector2 mousePos = GetMousePos();
-                    Vector2 worldPos = vec2((mousePos.x - EditorPanX) / EditorZoom, (mousePos.y - EditorPanY) / EditorZoom);
+                    Vector2 worldPos = vec2((mousePos.x - EditorPanX) / EditorZoom,
+                                            (mousePos.y - EditorPanY) / EditorZoom);
 
                     if (EditorSnapToGrid) {
                         worldPos.x = round(worldPos.x);
@@ -454,7 +460,8 @@ void GEditorStateUpdate() {
                     EditorNode *node = malloc(sizeof(EditorNode));
                     node->type = NODE_ACTOR;
                     Vector2 mousePos = GetMousePos();
-                    Vector2 worldPos = vec2((mousePos.x - EditorPanX) / EditorZoom, (mousePos.y - EditorPanY) / EditorZoom);
+                    Vector2 worldPos = vec2((mousePos.x - EditorPanX) / EditorZoom,
+                                            (mousePos.y - EditorPanY) / EditorZoom);
 
                     if (EditorSnapToGrid) {
                         worldPos.x = round(worldPos.x);
@@ -494,18 +501,26 @@ void GEditorStateUpdate() {
         EditorNode *node = ListGet(EditorNodes, EditorSelectedNode);
         switch (node->type) {
             case NODE_PLAYER:
-                CreateSlider("ang", 0, 359, radToDeg(node->rotation), 1, 45, vec2(10, 250), vec2(200, 24), slider_setNodeRotation);
+                CreateSlider("ang", 0, 359, radToDeg(node->rotation), 1, 45, vec2(10, 250), vec2(200, 24),
+                             slider_setNodeRotation);
                 break;
             case NODE_ACTOR:
-                CreateSlider("ang", 0, 359, radToDeg(node->rotation), 1, 45, vec2(10, 250), vec2(200, 24), slider_setNodeRotation);
-                CreateSlider("Type", 0, GetActorTypeCount() - 1, node->extra, 1, 16, vec2(10, 300), vec2(200, 24), slider_setNodeExtra);
-                CreateSlider("Param A", 0, 255, (node->extra2 >> 24) & 0xFF, 1, 16, vec2(10, 350), vec2(200, 24), slider_setActorParamA);
-                CreateSlider("Param B", 0, 255, (node->extra2 >> 16) & 0xFF, 1, 16, vec2(10, 400), vec2(200, 24), slider_setActorParamB);
-                CreateSlider("Param C", 0, 255, (node->extra2 >> 8) & 0xFF, 1, 16, vec2(10, 450), vec2(200, 24), slider_setActorParamC);
-                CreateSlider("Param D", 0, 255, node->extra2 & 0xFF, 1, 16, vec2(10, 500), vec2(200, 24), slider_setActorParamD);
+                CreateSlider("ang", 0, 359, radToDeg(node->rotation), 1, 45, vec2(10, 250), vec2(200, 24),
+                             slider_setNodeRotation);
+                CreateSlider("Type", 0, GetActorTypeCount() - 1, node->extra, 1, 16, vec2(10, 300), vec2(200, 24),
+                             slider_setNodeExtra);
+                CreateSlider("Param A", 0, 255, (node->extra2 >> 24) & 0xFF, 1, 16, vec2(10, 350), vec2(200, 24),
+                             slider_setActorParamA);
+                CreateSlider("Param B", 0, 255, (node->extra2 >> 16) & 0xFF, 1, 16, vec2(10, 400), vec2(200, 24),
+                             slider_setActorParamB);
+                CreateSlider("Param C", 0, 255, (node->extra2 >> 8) & 0xFF, 1, 16, vec2(10, 450), vec2(200, 24),
+                             slider_setActorParamC);
+                CreateSlider("Param D", 0, 255, node->extra2 & 0xFF, 1, 16, vec2(10, 500), vec2(200, 24),
+                             slider_setActorParamD);
                 break;
             case NODE_WALL_A:
-                CreateSlider("Tex", 0, GetTextureCount() - 1, node->extra, 1, 16, vec2(10, 250), vec2(200, 24), slider_setNodeExtra);
+                CreateSlider("Tex", 0, GetTextureCount() - 1, node->extra, 1, 16, vec2(10, 250), vec2(200, 24),
+                             slider_setNodeExtra);
                 break;
             default:
                 break;
@@ -590,7 +605,8 @@ void DrawEditorSlider(EditorSlider *sld) {
         sprintf(buf, "%s: %.2f", sld->label, sld->value);
     }
 
-    DrawTextAligned(buf, 16, 0xFFFFFFFF, vec2(sld->position.x, sld->position.y), vec2(sld->size.x, 24), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
+    DrawTextAligned(buf, 16, 0xFFFFFFFF, vec2(sld->position.x, sld->position.y), vec2(sld->size.x, 24),
+                    FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
 }
 
 void GEditorStateRender() {
@@ -599,8 +615,8 @@ void GEditorStateRender() {
     SDL_RenderClear(GetRenderer());
 
     int gridSpacing = EditorZoom;
-    int gridOffsetX = (int)EditorPanX % gridSpacing;
-    int gridOffsetY = (int)EditorPanY % gridSpacing;
+    int gridOffsetX = (int) EditorPanX % gridSpacing;
+    int gridOffsetY = (int) EditorPanY % gridSpacing;
 
     setColorUint(0xFF808080);
     for (int x = gridOffsetX; x < WindowWidth(); x += gridSpacing) {
@@ -611,30 +627,32 @@ void GEditorStateRender() {
     }
 
     setColorUint(0xFF0000FF);
-    draw_rect((int)EditorPanX, 0, 1, WindowHeight());
+    draw_rect((int) EditorPanX, 0, 1, WindowHeight());
     setColorUint(0xFFFF0000);
-    draw_rect(0, (int)EditorPanY, WindowWidth(), 1);
+    draw_rect(0, (int) EditorPanY, WindowWidth(), 1);
 
     // draw world space numbers along bottom and right
     char buf[32];
     for (int x = gridOffsetX; x < WindowWidth(); x += gridSpacing) {
 
-        int worldSpaceX = (int)((x - EditorPanX) / EditorZoom);
+        int worldSpaceX = (int) ((x - EditorPanX) / EditorZoom);
 
         if (worldSpaceX % 5 != 0) {
             continue;
         }
         sprintf(buf, "%d", worldSpaceX);
-        DrawTextAligned(buf, 16, 0xFFFFFFFF, vec2(x-50, WindowHeight() - 25), vec2(100, 20), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, false);
+        DrawTextAligned(buf, 16, 0xFFFFFFFF, vec2(x - 50, WindowHeight() - 25), vec2(100, 20), FONT_HALIGN_CENTER,
+                        FONT_VALIGN_MIDDLE, false);
     }
     for (int y = gridOffsetY; y < WindowHeight(); y += gridSpacing) {
-        int worldSpaceY = (int)((y - EditorPanY) / EditorZoom);
+        int worldSpaceY = (int) ((y - EditorPanY) / EditorZoom);
 
         if (worldSpaceY % 5 != 0) {
             continue;
         }
         sprintf(buf, "%d", worldSpaceY);
-        DrawTextAligned(buf, 16, 0xFFFFFFFF, vec2(WindowWidth() - 110, y - 10), vec2(100, 20), FONT_HALIGN_RIGHT, FONT_VALIGN_MIDDLE, false);
+        DrawTextAligned(buf, 16, 0xFFFFFFFF, vec2(WindowWidth() - 110, y - 10), vec2(100, 20), FONT_HALIGN_RIGHT,
+                        FONT_VALIGN_MIDDLE, false);
     }
 
     double worldSpaceX = (WindowWidth() / 2 - EditorPanX) / EditorZoom;
@@ -646,11 +664,13 @@ void GEditorStateRender() {
     int hoveredNode = -1;
     for (int i = 0; i < EditorNodes->size; i++) {
         EditorNode *node = ListGet(EditorNodes, i);
-        Vector2 screenPos = vec2((node->position.x * EditorZoom) + EditorPanX, (node->position.y * EditorZoom) + EditorPanY);
+        Vector2 screenPos = vec2((node->position.x * EditorZoom) + EditorPanX,
+                                 (node->position.y * EditorZoom) + EditorPanY);
 
         if (node->type == NODE_WALL_A) { // Draw a line to the next node, which should be the wall's other end
             EditorNode *nodeB = ListGet(EditorNodes, i + 1);
-            Vector2 screenPosB = vec2((nodeB->position.x * EditorZoom) + EditorPanX, (nodeB->position.y * EditorZoom) + EditorPanY);
+            Vector2 screenPosB = vec2((nodeB->position.x * EditorZoom) + EditorPanX,
+                                      (nodeB->position.y * EditorZoom) + EditorPanY);
             setColorUint(0xFFFFFFFF);
             SDL_RenderDrawLine(GetRenderer(), screenPos.x, screenPos.y, screenPosB.x, screenPosB.y);
         }
@@ -700,18 +720,22 @@ void GEditorStateRender() {
 
     if (hoveredNode != -1) {
         EditorNode *node = ListGet(EditorNodes, hoveredNode);
-        Vector2 screenPos = vec2((node->position.x * EditorZoom) + EditorPanX, (node->position.y * EditorZoom) + EditorPanY);
+        Vector2 screenPos = vec2((node->position.x * EditorZoom) + EditorPanX,
+                                 (node->position.y * EditorZoom) + EditorPanY);
 
         char nodeInfo[96];
         switch (node->type) {
             case NODE_PLAYER:
-                sprintf(nodeInfo, "Player: %.2f, %.2f\nRotation: %.2f", node->position.x, node->position.y, radToDeg(node->rotation));
+                sprintf(nodeInfo, "Player: %.2f, %.2f\nRotation: %.2f", node->position.x, node->position.y,
+                        radToDeg(node->rotation));
                 break;
             case NODE_ACTOR:
-                sprintf(nodeInfo, "Actor: 0x%04x\nPosition: %.2f, %.2f\nRotation: %.2f", node->extra, node->position.x, node->position.y, radToDeg(node->rotation));
+                sprintf(nodeInfo, "Actor: 0x%04x\nPosition: %.2f, %.2f\nRotation: %.2f", node->extra, node->position.x,
+                        node->position.y, radToDeg(node->rotation));
                 break;
             case NODE_WALL_A:
-                sprintf(nodeInfo, "Wall (A): %.2f, %.2f\nTexture: 0x%04x", node->position.x, node->position.y, node->extra);
+                sprintf(nodeInfo, "Wall (A): %.2f, %.2f\nTexture: 0x%04x", node->position.x, node->position.y,
+                        node->extra);
                 break;
             case NODE_WALL_B:
                 sprintf(nodeInfo, "Wall (B): %.2f, %.2f", node->position.x, node->position.y);
@@ -755,7 +779,7 @@ void GEditorStateRender() {
     } else if (CurrentEditorMode == EDITOR_MODE_ADD) {
         EditorSlider *texSld = ListGet(EditorSliders, 1);
 
-        SDL_Texture *tex = editorWallTextures[(int)(texSld->value)];
+        SDL_Texture *tex = editorWallTextures[(int) (texSld->value)];
         if (tex != NULL) {
             SDL_Point texSize = SDL_TextureSize(tex);
             SDL_Rect src = {0, 0, texSize.x, texSize.y};
@@ -802,7 +826,8 @@ void BtnCopyBytecode() {
     buf[bc->size * 2] = '\0';
 
     SDL_SetClipboardText(buf);
-    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Bytecode copied", "The level bytecode has been copied to the clipboard.", NULL);
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Bytecode copied",
+                             "The level bytecode has been copied to the clipboard.", NULL);
 
     free(bc->data);
     free(bc);
@@ -902,7 +927,7 @@ void GEditorStateSet() {
 
         SetEditorMode(ListGet(EditorButtons, 1));
 
-        editorWallTextures = malloc(sizeof(SDL_Texture*) * GetTextureCount());
+        editorWallTextures = malloc(sizeof(SDL_Texture *) * GetTextureCount());
 
         for (int i = 0; i < GetTextureCount(); i++) {
             editorWallTextures[i] = LoadWallTexture(i);
@@ -934,7 +959,7 @@ void GEditorStateSet() {
     EditorNode *playerNode = malloc(sizeof(EditorNode));
     playerNode->type = NODE_PLAYER;
     playerNode->position = l->position;
-    playerNode->rotation = fmod(l->rotation, 2*PI);
+    playerNode->rotation = fmod(l->rotation, 2 * PI);
     ListAdd(EditorNodes, playerNode);
 
     // add a node for each actor
@@ -943,7 +968,7 @@ void GEditorStateSet() {
         EditorNode *actorNode = malloc(sizeof(EditorNode));
         actorNode->type = NODE_ACTOR;
         actorNode->position = a->position;
-        actorNode->rotation = fmod(a->rotation, 2*PI);
+        actorNode->rotation = fmod(a->rotation, 2 * PI);
         actorNode->index = i;
         actorNode->extra = a->actorType;
         uint extra2 = 0;

@@ -33,6 +33,11 @@ typedef struct {
 #define DEFINE_TEXT(text, rows, cols, x, y, h_align, v_align, theme) \
     {text, rows, cols, x, y, h_align, v_align, theme}
 
+/**
+ * Render a text box
+ * @param box The text box to render
+ * @param page Page number to render
+ */
 void TextBoxRender(TextBox box, int page);
 
 #endif //GAME_TEXTBOX_H

@@ -7,8 +7,16 @@
 
 #include "../defines.h"
 
+/**
+ * Get the time the program has been running in nanoseconds
+ * @return Time in nanoseconds
+ */
 ulong GetTimeNs();
 
+/**
+ * Get the time the program has been running in seconds
+ * @return Time in seconds
+ */
 ulong GetTimeS();
 
 #endif //GAME_TIMING_H
