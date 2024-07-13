@@ -7,6 +7,7 @@
 #include "Error.h"
 #include "../Structs/Actor.h"
 #include "DataReader.h"
+#include "../Helpers/CommonAssets.h"
 
 Level *LoadLevel(byte *data) {
     Level *l = CreateLevel();
@@ -25,7 +26,7 @@ Level *LoadLevel(byte *data) {
                 float uvScale = ReadFloat(data, &i);
                 Vector2 va = vec2(v1, v2);
                 Vector2 vb = vec2(v3, v4);
-                Wall *w = CreateWall(va, vb, tid, uvScale, 0.0);
+                Wall *w = CreateWall(va, vb, wallTextures[tid], uvScale, 0.0);
                 ListAdd(l->walls, w);
                 break;
             }
@@ -86,11 +87,14 @@ LevelBytecode* GenerateBytecode(Level *l) {
         Wall *w = ListGet(l->walls, j);
         data[i] = LEVEL_CMD_WALL;
         i++;
+
+        int wall_texID = FindWallTextureIndex(w->tex);
+
         WriteDouble(data, &i, w->a.x);
         WriteDouble(data, &i, w->a.y);
         WriteDouble(data, &i, w->b.x);
         WriteDouble(data, &i, w->b.y);
-        WriteUint(data, &i, w->texId);
+        WriteUint(data, &i, wall_texID);
         WriteFloat(data, &i, w->uvScale);
     }
     for (int j = 0; j < l->actors->size; j++) {

@@ -6,10 +6,11 @@
 #include "../Structs/Wall.h"
 #include "../Structs/Vector2.h"
 #include "../Helpers/Collision.h"
+#include "../Helpers/CommonAssets.h"
 
 void TestActorInit(Actor *this) {
     this->solid = true;
-    this->actorWall = CreateWall(vec2(-0.5, 0), vec2(0.5, 0), 3, 1.0, 0.0);
+    this->actorWall = CreateWall(vec2(-0.5, 0), vec2(0.5, 0), actorTextures[0], 1.0, 0.0);
 }
 
 void TestActorUpdate(Actor *this) {

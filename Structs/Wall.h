@@ -24,12 +24,12 @@ SDL_Texture *LoadWallTexture(int index);
  * Create a wall
  * @param a Wall start point
  * @param b Wall end point
- * @param tex Wall texture index
+ * @param tex Wall texture
  * @param uvScale Wall texture scale
  * @param uvOffset Wall texture offset
  * @return Wall pointer
  */
-Wall *CreateWall(Vector2 a, Vector2 b, uint tex, float uvScale, float uvOffset);
+Wall *CreateWall(Vector2 a, Vector2 b, SDL_Texture *tex, float uvScale, float uvOffset);
 
 /**
  * Free the memory used by a wall

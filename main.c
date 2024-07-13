@@ -102,9 +102,9 @@ int main(int argc, char *argv[]) {
         }
 #endif
 
-        g->UpdateGame();
+        g->UpdateGame(g);
 
-        g->RenderGame();
+        g->RenderGame(g);
 
         FrameGraphDraw();
 

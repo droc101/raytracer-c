@@ -17,7 +17,7 @@
 #include "../Helpers/Font.h"
 #include "../Helpers/TextBox.h"
 
-void GMainStateUpdate() {
+void GMainStateUpdate(GlobalState * State) {
     if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE)) {
         GPauseStateSet();
         return;
@@ -29,13 +29,13 @@ void GMainStateUpdate() {
     }
 #endif
 
-    Level *l = GetState()->level;
+    Level *l = State->level;
 
-    if (GetState()->textBoxActive) {
+    if (State->textBoxActive) {
         if (IsKeyJustPressed(SDL_SCANCODE_SPACE)) {
-            GetState()->textBoxPage++;
-            if (GetState()->textBoxPage >= GetState()->textBox.rows) {
-                GetState()->textBoxActive = false;
+            State->textBoxPage++;
+            if (State->textBoxPage >= State->textBox.rows) {
+                State->textBoxActive = false;
             }
         }
         return;
@@ -86,15 +86,15 @@ void GMainStateUpdate() {
     // view bobbing (scam edition) 💀
     if (spd == SLOW_MOVE_SPEED) {
         if (isMoving) {
-            GetState()->FakeHeight = sin(GetState()->frame / 7.0) * 10;
+            State->FakeHeight = sin(State->frame / 7.0) * 10;
         } else {
-            GetState()->FakeHeight = lerp(GetState()->FakeHeight, 0, 0.1); // NOLINT(*-narrowing-conversions)
+            State->FakeHeight = lerp(State->FakeHeight, 0, 0.1); // NOLINT(*-narrowing-conversions)
         }
     } else {
         if (isMoving) {
-            GetState()->FakeHeight = sin(GetState()->frame / 7.0) * 40;
+            State->FakeHeight = sin(State->frame / 7.0) * 40;
         } else {
-            GetState()->FakeHeight = lerp(GetState()->FakeHeight, 0, 0.1); // NOLINT(*-narrowing-conversions)
+            State->FakeHeight = lerp(State->FakeHeight, 0, 0.1); // NOLINT(*-narrowing-conversions)
         }
     }
 
@@ -120,29 +120,27 @@ void GMainStateUpdate() {
     }
 }
 
-void GMainStateRender() {
+void GMainStateRender(GlobalState* State) {
+    Level *l = State->level;
 
-    GlobalState *state = GetState();
-    Level *l = state->level;
-
-    RenderLevel(l->position, l->rotation, state->FakeHeight);
+    RenderLevel(l->position, l->rotation, State->FakeHeight);
 
     SDL_Rect coinIconRect = {WindowWidth() - 260, 16, 40, 40};
     SDL_RenderCopy(GetRenderer(), hudCoinTexture, NULL, &coinIconRect);
 
     char coinStr[16];
-    sprintf(coinStr, "%d", state->coins);
+    sprintf(coinStr, "%d", State->coins);
     FontDrawString(vec2(WindowWidth() - 210, 16), coinStr, 40, 0xFFFFFFFF, false);
 
     coinIconRect.y = 64;
 
-    for (int bc = 0; bc < state->blueCoins; bc++) {
+    for (int bc = 0; bc < State->blueCoins; bc++) {
         coinIconRect.x = WindowWidth() - 260 + (bc * 48);
         SDL_RenderCopy(GetRenderer(), hudBlueCoinTexture, NULL, &coinIconRect);
     }
 
-    if (state->textBoxActive) {
-        TextBoxRender(&(state->textBox), state->textBoxPage);
+    if (State->textBoxActive) {
+        TextBoxRender(&(State->textBox), State->textBoxPage);
     }
 
 

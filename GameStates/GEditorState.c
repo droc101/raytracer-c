@@ -14,6 +14,7 @@
 #include "../Structs/Actor.h"
 #include <math.h>
 #include "../Helpers/LevelLoader.h"
+#include "../Helpers/CommonAssets.h"
 
 double EditorZoom = 20.0;
 double EditorPanX = 0.0;
@@ -98,8 +99,6 @@ byte level_skyR;
 byte level_skyG;
 byte level_skyB;
 
-SDL_Texture **editorWallTextures;
-
 Level *NodesToLevel() {
     Level *l = CreateLevel();
 
@@ -128,7 +127,7 @@ Level *NodesToLevel() {
                 break;
             }
             case NODE_WALL_A: {
-                Wall *w = CreateWall(node->position, vec2(0, 0), node->extra, node->extra2, 1.0);
+                Wall *w = CreateWall(node->position, vec2(0, 0), wallTextures[node->extra], node->extra2, 1.0);
                 ListAdd(l->walls, w);
                 break;
             }
@@ -238,7 +237,7 @@ void slider_setActorParamD(double value) {
     node->extra2 = (node->extra2 & 0xFFFFFF00) | (byte) value;
 }
 
-void GEditorStateUpdate() {
+void GEditorStateUpdate(GlobalState* State) {
 #ifdef ENABLE_LEVEL_EDITOR
     if (IsKeyJustPressed(SDL_SCANCODE_F6)) {
         Level *l = NodesToLevel();
@@ -519,7 +518,7 @@ void GEditorStateUpdate() {
                              slider_setActorParamD);
                 break;
             case NODE_WALL_A:
-                CreateSlider("Tex", 0, GetTextureCount() - 1, node->extra, 1, 16, vec2(10, 250), vec2(200, 24),
+                CreateSlider("Tex", 0, WALL_TEXTURE_COUNT - 1, node->extra, 1, 16, vec2(10, 250), vec2(200, 24),
                              slider_setNodeExtra);
                 break;
             default:
@@ -609,7 +608,7 @@ void DrawEditorSlider(EditorSlider *sld) {
                     FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
 }
 
-void GEditorStateRender() {
+void GEditorStateRender(GlobalState* State) {
 #ifdef ENABLE_LEVEL_EDITOR
     setColorUint(0xFF123456);
     SDL_RenderClear(GetRenderer());
@@ -768,22 +767,24 @@ void GEditorStateRender() {
     if (CurrentEditorMode == EDITOR_MODE_PROPERTIES && EditorSelectedNode != -1) {
         EditorNode *node = ListGet(EditorNodes, EditorSelectedNode);
         if (node->type == NODE_WALL_A) {
-            SDL_Texture *tex = editorWallTextures[node->extra];
+            SDL_Texture *tex = wallTextures[node->extra];
             if (tex != NULL) {
                 SDL_Point texSize = SDL_TextureSize(tex);
                 SDL_Rect src = {0, 0, texSize.x, texSize.y};
                 SDL_Rect dst = {10, 310, 64, 64};
+                SDL_SetTextureColorMod(tex, 255, 255, 255);
                 SDL_RenderCopy(GetRenderer(), tex, &src, &dst);
             }
         }
     } else if (CurrentEditorMode == EDITOR_MODE_ADD) {
         EditorSlider *texSld = ListGet(EditorSliders, 1);
 
-        SDL_Texture *tex = editorWallTextures[(int) (texSld->value)];
+        SDL_Texture *tex = wallTextures[(int) (texSld->value)];
         if (tex != NULL) {
             SDL_Point texSize = SDL_TextureSize(tex);
             SDL_Rect src = {0, 0, texSize.x, texSize.y};
             SDL_Rect dst = {10, 360, 64, 64};
+            SDL_SetTextureColorMod(tex, 255, 255, 255);
             SDL_RenderCopy(GetRenderer(), tex, &src, &dst);
         }
     }
@@ -868,7 +869,7 @@ void SetEditorMode(EditorButton *btn) {
     if (strcmp(btn->text, "Add") == 0) {
         CurrentEditorMode = EDITOR_MODE_ADD;
         CreateSlider("Add Actor?", 0, 1, 0, 1, 1, vec2(10, 250), vec2(200, 24), NULL);
-        CreateSlider("Wall Tex", 0, GetTextureCount() - 1, 0, 1, 16, vec2(10, 300), vec2(200, 24), NULL);
+        CreateSlider("Wall Tex", 0, WALL_TEXTURE_COUNT - 1, 0, 1, 16, vec2(10, 300), vec2(200, 24), NULL);
     } else if (strcmp(btn->text, "Move") == 0) {
         EditorSelectedNode = -1;
         CurrentEditorMode = EDITOR_MODE_MOVE;
@@ -926,12 +927,6 @@ void GEditorStateSet() {
         CreateButton("Build", vec2(10, 182), vec2(80, 24), BtnCopyBytecode, true, false);
 
         SetEditorMode(ListGet(EditorButtons, 1));
-
-        editorWallTextures = malloc(sizeof(SDL_Texture *) * GetTextureCount());
-
-        for (int i = 0; i < GetTextureCount(); i++) {
-            editorWallTextures[i] = LoadWallTexture(i);
-        }
 
         EditorInitComplete = true;
     }

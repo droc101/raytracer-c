@@ -9,10 +9,11 @@
 #include "../Structs/GlobalState.h"
 #include <math.h>
 #include "../Structs/Level.h"
+#include "../Helpers/CommonAssets.h"
 
 void CoinInit(Actor *this) {
     this->solid = false;
-    this->actorWall = CreateWall(vec2(0, -0.5), vec2(0, 0.5), (this->paramB == 1) ? 11 : 10, 0.25, 0.0);
+    this->actorWall = CreateWall(vec2(0, -0.5), vec2(0, 0.5), (this->paramB == 1) ? actorTextures[8] : actorTextures[7], 0.25, 0.0);
     this->paramA = 0;
 }
 

@@ -16,7 +16,7 @@
 
 int GLevelSelectState_SelectedLevel = 0;
 
-void GLevelSelectStateUpdate() {
+void GLevelSelectStateUpdate(GlobalState * State) {
     if (IsKeyJustPressed(SDL_SCANCODE_DOWN)) {
         GLevelSelectState_SelectedLevel--;
         GLevelSelectState_SelectedLevel = wrap(GLevelSelectState_SelectedLevel, 0, LEVEL_COUNT);
@@ -34,7 +34,7 @@ void GLevelSelectStateUpdate() {
     }
 }
 
-void GLevelSelectStateRender() {
+void GLevelSelectStateRender(GlobalState * State) {
     setColorUint(0xFF123456);
     SDL_RenderClear(GetRenderer());
 

@@ -22,7 +22,7 @@ char pauseOptions[2][32] = {
 
 int pauseSelected = 0;
 
-void GPauseStateUpdate() {
+void GPauseStateUpdate(GlobalState * State) {
     if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE)) {
         PlaySoundEffect(gzwav_sfx_popdown);
         GMainStateSet();
@@ -55,11 +55,10 @@ void GPauseStateUpdate() {
     }
 }
 
-void GPauseStateRender() {
-    GlobalState *state = GetState();
-    Level *l = state->level;
+void GPauseStateRender(GlobalState* State) {
+    Level *l = State->level;
 
-    RenderLevel(l->position, l->rotation, state->FakeHeight);
+    RenderLevel(l->position, l->rotation, State->FakeHeight);
 
     SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_BLEND);
     setColorUint(0x80000000);
@@ -68,8 +67,8 @@ void GPauseStateRender() {
 
     DrawTextAligned("Game Paused", 32, 0xFFFFFFFF, vec2s(0), vec2(WindowWidth(), 250), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, false);
 
-    char *levelID = gLevelEntries[GetState()->levelID].displayName;
-    int cNum = gLevelEntries[GetState()->levelID].courseNum;
+    char *levelID = gLevelEntries[State->levelID].displayName;
+    int cNum = gLevelEntries[State->levelID].courseNum;
 
     if (cNum != -1) {
         char buf[64];

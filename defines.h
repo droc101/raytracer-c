@@ -86,8 +86,8 @@ typedef struct {
 // Global state of the game
 typedef struct {
     Level *level; // Current level
-    void (*UpdateGame)(); // State update function
-    void (*RenderGame)(); // State render function
+    void (*UpdateGame)(void* State); // State update function
+    void (*RenderGame)(void* State); // State render function
     int hp; // Player health
     int maxHp; // Player max health
     int ammo; // Player ammo

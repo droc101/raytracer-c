@@ -73,13 +73,13 @@ void UseAmmo(int amount) {
     }
 }
 
-void SetUpdateCallback(void (*UpdateGame)()) {
+void SetUpdateCallback(void (*UpdateGame)(GlobalState* State)) {
     state.frame = 0;
-    state.UpdateGame = UpdateGame;
+    state.UpdateGame = (void (*)(void *)) UpdateGame;
 }
 
-void SetRenderCallback(void (*RenderGame)()) {
-    state.RenderGame = RenderGame;
+void SetRenderCallback(void (*RenderGame)(GlobalState* State)) {
+    state.RenderGame = (void (*)(void *)) RenderGame;
 }
 
 const byte *music[] = {

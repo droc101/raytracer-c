@@ -10,7 +10,7 @@
 #include "../Structs/Level.h"
 
 // Don't call. Exposed for state checking.
-void GMainStateUpdate();
+void GMainStateUpdate(GlobalState* State);
 
 void GMainStateSet();
 

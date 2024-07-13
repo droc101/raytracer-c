@@ -49,12 +49,12 @@ void UseAmmo(int amount);
  * Set game state update callback
  * @param UpdateGame update callback
  */
-void SetUpdateCallback(void (*UpdateGame)());
+void SetUpdateCallback(void (*UpdateGame)(GlobalState* State));
 /**
  * Set game state render callback
  * @param RenderGame render callback
  */
-void SetRenderCallback(void (*RenderGame)());
+void SetRenderCallback(void (*RenderGame)(GlobalState* State));
 
 /**
  * Change the current level
