@@ -12,7 +12,7 @@
 
 void CoinInit(Actor *this) {
     this->solid = false;
-    this->actorWall = CreateWall(vec2(0, -0.5), vec2(0, 0.5), 10, 0.25, 0.0);
+    this->actorWall = CreateWall(vec2(0, -0.5), vec2(0, 0.5), (this->paramB == 1) ? 11 : 10, 0.25, 0.0);
     this->paramA = 0;
 }
 
@@ -28,9 +28,16 @@ void CoinUpdate(Actor *this) {
 
     Vector2 dir = Vector2Sub(GetState()->level->position, this->position);
     this->rotation = atan2(dir.y, dir.x);
+    this->rotation += PI;
 
     if (CollideActorCylinder(this, GetState()->level->position)) {
-        GetState()->coins++;
+        if (this->paramB == 0) {
+            GetState()->coins++;
+        } else {
+            GetState()->blueCoins++;
+            GetState()->coins += 5;
+
+        }
         RemoveActor(this);
     }
 }

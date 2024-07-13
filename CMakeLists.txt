@@ -53,6 +53,8 @@ add_executable(game main.c Helpers/Input.h Helpers/Input.c defines.h Helpers/Dra
         Actor/Coin.h
         Helpers/TextBox.c
         Helpers/TextBox.h
+        Actor/Goal.c
+        Actor/Goal.h
 )
 
 if (UNIX)

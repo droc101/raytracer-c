@@ -19,7 +19,9 @@ const byte *wallTextures[] = {
         gztex_actor_monster3,
         gztex_actor_key,
         gztex_actor_coin,
-        gztex_actor_bluecoin
+        gztex_actor_bluecoin,
+        gztex_actor_goal0,
+        gztex_actor_goal1,
 };
 
 int GetTextureCount() {

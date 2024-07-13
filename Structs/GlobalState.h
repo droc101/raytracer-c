@@ -13,6 +13,8 @@
  */
 void InitState();
 
+void ShowTextBox(TextBox tb);
+
 /**
  * Get the global state
  * @return the global state

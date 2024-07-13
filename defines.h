@@ -68,6 +68,21 @@ typedef struct {
     Wall CollisionWall;
 } RayCastResult;
 
+typedef struct {
+    char *text;
+    int rows;
+    int cols;
+    int x;
+    int y;
+
+    int h_align;
+    int v_align;
+
+    int theme;
+
+    void (*Close)(void *tbox);
+} TextBox;
+
 // Global state of the game
 typedef struct {
     Level *level; // Current level
@@ -85,6 +100,10 @@ typedef struct {
     Mix_Chunk *channels[SFX_CHANNEL_COUNT]; // sound effects
     double FakeHeight; // fake camera height for rendering
     int levelID;
+
+    bool textBoxActive;
+    TextBox textBox;
+    int textBoxPage;
 } GlobalState;
 
 // Actor (interactable/moving wall) struct

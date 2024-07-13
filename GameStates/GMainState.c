@@ -15,6 +15,7 @@
 #include "../Helpers/CommonAssets.h"
 #include <stdio.h>
 #include "../Helpers/Font.h"
+#include "../Helpers/TextBox.h"
 
 void GMainStateUpdate() {
     if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE)) {
@@ -29,6 +30,21 @@ void GMainStateUpdate() {
 #endif
 
     Level *l = GetState()->level;
+
+    if (GetState()->textBoxActive) {
+        if (IsKeyJustPressed(SDL_SCANCODE_SPACE)) {
+            GetState()->textBoxPage++;
+            if (GetState()->textBoxPage >= GetState()->textBox.rows) {
+                GetState()->textBoxActive = false;
+            }
+        }
+        return;
+    }
+
+    if (IsKeyJustPressed(SDL_SCANCODE_T)) {
+        TextBox tb = DEFINE_TEXT("TEXT BOX\n\nPAGE TWO", 2, 20, 0, 60, TEXT_BOX_H_ALIGN_CENTER, TEXT_BOX_V_ALIGN_TOP, TEXT_BOX_THEME_BLACK);
+        ShowTextBox(tb);
+    }
 
     Vector2 moveVec = vec2(0, 0);
     if (IsKeyPressed(SDL_SCANCODE_W)) {
@@ -111,18 +127,24 @@ void GMainStateRender() {
 
     RenderLevel(l->position, l->rotation, state->FakeHeight);
 
-    SDL_Rect coinIconRect = {WindowWidth() - 200, 16, 40, 40};
+    SDL_Rect coinIconRect = {WindowWidth() - 260, 16, 40, 40};
     SDL_RenderCopy(GetRenderer(), hudCoinTexture, NULL, &coinIconRect);
 
     char coinStr[16];
     sprintf(coinStr, "%d", state->coins);
-    FontDrawString(vec2(WindowWidth() - 150, 16), coinStr, 40, 0xFFFFFFFF, false);
+    FontDrawString(vec2(WindowWidth() - 210, 16), coinStr, 40, 0xFFFFFFFF, false);
 
-    coinIconRect.y += 48;
-    SDL_RenderCopy(GetRenderer(), hudBlueCoinTexture, NULL, &coinIconRect);
+    coinIconRect.y = 64;
 
-    sprintf(coinStr, "%d", state->blueCoins);
-    FontDrawString(vec2(WindowWidth() - 150, 64), coinStr, 40, 0xFFFFFFFF, false);
+    for (int bc = 0; bc < state->blueCoins; bc++) {
+        coinIconRect.x = WindowWidth() - 260 + (bc * 48);
+        SDL_RenderCopy(GetRenderer(), hudBlueCoinTexture, NULL, &coinIconRect);
+    }
+
+    if (state->textBoxActive) {
+        TextBoxRender(&(state->textBox), state->textBoxPage);
+    }
+
 
     SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_NONE);
     DPrintF("Position: (%.2f, %.2f)\nRotation: %.4f (%.2fdeg)", 0xFFFFFFFF, false, l->position.x, l->position.y, l->rotation, radToDeg(l->rotation));

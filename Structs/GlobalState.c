@@ -30,8 +30,15 @@ void InitState() {
         state.channels[i] = NULLPTR;
     }
     state.FakeHeight = 0;
+    state.textBoxActive = false;
     StopMusic();
     Mix_ChannelFinished(ChannelFinished);
+}
+
+void ShowTextBox(TextBox tb) {
+    state.textBox = tb;
+    state.textBoxPage = 0;
+    state.textBoxActive = true;
 }
 
 GlobalState *GetState() {
@@ -167,8 +174,9 @@ void DestroyGlobalState() {
 }
 
 void ChangeLevelByID(int id) {
+    GetState()->levelID = id;
+    GetState()->blueCoins = 0;
     void *levelData = DecompressAsset(gLevelEntries[id].levelData);
     Level *l = LoadLevel(levelData);
-    GetState()->levelID = id;
     ChangeLevel(l);
 }

@@ -5,18 +5,7 @@
 #ifndef GAME_TEXTBOX_H
 #define GAME_TEXTBOX_H
 
-typedef struct {
-    char *text;
-    int rows;
-    int cols;
-    int x;
-    int y;
-
-    int h_align;
-    int v_align;
-
-    int theme;
-} TextBox;
+#include "../defines.h"
 
 #define TEXT_BOX_H_ALIGN_LEFT 0
 #define TEXT_BOX_H_ALIGN_CENTER 1
@@ -38,6 +27,6 @@ typedef struct {
  * @param box The text box to render
  * @param page Page number to render
  */
-void TextBoxRender(TextBox box, int page);
+void TextBoxRender(TextBox *box, int page);
 
 #endif //GAME_TEXTBOX_H

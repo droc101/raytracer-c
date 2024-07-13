@@ -12,24 +12,29 @@ void ActorDestroy(Actor *this) {}
 
 #include "../Actor/TestActor.h"
 #include "../Actor/Coin.h"
+#include "../Actor/Goal.h"
 
 void(*ActorInitFuncs[])(Actor *) = {
         ActorInit,
         TestActorInit,
-        CoinInit
+        CoinInit,
+        GoalInit
 };
 void(*ActorUpdateFuncs[])(Actor *) = {
         ActorUpdate,
         TestActorUpdate,
-        CoinUpdate
+        CoinUpdate,
+        GoalUpdate
 };
 void(*ActorDestroyFuncs[])(Actor *) = {
         ActorDestroy,
         TestActorDestroy,
-        CoinDestroy
+        CoinDestroy,
+        GoalDestroy
 };
 
 int ActorHealths[] = {
+        1,
         1,
         1,
         1
