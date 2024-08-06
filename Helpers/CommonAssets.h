@@ -18,6 +18,7 @@ extern SDL_Texture *fontTexture;
 extern SDL_Texture *smallFontTexture;
 extern SDL_Texture *hudCoinTexture;
 extern SDL_Texture *hudBlueCoinTexture;
+extern SDL_Texture  *studioLogoTex;
 
 extern SDL_Texture *wallTextures[WALL_TEXTURE_COUNT];
 extern SDL_Texture *actorTextures[ACTOR_TEXTURE_COUNT];

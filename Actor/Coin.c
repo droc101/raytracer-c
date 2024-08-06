@@ -39,6 +39,7 @@ void CoinUpdate(Actor *this) {
             GetState()->coins += 5;
 
         }
+        PlaySoundEffect(gzwav_sfx_coincling);
         RemoveActor(this);
     }
 }

@@ -16,6 +16,8 @@ SDL_Texture *smallFontTexture;
 SDL_Texture *hudCoinTexture;
 SDL_Texture *hudBlueCoinTexture;
 
+SDL_Texture  *studioLogoTex;
+
 const byte *rawWallTextures[WALL_TEXTURE_COUNT] = {
         gztex_level_bricks,
         gztex_level_cross,
@@ -48,6 +50,7 @@ void InitCommonAssets() {
     smallFontTexture = ToSDLTexture((const unsigned char *) gztex_interface_small_fonts, FILTER_NEAREST);
     hudCoinTexture = ToSDLTexture((const unsigned char *) gztex_interface_hud_ycoin, FILTER_NEAREST);
     hudBlueCoinTexture = ToSDLTexture((const unsigned char *) gztex_interface_hud_bcoin, FILTER_NEAREST);
+    studioLogoTex = ToSDLTexture(gztex_interface_studio, FILTER_LINEAR);
 
     for (int i = 0; i < WALL_TEXTURE_COUNT; i++) {
         wallTextures[i] = ToSDLTexture(rawWallTextures[i], FILTER_NEAREST);

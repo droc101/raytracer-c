@@ -7,7 +7,7 @@
 #include "Helpers/Input.h"
 #include "Structs/Level.h"
 #include "Structs/GlobalState.h"
-#include "GameStates/GMenuState.h"
+#include "GameStates/GLogoSplashState.h"
 #include "Debug/FrameGrapher.h"
 #include "GameStates/GMainState.h"
 #include "Debug/DPrint.h"
@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
 
     ChangeLevelByID(STARTING_LEVEL);
 
-    GMenuStateSet();
+    GLogoSplashStateSet();
 
     SDL_Event e;
     bool quit = false;

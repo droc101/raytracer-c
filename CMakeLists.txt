@@ -55,6 +55,8 @@ add_executable(game main.c Helpers/Input.h Helpers/Input.c defines.h Helpers/Dra
         Helpers/TextBox.h
         Actor/Goal.c
         Actor/Goal.h
+        GameStates/GLogoSplashState.c
+        GameStates/GLogoSplashState.h
 )
 
 if (UNIX)
