@@ -7,6 +7,7 @@ Runs on Windows and Linux.
 and extract it to the root of the project as "SDL2".
 - Download [SDL2_Mixer 2.8.0 w64](https://github.com/libsdl-org/SDL_mixer/releases/download/release-2.8.0/SDL2_mixer-devel-2.8.0-mingw.zip) 
 and extract it to the root of the project as "SDL2_Mixer".
+- (**Windows Only**) Download [GLEW 2.2.0 w64](https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0-win32.zip) and extract it to the root of the project as "glew" (This just works™ on Linux, because Linux.)
 
 Make sure you have [FindSDL2.cmake](https://github.com/tcbrindle/sdl2-cmake-scripts/blob/master/FindSDL2.cmake) and [FindSDL2_mixer.cmake](https://github.com/tcbrindle/sdl2-cmake-scripts/blob/master/FindSDL2_mixer.cmake)
  in your CMake modules directory.
@@ -14,7 +15,7 @@ Make sure you have [FindSDL2.cmake](https://github.com/tcbrindle/sdl2-cmake-scri
 ### Notes
 On Windows, you'll need to copy `SDL2/x86_64-w64-mingw32/bin/SDL2.dll`, `SDL2_mixer/x86_64-w64-mingw32/bin/SDL2_mixer.dll`, and `zlib/bin/libzlib1.dll` into your output directory. 
 
-On Linux, you just need the sdl2, sdl2_mixer, and zlib shared libraries installed (refer to your specific distro for that)
+On Linux, you just need the sdl2, sdl2_mixer, glew, and zlib shared libraries installed (refer to your specific distro for that)
 
 ### Tested on
 - Windows 10 and 11
