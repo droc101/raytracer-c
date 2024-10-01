@@ -394,7 +394,7 @@ GL_DrawTexture_Internal(Vector2 pos, Vector2 size, const unsigned char *imageDat
     float g = ((color >> 8) & 0xFF) / 255.0f;
     float b = (color & 0xFF) / 255.0f;
 
-    glUniform4f(glGetUniformLocation(ui_colored->program, "col"), r, g, b, a);
+    glUniform4f(glGetUniformLocation(ui_textured->program, "col"), r, g, b, a);
 
     glUniform4f(glGetUniformLocation(ui_textured->program, "region"), region_start.x, region_start.y, region_end.x,
                 region_end.y);
