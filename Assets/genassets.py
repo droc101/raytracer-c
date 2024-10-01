@@ -23,9 +23,9 @@ def png_to_bytes(path):
     data += int_to_bytes(aid)  # Padding
 
     for pixel in img_dta:
-        data.append(pixel[2])
-        data.append(pixel[1])
         data.append(pixel[0])
+        data.append(pixel[1])
+        data.append(pixel[2])
         data.append(pixel[3])
 
     for i in range(0, len(data)):
@@ -228,6 +228,20 @@ def recursive_search(path):
                 print("Converting " + path + file)
                 data = file_to_bytes(path + file)
                 name = "gzbin_" + foldername + "_" + file.split(".")[0]
+                assets_c += bytes_to_c_array(data, name)
+                assets_h += c_header_array(name, len(data))
+            elif file.endswith(".fsh"):
+                count += 1
+                print("Converting " + path + file)
+                data = file_to_bytes(path + file)
+                name = "gzfsh_" + foldername + "_" + file.split(".")[0]
+                assets_c += bytes_to_c_array(data, name)
+                assets_h += c_header_array(name, len(data))
+            elif file.endswith(".vsh"):
+                count += 1
+                print("Converting " + path + file)
+                data = file_to_bytes(path + file)
+                name = "gzvsh_" + foldername + "_" + file.split(".")[0]
                 assets_c += bytes_to_c_array(data, name)
                 assets_h += c_header_array(name, len(data))
             else:

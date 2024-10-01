@@ -200,7 +200,7 @@ void RenderLevel(Vector2 camPos, double camRot, double fakeHeight) {
     Level *l = GetState()->level;
 
     byte *sc = getColorUint(l->SkyColor);
-    SDL_SetTextureColorMod(skyTex, sc[0], sc[1], sc[2]);
+    //SDL_SetTextureColorMod(skyTex, sc[0], sc[1], sc[2]);
     free(sc);
 
     const int skyPos = (int)(camRot * 128 / PI) % 256;
@@ -210,14 +210,16 @@ void RenderLevel(Vector2 camPos, double camRot, double fakeHeight) {
     SDL_Rect dest1 = {offset, 0, WindowWidth() * skyPos / 256, height};
     SDL_Rect src2 = {skyPos, 0, 256 - skyPos, 256};
     SDL_Rect dest2 = {0, 0, offset, height};
-    SDL_RenderCopy(GetRenderer(), skyTex, &src1, &dest1);
-    SDL_RenderCopy(GetRenderer(), skyTex, &src2, &dest2);
+    DrawTextureMod(vec2(0, 0), vec2(WindowWidth(), height), gztex_level_sky, *sc);
+    DrawTextureMod(vec2(0, height), vec2(WindowWidth(), height), gztex_level_sky, *sc);
+//    SDL_RenderCopy(GetRenderer(), skyTex, &src1, &dest1);
+//    SDL_RenderCopy(GetRenderer(), skyTex, &src2, &dest2);
 
     setColorUint(l->FloorColor);
     draw_rect(0, height, WindowWidth(), height);
 
 
-    SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_BLEND);
+    //SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_BLEND);
     for (int col = 0; col < WindowWidth(); col++) {
         RenderCol(l, col, camPos, camRot);
         RenderActorCol(l, col, camPos, camRot);

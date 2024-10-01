@@ -60,10 +60,10 @@ void GPauseStateRender(GlobalState* State) {
 
     RenderLevel(l->position, l->rotation, State->FakeHeight);
 
-    SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_BLEND);
+    //SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_BLEND);
     setColorUint(0x80000000);
     draw_rect(0, 0, WindowWidth(), WindowHeight());
-    SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_NONE);
+    //SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_NONE);
 
     DrawTextAligned("Game Paused", 32, 0xFFFFFFFF, vec2s(0), vec2(WindowWidth(), 250), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, false);
 

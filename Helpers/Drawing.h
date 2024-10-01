@@ -8,20 +8,20 @@
 #include "SDL.h"
 #include "../defines.h"
 
-#define FILTER_NEAREST "0" // pixelated texture (nearest neighbor)
-#define FILTER_LINEAR "1" // smooth texture (linear)
+//#define FILTER_NEAREST "0" // pixelated texture (nearest neighbor)
+//#define FILTER_LINEAR "1" // smooth texture (linear)
 
-/**
- * Set the renderer to draw to
- * @param r The renderer to use
- */
-void SetRenderer(SDL_Renderer *r);
-
-/**
- * Get the renderer to draw to
- * @return the renderer
- */
-SDL_Renderer *GetRenderer();
+///**
+// * Set the renderer to draw to
+// * @param r The renderer to use
+// */
+//void SetRenderer(SDL_Renderer *r);
+//
+///**
+// * Get the renderer to draw to
+// * @return the renderer
+// */
+//SDL_Renderer *GetRenderer();
 
 /**
  * Set the main window
@@ -117,5 +117,25 @@ SDL_Texture *GetScreenshot();
  * @return Color A mixed with Color B
  */
 uint MixColors(uint color_a, uint color_b);
+
+void SetTexParams(const unsigned char* imageData, bool linear, bool repeat);
+
+void DrawLine(Vector2 start, Vector2 end);
+
+void DrawTexture(Vector2 pos, Vector2 size, const unsigned char* imageData);
+
+void DrawTextureMod(Vector2 pos, Vector2 size, const unsigned char* imageData, uint color);
+
+void DrawTextureRegion(Vector2 pos, Vector2 size, const unsigned char* imageData, Vector2 region_start, Vector2 region_end);
+
+void DrawTextureRegionMod(Vector2 pos, Vector2 size, const unsigned char* imageData, Vector2 region_start, Vector2 region_end, uint color);
+
+void ClearColor(uint color);
+
+void ClearScreen();
+
+void ClearDepthOnly();
+
+void Swap();
 
 #endif //GAME_DRAWING_H

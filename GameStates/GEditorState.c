@@ -567,7 +567,7 @@ void DrawEditorButton(EditorButton *btn) {
 }
 
 void DrawEditorSlider(EditorSlider *sld) {
-    SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_BLEND);
+    //SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_BLEND);
 
     setColorUint(0x80000000);
     draw_rect(sld->position.x, sld->position.y, sld->size.x, sld->size.y);
@@ -611,7 +611,8 @@ void DrawEditorSlider(EditorSlider *sld) {
 void GEditorStateRender(GlobalState* State) {
 #ifdef ENABLE_LEVEL_EDITOR
     setColorUint(0xFF123456);
-    SDL_RenderClear(GetRenderer());
+    ClearColor(0xFF123456);
+    //SDL_RenderClear(GetRenderer());
 
     int gridSpacing = EditorZoom;
     int gridOffsetX = (int) EditorPanX % gridSpacing;
@@ -671,7 +672,8 @@ void GEditorStateRender(GlobalState* State) {
             Vector2 screenPosB = vec2((nodeB->position.x * EditorZoom) + EditorPanX,
                                       (nodeB->position.y * EditorZoom) + EditorPanY);
             setColorUint(0xFFFFFFFF);
-            SDL_RenderDrawLine(GetRenderer(), screenPos.x, screenPos.y, screenPosB.x, screenPosB.y);
+            DrawLine(vec2(screenPos.x, screenPos.y), vec2(screenPosB.x, screenPosB.y));
+            //SDL_RenderDrawLine(GetRenderer(), screenPos.x, screenPos.y, screenPosB.x, screenPosB.y);
         }
 
         uint color = 0;
@@ -713,7 +715,8 @@ void GEditorStateRender(GlobalState* State) {
         // for player and actor nodes, draw a line indicating rotation
         if (node->type == NODE_PLAYER || node->type == NODE_ACTOR) {
             Vector2 lineEnd = vec2(screenPos.x + (cos(node->rotation) * 20), screenPos.y + (sin(node->rotation) * 20));
-            SDL_RenderDrawLine(GetRenderer(), screenPos.x, screenPos.y, lineEnd.x, lineEnd.y);
+            DrawLine(screenPos, lineEnd);
+            //SDL_RenderDrawLine(GetRenderer(), screenPos.x, screenPos.y, lineEnd.x, lineEnd.y);
         }
     }
 
@@ -744,10 +747,10 @@ void GEditorStateRender(GlobalState* State) {
         Vector2 measuredText = MeasureText(nodeInfo, 16, false);
         int textWidth = measuredText.x;
         int textHeight = measuredText.y;
-        SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_BLEND);
+        //SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_BLEND);
         setColorUint(0x80000000);
         draw_rect(screenPos.x + 10, screenPos.y, textWidth + 20, textHeight + 20);
-        SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_NONE);
+        //SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_NONE);
         FontDrawString(vec2(screenPos.x + 20, screenPos.y + 10), nodeInfo, 16, 0xFFFFFFFF, false);
     }
 
@@ -767,25 +770,27 @@ void GEditorStateRender(GlobalState* State) {
     if (CurrentEditorMode == EDITOR_MODE_PROPERTIES && EditorSelectedNode != -1) {
         EditorNode *node = ListGet(EditorNodes, EditorSelectedNode);
         if (node->type == NODE_WALL_A) {
-            SDL_Texture *tex = wallTextures[node->extra];
+            const byte *tex = wallTextures[node->extra];
             if (tex != NULL) {
-                SDL_Point texSize = SDL_TextureSize(tex);
+                SDL_Point texSize = {64, 64}; //SDL_TextureSize(tex); // TODO
                 SDL_Rect src = {0, 0, texSize.x, texSize.y};
                 SDL_Rect dst = {10, 310, 64, 64};
-                SDL_SetTextureColorMod(tex, 255, 255, 255);
-                SDL_RenderCopy(GetRenderer(), tex, &src, &dst);
+                //SDL_SetTextureColorMod(tex, 255, 255, 255);
+                DrawTexture(vec2(dst.x, dst.y), vec2(dst.w, dst.h), tex);
+                //SDL_RenderCopy(GetRenderer(), tex, &src, &dst);
             }
         }
     } else if (CurrentEditorMode == EDITOR_MODE_ADD) {
         EditorSlider *texSld = ListGet(EditorSliders, 1);
 
-        SDL_Texture *tex = wallTextures[(int) (texSld->value)];
+        const byte *tex = wallTextures[(int) (texSld->value)];
         if (tex != NULL) {
-            SDL_Point texSize = SDL_TextureSize(tex);
+            SDL_Point texSize = {64, 64}; //SDL_TextureSize(tex); // TODO
             SDL_Rect src = {0, 0, texSize.x, texSize.y};
             SDL_Rect dst = {10, 360, 64, 64};
-            SDL_SetTextureColorMod(tex, 255, 255, 255);
-            SDL_RenderCopy(GetRenderer(), tex, &src, &dst);
+            //SDL_SetTextureColorMod(tex, 255, 255, 255);
+            DrawTexture(vec2(dst.x, dst.y), vec2(dst.w, dst.h), tex);
+            //SDL_RenderCopy(GetRenderer(), tex, &src, &dst);
         }
     }
 

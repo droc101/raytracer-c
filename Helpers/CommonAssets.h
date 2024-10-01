@@ -6,6 +6,7 @@
 #define GAME_COMMONASSETS_H
 
 #include <SDL.h>
+#include "../defines.h"
 
 #define WALL_TEXTURE_COUNT 3
 #define ACTOR_TEXTURE_COUNT 11
@@ -20,11 +21,11 @@ extern SDL_Texture *hudCoinTexture;
 extern SDL_Texture *hudBlueCoinTexture;
 extern SDL_Texture  *studioLogoTex;
 
-extern SDL_Texture *wallTextures[WALL_TEXTURE_COUNT];
-extern SDL_Texture *actorTextures[ACTOR_TEXTURE_COUNT];
+extern const byte *wallTextures[WALL_TEXTURE_COUNT];
+extern const byte *actorTextures[ACTOR_TEXTURE_COUNT];
 
 void InitCommonAssets();
 
-int FindWallTextureIndex(SDL_Texture *tex);
+int FindWallTextureIndex(const byte *tex);
 
 #endif //GAME_COMMONASSETS_H

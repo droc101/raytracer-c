@@ -10,6 +10,8 @@
 #include "SDL.h"
 #include "Drawing.h"
 #include "CommonAssets.h"
+#include "GL/glHelper.h"
+#include "../Assets/Assets.h"
 
 const char fontChars[] = "abcdefghijklmnopqrstuvwxyz0123456789.:-,/\\|[]{}();'\"<>`~!@#$%^*_=+?";
 
@@ -24,7 +26,7 @@ int findChar(char target) {
     return -1;  // Character not found
 }
 
-void FontDrawChar(Vector2 pos, char c, uint size, bool small) {
+void FontDrawChar(Vector2 pos, char c, uint size, bool small, uint color) {
     if (c == '?') printf("%c,%d,%d\n", c, findChar(c), findChar(tolower(c)));
     int index = findChar(tolower(c));
     if (index == -1) {
@@ -40,11 +42,12 @@ void FontDrawChar(Vector2 pos, char c, uint size, bool small) {
     dstRect.y = pos.y;
     dstRect.w = small ? size * 0.75 : size;
     dstRect.h = size;
-    SDL_RenderCopy(GetRenderer(), small ? smallFontTexture : fontTexture, &srcRect, &dstRect);
+
+    GL_DrawTextureRegionMod(vec2(dstRect.x, dstRect.y), vec2(dstRect.w, dstRect.h), small ? gztex_interface_small_fonts : gztex_interface_font, vec2(srcRect.x, srcRect.y), vec2(srcRect.w, srcRect.h), color);
 }
 
 Vector2 FontDrawString(Vector2 pos, char* str, uint size, uint color, bool small) {
-    SDL_SetTextureColorMod(small ? smallFontTexture : fontTexture, (color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF);
+    //SDL_SetTextureColorMod(small ? smallFontTexture : fontTexture, (color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF);
     int x = pos.x;
     int y = pos.y;
     int i = 0;
@@ -58,7 +61,7 @@ Vector2 FontDrawString(Vector2 pos, char* str, uint size, uint color, bool small
             x = pos.x;
             y += size;
         }
-        FontDrawChar(vec2(x, y), str[i], size, small);
+        FontDrawChar(vec2(x, y), str[i], size, small, color);
         x += sizeX;
         i++;
     }

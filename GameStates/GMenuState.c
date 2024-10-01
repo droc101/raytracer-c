@@ -30,7 +30,8 @@ void GMenuStateRender(GlobalState * State) {
     Vector2 bg_tile_size = vec2(320, 240);
     for (int x = 0; x < WindowWidth(); x += bg_tile_size.x) {
         for (int y = 0; y < WindowHeight(); y += bg_tile_size.y) {
-            SDL_RenderCopy(GetRenderer(), menu_bg_tex, NULL, &(SDL_Rect){x, y, bg_tile_size.x, bg_tile_size.y});
+            DrawTexture(vec2(x, y), vec2(bg_tile_size.x, bg_tile_size.y), gztex_interface_menu_bg_tile);
+            //SDL_RenderCopy(GetRenderer(), menu_bg_tex, NULL, &(SDL_Rect){x, y, bg_tile_size.x, bg_tile_size.y});
         }
     }
 
@@ -42,7 +43,8 @@ void GMenuStateRender(GlobalState * State) {
     logoRect.y = 32;
     logoRect.w = 480;
     logoRect.h = 320;
-    SDL_RenderCopy(GetRenderer(), menu_logo_tex, NULL, &logoRect);
+    DrawTexture(vec2(logoRect.x, logoRect.y), vec2(logoRect.w, logoRect.h), gztex_interface_menu_logo);
+    //SDL_RenderCopy(GetRenderer(), menu_logo_tex, NULL, &logoRect);
 
     if (GetState()->frame % 60 < 30) {
         DrawTextAligned("Press Space", 32, 0xFFFFFFFF, vec2(0, WindowHeight() - 150), vec2(WindowWidth(), 32),

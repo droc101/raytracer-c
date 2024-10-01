@@ -27,15 +27,15 @@ void GLogoSplashStateUpdate(GlobalState * State) {
 
 void GLogoSplashStateRender(GlobalState * State) {
     setColorUint(0x0);
-    SDL_Renderer *renderer = GetRenderer();
-    SDL_RenderClear(renderer);
+    ClearColor(0xFF000000);
     if (State->frame < 20 || State->frame > 100) {
         return;
     }
 
     // draw logo 300x300 centered
     SDL_Rect dest = {WindowWidth()/2 - 150, WindowHeight()/2 - 150, 300, 300};
-    SDL_RenderCopy(renderer, studioLogoTex, NULL, &dest);
+    DrawTexture(vec2(dest.x, dest.y), vec2(dest.w, dest.h), gztex_interface_studio);
+    //SDL_RenderCopy(renderer, studioLogoTex, NULL, &dest);
 }
 
 void GLogoSplashStateSet() {

@@ -13,19 +13,6 @@ if (WIN32)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --static")
 endif ()
 
-set(SDL2_PATH "${CMAKE_SOURCE_DIR}/SDL2/x86_64-w64-mingw32")
-set(SDL2_MIXER_PATH "${CMAKE_SOURCE_DIR}/SDL2_mixer/x86_64-w64-mingw32")
-set(ZLIB_ROOT "${CMAKE_SOURCE_DIR}/zlib")
-
-find_package(SDL2 REQUIRED) # Graphics
-include_directories(${SDL2_INCLUDE_DIR})
-
-find_package(SDL2_mixer REQUIRED) # Audio
-include_directories(${SDL2_MIXER_INCLUDE_DIR})
-
-find_package(ZLIB REQUIRED) # Decompression
-include_directories(${ZLIB_INCLUDE_DIRS})
-
 # I have no idea why it has decided to start adding newlines, but it still works soooooo
 add_executable(game main.c Helpers/Input.h Helpers/Input.c defines.h Helpers/Drawing.h Helpers/Drawing.c Assets/Assets.h Assets/Assets.c Structs/Vector2.h Structs/Vector2.c Helpers/MathEx.h Helpers/MathEx.c Structs/Ray.h Structs/Ray.c Structs/Wall.h Structs/Wall.c Helpers/List.h Helpers/List.c Structs/Level.h Structs/Level.c Helpers/Font.c Helpers/Font.h Helpers/Error.c Helpers/Error.h Helpers/LevelLoader.c Helpers/LevelLoader.h Structs/GlobalState.c Structs/GlobalState.h GameStates/GMainState.c GameStates/GMainState.h GameStates/GMenuState.c GameStates/GMenuState.h Structs/Actor.c Structs/Actor.h Actor/TestActor.c Actor/TestActor.h GameStates/GPauseState.c GameStates/GPauseState.h
         Debug/FrameGrapher.c
@@ -57,12 +44,41 @@ add_executable(game main.c Helpers/Input.h Helpers/Input.c defines.h Helpers/Dra
         Actor/Goal.h
         GameStates/GLogoSplashState.c
         GameStates/GLogoSplashState.h
+        Helpers/GL/glHelper.c
+        Helpers/GL/glHelper.h
 )
 
+set(SDL2_PATH "${CMAKE_SOURCE_DIR}/SDL2/x86_64-w64-mingw32")
+set(SDL2_MIXER_PATH "${CMAKE_SOURCE_DIR}/SDL2_mixer/x86_64-w64-mingw32")
+set(ZLIB_ROOT "${CMAKE_SOURCE_DIR}/zlib")
+
+find_package(SDL2 REQUIRED) # Graphics
+include_directories(${SDL2_INCLUDE_DIR})
+
+find_package(SDL2_mixer REQUIRED) # Audio
+include_directories(${SDL2_MIXER_INCLUDE_DIR})
+
+find_package(ZLIB REQUIRED) # Decompression
+include_directories(${ZLIB_INCLUDE_DIRS})
+
+find_package(OpenGL REQUIRED)
+target_include_directories(game PUBLIC ${OPENGL_INCLUDE_DIR})
+
 if (UNIX)
-    target_link_libraries(game ${SDL2_LIBRARY} ${ZLIB_LIBRARIES} ${SDL2_MIXER_LIBRARY} m SDL2 SDL2_mixer z) # extra l* flags are needed on Linux
+    find_package(GLEW REQUIRED)
+    target_include_directories(game PUBLIC ${GLEW_INCLUDE_DIRS})
+elseif (WIN32) # Thank you Windows, I hate you.
+    list(APPEND CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/glew")
+    add_definitions(-DGLEW_STATIC)
+    set(GLEW_LIBRARIES "${CMAKE_SOURCE_DIR}/glew/lib/Release/x64/glew32s.lib")
+    set(GLEW_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/glew/include")
+    target_include_directories(game PUBLIC ${GLEW_INCLUDE_DIRS})
+endif ()
+
+if (UNIX)
+    target_link_libraries(game ${SDL2_LIBRARY} ${ZLIB_LIBRARIES} ${SDL2_MIXER_LIBRARY} m SDL2 SDL2_mixer z ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES}) # extra l* flags are needed on Linux
 elseif (WIN32)
-    target_link_libraries(game PRIVATE ${SDL2_LIBRARY} ${ZLIB_LIBRARIES} ${SDL2_MIXER_LIBRARY}) # Don't pass extra l* flags on Windows (it isn't happy with them)
+    target_link_libraries(game PRIVATE ${SDL2_LIBRARY} ${ZLIB_LIBRARIES} ${SDL2_MIXER_LIBRARY} ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} opengl32) # Don't pass extra l* flags on Windows (it isn't happy with them)
 endif ()
 
 add_custom_target(

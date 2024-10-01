@@ -16,6 +16,7 @@
 #include "config.h"
 #include "Helpers/Error.h"
 #include "Helpers/CommonAssets.h"
+#include "Helpers/GL/glHelper.h"
 
 int main(int argc, char *argv[]) {
 
@@ -34,7 +35,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    SDL_Window *w = SDL_CreateWindow(GAME_TITLE,SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,DEF_WIDTH, DEF_HEIGHT, SDL_WINDOW_RESIZABLE);
+    SDL_Window *w = SDL_CreateWindow(GAME_TITLE,SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,DEF_WIDTH, DEF_HEIGHT, SDL_WINDOW_OPENGL);
     if (w == NULL) {
         printf("SDL_CreateWindow Error: %s\n", SDL_GetError());
         SDL_Quit();
@@ -42,20 +43,22 @@ int main(int argc, char *argv[]) {
     }
     SetWindow(w);
 
+    GL_Init();
+
     SDL_SetWindowMinimumSize(w, MIN_WIDTH, MIN_HEIGHT);
     SDL_SetWindowMaximumSize(w, MAX_WIDTH, MAX_HEIGHT);
 
-    SDL_Surface *icon = ToSDLSurface((const unsigned char *) gztex_interface_icon, FILTER_LINEAR);
+    SDL_Surface *icon = ToSDLSurface((const unsigned char *) gztex_interface_icon, "1");
     SDL_SetWindowIcon(w, icon);
 
-    SDL_Renderer *tr = SDL_CreateRenderer(GetWindow(), -1, SDL_RENDERER_ACCELERATED);
-    if (tr == NULL) {
-        SDL_DestroyWindow(GetWindow());
-        printf("SDL_CreateRenderer Error: %s\n", SDL_GetError());
-        SDL_Quit();
-        return 1;
-    }
-    SetRenderer(tr);
+//    SDL_Renderer *tr = SDL_CreateRenderer(GetWindow(), -1, SDL_RENDERER_ACCELERATED);
+//    if (tr == NULL) {
+//        SDL_DestroyWindow(GetWindow());
+//        printf("SDL_CreateRenderer Error: %s\n", SDL_GetError());
+//        SDL_Quit();
+//        return 1;
+//    }
+    //SetRenderer(tr);
     SetSignalHandler(); // catch exceptions in release mode
 
     printf("Initializing Engine\n");
@@ -90,6 +93,8 @@ int main(int argc, char *argv[]) {
             }
         }
 
+        ClearScreen();
+
         ResetDPrintYPos();
 
         GlobalState *g = GetState();
@@ -106,9 +111,15 @@ int main(int argc, char *argv[]) {
 
         g->RenderGame(g);
 
+        GL_ClearDepthOnly();
+
+        // TODO: Render HUD here
+
         FrameGraphDraw();
 
-        SDL_RenderPresent(GetRenderer());
+        GL_Swap();
+
+
 
         UpdateInputStates();
         g->frame++;
@@ -127,10 +138,11 @@ int main(int argc, char *argv[]) {
     }
     printf("Destructing Engine\n");
     DestroyGlobalState();
-    SDL_DestroyRenderer(GetRenderer());
+    //SDL_DestroyRenderer(GetRenderer());
     SDL_DestroyWindow(GetWindow());
     SDL_FreeSurface(icon);
     InvalidateAssetCache(); // Free all assets
+    GL_DestroyGL();
     SDL_Quit();
     return 0;
 }

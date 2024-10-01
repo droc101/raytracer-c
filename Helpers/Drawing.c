@@ -9,17 +9,20 @@
 #include "Error.h"
 #include "../Assets/AssetReader.h"
 #include "../Helpers/LevelLoader.h" // for ReadUInt
+#include "GL/glHelper.h"
 
-SDL_Renderer *renderer;
+//SDL_Renderer *renderer;
 SDL_Window *window;
 
-void SetRenderer(SDL_Renderer *r) {
-    renderer = r;
-}
+uint drawColor = 0xFFFFFFFF;
 
-SDL_Renderer *GetRenderer() {
-    return renderer;
-}
+//void SetRenderer(SDL_Renderer *r) {
+//    renderer = r;
+//}
+//
+//SDL_Renderer *GetRenderer() {
+//    return renderer;
+//}
 
 void SetWindow(SDL_Window *w) {
     window = w;
@@ -41,18 +44,12 @@ int WindowHeight() {
     return h;
 }
 
-void draw_rect(int x, int y, int w, int h) {
-    SDL_Rect rect;
-    rect.x = x;
-    rect.y = y;
-    rect.w = w;
-    rect.h = h;
-    SDL_RenderFillRect(renderer, &rect);
-}
+
 
 // Set the SDL color from an ARGB uint32
 void setColorUint(uint color) {
-    SDL_SetRenderDrawColor(renderer, (color >> 16) & 0xFF, (color >> 8) & 0xFF, (color >> 0) & 0xFF, (color >> 24) & 0xFF);
+    drawColor = color;
+    //SDL_SetRenderDrawColor(renderer, (color >> 16) & 0xFF, (color >> 8) & 0xFF, (color >> 0) & 0xFF, (color >> 24) & 0xFF);
 }
 
 byte* getColorUint(uint color) {
@@ -92,19 +89,20 @@ SDL_Surface* ToSDLSurface(const unsigned char* imageData, char *filterMode) {
 }
 
 SDL_Texture* ToSDLTexture(const unsigned char* imageData, char *filterMode) {
+    return NULLPTR;
 
-    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, filterMode);
-
-    SDL_Surface* surface = ToSDLSurface(imageData, filterMode); // if this fails, it will call a _NoReturn function, so no need to check
-
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_FreeSurface(surface); // Free the surface as it's not needed anymore
-    if (!texture) {
-        printf("Failed to create texture: %s\n", SDL_GetError());
-        Error("ToSDLTexture: Failed to create texture");
-    }
-
-    return texture;
+//    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, filterMode);
+//
+//    SDL_Surface* surface = ToSDLSurface(imageData, filterMode); // if this fails, it will call a _NoReturn function, so no need to check
+//
+//    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+//    SDL_FreeSurface(surface); // Free the surface as it's not needed anymore
+//    if (!texture) {
+//        printf("Failed to create texture: %s\n", SDL_GetError());
+//        Error("ToSDLTexture: Failed to create texture");
+//    }
+//
+//    return texture;
 }
 
 SDL_Point SDL_TextureSize(SDL_Texture *texture) {
@@ -114,35 +112,42 @@ SDL_Point SDL_TextureSize(SDL_Texture *texture) {
 }
 
 void DrawTextureColumn(SDL_Texture* texture, int sx, int dx, int dy, int dh) {
-    SDL_Rect destRect;
-    destRect.x = dx;
-    destRect.y = dy;
-    destRect.w = 1;
-    destRect.h = dh;
-    SDL_Rect srcRect;
-    srcRect.x = sx;
-    srcRect.y = 0;
-    srcRect.w = 1;
-    srcRect.h = SDL_TextureSize(texture).y;
-    SDL_RenderCopy(renderer, texture, &srcRect, &destRect);
+
+    // TODO: Implement this (depends on texture size storage)
+
+//    SDL_Rect destRect;
+//    destRect.x = dx;
+//    destRect.y = dy;
+//    destRect.w = 1;
+//    destRect.h = dh;
+//    SDL_Rect srcRect;
+//    srcRect.x = sx;
+//    srcRect.y = 0;
+//    srcRect.w = 1;
+//    srcRect.h = SDL_TextureSize(texture).y;
+//
+//
+//
+//    SDL_RenderCopy(renderer, texture, &srcRect, &destRect);
 }
 
 SDL_Texture *GetScreenshot() {
-    SDL_Surface *ss = SDL_CreateRGBSurface(0, WindowWidth(), WindowHeight(), 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
-    if (!ss) {
-        printf("Failed to create surface: %s\n", SDL_GetError());
-        Error("GetScreenshot: Failed to create surface");
-    }
-
-    SDL_RenderReadPixels(renderer, NULL, SDL_PIXELFORMAT_ARGB8888, ss->pixels, ss->pitch);
-    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, ss);
-    SDL_FreeSurface(ss);
-    if (!texture) {
-        printf("Failed to create texture: %s\n", SDL_GetError());
-        Error("GetScreenshot: Failed to create texture");
-    }
-
-    return texture;
+    return NULLPTR;
+//    SDL_Surface *ss = SDL_CreateRGBSurface(0, WindowWidth(), WindowHeight(), 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
+//    if (!ss) {
+//        printf("Failed to create surface: %s\n", SDL_GetError());
+//        Error("GetScreenshot: Failed to create surface");
+//    }
+//
+//    SDL_RenderReadPixels(renderer, NULL, SDL_PIXELFORMAT_ARGB8888, ss->pixels, ss->pitch);
+//    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, ss);
+//    SDL_FreeSurface(ss);
+//    if (!texture) {
+//        printf("Failed to create texture: %s\n", SDL_GetError());
+//        Error("GetScreenshot: Failed to create texture");
+//    }
+//
+//    return texture;
 }
 
 uint MixColors(uint color_a, uint color_b) {
@@ -159,4 +164,52 @@ uint MixColors(uint color_a, uint color_b) {
     free(b);
 
     return (r << 16) | (g << 8) | bl | (al << 24);
+}
+
+// Rendering subsystem abstractions
+
+void SetTexParams(const unsigned char* imageData, bool linear, bool repeat) {
+    GL_SetTexParams(imageData, linear, repeat);
+}
+
+void DrawLine(Vector2 start, Vector2 end) {
+    GL_DrawLine(start, end, drawColor);
+}
+
+void DrawTexture(Vector2 pos, Vector2 size, const unsigned char* imageData) {
+    GL_DrawTexture(pos, size, imageData);
+
+}
+void DrawTextureMod(Vector2 pos, Vector2 size, const unsigned char* imageData, uint color) {
+    GL_DrawTextureMod(pos, size, imageData, color);
+
+}
+void DrawTextureRegion(Vector2 pos, Vector2 size, const unsigned char* imageData, Vector2 region_start, Vector2 region_end) {
+    GL_DrawTextureRegion(pos, size, imageData, region_start, region_end);
+
+
+}
+void DrawTextureRegionMod(Vector2 pos, Vector2 size, const unsigned char* imageData, Vector2 region_start, Vector2 region_end, uint color) {
+    GL_DrawTextureRegionMod(pos, size, imageData, region_start, region_end, color);
+}
+
+void ClearColor(uint color) {
+    GL_ClearColor(color);
+}
+
+void ClearScreen() {
+    GL_ClearScreen();
+
+}
+
+void ClearDepthOnly() {
+    GL_ClearDepthOnly();
+}
+
+void Swap() {
+    GL_Swap();
+}
+
+void draw_rect(int x, int y, int w, int h) {
+    GL_DrawRect(vec2(x, y), vec2(w, h), drawColor);
 }
