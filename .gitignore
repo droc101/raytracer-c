@@ -34,3 +34,4 @@ cmake-build-*/
 # SDL2 files
 /SDL2/
 /SDL2_mixer/
+/glew/
