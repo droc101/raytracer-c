@@ -18,6 +18,103 @@ Buffer *ui_buffer;
 
 GLuint textures[ASSET_COUNT];
 
+void GL_DebugMessageCallback(GLenum source, GLenum type, GLuint id,
+                             GLenum severity, GLsizei length,
+                             const GLchar *msg, const void *data) {
+    char *_source;
+    char *_type;
+    char *_severity;
+
+    switch (source) {
+        case GL_DEBUG_SOURCE_API:
+            _source = "API";
+            break;
+
+        case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
+            _source = "WINDOW SYSTEM";
+            break;
+
+        case GL_DEBUG_SOURCE_SHADER_COMPILER:
+            _source = "SHADER COMPILER";
+            break;
+
+        case GL_DEBUG_SOURCE_THIRD_PARTY:
+            _source = "THIRD PARTY";
+            break;
+
+        case GL_DEBUG_SOURCE_APPLICATION:
+            _source = "APPLICATION";
+            break;
+
+        case GL_DEBUG_SOURCE_OTHER:
+            _source = "UNKNOWN";
+            break;
+
+        default:
+            _source = "UNKNOWN";
+            break;
+    }
+
+    switch (type) {
+        case GL_DEBUG_TYPE_ERROR:
+            _type = "ERROR";
+            break;
+
+        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+            _type = "DEPRECATED BEHAVIOR";
+            break;
+
+        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+            _type = "UDEFINED BEHAVIOR";
+            break;
+
+        case GL_DEBUG_TYPE_PORTABILITY:
+            _type = "PORTABILITY";
+            break;
+
+        case GL_DEBUG_TYPE_PERFORMANCE:
+            _type = "PERFORMANCE";
+            break;
+
+        case GL_DEBUG_TYPE_OTHER:
+            _type = "OTHER";
+            break;
+
+        case GL_DEBUG_TYPE_MARKER:
+            _type = "MARKER";
+            break;
+
+        default:
+            _type = "UNKNOWN";
+            break;
+    }
+
+    switch (severity) {
+        case GL_DEBUG_SEVERITY_HIGH:
+            _severity = "HIGH";
+            break;
+
+        case GL_DEBUG_SEVERITY_MEDIUM:
+            _severity = "MEDIUM";
+            break;
+
+        case GL_DEBUG_SEVERITY_LOW:
+            _severity = "LOW";
+            break;
+
+        case GL_DEBUG_SEVERITY_NOTIFICATION:
+            _severity = "NOTIFICATION";
+            break;
+
+        default:
+            _severity = "UNKNOWN";
+            break;
+    }
+
+    printf("%d: %s of %s severity, raised from %s: %s\n",
+           id, _type, _severity, _source, msg);
+}
+
 void GL_Init() {
     printf("Initializing OpenGL\n");
 
@@ -40,13 +137,13 @@ void GL_Init() {
         Error("Failed to init GLEW");
     }
 
-    char* hud_textured_fsh = (char*)DecompressAsset(gzfsh_shader_hud_textured);
-    char* hud_textured_vsh = (char*)DecompressAsset(gzvsh_shader_hud_textured);
+    char *hud_textured_fsh = (char *) DecompressAsset(gzfsh_shader_hud_textured);
+    char *hud_textured_vsh = (char *) DecompressAsset(gzvsh_shader_hud_textured);
 
     ui_textured = GL_ConstructShader(hud_textured_fsh, hud_textured_vsh);
 
-    char *hud_colored_fsh = (char*)DecompressAsset(gzfsh_shader_hud_color);
-    char *hud_colored_vsh = (char*)DecompressAsset(gzvsh_shader_hud_color);
+    char *hud_colored_fsh = (char *) DecompressAsset(gzfsh_shader_hud_color);
+    char *hud_colored_vsh = (char *) DecompressAsset(gzvsh_shader_hud_color);
     ui_colored = GL_ConstructShader(hud_colored_fsh, hud_colored_vsh);
 
     ui_buffer = GL_ConstructBuffer();
@@ -60,6 +157,9 @@ void GL_Init() {
     glDisable(GL_CULL_FACE);
 
     glClearColor(0.0f, 0.1f, 0.2f, 1.0f);
+
+    glEnable(GL_DEBUG_OUTPUT);
+    glDebugMessageCallback(GL_DebugMessageCallback, NULL);
 
     printf("OpenGL Initialized\n");
     printf("OpenGL Vendor: %s\n", vendor);
@@ -79,7 +179,7 @@ Shader *GL_ConstructShader(char *fsh, char *vsh) {
     glGetShaderiv(shd->vsh, GL_COMPILE_STATUS, &status);
     if (status != GL_TRUE) {
         glGetShaderInfoLog(shd->vsh, sizeof(err_buf), NULL, err_buf);
-        err_buf[sizeof(err_buf)-1] = '\0';
+        err_buf[sizeof(err_buf) - 1] = '\0';
         Error(err_buf);
     }
 
@@ -89,7 +189,7 @@ Shader *GL_ConstructShader(char *fsh, char *vsh) {
     glGetShaderiv(shd->fsh, GL_COMPILE_STATUS, &status);
     if (status != GL_TRUE) {
         glGetShaderInfoLog(shd->fsh, sizeof(err_buf), NULL, err_buf);
-        err_buf[sizeof(err_buf)-1] = '\0';
+        err_buf[sizeof(err_buf) - 1] = '\0';
         Error(err_buf);
     }
 
@@ -102,7 +202,7 @@ Shader *GL_ConstructShader(char *fsh, char *vsh) {
     glGetProgramiv(shd->program, GL_LINK_STATUS, &status);
     if (status != GL_TRUE) {
         glGetProgramInfoLog(shd->program, sizeof(err_buf), NULL, err_buf);
-        err_buf[sizeof(err_buf)-1] = '\0';
+        err_buf[sizeof(err_buf) - 1] = '\0';
         Error(err_buf);
     }
 
@@ -198,10 +298,10 @@ void GL_DrawRect(Vector2 pos, Vector2 size, uint color) {
 
 
     float vertices[4][2] = {
-            {NDC_pos.x, NDC_pos.y},
+            {NDC_pos.x,     NDC_pos.y},
             {NDC_pos_end.x, NDC_pos.y},
             {NDC_pos_end.x, NDC_pos_end.y},
-            {NDC_pos.x, NDC_pos_end.y}
+            {NDC_pos.x,     NDC_pos_end.y}
     };
 
     unsigned int indices[] = {
@@ -224,7 +324,7 @@ void GL_DrawRect(Vector2 pos, Vector2 size, uint color) {
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 }
 
-void GL_SetTexParams(const unsigned char* imageData, bool linear, bool repeat) {
+void GL_SetTexParams(const unsigned char *imageData, bool linear, bool repeat) {
     byte *Decompressed = DecompressAsset(imageData);
 
     uint id = ReadUintA(Decompressed, 12);
@@ -237,7 +337,7 @@ void GL_SetTexParams(const unsigned char* imageData, bool linear, bool repeat) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, linear ? GL_LINEAR : GL_NEAREST);
 }
 
-GLuint GL_LoadTexture(const unsigned char* imageData) {
+GLuint GL_LoadTexture(const unsigned char *imageData) {
     if (AssetGetType(imageData) != ASSET_TYPE_TEXTURE) {
         printf("Asset is not a texture\n");
         Error("ToSDLSurface: Asset is not a texture");
@@ -261,7 +361,7 @@ GLuint GL_LoadTexture(const unsigned char* imageData) {
         return id;
     }
 
-    const byte* pixelData = Decompressed + (sizeof(uint) * 4);
+    const byte *pixelData = Decompressed + (sizeof(uint) * 4);
 
     glGenTextures(1, &textures[id]);
     glActiveTexture(GL_TEXTURE0 + id);
@@ -279,13 +379,15 @@ GLuint GL_LoadTexture(const unsigned char* imageData) {
     return id;
 }
 
-void GL_DrawTexture_Internal(Vector2 pos, Vector2 size, const unsigned char* imageData, uint color, Vector2 region_start, Vector2 region_end) {
+void
+GL_DrawTexture_Internal(Vector2 pos, Vector2 size, const unsigned char *imageData, uint color, Vector2 region_start,
+                        Vector2 region_end) {
     glUseProgram(ui_textured->program);
 
     GLuint tex = GL_LoadTexture(imageData);
 
 
-    glUniform1i(glGetUniformLocation(ui_textured->program, "tex"), tex);
+    glUniform1i(glGetUniformLocation(ui_textured->program, "alb"), tex);
 
     float a = ((color >> 24) & 0xFF) / 255.0f;
     float r = ((color >> 16) & 0xFF) / 255.0f;
@@ -294,17 +396,18 @@ void GL_DrawTexture_Internal(Vector2 pos, Vector2 size, const unsigned char* ima
 
     glUniform4f(glGetUniformLocation(ui_colored->program, "col"), r, g, b, a);
 
-    glUniform4f(glGetUniformLocation(ui_textured->program, "region"), region_start.x, region_start.y, region_end.x, region_end.y);
+    glUniform4f(glGetUniformLocation(ui_textured->program, "region"), region_start.x, region_start.y, region_end.x,
+                region_end.y);
 
     Vector2 NDC_pos = vec2(X_TO_NDC(pos.x), Y_TO_NDC(pos.y));
     Vector2 NDC_pos_end = vec2(X_TO_NDC(pos.x + size.x), Y_TO_NDC(pos.y + size.y));
 
 
     float vertices[4][4] = {
-            {NDC_pos.x, NDC_pos.y, 0.0f, 0.0f},
-            {NDC_pos_end.x, NDC_pos.y, 1.0f, 0.0f},
+            {NDC_pos.x,     NDC_pos.y,     0.0f, 0.0f},
+            {NDC_pos_end.x, NDC_pos.y,     1.0f, 0.0f},
             {NDC_pos_end.x, NDC_pos_end.y, 1.0f, 1.0f},
-            {NDC_pos.x, NDC_pos_end.y, 0.0f, 1.0f}
+            {NDC_pos.x,     NDC_pos_end.y, 0.0f, 1.0f}
     };
 
     unsigned int indices[] = {
@@ -325,25 +428,27 @@ void GL_DrawTexture_Internal(Vector2 pos, Vector2 size, const unsigned char* ima
     glEnableVertexAttribArray(pos_attr_loc);
 
     GLint tex_attr_loc = glGetAttribLocation(ui_textured->program, "VERTEX_UV");
-    glVertexAttribPointer(tex_attr_loc, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void*)(2*sizeof(GLfloat)));
+    glVertexAttribPointer(tex_attr_loc, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void *) (2 * sizeof(GLfloat)));
     glEnableVertexAttribArray(tex_attr_loc);
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 }
 
-void GL_DrawTexture(Vector2 pos, Vector2 size, const unsigned char* imageData) {
+void GL_DrawTexture(Vector2 pos, Vector2 size, const unsigned char *imageData) {
     GL_DrawTexture_Internal(pos, size, imageData, 0xFFFFFFFF, vec2(-1, 0), vec2s(0));
 }
 
-void GL_DrawTextureMod(Vector2 pos, Vector2 size, const unsigned char* imageData, uint color) {
+void GL_DrawTextureMod(Vector2 pos, Vector2 size, const unsigned char *imageData, uint color) {
     GL_DrawTexture_Internal(pos, size, imageData, color, vec2(-1, 0), vec2s(0));
 }
 
-void GL_DrawTextureRegion(Vector2 pos, Vector2 size, const unsigned char* imageData, Vector2 region_start, Vector2 region_end) {
+void GL_DrawTextureRegion(Vector2 pos, Vector2 size, const unsigned char *imageData, Vector2 region_start,
+                          Vector2 region_end) {
     GL_DrawTexture_Internal(pos, size, imageData, 0xFFFFFFFF, region_start, region_end);
 }
 
-void GL_DrawTextureRegionMod(Vector2 pos, Vector2 size, const unsigned char* imageData, Vector2 region_start, Vector2 region_end, uint color) {
+void GL_DrawTextureRegionMod(Vector2 pos, Vector2 size, const unsigned char *imageData, Vector2 region_start,
+                             Vector2 region_end, uint color) {
     GL_DrawTexture_Internal(pos, size, imageData, color, region_start, region_end);
 }
 
@@ -363,7 +468,7 @@ void GL_DrawLine(Vector2 start, Vector2 end, uint color) {
     // Calculate the 2 corner vertices of each point for a thick line
     float vertices[2][2] = {
             {NDC_start.x, NDC_start.y},
-            {NDC_end.x, NDC_end.y}
+            {NDC_end.x,   NDC_end.y}
     };
 
     unsigned int indices[] = {

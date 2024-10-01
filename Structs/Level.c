@@ -103,8 +103,8 @@ void RenderCol(Level *l, int col, Vector2 position, double rotation) {
 
     byte shadeByte = 255 * shade;
 
-    SDL_Texture *texture = raycast.CollisionWall.tex;
-    SDL_Point texSize = SDL_TextureSize(texture);
+    const byte *texture = raycast.CollisionWall.tex;
+    SDL_Point texSize = {64,64};//SDL_TextureSize(texture); // TODO tex size
     uint texW = texSize.x;
 
     double wallLength = raycast.CollisionWall.Length;
@@ -116,8 +116,8 @@ void RenderCol(Level *l, int col, Vector2 position, double rotation) {
 
     texCol = wrap(texCol, 0, texW - 1);
 
-    SDL_SetTextureColorMod(texture, shadeByte, shadeByte, shadeByte);
-    DrawTextureColumn(texture, texCol, col, y, height);
+    //SDL_SetTextureColorMod(texture, shadeByte, shadeByte, shadeByte);
+    //DrawTextureColumn(texture, texCol, col, y, height);
 
     setColorUint(fogColor);
     draw_rect(col, y, 1, height);
@@ -159,8 +159,8 @@ void RenderActorCol(Level *l, int col, Vector2 position, double rotation) {
 
     byte shadeByte = 255 * shade;
 
-    SDL_Texture *texture = raycast.CollisionWall.tex;
-    SDL_Point texSize = SDL_TextureSize(texture);
+    const byte *texture = raycast.CollisionWall.tex;
+    SDL_Point texSize = {64,64};//SDL_TextureSize(texture); // TODO tex size
     uint texW = texSize.x;
 
     double wallLength = raycast.CollisionWall.Length;
@@ -175,8 +175,8 @@ void RenderActorCol(Level *l, int col, Vector2 position, double rotation) {
 
     texCol = wrap(texCol, 0, texW - 1);
 
-    SDL_SetTextureColorMod(texture, shadeByte, shadeByte, shadeByte);
-    DrawTextureColumn(texture, texCol, col, y, height);
+    //SDL_SetTextureColorMod(texture, shadeByte, shadeByte, shadeByte);
+    //DrawTextureColumn(texture, texCol, col, y, height);
 }
 
 void AddActor(Actor* actor) {

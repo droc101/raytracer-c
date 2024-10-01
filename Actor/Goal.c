@@ -3,7 +3,7 @@
 //
 
 #include "Goal.h"
-#include "../Structs/wall.h"
+#include "../Structs/Wall.h"
 #include "../Structs/Vector2.h"
 #include "../Helpers/Collision.h"
 #include "../Structs/GlobalState.h"

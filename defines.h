@@ -33,7 +33,7 @@ typedef struct {
 typedef struct {
     Vector2 a;
     Vector2 b;
-    SDL_Texture *tex;
+    const byte *tex;
     int texId;
     double Length;
     double Angle;

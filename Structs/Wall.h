@@ -18,7 +18,7 @@ int GetTextureCount();
  * @param index index of the texture
  * @return Wall texture as @c SDL_Texture
  */
-SDL_Texture *LoadWallTexture(int index);
+const byte *LoadWallTexture(int index);
 
 /**
  * Create a wall
@@ -29,7 +29,7 @@ SDL_Texture *LoadWallTexture(int index);
  * @param uvOffset Wall texture offset
  * @return Wall pointer
  */
-Wall *CreateWall(Vector2 a, Vector2 b, SDL_Texture *tex, float uvScale, float uvOffset);
+Wall *CreateWall(Vector2 a, Vector2 b, const byte *tex, float uvScale, float uvOffset);
 
 /**
  * Free the memory used by a wall
