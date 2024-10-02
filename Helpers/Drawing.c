@@ -188,5 +188,5 @@ void Swap() {
 }
 
 void draw_rect(int x, int y, int w, int h) {
-    GL_DrawRect(vec2(x, y), vec2(w, h), drawColor);
+    GL_DrawRect(v2(x, y), v2(w, h), drawColor);
 }

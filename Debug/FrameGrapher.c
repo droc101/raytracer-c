@@ -54,7 +54,7 @@ void FrameGraphDraw() {
     setColorUint(0x80808080);
     int y = WindowHeight() - (TARGET_FPS*FRAMEGRAPH_V_SCALE) - 10;
     draw_rect(x, y, FRAMEGRAPH_HISTORY_SIZE * 2, 2);
-    FontDrawString(vec2(10, y - 5), "Target FPS", 12, 0xff00ffff, true);
+    FontDrawString(v2(10, y - 5), "Target FPS", 12, 0xff00ffff, true);
 
     // draw a line at the bottom
     setColorUint(0x80808080);
@@ -63,6 +63,6 @@ void FrameGraphDraw() {
     setColorUint(color);
     char fps[20];
     sprintf(fps, "FPS: %.2f", framerates[FRAMEGRAPH_HISTORY_SIZE - 1]);
-    FontDrawString(vec2(10, WindowHeight() - 32), fps, 16, color, true);
+    FontDrawString(v2(10, WindowHeight() - 32), fps, 16, color, true);
 #endif
 }

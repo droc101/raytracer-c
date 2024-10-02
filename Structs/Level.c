@@ -18,7 +18,7 @@ Level *CreateLevel() {
     Level *l = (Level*)malloc(sizeof(Level));
     l->actors = CreateList();
     l->walls = CreateList();
-    l->position = vec2s(0);
+    l->position = v2s(0);
     l->rotation = 0;
     l->SkyColor = 0xff82c5ff;
     l->FloorColor = 0xff36322f;
@@ -206,8 +206,9 @@ void RenderLevel(Vector2 camPos, double camRot, double fakeHeight) {
 //    SDL_Rect dest1 = {offset, 0, WindowWidth() * skyPos / 256, height};
 //    SDL_Rect src2 = {skyPos, 0, 256 - skyPos, 256};
 //    SDL_Rect dest2 = {0, 0, offset, height};
-    DrawTextureRegionMod(vec2(offset, 0), vec2(WindowWidth() * skyPos / 256, height), gztex_level_sky, vec2(0, 0), vec2(skyPos, 256), 0xFFFFFFFF);
-    DrawTextureRegionMod(vec2(0, 0), vec2(offset, height), gztex_level_sky, vec2(skyPos, 0), vec2(256, 256), 0xFFFFFFFF);
+    DrawTextureRegionMod(v2(offset, 0), v2(WindowWidth() * skyPos / 256, height), gztex_level_sky, v2(0, 0),
+                         v2(skyPos, 256), 0xFFFFFFFF);
+    DrawTextureRegionMod(v2(0, 0), v2(offset, height), gztex_level_sky, v2(skyPos, 0), v2(256, 256), 0xFFFFFFFF);
 
     setColorUint(l->FloorColor);
     draw_rect(0, height, WindowWidth(), height);

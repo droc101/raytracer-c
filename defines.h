@@ -12,7 +12,7 @@
 #include "config.h"
 
 // "boolean"
-#define bool uint8_t // unsigned 8-bit integer (nonzero is true)
+#define bool _Bool
 #define true 1
 #define false 0
 
@@ -28,6 +28,18 @@ typedef struct {
     double x;
     double y;
 } Vector2;
+
+typedef struct {
+    float x;
+    float z;
+    float y;
+
+    float pitch;
+    float yaw;
+    float roll;
+
+    float fov;
+} Camera;
 
 // Utility functions are in Structs/wall.h
 typedef struct {
@@ -104,6 +116,8 @@ typedef struct {
     bool textBoxActive;
     TextBox textBox;
     int textBoxPage;
+
+    Camera *cam;
 } GlobalState;
 
 // Actor (interactable/moving wall) struct

@@ -34,7 +34,7 @@ void GLogoSplashStateRender(GlobalState * State) {
 
     // draw logo 300x300 centered
     SDL_Rect dest = {WindowWidth()/2 - 150, WindowHeight()/2 - 150, 300, 300};
-    DrawTexture(vec2(dest.x, dest.y), vec2(dest.w, dest.h), gztex_interface_studio);
+    DrawTexture(v2(dest.x, dest.y), v2(dest.w, dest.h), gztex_interface_studio);
     //SDL_RenderCopy(renderer, studioLogoTex, NULL, &dest);
 }
 

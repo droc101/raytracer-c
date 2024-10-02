@@ -71,4 +71,8 @@
 // Target frame rate (the game is tied to this, so be careful! :D)
 #define TARGET_FPS 60
 
+#define FOV 90 // Field of view
+#define NEAR_Z 0.01
+#define FAR_Z 1000
+
 #endif //GAME_CONFIG_H

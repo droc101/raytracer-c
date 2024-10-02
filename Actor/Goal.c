@@ -14,7 +14,7 @@
 
 void GoalInit(Actor *this) {
     this->solid = false;
-    this->actorWall = CreateWall(vec2(0, -0.5), vec2(0, 0.5), actorTextures[9], 1, 0.0);
+    this->actorWall = CreateWall(v2(0, -0.5), v2(0, 0.5), actorTextures[9], 1, 0.0);
 }
 
 void GoalUpdate(Actor *this) {

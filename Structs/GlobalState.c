@@ -8,6 +8,7 @@
 #include "../Assets/AssetReader.h"
 #include "../Helpers/LevelEntries.h"
 #include "../Helpers/LevelLoader.h"
+#include "Camera.h"
 
 GlobalState state;
 
@@ -31,6 +32,7 @@ void InitState() {
     }
     state.FakeHeight = 0;
     state.textBoxActive = false;
+    state.cam = CreateCamera();
     StopMusic();
     Mix_ChannelFinished(ChannelFinished);
 }

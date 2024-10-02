@@ -46,6 +46,10 @@ add_executable(game main.c Helpers/Input.h Helpers/Input.c defines.h Helpers/Dra
         GameStates/GLogoSplashState.h
         Helpers/GL/glHelper.c
         Helpers/GL/glHelper.h
+        Structs/Camera.c
+        Structs/Camera.h
+        Helpers/RenderingHelpers.c
+        Helpers/RenderingHelpers.h
 )
 
 set(SDL2_PATH "${CMAKE_SOURCE_DIR}/SDL2/x86_64-w64-mingw32")
@@ -67,6 +71,8 @@ target_include_directories(game PUBLIC ${OPENGL_INCLUDE_DIR})
 if (UNIX)
     find_package(GLEW REQUIRED)
     target_include_directories(game PUBLIC ${GLEW_INCLUDE_DIRS})
+
+    target_include_directories(game PUBLIC "/usr/include/cglm")
 elseif (WIN32) # Thank you Windows, I hate you.
     list(APPEND CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/glew")
     add_definitions(-DGLEW_STATIC)
@@ -76,7 +82,7 @@ elseif (WIN32) # Thank you Windows, I hate you.
 endif ()
 
 if (UNIX)
-    target_link_libraries(game -lSDL2 -lGL -lGLU ${SDL2_LIBRARY} ${ZLIB_LIBRARIES} ${SDL2_MIXER_LIBRARY} m SDL2 SDL2_mixer z ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES}) # extra l* flags are needed on Linux
+    target_link_libraries(game -lGL -lGLU ${SDL2_LIBRARY} ${ZLIB_LIBRARIES} ${SDL2_MIXER_LIBRARY} m SDL2 SDL2_mixer z ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES}) # extra l* flags are needed on Linux
 elseif (WIN32)
     target_link_libraries(game PRIVATE ${SDL2_LIBRARY} ${ZLIB_LIBRARIES} ${SDL2_MIXER_LIBRARY} ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} opengl32) # Don't pass extra l* flags on Windows (it isn't happy with them)
 endif ()

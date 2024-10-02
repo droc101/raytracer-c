@@ -46,7 +46,7 @@ void GMainStateUpdate(GlobalState * State) {
         ShowTextBox(tb);
     }
 
-    Vector2 moveVec = vec2(0, 0);
+    Vector2 moveVec = v2(0, 0);
     if (IsKeyPressed(SDL_SCANCODE_W)) {
         moveVec.x += 1;
     } else if (IsKeyPressed(SDL_SCANCODE_S)) {
@@ -126,18 +126,18 @@ void GMainStateRender(GlobalState* State) {
     RenderLevel(l->position, l->rotation, State->FakeHeight);
 
     SDL_Rect coinIconRect = {WindowWidth() - 260, 16, 40, 40};
-    DrawTexture(vec2(WindowWidth() - 260, 16), vec2(40, 40), gztex_interface_hud_ycoin);
+    DrawTexture(v2(WindowWidth() - 260, 16), v2(40, 40), gztex_interface_hud_ycoin);
     //SDL_RenderCopy(GetRenderer(), hudCoinTexture, NULL, &coinIconRect);
 
     char coinStr[16];
     sprintf(coinStr, "%d", State->coins);
-    FontDrawString(vec2(WindowWidth() - 210, 16), coinStr, 40, 0xFFFFFFFF, false);
+    FontDrawString(v2(WindowWidth() - 210, 16), coinStr, 40, 0xFFFFFFFF, false);
 
     coinIconRect.y = 64;
 
     for (int bc = 0; bc < State->blueCoins; bc++) {
         coinIconRect.x = WindowWidth() - 260 + (bc * 48);
-        DrawTexture(vec2(coinIconRect.x, coinIconRect.y), vec2(40, 40), gztex_interface_hud_bcoin);
+        DrawTexture(v2(coinIconRect.x, coinIconRect.y), v2(40, 40), gztex_interface_hud_bcoin);
         //SDL_RenderCopy(GetRenderer(), hudBlueCoinTexture, NULL, &coinIconRect);
     }
 

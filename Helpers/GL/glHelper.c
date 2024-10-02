@@ -8,13 +8,16 @@
 #include "../../Assets/Assets.h"
 #include "../../Structs/Vector2.h"
 #include "../LevelLoader.h"
+#include <cglm/cglm.h>
 
 SDL_GLContext ctx;
 
 Shader *ui_textured;
 Shader *ui_colored;
+Shader *wall_generic;
 
 Buffer *ui_buffer;
+Buffer *wall_buffer;
 
 GLuint textures[ASSET_COUNT];
 
@@ -127,7 +130,7 @@ void GL_Init() {
 
     ctx = SDL_GL_CreateContext(GetWindow());
 
-    //SDL_GL_SetSwapInterval(1);
+    SDL_GL_SetSwapInterval(1);
 
     GLenum err;
     glewExperimental = GL_TRUE; // Please expose OpenGL 3.x+ interfaces
@@ -139,14 +142,18 @@ void GL_Init() {
 
     char *hud_textured_fsh = (char *) DecompressAsset(gzfsh_shader_hud_textured);
     char *hud_textured_vsh = (char *) DecompressAsset(gzvsh_shader_hud_textured);
-
     ui_textured = GL_ConstructShader(hud_textured_fsh, hud_textured_vsh);
 
     char *hud_colored_fsh = (char *) DecompressAsset(gzfsh_shader_hud_color);
     char *hud_colored_vsh = (char *) DecompressAsset(gzvsh_shader_hud_color);
     ui_colored = GL_ConstructShader(hud_colored_fsh, hud_colored_vsh);
 
+    char *wall_generic_fsh = (char *) DecompressAsset(gzfsh_shader_wall);
+    char *wall_generic_vsh = (char *) DecompressAsset(gzvsh_shader_wall);
+    wall_generic = GL_ConstructShader(wall_generic_fsh, wall_generic_vsh);
+
     ui_buffer = GL_ConstructBuffer();
+    wall_buffer = GL_ConstructBuffer();
 
     char *vendor = (char *) glGetString(GL_VENDOR);
     char *renderer = (char *) glGetString(GL_RENDERER);
@@ -293,8 +300,8 @@ void GL_DrawRect(Vector2 pos, Vector2 size, uint color) {
 
     glUniform4f(glGetUniformLocation(ui_colored->program, "col"), r, g, b, a);
 
-    Vector2 NDC_pos = vec2(X_TO_NDC(pos.x), Y_TO_NDC(pos.y));
-    Vector2 NDC_pos_end = vec2(X_TO_NDC(pos.x + size.x), Y_TO_NDC(pos.y + size.y));
+    Vector2 NDC_pos = v2(X_TO_NDC(pos.x), Y_TO_NDC(pos.y));
+    Vector2 NDC_pos_end = v2(X_TO_NDC(pos.x + size.x), Y_TO_NDC(pos.y + size.y));
 
 
     float vertices[4][2] = {
@@ -386,9 +393,6 @@ GL_DrawTexture_Internal(Vector2 pos, Vector2 size, const unsigned char *imageDat
 
     GLuint tex = GL_LoadTexture(imageData);
 
-
-    glUniform1i(glGetUniformLocation(ui_textured->program, "alb"), tex);
-
     float a = ((color >> 24) & 0xFF) / 255.0f;
     float r = ((color >> 16) & 0xFF) / 255.0f;
     float g = ((color >> 8) & 0xFF) / 255.0f;
@@ -399,8 +403,10 @@ GL_DrawTexture_Internal(Vector2 pos, Vector2 size, const unsigned char *imageDat
     glUniform4f(glGetUniformLocation(ui_textured->program, "region"), region_start.x, region_start.y, region_end.x,
                 region_end.y);
 
-    Vector2 NDC_pos = vec2(X_TO_NDC(pos.x), Y_TO_NDC(pos.y));
-    Vector2 NDC_pos_end = vec2(X_TO_NDC(pos.x + size.x), Y_TO_NDC(pos.y + size.y));
+    glUniform1i(glGetUniformLocation(ui_textured->program, "alb"), tex);
+
+    Vector2 NDC_pos = v2(X_TO_NDC(pos.x), Y_TO_NDC(pos.y));
+    Vector2 NDC_pos_end = v2(X_TO_NDC(pos.x + size.x), Y_TO_NDC(pos.y + size.y));
 
 
     float vertices[4][4] = {
@@ -435,11 +441,11 @@ GL_DrawTexture_Internal(Vector2 pos, Vector2 size, const unsigned char *imageDat
 }
 
 void GL_DrawTexture(Vector2 pos, Vector2 size, const unsigned char *imageData) {
-    GL_DrawTexture_Internal(pos, size, imageData, 0xFFFFFFFF, vec2(-1, 0), vec2s(0));
+    GL_DrawTexture_Internal(pos, size, imageData, 0xFFFFFFFF, v2(-1, 0), v2s(0));
 }
 
 void GL_DrawTextureMod(Vector2 pos, Vector2 size, const unsigned char *imageData, uint color) {
-    GL_DrawTexture_Internal(pos, size, imageData, color, vec2(-1, 0), vec2s(0));
+    GL_DrawTexture_Internal(pos, size, imageData, color, v2(-1, 0), v2s(0));
 }
 
 void GL_DrawTextureRegion(Vector2 pos, Vector2 size, const unsigned char *imageData, Vector2 region_start,
@@ -462,8 +468,8 @@ void GL_DrawLine(Vector2 start, Vector2 end, uint color) {
 
     glUniform4f(glGetUniformLocation(ui_colored->program, "col"), r, g, b, a);
 
-    Vector2 NDC_start = vec2(X_TO_NDC(start.x), Y_TO_NDC(start.y));
-    Vector2 NDC_end = vec2(X_TO_NDC(end.x), Y_TO_NDC(end.y));
+    Vector2 NDC_start = v2(X_TO_NDC(start.x), Y_TO_NDC(start.y));
+    Vector2 NDC_end = v2(X_TO_NDC(end.x), Y_TO_NDC(end.y));
 
     // Calculate the 2 corner vertices of each point for a thick line
     float vertices[2][2] = {
@@ -488,5 +494,65 @@ void GL_DrawLine(Vector2 start, Vector2 end, uint color) {
     glEnableVertexAttribArray(pos_attr_loc);
 
     glDrawElements(GL_LINES, 2, GL_UNSIGNED_INT, NULL);
+}
+
+void GL_DrawWall(Wall *w, mat4 *mvp) {
+    glUseProgram(wall_generic->program);
+
+    GLuint tex = GL_LoadTexture(w->tex);
+
+    glUniform1i(glGetUniformLocation(wall_generic->program, "alb"), tex);
+
+    glUniformMatrix4fv(glGetUniformLocation(wall_generic->program, "MODELVIEW_MATRIX"), 1, GL_FALSE, mvp[0][0]);
+
+    float vertices[4][5] = { // X Y Z, U V
+            {0.0f, 1.0f, 0.0f, 0.0f, 0.0f},
+            {0.0f, 0.0f, 0.0f, 1.0f, 0.0f},
+            {0.0f, 1.0f, 0.0f, 1.0f, 1.0f},
+            {0.0f, 0.0f, 0.0f, 0.0f, 1.0f}
+    };
+
+    vertices[0][0] = w->a.x;
+    vertices[0][2] = w->a.y;
+    vertices[1][0] = w->a.x;
+    vertices[1][2] = w->a.y;
+
+    vertices[1][0] = w->b.x;
+    vertices[1][2] = w->b.y;
+    vertices[3][0] = w->b.x;
+    vertices[3][2] = w->b.y;
+
+    unsigned int indices[] = {
+            0, 1, 2,
+            0, 2, 3
+    };
+
+    glBindVertexArray(wall_buffer->vao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, wall_buffer->vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, wall_buffer->ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    GLint pos_attr_loc = glGetAttribLocation(wall_generic->program, "VERTEX");
+    glVertexAttribPointer(pos_attr_loc, 3, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void *) 0);
+    glEnableVertexAttribArray(pos_attr_loc);
+
+    GLint tex_attr_loc = glGetAttribLocation(wall_generic->program, "VERTEX_UV");
+    glVertexAttribPointer(tex_attr_loc, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void *) (3 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(tex_attr_loc);
+
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
+}
+
+void GL_Enable3D() {
+    glEnable(GL_DEPTH_TEST);
+    glClear(GL_DEPTH_BUFFER_BIT);
+}
+
+void GL_Disable3D() {
+    glDisable(GL_DEPTH_TEST);
+    glClear(GL_DEPTH_BUFFER_BIT);
 }
 

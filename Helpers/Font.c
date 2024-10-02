@@ -43,7 +43,9 @@ void FontDrawChar(Vector2 pos, char c, uint size, bool small, uint color) {
     dstRect.w = small ? size * 0.75 : size;
     dstRect.h = size;
 
-    GL_DrawTextureRegionMod(vec2(dstRect.x, dstRect.y), vec2(dstRect.w, dstRect.h), small ? gztex_interface_small_fonts : gztex_interface_font, vec2(srcRect.x, srcRect.y), vec2(srcRect.w, srcRect.h), color);
+    GL_DrawTextureRegionMod(v2(dstRect.x, dstRect.y), v2(dstRect.w, dstRect.h), small ? gztex_interface_small_fonts : gztex_interface_font,
+                            v2(srcRect.x, srcRect.y),
+                            v2(srcRect.w, srcRect.h), color);
 }
 
 Vector2 FontDrawString(Vector2 pos, char* str, uint size, uint color, bool small) {
@@ -61,11 +63,11 @@ Vector2 FontDrawString(Vector2 pos, char* str, uint size, uint color, bool small
             x = pos.x;
             y += size;
         }
-        FontDrawChar(vec2(x, y), str[i], size, small, color);
+        FontDrawChar(v2(x, y), str[i], size, small, color);
         x += sizeX;
         i++;
     }
-    return vec2(x+sizeX, y+size); // Return the bottom right corner of the text
+    return v2(x + sizeX, y + size); // Return the bottom right corner of the text
 }
 
 Vector2 MeasureText(char* str, uint size, bool small) {
@@ -85,7 +87,7 @@ Vector2 MeasureText(char* str, uint size, bool small) {
 
     textWidth = max(textWidth, tempWidth);
 
-    return vec2(textWidth, textHeight);
+    return v2(textWidth, textHeight);
 }
 
 int StringLineCount(char *str) {
@@ -155,7 +157,7 @@ void DrawTextAligned(char* str, uint size, uint color, Vector2 rect_pos, Vector2
         } else {
             x = rect_pos.x;
         }
-        FontDrawString(vec2(x, y), line, size, color, small);
+        FontDrawString(v2(x, y), line, size, color, small);
         y += size;
     }
 

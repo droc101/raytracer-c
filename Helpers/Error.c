@@ -39,18 +39,18 @@ _Noreturn void FriendlyError(char* title, char* description) {
 //            }
 //        }
 //
-//        Vector2 bg_tile_size = vec2(320, 240);
+//        Vector2 bg_tile_size = v2(320, 240);
 //        for (int x = 0; x < WindowWidth(); x += bg_tile_size.x) {
 //            for (int y = 0; y < WindowHeight(); y += bg_tile_size.y) {
 //                SDL_RenderCopy(GetRenderer(), menu_bg_tex_red, NULL, &(SDL_Rect){x, y, bg_tile_size.x, bg_tile_size.y});
 //            }
 //        }
 //
-//        DrawTextAligned(title, 32, 0xFFFF8080, vec2s(30), vec2(WindowWidth() - 60, WindowHeight() - 60), FONT_HALIGN_CENTER, FONT_VALIGN_TOP, false);
+//        DrawTextAligned(title, 32, 0xFFFF8080, v2s(30), v2(WindowWidth() - 60, WindowHeight() - 60), FONT_HALIGN_CENTER, FONT_VALIGN_TOP, false);
 //
-//        DrawTextAligned(description, 24, 0xFFFFFFFF, vec2(30, 100), vec2(WindowWidth() - 60, WindowHeight() - 160), FONT_HALIGN_CENTER, FONT_VALIGN_TOP, true);
+//        DrawTextAligned(description, 24, 0xFFFFFFFF, vec2(30, 100), v2(WindowWidth() - 60, WindowHeight() - 160), FONT_HALIGN_CENTER, FONT_VALIGN_TOP, true);
 //
-//        DrawTextAligned(dbgInfoBuf, 16, 0xFF808080, vec2(30, 100), vec2(WindowWidth() - 60, WindowHeight() - 160), FONT_HALIGN_CENTER, FONT_VALIGN_BOTTOM, true);
+//        DrawTextAligned(dbgInfoBuf, 16, 0xFF808080, vec2(30, 100), v2(WindowWidth() - 60, WindowHeight() - 160), FONT_HALIGN_CENTER, FONT_VALIGN_BOTTOM, true);
 //
 //        SDL_RenderPresent(GetRenderer());
 //    }

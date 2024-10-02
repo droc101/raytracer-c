@@ -14,7 +14,7 @@ Vector2 CollideWall(Wall *w, Vector2 position, Vector2 moveVec) {
     int mult = (position.x - w->a.x) * (w->b.y - w->a.y) - (position.y - w->a.y) * (w->b.x - w->a.x) < 0 ? -1 : 1;
     double hitboxSize = mult * WALL_HITBOX_EXTENTS;
     Vector2 pos = Vector2Add(position, moveVec);
-    Vector2 hitboxOffset = vec2(hitboxSize * dy / w->Length, -hitboxSize * dx / w->Length);
+    Vector2 hitboxOffset = v2(hitboxSize * dy / w->Length, -hitboxSize * dx / w->Length);
     if (
             (mult * ((pos.x - w->a.x - hitboxOffset.x) * (w->b.y - w->a.y) - (pos.y - w->a.y - hitboxOffset.y) * (w->b.x - w->a.x)) <= 0) &&
             (mult * ((pos.x - w->a.x - hitboxOffset.x) * hitboxOffset.y - (pos.y - w->a.y - hitboxOffset.y) * hitboxOffset.x) <= 0) &&
