@@ -58,11 +58,11 @@ Vector2 FontDrawString(Vector2 pos, char* str, uint size, uint color, bool small
             x = pos.x;
             y += size;
         }
-        FontDrawChar(vec2(x, y), str[i], size, small);
+        FontDrawChar(v2(x, y), str[i], size, small);
         x += sizeX;
         i++;
     }
-    return vec2(x+sizeX, y+size); // Return the bottom right corner of the text
+    return v2(x+sizeX, y+size); // Return the bottom right corner of the text
 }
 
 Vector2 MeasureText(char* str, uint size, bool small) {
@@ -82,7 +82,7 @@ Vector2 MeasureText(char* str, uint size, bool small) {
 
     textWidth = max(textWidth, tempWidth);
 
-    return vec2(textWidth, textHeight);
+    return v2(textWidth, textHeight);
 }
 
 int StringLineCount(char *str) {
@@ -135,7 +135,7 @@ void DrawTextAligned(char* str, uint size, uint color, Vector2 rect_pos, Vector2
         } else {
             x = rect_pos.x;
         }
-        FontDrawString(vec2(x, y), line, size, color, small);
+        FontDrawString(v2(x, y), line, size, color, small);
         if (i != 0) y += size; // why not the first line? who knows, but it breaks if you don't do this
     }
 

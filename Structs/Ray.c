@@ -20,7 +20,7 @@ RayCastResult Intersect(Wall wall, Vector2 from, double direction)
             if ((y >= wall.a.y && y <= wall.b.y) || (y >= wall.b.y && y <= wall.a.y)) {
                 rr.Collided = true;
                 rr.Distance = distance;
-                rr.CollisionPoint = vec2(wall.a.x, y);
+                rr.CollisionPoint = v2(wall.a.x, y);
                 rr.CollisionWall = wall;
                 return rr;
             }
@@ -35,7 +35,7 @@ RayCastResult Intersect(Wall wall, Vector2 from, double direction)
         if ((x >= wall.a.x && x <= wall.b.x) || (x >= wall.b.x && x <= wall.a.x)) {
             rr.Collided = true;
             rr.Distance = distance;
-            rr.CollisionPoint = vec2(x, (wall.dy * (x - wall.a.x)) / wall.dx + wall.a.y);
+            rr.CollisionPoint = v2(x, (wall.dy * (x - wall.a.x)) / wall.dx + wall.a.y);
             rr.CollisionWall = wall;
             return rr;
         }

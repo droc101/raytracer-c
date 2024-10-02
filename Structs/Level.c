@@ -18,7 +18,7 @@ Level *CreateLevel() {
     Level *l = (Level*)malloc(sizeof(Level));
     l->actors = CreateList();
     l->walls = CreateList();
-    l->position = vec2s(0);
+    l->position = v2s(0);
     l->rotation = 0;
     l->SkyColor = 0xff82c5ff;
     l->FloorColor = 0xff36322f;

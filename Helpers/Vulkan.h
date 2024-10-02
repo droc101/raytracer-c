@@ -8,6 +8,7 @@
 #include "../defines.h"
 #include <SDL_vulkan.h>
 #include <vulkan/vulkan.h>
+#include "../cglm-0.9.4/include/cglm/cglm.h"
 
 #define VULKAN_VERSION VK_MAKE_VERSION(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH)
 #ifndef NDEBUG
@@ -21,19 +22,6 @@
 #define VALIDATION_ENABLE
 #endif
 #define MAX_FRAMES_IN_FLIGHT 2
-
-typedef struct {
-    unsigned int graphicsFamily;
-    unsigned int presentFamily;
-} QueueFamilyIndices;
-
-typedef struct {
-    unsigned int formatCount;
-    VkSurfaceFormatKHR *formats;
-    unsigned int presentModeCount;
-    VkPresentModeKHR *presentMode;
-    VkSurfaceCapabilitiesKHR capabilities;
-} SwapChainSupportDetails;
 
 #define clamp(val, min, max)(val < min ? min : val > max ? max : val)
 

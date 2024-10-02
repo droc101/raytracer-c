@@ -83,11 +83,11 @@ bool IsMouseButtonJustReleased(int button) {
 }
 
 Vector2 GetMousePos() {
-    return vec2(mouseX, mouseY);
+    return v2(mouseX, mouseY);
 }
 
 Vector2 GetMouseRel() {
-    return vec2(mouseXrel, mouseYrel);
+    return v2(mouseXrel, mouseYrel);
 }
 
 void ConsumeKey(int code) {

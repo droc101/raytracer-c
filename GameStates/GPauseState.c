@@ -66,7 +66,7 @@ void GPauseStateRender() {
     draw_rect(0, 0, WindowWidth(), WindowHeight());
     SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_NONE);
 
-    DrawTextAligned("Game Paused", 32, 0xFFFFFFFF, vec2s(0), vec2(WindowWidth(), 250), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, false);
+    DrawTextAligned("Game Paused", 32, 0xFFFFFFFF, v2s(0), v2(WindowWidth(), 250), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, false);
 
     char *levelID = gLevelEntries[GetState()->levelID].displayName;
     int cNum = gLevelEntries[GetState()->levelID].courseNum;
@@ -74,20 +74,20 @@ void GPauseStateRender() {
     if (cNum != -1) {
         char buf[64];
         sprintf(buf, "Level %d", cNum);
-        DrawTextAligned(buf, 16, 0xFF000000, vec2(4,  164), vec2(WindowWidth(), 40), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
-        DrawTextAligned(buf, 16, 0xFFFFFFFF, vec2(0,  160), vec2(WindowWidth(), 40), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
+        DrawTextAligned(buf, 16, 0xFF000000, v2(4,  164), v2(WindowWidth(), 40), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
+        DrawTextAligned(buf, 16, 0xFFFFFFFF, v2(0,  160), v2(WindowWidth(), 40), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
     }
 
-    DrawTextAligned(levelID, 32, 0xFF000000, vec2(4,  204), vec2(WindowWidth(), 40), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
-    DrawTextAligned(levelID, 32, 0xFFFFFFFF, vec2(0,  200), vec2(WindowWidth(), 40), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
+    DrawTextAligned(levelID, 32, 0xFF000000, v2(4,  204), v2(WindowWidth(), 40), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
+    DrawTextAligned(levelID, 32, 0xFFFFFFFF, v2(0,  200), v2(WindowWidth(), 40), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
 
     for (int i = 0; i < 2; i++) {
         if (i == pauseSelected) {
-            DrawTextAligned(pauseOptions[i], 24, 0xFF000000, vec2(2,  322 + (30 * (i + 1))), vec2(WindowWidth(), 30), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
-            DrawTextAligned(pauseOptions[i], 24, 0xFFFFFFFF, vec2(0,  320 + (30 * (i + 1))), vec2(WindowWidth(), 30), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
+            DrawTextAligned(pauseOptions[i], 24, 0xFF000000, v2(2,  322 + (30 * (i + 1))), v2(WindowWidth(), 30), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
+            DrawTextAligned(pauseOptions[i], 24, 0xFFFFFFFF, v2(0,  320 + (30 * (i + 1))), v2(WindowWidth(), 30), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
         } else {
-            DrawTextAligned(pauseOptions[i], 24, 0xFF000000, vec2(2,  322 + (30 * (i + 1))), vec2(WindowWidth(), 30), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
-            DrawTextAligned(pauseOptions[i], 24, 0x80a0a0a0, vec2(0,  320 + (30 * (i + 1))), vec2(WindowWidth(), 30), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
+            DrawTextAligned(pauseOptions[i], 24, 0xFF000000, v2(2,  322 + (30 * (i + 1))), v2(WindowWidth(), 30), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
+            DrawTextAligned(pauseOptions[i], 24, 0x80a0a0a0, v2(0,  320 + (30 * (i + 1))), v2(WindowWidth(), 30), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
         }
     }
 }

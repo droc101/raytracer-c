@@ -29,7 +29,7 @@ void GMainStateUpdate() {
 
     Level *l = GetState()->level;
 
-    Vector2 moveVec = vec2(0, 0);
+    Vector2 moveVec = v2(0, 0);
     if (IsKeyPressed(SDL_SCANCODE_W)) {
         moveVec.x += 1;
     } else if (IsKeyPressed(SDL_SCANCODE_S)) {

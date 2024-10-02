@@ -8,9 +8,9 @@
 #include "../defines.h"
 
 // Create a 2D vector with the given x and y values
-Vector2 vec2(double x, double y);
+Vector2 v2(double x, double y);
 // Create a 2D vector with the same x and y values
-Vector2 vec2s(double xy);
+Vector2 v2s(double xy);
 
 // Get the distance between two vectors
 double Vector2Distance(Vector2 a, Vector2 b);
