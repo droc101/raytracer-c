@@ -16,7 +16,7 @@
 #include "config.h"
 #include "Helpers/Error.h"
 #include "Helpers/CommonAssets.h"
-#include "Helpers/GL/glHelper.h"
+#include "Helpers/RenderingHelpers.h"
 
 int main(int argc, char *argv[]) {
 
@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
     }
     SetWindow(w);
 
-    GL_Init();
+    RenderInit();
 
     SDL_SetWindowMinimumSize(w, MIN_WIDTH, MIN_HEIGHT);
     SDL_SetWindowMaximumSize(w, MAX_WIDTH, MAX_HEIGHT);
@@ -111,14 +111,17 @@ int main(int argc, char *argv[]) {
 
         g->RenderGame(g);
 
-        GL_ClearDepthOnly();
+        g->cam->x = g->level->position.x;
+        g->cam->z = g->level->position.y;
+        g->cam->yaw = g->level->rotation;
+
+        RenderLevel3D(g->level, g->cam);
 
         // TODO: Render HUD here
 
         FrameGraphDraw();
 
-        GL_Swap();
-
+        Swap();
 
 
         UpdateInputStates();
@@ -142,7 +145,7 @@ int main(int argc, char *argv[]) {
     SDL_DestroyWindow(GetWindow());
     SDL_FreeSurface(icon);
     InvalidateAssetCache(); // Free all assets
-    GL_DestroyGL();
+    RenderDestroy();
     SDL_Quit();
     return 0;
 }
