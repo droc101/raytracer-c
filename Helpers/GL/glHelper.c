@@ -505,22 +505,12 @@ void GL_DrawWall(Wall *w, mat4 *mvp) {
 
     glUniformMatrix4fv(glGetUniformLocation(wall_generic->program, "MODELVIEW_MATRIX"), 1, GL_FALSE, mvp[0][0]);
 
-    float vertices[4][5] = { // X Y Z, U V
-            {0.0f, 1.0f, 0.0f, 0.0f, 0.0f},
-            {0.0f, 0.0f, 0.0f, 1.0f, 0.0f},
-            {0.0f, 1.0f, 0.0f, 1.0f, 1.0f},
-            {0.0f, 0.0f, 0.0f, 0.0f, 1.0f}
+    float vertices[4][5] = { // X Y Z U V
+            {w->a.x, -0.5f, w->a.y, 0.0f, 0.0f},
+            {w->b.x, -0.5f, w->b.y, w->Length, 0.0f},
+            {w->b.x, 0.5f, w->b.y, w->Length, 1.0f},
+            {w->a.x, 0.5f, w->a.y, 0.0f, 1.0f}
     };
-
-    vertices[0][0] = w->a.x;
-    vertices[0][2] = w->a.y;
-    vertices[1][0] = w->a.x;
-    vertices[1][2] = w->a.y;
-
-    vertices[1][0] = w->b.x;
-    vertices[1][2] = w->b.y;
-    vertices[3][0] = w->b.x;
-    vertices[3][2] = w->b.y;
 
     unsigned int indices[] = {
             0, 1, 2,
@@ -536,11 +526,11 @@ void GL_DrawWall(Wall *w, mat4 *mvp) {
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     GLint pos_attr_loc = glGetAttribLocation(wall_generic->program, "VERTEX");
-    glVertexAttribPointer(pos_attr_loc, 3, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void *) 0);
+    glVertexAttribPointer(pos_attr_loc, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void *) 0);
     glEnableVertexAttribArray(pos_attr_loc);
 
     GLint tex_attr_loc = glGetAttribLocation(wall_generic->program, "VERTEX_UV");
-    glVertexAttribPointer(tex_attr_loc, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void *) (3 * sizeof(GLfloat)));
+    glVertexAttribPointer(tex_attr_loc, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void *) (3 * sizeof(GLfloat)));
     glEnableVertexAttribArray(tex_attr_loc);
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);

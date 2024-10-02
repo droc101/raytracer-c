@@ -4,8 +4,6 @@ in vec3 VERTEX;
 in vec2 VERTEX_UV;
 
 out vec2 UV;
-
-// MODELVIEW_MATRIX is also projected, but IM NOT WRITING THAT
 uniform mat4 MODELVIEW_MATRIX;
 
 void main() {

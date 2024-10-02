@@ -109,13 +109,15 @@ int main(int argc, char *argv[]) {
 
         g->UpdateGame(g);
 
-        g->RenderGame(g);
-
         g->cam->x = g->level->position.x;
         g->cam->z = g->level->position.y;
         g->cam->yaw = g->level->rotation;
 
         RenderLevel3D(g->level, g->cam);
+
+        g->RenderGame(g);
+
+
 
         // TODO: Render HUD here
 

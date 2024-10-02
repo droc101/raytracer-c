@@ -74,6 +74,8 @@ if (UNIX)
 
     target_include_directories(game PUBLIC "/usr/include/cglm")
 elseif (WIN32) # Thank you Windows, I hate you.
+    target_include_directories(game PUBLIC "${CMAKE_SOURCE_DIR}/cglm/include")
+
     list(APPEND CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/glew")
     add_definitions(-DGLEW_STATIC)
     set(GLEW_LIBRARIES "${CMAKE_SOURCE_DIR}/glew/lib/Release/x64/glew32s.lib")
@@ -96,4 +98,3 @@ add_custom_target(
 )
 
 add_dependencies(game run)
-
