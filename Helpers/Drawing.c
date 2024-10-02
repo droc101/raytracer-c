@@ -88,29 +88,6 @@ SDL_Surface* ToSDLSurface(const unsigned char* imageData, char *filterMode) {
     return surface;
 }
 
-SDL_Texture* ToSDLTexture(const unsigned char* imageData, char *filterMode) {
-    return NULLPTR;
-
-//    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, filterMode);
-//
-//    SDL_Surface* surface = ToSDLSurface(imageData, filterMode); // if this fails, it will call a _NoReturn function, so no need to check
-//
-//    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-//    SDL_FreeSurface(surface); // Free the surface as it's not needed anymore
-//    if (!texture) {
-//        printf("Failed to create texture: %s\n", SDL_GetError());
-//        Error("ToSDLTexture: Failed to create texture");
-//    }
-//
-//    return texture;
-}
-
-SDL_Point SDL_TextureSize(SDL_Texture *texture) {
-    SDL_Point size;
-    SDL_QueryTexture(texture, NULL, NULL, &size.x, &size.y);
-    return size;
-}
-
 void DrawTextureColumn(SDL_Texture* texture, int sx, int dx, int dy, int dh) {
 
     // TODO: Implement this (depends on texture size storage)

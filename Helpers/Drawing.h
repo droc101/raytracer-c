@@ -66,32 +66,6 @@ void draw_rect(int x, int y, int w, int h);
 SDL_Surface* ToSDLSurface(const unsigned char* imageData, char *filterMode);
 
 /**
- * Convert a texture asset to an SDL_Texture
- * @param imageData Decompressed image data
- * @param filterMode Texture filtering mode
- * @return The @c SDL_Texture
- */
-SDL_Texture* ToSDLTexture(const unsigned char* imageData, char *filterMode);
-
-/**
- * Get the size of a texture
- * @param texture The texture to get the size of
- * @return Size of the texture as an @c SDL_Point
- */
-SDL_Point SDL_TextureSize(SDL_Texture *texture);
-
-/**
- * Draw one column of a texture to the screen
- * @param texture The texture to draw
- * @param sx Source X position
- * @param dx Destination X position
- * @param dy Destination Y position
- * @param dh Destination height
- * @note Soruce = texture, Destination = screen
- */
-void DrawTextureColumn(SDL_Texture* texture, int sx, int dx, int dy, int dh);
-
-/**
  * Set the color to draw with
  * @param color Color as uint, @c 0xAARRGGBB
  */
