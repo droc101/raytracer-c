@@ -40,6 +40,12 @@ const List(Vertex) vertices = {
 
 const List(uint16_t) indices = {6, (uint16_t[]){0, 1, 2, 2, 3, 0}};
 
+static void VulkanError(const char *error) {
+    fflush(stdout);
+    printf("%s", error);
+    fflush(stderr);
+}
+
 /// A Vulkan instance is the connection between the game and the driver, through Vulkan.
 /// The creation of it requires configuring Vulkan for the app, allowing for better driver performance.
 VkInstance instance;
@@ -85,7 +91,7 @@ VkDeviceMemory indexBufferMemory;
  * @param pDevice The physical device to query for
  * @return A @c SwapChainSupportDetails struct
  */
-static SwapChainSupportDetails QuerySwapChainSupport(const VkPhysicalDevice pDevice) {
+static SwapChainSupportDetails QuerySwapChainSupport(const VkPhysicalDevice pDevice) { // NOLINT(misc-misplaced-const)
     SwapChainSupportDetails details = {0, NULL, 0, NULL};
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(pDevice, surface, &details.capabilities);
     vkGetPhysicalDeviceSurfaceFormatsKHR(pDevice, surface, &details.formatCount, NULL);
@@ -106,21 +112,11 @@ static SwapChainSupportDetails QuerySwapChainSupport(const VkPhysicalDevice pDev
  * @param window The window to initialize Vulkan for.
  * @see instance
  */
-static void CreateInstance(SDL_Window *window) {
+static bool CreateInstance(SDL_Window *window) {
     uint32_t extensionCount;
     SDL_Vulkan_GetInstanceExtensions(window, &extensionCount, NULL);
     const char *extensionNames[extensionCount];
     SDL_Vulkan_GetInstanceExtensions(window, &extensionCount, extensionNames);
-
-    // uint32_t layerCount;
-    // vkEnumerateInstanceLayerProperties(&layerCount, NULL);
-    // VkLayerProperties availableLayers[layerCount];
-    // vkEnumerateInstanceLayerProperties(&layerCount, availableLayers);
-    // for (int i = 0; i < layerCount; i++) {
-    //     printf("%s\n",availableLayers[i].layerName);
-    // }
-    // fflush(stdout);
-
     VkApplicationInfo applicationInfo = {
         VK_STRUCTURE_TYPE_APPLICATION_INFO,
         NULL,
@@ -145,8 +141,10 @@ static void CreateInstance(SDL_Window *window) {
     createInfo.ppEnabledLayerNames = (const char*const[1]){"VK_LAYER_KHRONOS_validation"};
 #endif
     if (vkCreateInstance(&createInfo, NULL, &instance) != VK_SUCCESS) {
-        Error("Failed to create Vulkan instance!");
+        VulkanError("Failed to create Vulkan instance!");
+        return false;
     }
+    return true;
 }
 
 /**
@@ -154,27 +152,30 @@ static void CreateInstance(SDL_Window *window) {
  * @param window The window the surface should be linked to
  * @see surface
  */
-static void CreateSurface(SDL_Window *window) {
+static bool CreateSurface(SDL_Window *window) {
     if (SDL_Vulkan_CreateSurface(window, instance, &surface) == SDL_FALSE) {
-        Error("Failed to create Vulkan window surface");
+        VulkanError("Failed to create Vulkan window surface");
+        return false;
     }
+    return true;
 }
 
 /**
  * This function selects the GPU that will be used to render the game.
  * Assuming I did it right, it will pick the best GPU available.
  */
-static void PickPhysicalDevice() {
+static bool PickPhysicalDevice() {
     uint32_t deviceCount = 0;
     vkEnumeratePhysicalDevices(instance, &deviceCount, NULL);
     if (deviceCount == 0) {
-        Error("Failed to find any GPUs with Vulkan support!");
+        VulkanError("Failed to find any GPUs with Vulkan support!");
+        return false;
     }
     VkPhysicalDevice devices[deviceCount];
     vkEnumeratePhysicalDevices(instance, &deviceCount, devices);
     bool match = false;
     for (uint32_t i = 0; i < deviceCount; i++) {
-        const VkPhysicalDevice pDevice = devices[i];
+        const VkPhysicalDevice pDevice = devices[i]; // NOLINT(misc-misplaced-const)
         VkPhysicalDeviceFeatures deviceFeatures;
         vkGetPhysicalDeviceFeatures(pDevice, &deviceFeatures);
         if (!deviceFeatures.geometryShader) continue;
@@ -209,7 +210,7 @@ static void PickPhysicalDevice() {
                         vkGetPhysicalDeviceProperties(pDevice, &deviceProperties);
                         if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
                             physicalDevice = devices[i];
-                            return;
+                            return true;
                         }
                         physicalDevice = devices[i];
                         match = true;
@@ -220,15 +221,14 @@ static void PickPhysicalDevice() {
             }
         }
     }
-    if (!match) {
-        Error("Could not find a suitable GPU!");
-    }
+    if (!match) {VulkanError("Could not find a suitable GPU!");}
+    return match;
 }
 
 /**
  * Creates the logical device that is used to interface with the physical device.
  */
-static void CreateLogicalDevice() {
+static bool CreateLogicalDevice() {
     const float queuePriority = 1;
     uint32_t queueCount = 0;
     VkDeviceQueueCreateInfo queueCreateInfo[3];
@@ -248,7 +248,7 @@ static void CreateLogicalDevice() {
         1,
         &queuePriority
     };
-    if (queueFamilyIndices.graphicsFamily != queueFamilyIndices.presentFamily) {
+    if (queueFamilyIndices.presentFamily != queueFamilyIndices.graphicsFamily && queueFamilyIndices.presentFamily != queueFamilyIndices.transferFamily) {
         queueCreateInfo[queueCount++] = (VkDeviceQueueCreateInfo){
             VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
             NULL,
@@ -277,11 +277,13 @@ static void CreateLogicalDevice() {
     createInfo.ppEnabledLayerNames = (const char*const[1]){"VK_LAYER_KHRONOS_validation"};
 #endif
     if (vkCreateDevice(physicalDevice, &createInfo, NULL, &device) != VK_SUCCESS) {
-        Error("Failed to create Vulkan device!");
+        VulkanError("Failed to create Vulkan device!");
+        return false;
     }
     vkGetDeviceQueue(device, queueFamilyIndices.graphicsFamily, 0, &graphicsQueue);
     vkGetDeviceQueue(device, queueFamilyIndices.transferFamily, 0, &transferQueue);
     vkGetDeviceQueue(device, queueFamilyIndices.presentFamily, 0, &presentQueue);
+    return true;
 }
 
 /**
@@ -313,7 +315,7 @@ static VkPresentModeKHR GetSwapPresentMode() {
     return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-static void CreateSwapChain(SDL_Window *window) {
+static bool CreateSwapChain(SDL_Window *window) {
     const VkSurfaceFormatKHR surfaceFormat = GetSwapSurfaceFormat();
     const VkPresentModeKHR presentMode = GetSwapPresentMode();
     VkExtent2D extent = swapChainSupport.capabilities.currentExtent;
@@ -342,29 +344,23 @@ static void CreateSwapChain(SDL_Window *window) {
         VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
         VK_SHARING_MODE_CONCURRENT,
         2,
-        NULL,
+        (const uint32_t[]){
+            queueFamilyIndices.graphicsFamily,
+            queueFamilyIndices.transferFamily,
+            queueFamilyIndices.presentFamily
+        },
         swapChainSupport.capabilities.currentTransform,
         VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
         presentMode,
         VK_TRUE,
         VK_NULL_HANDLE
     };
-    if (queueFamilyIndices.graphicsFamily != queueFamilyIndices.presentFamily) {
+    if (queueFamilyIndices.presentFamily != queueFamilyIndices.graphicsFamily && queueFamilyIndices.presentFamily != queueFamilyIndices.transferFamily) {
         createInfo.queueFamilyIndexCount++;
-        createInfo.pQueueFamilyIndices = (const uint32_t[3]){
-            queueFamilyIndices.graphicsFamily,
-            queueFamilyIndices.presentFamily,
-            queueFamilyIndices.transferFamily
-        };
-    }
-    else {
-        createInfo.pQueueFamilyIndices = (const uint32_t[3]){
-            queueFamilyIndices.graphicsFamily,
-            queueFamilyIndices.transferFamily
-        };
     }
     if (vkCreateSwapchainKHR(device, &createInfo, NULL, &swapChain) != VK_SUCCESS) {
-        Error("Failed to create Vulkan swap chain!");
+        VulkanError("Failed to create Vulkan swap chain!");
+        return false;
     }
     vkGetSwapchainImagesKHR(device, swapChain, &imageCount, NULL);
     swapChainImages = malloc(sizeof(VkImage*) * imageCount);
@@ -372,9 +368,10 @@ static void CreateSwapChain(SDL_Window *window) {
     vkGetSwapchainImagesKHR(device, swapChain, &imageCount, swapChainImages);
     swapChainImageFormat = surfaceFormat.format;
     swapChainExtent = extent;
+    return true;
 }
 
-static void CreateImageViews() {
+static bool CreateImageViews() {
     swapChainImageViews = malloc(sizeof(VkImageView*) * swapChainCount);
     for (uint32_t i = 0; i < swapChainCount; i++) {
         VkImageViewCreateInfo createInfo = {
@@ -394,27 +391,14 @@ static void CreateImageViews() {
             }
         };
         if (vkCreateImageView(device, &createInfo, NULL, &swapChainImageViews[i]) != VK_SUCCESS) {
-            Error("Failed to create Vulkan image views!");
+            VulkanError("Failed to create Vulkan image views!");
+            return false;
         }
     }
+    return true;
 }
 
-static VkShaderModule CreateShaderModule(const uint32_t *code, const size_t size) {
-    const VkShaderModuleCreateInfo createInfo = {
-        VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-        NULL,
-        0,
-        size - 16,
-        code
-    };
-    VkShaderModule shaderModule;
-    if (vkCreateShaderModule(device, &createInfo, NULL, &shaderModule) != VK_SUCCESS) {
-        Error("Failed to create shader module!");
-    }
-    return shaderModule;
-}
-
-static void CreateRenderPass() {
+static bool CreateRenderPass() {
     VkAttachmentDescription colorAttachment = {
         0,
         swapChainImageFormat,
@@ -463,17 +447,36 @@ static void CreateRenderPass() {
         &dependency
     };
     if (vkCreateRenderPass(device, &renderPassInfo, NULL, &renderPass) != VK_SUCCESS) {
-        Error("Failed to create Vulkan render pass!");
+        VulkanError("Failed to create Vulkan render pass!");
+        return false;
     }
+    return true;
 }
 
-static void CreateGraphicsPipeline() {
+static VkShaderModule CreateShaderModule(const uint32_t *code, const size_t size) {
+    const VkShaderModuleCreateInfo createInfo = {
+        VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
+        NULL,
+        0,
+        size - 16,
+        code
+    };
+    VkShaderModule shaderModule;
+    if (vkCreateShaderModule(device, &createInfo, NULL, &shaderModule) != VK_SUCCESS) {
+        VulkanError("Failed to create shader module!");
+        return NULL;
+    }
+    return shaderModule;
+}
+
+static bool CreateGraphicsPipeline() {
     uint8_t *vertShaderCode = DecompressAsset(gzvert_shader_basic);
     uint8_t *fragShaderCode = DecompressAsset(gzfrag_shader_basic);
     VkShaderModule vertShaderModule = CreateShaderModule((uint32_t*)vertShaderCode,
                                                          AssetGetSize(gzvert_shader_basic));
     VkShaderModule fragShaderModule = CreateShaderModule((uint32_t*)fragShaderCode,
                                                          AssetGetSize(gzfrag_shader_basic));
+    if (!vertShaderModule || !fragShaderModule) return false;
     VkPipelineShaderStageCreateInfo vertShaderStageInfo = {
         VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
         NULL,
@@ -582,16 +585,13 @@ static void CreateGraphicsPipeline() {
         &colorBlendAttachment,
         {0, 0, 0, 0}
     };
-#define dynamicStateCount 2 // Yes, this is somewhat cursed, but if I used a const instead of a #define it makes dynamicStates become a dynamic length array
-
-
-    VkDynamicState dynamicStates[dynamicStateCount] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
+    List(VkDynamicState) dynamicStates = {2, (VkDynamicState[]){VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR}};
     VkPipelineDynamicStateCreateInfo dynamicState = {
         VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
         NULL,
         0,
-        dynamicStateCount,
-        dynamicStates
+        dynamicStates.length,
+        dynamicStates.data
     };
     VkPipelineLayoutCreateInfo pipelineLayoutInfo = {
         VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
@@ -603,7 +603,8 @@ static void CreateGraphicsPipeline() {
         NULL
     };
     if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, NULL, &pipelineLayout) != VK_SUCCESS) {
-        Error("Failed to create pipeline layout!");
+        VulkanError("Failed to create pipeline layout!");
+        return false;
     }
 
     VkGraphicsPipelineCreateInfo pipelineInfo = {
@@ -628,13 +629,15 @@ static void CreateGraphicsPipeline() {
         -1
     };
     if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, NULL, &graphicsPipeline) != VK_SUCCESS) {
-        Error("Failed to create graphics pipeline!");
+        VulkanError("Failed to create graphics pipeline!");
+        return false;
     }
     vkDestroyShaderModule(device, vertShaderModule, NULL);
     vkDestroyShaderModule(device, fragShaderModule, NULL);
+    return true;
 }
 
-static void CreateFramebuffers() {
+static bool CreateFramebuffers() {
     swapChainFramebuffers = malloc(sizeof(VkFramebuffer*) * swapChainCount);
     for (uint32_t i = 0; i < swapChainCount; i++) {
         VkImageView attachments[] = {swapChainImageViews[i]};
@@ -650,12 +653,14 @@ static void CreateFramebuffers() {
             1
         };
         if (vkCreateFramebuffer(device, &framebufferInfo, NULL, &swapChainFramebuffers[i]) != VK_SUCCESS) {
-            Error("Failed to create Vulkan framebuffer!");
+            VulkanError("Failed to create Vulkan framebuffer!");
+            return false;
         }
     }
+    return true;
 }
 
-static void CreateCommandPools() {
+static bool CreateCommandPools() {
     const VkCommandPoolCreateInfo graphicsPoolInfo = {
         VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
         NULL,
@@ -663,7 +668,8 @@ static void CreateCommandPools() {
         queueFamilyIndices.graphicsFamily
     };
     if (vkCreateCommandPool(device, &graphicsPoolInfo, NULL, &graphicsCommandPool) != VK_SUCCESS) {
-        Error("Failed to create Vulkan graphics command pool!");
+        VulkanError("Failed to create Vulkan graphics command pool!");
+        return false;
     }
     const VkCommandPoolCreateInfo transferPoolInfo = {
         VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
@@ -672,11 +678,13 @@ static void CreateCommandPools() {
         queueFamilyIndices.transferFamily
     };
     if (vkCreateCommandPool(device, &transferPoolInfo, NULL, &transferCommandPool) != VK_SUCCESS) {
-        Error("Failed to create Vulkan transfer command pool!");
+        VulkanError("Failed to create Vulkan transfer command pool!");
+        return false;
     }
+    return true;
 }
 
-static void CreateBuffer(const VkDeviceSize size, const VkBufferUsageFlags usageFlags,
+static bool CreateBuffer(const VkDeviceSize size, const VkBufferUsageFlags usageFlags,
                          const VkMemoryPropertyFlags propertyFlags,
                          VkBuffer *buffer, VkDeviceMemory *bufferMemory) {
     VkBufferCreateInfo bufferInfo = {
@@ -687,24 +695,18 @@ static void CreateBuffer(const VkDeviceSize size, const VkBufferUsageFlags usage
         usageFlags,
         VK_SHARING_MODE_CONCURRENT,
         2,
-        NULL
+        (const uint32_t[]){
+            queueFamilyIndices.graphicsFamily,
+            queueFamilyIndices.transferFamily,
+            queueFamilyIndices.presentFamily
+        }
     };
-    if (queueFamilyIndices.graphicsFamily != queueFamilyIndices.presentFamily) {
+    if (queueFamilyIndices.presentFamily != queueFamilyIndices.graphicsFamily && queueFamilyIndices.presentFamily != queueFamilyIndices.transferFamily) {
         bufferInfo.queueFamilyIndexCount++;
-        bufferInfo.pQueueFamilyIndices = (const uint32_t[3]){
-            queueFamilyIndices.graphicsFamily,
-            queueFamilyIndices.presentFamily,
-            queueFamilyIndices.transferFamily
-        };
-    }
-    else {
-        bufferInfo.pQueueFamilyIndices = (const uint32_t[3]){
-            queueFamilyIndices.graphicsFamily,
-            queueFamilyIndices.transferFamily
-        };
     }
     if (vkCreateBuffer(device, &bufferInfo, NULL, buffer) != VK_SUCCESS) {
-        Error("Failed to create Vulkan buffer!");
+        VulkanError("Failed to create Vulkan buffer!");
+        return false;
     }
     VkMemoryRequirements memRequirements;
     vkGetBufferMemoryRequirements(device, *buffer, &memRequirements);
@@ -721,16 +723,18 @@ static void CreateBuffer(const VkDeviceSize size, const VkBufferUsageFlags usage
                 i
             };
             if (vkAllocateMemory(device, &allocInfo, NULL, bufferMemory) != VK_SUCCESS) {
-                Error("Failed to allocate Vulkan buffer memory!");
+                VulkanError("Failed to allocate Vulkan buffer memory!");
+                return false;
             }
             vkBindBufferMemory(device, *buffer, *bufferMemory, 0);
-            return;
+            return true;
         }
     }
-    Error("Failed to find suitable memory type for Vulkan!");
+    VulkanError("Failed to find suitable memory type for Vulkan!");
+    return false;
 }
 
-static void CopyBuffer(const VkBuffer srcBuffer, const VkBuffer dstBuffer, const VkDeviceSize size) {
+static void CopyBuffer(const VkBuffer srcBuffer, const VkBuffer dstBuffer, const VkDeviceSize size) { // NOLINT(misc-misplaced-const)
     const VkCommandBufferAllocateInfo allocateInfo = {
         VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
         NULL,
@@ -766,46 +770,41 @@ static void CopyBuffer(const VkBuffer srcBuffer, const VkBuffer dstBuffer, const
     vkFreeCommandBuffers(device, transferCommandPool, 1, &commandBuffer);
 }
 
-static void CreateVertexBuffer() {
+static bool CreateVertexBuffer() {
     const VkDeviceSize bufferSize = sizeof(vertices.data[0]) * vertices.length;
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
-    CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &stagingBuffer,
-                 &stagingBufferMemory);
+    if (!CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &stagingBuffer, &stagingBufferMemory)) return false;
     void *data;
     vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
     memcpy(data, vertices.data, bufferSize);
     vkUnmapMemory(device, stagingBufferMemory);
 
-    CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &vertexBuffer, &vertexBufferMemory);
-
+    if (!CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &vertexBuffer, &vertexBufferMemory)) return false;
     CopyBuffer(stagingBuffer, vertexBuffer, bufferSize);
     vkDestroyBuffer(device, stagingBuffer, NULL);
     vkFreeMemory(device, stagingBufferMemory, NULL);
+    return true;
 }
 
-static void CreateIndexBuffer() {
+static bool CreateIndexBuffer() {
     const VkDeviceSize bufferSize = sizeof(indices.data[0]) * indices.length;
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
-    CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &stagingBuffer,
-                 &stagingBufferMemory);
+    if (!CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &stagingBuffer, &stagingBufferMemory)) return false;
     void *data;
     vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
     memcpy(data, indices.data, bufferSize);
     vkUnmapMemory(device, stagingBufferMemory);
 
-    CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
-                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &indexBuffer, &indexBufferMemory);
+    if (!CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &indexBuffer, &indexBufferMemory)) return false;
     CopyBuffer(stagingBuffer, indexBuffer, bufferSize);
     vkDestroyBuffer(device, stagingBuffer, NULL);
     vkFreeMemory(device, stagingBufferMemory, NULL);
+    return true;
 }
 
-static void CreateCommandBuffers() {
+static bool CreateCommandBuffers() {
     commandBuffers = malloc(sizeof(VkCommandBuffer*) * MAX_FRAMES_IN_FLIGHT);
     const VkCommandBufferAllocateInfo allocateInfo = {
         VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
@@ -815,11 +814,13 @@ static void CreateCommandBuffers() {
         MAX_FRAMES_IN_FLIGHT
     };
     if (vkAllocateCommandBuffers(device, &allocateInfo, commandBuffers) != VK_SUCCESS) {
-        Error("Failed to allocate Vulkan command buffers!");
+        VulkanError("Failed to allocate Vulkan command buffers!");
+        return false;
     }
+    return true;
 }
 
-static void CreateSyncObjects() {
+static bool CreateSyncObjects() {
     imageAvailableSemaphores = malloc(sizeof(VkSemaphore*) * MAX_FRAMES_IN_FLIGHT);
     renderFinishedSemaphores = malloc(sizeof(VkSemaphore*) * MAX_FRAMES_IN_FLIGHT);
     inFlightFences = malloc(sizeof(VkFence*) * MAX_FRAMES_IN_FLIGHT);
@@ -838,12 +839,14 @@ static void CreateSyncObjects() {
             vkCreateSemaphore(device, &semaphoreInfo, NULL, &renderFinishedSemaphores[i]) != VK_SUCCESS ||
             vkCreateFence(device, &fenceInfo, NULL, &inFlightFences[i]) != VK_SUCCESS) {
 
-            Error("Failed to create Vulkan semaphores!");
+            VulkanError("Failed to create Vulkan semaphores!");
+            return false;
         }
     }
+    return true;
 }
 
-static void RecordCommandBuffer(const VkCommandBuffer buffer, const uint32_t imageIndex) {
+static void RecordCommandBuffer(const VkCommandBuffer buffer, const uint32_t imageIndex) { // NOLINT(misc-misplaced-const)
     const VkCommandBufferBeginInfo beginInfo = {
         VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
         NULL,
@@ -851,7 +854,7 @@ static void RecordCommandBuffer(const VkCommandBuffer buffer, const uint32_t ima
         NULL
     };
     if (vkBeginCommandBuffer(buffer, &beginInfo) != VK_SUCCESS) {
-        Error("Failed to begin recording Vulkan command buffer!");
+        VulkanError("Failed to begin recording Vulkan command buffer!");
     }
     VkClearValue clearColor = {{{0, 0, 0}}};
     const VkRenderPassBeginInfo renderPassInfo = {
@@ -890,7 +893,7 @@ static void RecordCommandBuffer(const VkCommandBuffer buffer, const uint32_t ima
     vkCmdDrawIndexed(buffer, indices.length, 1, 0, 0, 0);
     vkCmdEndRenderPass(buffer);
     if (vkEndCommandBuffer(buffer) != VK_SUCCESS) {
-        Error("Failed to record the Vulkan command buffer!");
+        VulkanError("Failed to record the Vulkan command buffer!");
     }
 }
 
@@ -902,21 +905,16 @@ static void RecordCommandBuffer(const VkCommandBuffer buffer, const uint32_t ima
  * @see PickPhysicalDevice
  * @see CreateLogicalDevice
  */
-void InitVulkan(SDL_Window *window) {
-    CreateInstance(window);
-    CreateSurface(window);
-    PickPhysicalDevice();
-    CreateLogicalDevice();
-    CreateSwapChain(window);
-    CreateImageViews();
-    CreateRenderPass();
-    CreateGraphicsPipeline();
-    CreateFramebuffers();
-    CreateCommandPools();
-    CreateVertexBuffer();
-    CreateIndexBuffer();
-    CreateCommandBuffers();
-    CreateSyncObjects();
+bool InitVulkan(SDL_Window *window) {
+    if (!CreateInstance(window) || !CreateSurface(window) || !PickPhysicalDevice() || !CreateLogicalDevice() || !
+        CreateSwapChain(window) || !CreateImageViews() || !CreateRenderPass() || !CreateGraphicsPipeline() || !
+        CreateFramebuffers() || !CreateCommandPools() || !CreateVertexBuffer() || !CreateIndexBuffer() || !
+        CreateCommandBuffers() || !CreateSyncObjects()) {
+
+        CleanupVulkan();
+        return false;
+    }
+    return true;
 }
 
 void DrawFrame() {
@@ -942,7 +940,7 @@ void DrawFrame() {
         signalSemaphores
     };
     if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) {
-        Error("Failed to submit Vulkan draw command buffer!");
+        VulkanError("Failed to submit Vulkan draw command buffer!");
     }
     VkSwapchainKHR swapChains[] = {swapChain};
     const VkPresentInfoKHR presentInfo = {

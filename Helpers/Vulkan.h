@@ -25,7 +25,7 @@
 
 #define clamp(val, min, max)(val < min ? min : val > max ? max : val)
 
-void InitVulkan(SDL_Window *window);
+bool InitVulkan(SDL_Window *window);
 void DrawFrame();
 void CleanupVulkan();
 
