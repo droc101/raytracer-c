@@ -32,7 +32,7 @@
 cmake-build-*/
 
 # SDL2 files
-/SDL2/
-/SDL2_mixer/
-/glew/
-/cglm/
+/lib/SDL2/
+/lib/SDL2_mixer/
+/lib/glew/
+/lib/cglm/
