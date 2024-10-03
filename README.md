@@ -26,7 +26,7 @@ Arch Packages:
 Make sure you have [FindSDL2.cmake](https://github.com/tcbrindle/sdl2-cmake-scripts/blob/master/FindSDL2.cmake) and [FindSDL2_mixer.cmake](https://github.com/tcbrindle/sdl2-cmake-scripts/blob/master/FindSDL2_mixer.cmake) in your CMake modules directory.
 
 ### Running
-On Windows, you'll need to copy `SDL2/x86_64-w64-mingw32/bin/SDL2.dll`, `SDL2_mixer/x86_64-w64-mingw32/bin/SDL2_mixer.dll`, and `zlib/bin/libzlib1.dll` into your output directory.
+On Windows, you'll need to copy `lib/SDL2/x86_64-w64-mingw32/bin/SDL2.dll`, `lib/SDL2_mixer/x86_64-w64-mingw32/bin/SDL2_mixer.dll`, and `lib/zlib/bin/libzlib1.dll` into your output directory.
 
 ### Tested on
 - Windows 11 (but should work on 10)
