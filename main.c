@@ -28,6 +28,16 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    // OpenGL Window Properties (Don't do this if using Vulkan)
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, MSAA_SAMPLES);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
+    SDL_GL_SetAttribute(
+            SDL_GL_CONTEXT_PROFILE_MASK,
+            SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
     Mix_AllocateChannels(SFX_CHANNEL_COUNT);
 
     if (Mix_OpenAudio(22050, AUDIO_S16, 2, 2048) < 0) {
@@ -51,14 +61,6 @@ int main(int argc, char *argv[]) {
     SDL_Surface *icon = ToSDLSurface((const unsigned char *) gztex_interface_icon, "1");
     SDL_SetWindowIcon(w, icon);
 
-//    SDL_Renderer *tr = SDL_CreateRenderer(GetWindow(), -1, SDL_RENDERER_ACCELERATED);
-//    if (tr == NULL) {
-//        SDL_DestroyWindow(GetWindow());
-//        printf("SDL_CreateRenderer Error: %s\n", SDL_GetError());
-//        SDL_Quit();
-//        return 1;
-//    }
-    //SetRenderer(tr);
     SetSignalHandler(); // catch exceptions in release mode
 
     printf("Initializing Engine\n");
@@ -111,15 +113,13 @@ int main(int argc, char *argv[]) {
 
         g->cam->x = g->level->position.x;
         g->cam->z = g->level->position.y;
-        g->cam->yaw = g->level->rotation;
+        g->cam->yaw = g->level->rotation + 180;
+
+        RenderLevel(g->level->position, g->level->rotation, g->FakeHeight);
 
         RenderLevel3D(g->level, g->cam);
 
         g->RenderGame(g);
-
-
-
-        // TODO: Render HUD here
 
         FrameGraphDraw();
 
@@ -143,7 +143,6 @@ int main(int argc, char *argv[]) {
     }
     printf("Destructing Engine\n");
     DestroyGlobalState();
-    //SDL_DestroyRenderer(GetRenderer());
     SDL_DestroyWindow(GetWindow());
     SDL_FreeSurface(icon);
     InvalidateAssetCache(); // Free all assets

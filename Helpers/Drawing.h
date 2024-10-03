@@ -8,21 +8,6 @@
 #include "SDL.h"
 #include "../defines.h"
 
-//#define FILTER_NEAREST "0" // pixelated texture (nearest neighbor)
-//#define FILTER_LINEAR "1" // smooth texture (linear)
-
-///**
-// * Set the renderer to draw to
-// * @param r The renderer to use
-// */
-//void SetRenderer(SDL_Renderer *r);
-//
-///**
-// * Get the renderer to draw to
-// * @return the renderer
-// */
-//SDL_Renderer *GetRenderer();
-
 /**
  * Set the main window
  * @param w The window to use
@@ -77,12 +62,6 @@ void setColorUint(uint color);
  * @return Four byte array with the color components
  */
 byte* getColorUint(uint color);
-
-/**
- * Take a screenshot of the current window and return it as a texture
- * @return window screenshot as a texture
- */
-SDL_Texture *GetScreenshot();
 
 /**
  * Mix two colors together

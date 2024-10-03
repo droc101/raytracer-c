@@ -75,4 +75,6 @@
 #define NEAR_Z 0.01
 #define FAR_Z 1000
 
+#define MSAA_SAMPLES 4 // usually 2, 4, or 8
+
 #endif //GAME_CONFIG_H

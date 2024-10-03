@@ -121,16 +121,11 @@ void GL_DebugMessageCallback(GLenum source, GLenum type, GLuint id,
 void GL_Init() {
     printf("Initializing OpenGL\n");
 
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
-    SDL_GL_SetAttribute(
-            SDL_GL_CONTEXT_PROFILE_MASK,
-            SDL_GL_CONTEXT_PROFILE_CORE);
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-
     ctx = SDL_GL_CreateContext(GetWindow());
 
     SDL_GL_SetSwapInterval(1);
+
+
 
     GLenum err;
     glewExperimental = GL_TRUE; // Please expose OpenGL 3.x+ interfaces
@@ -162,6 +157,7 @@ void GL_Init() {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glDisable(GL_CULL_FACE);
+
 
     glClearColor(0.0f, 0.1f, 0.2f, 1.0f);
 
@@ -496,14 +492,15 @@ void GL_DrawLine(Vector2 start, Vector2 end, uint color) {
     glDrawElements(GL_LINES, 2, GL_UNSIGNED_INT, NULL);
 }
 
-void GL_DrawWall(Wall *w, mat4 *mvp) {
+void GL_DrawWall(Wall *w, mat4 *mvp, mat4 *mdl) {
     glUseProgram(wall_generic->program);
 
     GLuint tex = GL_LoadTexture(w->tex);
 
     glUniform1i(glGetUniformLocation(wall_generic->program, "alb"), tex);
 
-    glUniformMatrix4fv(glGetUniformLocation(wall_generic->program, "MODELVIEW_MATRIX"), 1, GL_FALSE, mvp[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(wall_generic->program, "MODEL_WORLD_MATRIX"), 1, GL_FALSE, mdl[0][0]); // model -> world
+    glUniformMatrix4fv(glGetUniformLocation(wall_generic->program, "WORLD_VIEW_MATRIX"), 1, GL_FALSE, mvp[0][0]); // world -> screen
 
     float vertices[4][5] = { // X Y Z U V
             {w->a.x, -0.5f, w->a.y, 0.0f, 0.0f},
@@ -538,11 +535,12 @@ void GL_DrawWall(Wall *w, mat4 *mvp) {
 
 void GL_Enable3D() {
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_MULTISAMPLE);
     glClear(GL_DEPTH_BUFFER_BIT);
 }
 
 void GL_Disable3D() {
     glDisable(GL_DEPTH_TEST);
+    glDisable(GL_MULTISAMPLE);
     glClear(GL_DEPTH_BUFFER_BIT);
 }
-

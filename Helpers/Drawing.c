@@ -11,18 +11,9 @@
 #include "../Helpers/LevelLoader.h" // for ReadUInt
 #include "GL/glHelper.h"
 
-//SDL_Renderer *renderer;
 SDL_Window *window;
 
 uint drawColor = 0xFFFFFFFF;
-
-//void SetRenderer(SDL_Renderer *r) {
-//    renderer = r;
-//}
-//
-//SDL_Renderer *GetRenderer() {
-//    return renderer;
-//}
 
 void SetWindow(SDL_Window *w) {
     window = w;
@@ -43,8 +34,6 @@ int WindowHeight() {
     SDL_GetWindowSize(window, &w, &h);
     return h;
 }
-
-
 
 // Set the SDL color from an ARGB uint32
 void setColorUint(uint color) {
@@ -86,45 +75,6 @@ SDL_Surface* ToSDLSurface(const unsigned char* imageData, char *filterMode) {
     }
 
     return surface;
-}
-
-void DrawTextureColumn(SDL_Texture* texture, int sx, int dx, int dy, int dh) {
-
-    // TODO: Implement this (depends on texture size storage)
-
-//    SDL_Rect destRect;
-//    destRect.x = dx;
-//    destRect.y = dy;
-//    destRect.w = 1;
-//    destRect.h = dh;
-//    SDL_Rect srcRect;
-//    srcRect.x = sx;
-//    srcRect.y = 0;
-//    srcRect.w = 1;
-//    srcRect.h = SDL_TextureSize(texture).y;
-//
-//
-//
-//    SDL_RenderCopy(renderer, texture, &srcRect, &destRect);
-}
-
-SDL_Texture *GetScreenshot() {
-    return NULLPTR;
-//    SDL_Surface *ss = SDL_CreateRGBSurface(0, WindowWidth(), WindowHeight(), 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
-//    if (!ss) {
-//        printf("Failed to create surface: %s\n", SDL_GetError());
-//        Error("GetScreenshot: Failed to create surface");
-//    }
-//
-//    SDL_RenderReadPixels(renderer, NULL, SDL_PIXELFORMAT_ARGB8888, ss->pixels, ss->pitch);
-//    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, ss);
-//    SDL_FreeSurface(ss);
-//    if (!texture) {
-//        printf("Failed to create texture: %s\n", SDL_GetError());
-//        Error("GetScreenshot: Failed to create texture");
-//    }
-//
-//    return texture;
 }
 
 uint MixColors(uint color_a, uint color_b) {
@@ -190,3 +140,4 @@ void Swap() {
 void draw_rect(int x, int y, int w, int h) {
     GL_DrawRect(v2(x, y), v2(w, h), drawColor);
 }
+

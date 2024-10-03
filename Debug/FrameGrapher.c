@@ -60,6 +60,8 @@ void FrameGraphDraw() {
     setColorUint(0x80808080);
     draw_rect(x, WindowHeight() - 10, FRAMEGRAPH_HISTORY_SIZE * 2, 2);
 
+    // set the alpha to 255
+    color |= 0xff000000;
     setColorUint(color);
     char fps[20];
     sprintf(fps, "FPS: %.2f", framerates[FRAMEGRAPH_HISTORY_SIZE - 1]);

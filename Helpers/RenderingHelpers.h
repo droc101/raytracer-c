@@ -10,12 +10,37 @@
 #include "../config.h"
 #include "Drawing.h"
 
-mat4 *GL_GetMatrix(Camera *cam);
+/**
+ * Get the transformation matrix for a camera
+ * @param cam The camera
+ * @return A mat4 MODEL_VIEW_PROJECTION matrix of the camera (World space to screen space)
+ */
+mat4 *GetMatrix(Camera *cam);
 
+/**
+ * Get the transformation matrix for an actor
+ * @param Actor The actor
+ * @return A mat4 MODEL matrix of the actor (Model space to world space)
+ */
+mat4 *ActorTransformMatrix(Actor *Actor);
+
+/**
+ * Initialize the rendering system
+ */
 void RenderInit();
 
+/**
+ * Destroy the rendering system
+ */
 void RenderDestroy();
 
+/**
+ * Render the 3D portion of a level
+ * @param l The level to render
+ * @param cam The camera to render with
+ * @note - This does not render the sky
+ * @note - This destroys the contents of the depth buffer
+ */
 void RenderLevel3D(Level *l, Camera *cam);
 
 #endif //GAME_RENDERINGHELPERS_H

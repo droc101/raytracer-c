@@ -197,7 +197,6 @@ void RemoveActor(Actor* actor) {
 }
 
 void RenderLevel(Vector2 camPos, double camRot, double fakeHeight) {
-    return;
     Level *l = GetState()->level;
 
     const int skyPos = (int)(camRot * 128 / PI) % 256;

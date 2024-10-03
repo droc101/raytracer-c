@@ -567,7 +567,6 @@ void DrawEditorButton(EditorButton *btn) {
 }
 
 void DrawEditorSlider(EditorSlider *sld) {
-    //SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_BLEND);
 
     setColorUint(0x80000000);
     draw_rect(sld->position.x, sld->position.y, sld->size.x, sld->size.y);
@@ -747,10 +746,8 @@ void GEditorStateRender(GlobalState* State) {
         Vector2 measuredText = MeasureText(nodeInfo, 16, false);
         int textWidth = measuredText.x;
         int textHeight = measuredText.y;
-        //SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_BLEND);
         setColorUint(0x80000000);
         draw_rect(screenPos.x + 10, screenPos.y, textWidth + 20, textHeight + 20);
-        //SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_NONE);
         FontDrawString(v2(screenPos.x + 20, screenPos.y + 10), nodeInfo, 16, 0xFFFFFFFF, false);
     }
 

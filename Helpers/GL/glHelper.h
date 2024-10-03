@@ -94,7 +94,7 @@ void GL_DrawTextureRegionMod(Vector2 pos, Vector2 size, const unsigned char* ima
 
 void GL_ClearColor(uint color);
 
-void GL_DrawWall(Wall *w, mat4 *mvp);
+void GL_DrawWall(Wall *w, mat4 *mvp, mat4 *mdl);
 
 void GL_Enable3D();
 void GL_Disable3D();

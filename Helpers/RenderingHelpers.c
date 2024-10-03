@@ -5,7 +5,7 @@
 #include "RenderingHelpers.h"
 #include "GL/glHelper.h"
 
-mat4 *GL_GetMatrix(Camera *cam) {
+mat4 *GetMatrix(Camera *cam) {
     vec3 cam_pos = {cam->x, cam->y, cam->z};
     vec3 cam_rot = {cam->pitch, cam->yaw, cam->roll};
     float aspect = (float)WindowWidth() / (float)WindowHeight();
@@ -36,8 +36,17 @@ mat4 *GL_GetMatrix(Camera *cam) {
     return MODEL_VIEW_PROJECTION;
 }
 
+mat4 *ActorTransformMatrix(Actor *Actor) {
+    mat4 *MODEL = malloc(sizeof(mat4));
+    glm_mat4_identity(*MODEL);
+    glm_rotate(*MODEL, glm_rad(Actor->rotation), (vec3){0, 1, 0});
+    glm_translate(*MODEL, (vec3){Actor->position.x, 0, Actor->position.y});
+    return MODEL;
+}
+
 void RenderInit() {
     GL_Init();
+    GL_Disable3D(); // just to make sure we are in the correct state
 }
 
 void RenderDestroy() {
@@ -47,13 +56,21 @@ void RenderDestroy() {
 void RenderLevel3D(Level *l, Camera *cam) {
     GL_Enable3D();
 
-    mat4 *MODELVIEW_MATRIX = GL_GetMatrix(cam);
+    mat4 *WORLD_VIEW_MATRIX = GetMatrix(cam);
+    mat4 *IDENTITY = malloc(sizeof(mat4));
+    glm_mat4_identity(*IDENTITY);
 
     for (int i = 0; i < l->staticWalls->size; i++) {
-        GL_DrawWall(SizedArrayGet(l->staticWalls, i), MODELVIEW_MATRIX);
+        GL_DrawWall(SizedArrayGet(l->staticWalls, i), WORLD_VIEW_MATRIX, IDENTITY);
     }
 
-    free(MODELVIEW_MATRIX);
+    for (int i = 0; i < l->staticActors->size; i++) {
+        mat4 *actor = ActorTransformMatrix(SizedArrayGet(l->staticActors, i));
+        GL_DrawWall(((Actor*)SizedArrayGet(l->staticActors, i))->actorWall, WORLD_VIEW_MATRIX, actor);
+        free(actor);
+    }
+
+    free(WORLD_VIEW_MATRIX);
 
     GL_Disable3D();
 }

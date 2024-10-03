@@ -123,7 +123,7 @@ void GMainStateUpdate(GlobalState * State) {
 void GMainStateRender(GlobalState* State) {
     Level *l = State->level;
 
-    RenderLevel(l->position, l->rotation, State->FakeHeight);
+    //RenderLevel(l->position, l->rotation, State->FakeHeight);
 
     SDL_Rect coinIconRect = {WindowWidth() - 260, 16, 40, 40};
     DrawTexture(v2(WindowWidth() - 260, 16), v2(40, 40), gztex_interface_hud_ycoin);
@@ -144,9 +144,6 @@ void GMainStateRender(GlobalState* State) {
     if (State->textBoxActive) {
         TextBoxRender(&(State->textBox), State->textBoxPage);
     }
-
-
-    //SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_NONE);
     DPrintF("Position: (%.2f, %.2f)\nRotation: %.4f (%.2fdeg)", 0xFFFFFFFF, false, l->position.x, l->position.y, l->rotation, radToDeg(l->rotation));
 
     DPrintF("Walls: %d", 0xFFFFFFFF, false, l->staticWalls->size);
