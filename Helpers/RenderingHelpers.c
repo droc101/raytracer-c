@@ -7,18 +7,16 @@
 
 mat4 *GetMatrix(Camera *cam) {
     vec3 cam_pos = {cam->x, cam->y, cam->z};
-    vec3 cam_rot = {cam->pitch, cam->yaw, cam->roll};
     float aspect = (float)WindowWidth() / (float)WindowHeight();
 
     mat4 IDENTITY = GLM_MAT4_IDENTITY_INIT;
     mat4 PERSPECTIVE = GLM_MAT4_ZERO_INIT;
     glm_perspective(cam->fov, aspect, NEAR_Z, FAR_Z, PERSPECTIVE);
 
-    vec3 look_at = {0, 0, 1};
+    vec3 look_at = {cosf(cam->yaw), 0, sinf(cam->yaw)};
     vec3 up = {0, 1, 0};
-    glm_vec3_rotate(look_at, cam_rot[2], (vec3){0, 0, 1}); // Roll
-    glm_vec3_rotate(look_at, cam_rot[0], (vec3){1, 0, 0}); // Pitch
-    glm_vec3_rotate(look_at, cam_rot[1], (vec3){0, 1, 0}); // Yaw
+    glm_vec3_rotate(look_at, cam->roll, (vec3){0, 0, 1}); // Roll
+    glm_vec3_rotate(look_at, cam->pitch, (vec3){1, 0, 0}); // Pitch
 
     look_at[0] += cam_pos[0];
     look_at[1] += cam_pos[1];
