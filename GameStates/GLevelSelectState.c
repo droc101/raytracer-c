@@ -37,13 +37,11 @@ void GLevelSelectStateUpdate(GlobalState * State) {
 void GLevelSelectStateRender(GlobalState * State) {
     setColorUint(0xFF123456);
     ClearColor(0xFF123456);
-    //SDL_RenderClear(GetRenderer());
 
     Vector2 bg_tile_size = v2(320, 240);
     for (int x = 0; x < WindowWidth(); x += bg_tile_size.x) {
         for (int y = 0; y < WindowHeight(); y += bg_tile_size.y) {
             DrawTexture(v2(x, y), v2(bg_tile_size.x, bg_tile_size.y), gztex_interface_menu_bg_tile);
-            //SDL_RenderCopy(GetRenderer(), menu_bg_tex, NULL, &(SDL_Rect){x, y, bg_tile_size.x, bg_tile_size.y});
         }
     }
 

@@ -38,7 +38,6 @@ int WindowHeight() {
 // Set the SDL color from an ARGB uint32
 void setColorUint(uint color) {
     drawColor = color;
-    //SDL_SetRenderDrawColor(renderer, (color >> 16) & 0xFF, (color >> 8) & 0xFF, (color >> 0) & 0xFF, (color >> 24) & 0xFF);
 }
 
 byte* getColorUint(uint color) {

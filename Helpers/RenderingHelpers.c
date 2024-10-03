@@ -15,6 +15,9 @@ mat4 *GetMatrix(Camera *cam) {
 
     vec3 look_at = {cosf(cam->yaw), 0, sinf(cam->yaw)};
     vec3 up = {0, 1, 0};
+
+    // TODO: roll and pitch are messed up
+
     glm_vec3_rotate(look_at, cam->roll, (vec3){0, 0, 1}); // Roll
     glm_vec3_rotate(look_at, cam->pitch, (vec3){1, 0, 0}); // Pitch
 
@@ -34,6 +37,7 @@ mat4 *GetMatrix(Camera *cam) {
     return MODEL_VIEW_PROJECTION;
 }
 
+// TODO: rotation is not working
 mat4 *ActorTransformMatrix(Actor *Actor) {
     mat4 *MODEL = malloc(sizeof(mat4));
     glm_mat4_identity(*MODEL);

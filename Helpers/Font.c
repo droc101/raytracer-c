@@ -49,7 +49,6 @@ void FontDrawChar(Vector2 pos, char c, uint size, bool small, uint color) {
 }
 
 Vector2 FontDrawString(Vector2 pos, char* str, uint size, uint color, bool small) {
-    //SDL_SetTextureColorMod(small ? smallFontTexture : fontTexture, (color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF);
     int x = pos.x;
     int y = pos.y;
     int i = 0;

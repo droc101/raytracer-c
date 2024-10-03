@@ -611,7 +611,6 @@ void GEditorStateRender(GlobalState* State) {
 #ifdef ENABLE_LEVEL_EDITOR
     setColorUint(0xFF123456);
     ClearColor(0xFF123456);
-    //SDL_RenderClear(GetRenderer());
 
     int gridSpacing = EditorZoom;
     int gridOffsetX = (int) EditorPanX % gridSpacing;
@@ -672,7 +671,6 @@ void GEditorStateRender(GlobalState* State) {
                                     (nodeB->position.y * EditorZoom) + EditorPanY);
             setColorUint(0xFFFFFFFF);
             DrawLine(v2(screenPos.x, screenPos.y), v2(screenPosB.x, screenPosB.y));
-            //SDL_RenderDrawLine(GetRenderer(), screenPos.x, screenPos.y, screenPosB.x, screenPosB.y);
         }
 
         uint color = 0;
@@ -715,7 +713,6 @@ void GEditorStateRender(GlobalState* State) {
         if (node->type == NODE_PLAYER || node->type == NODE_ACTOR) {
             Vector2 lineEnd = v2(screenPos.x + (cos(node->rotation) * 20), screenPos.y + (sin(node->rotation) * 20));
             DrawLine(screenPos, lineEnd);
-            //SDL_RenderDrawLine(GetRenderer(), screenPos.x, screenPos.y, lineEnd.x, lineEnd.y);
         }
     }
 
@@ -769,12 +766,8 @@ void GEditorStateRender(GlobalState* State) {
         if (node->type == NODE_WALL_A) {
             const byte *tex = wallTextures[node->extra];
             if (tex != NULL) {
-                Vector2 texSize = texture_size(tex);
-                SDL_Rect src = {0, 0, texSize.x, texSize.y};
                 SDL_Rect dst = {10, 310, 64, 64};
-                //SDL_SetTextureColorMod(tex, 255, 255, 255);
                 DrawTexture(v2(dst.x, dst.y), v2(dst.w, dst.h), tex);
-                //SDL_RenderCopy(GetRenderer(), tex, &src, &dst);
             }
         }
     } else if (CurrentEditorMode == EDITOR_MODE_ADD) {
@@ -782,12 +775,8 @@ void GEditorStateRender(GlobalState* State) {
 
         const byte *tex = wallTextures[(int) (texSld->value)];
         if (tex != NULL) {
-            Vector2 texSize = texture_size(tex);
-            SDL_Rect src = {0, 0, texSize.x, texSize.y};
             SDL_Rect dst = {10, 360, 64, 64};
-            //SDL_SetTextureColorMod(tex, 255, 255, 255);
             DrawTexture(v2(dst.x, dst.y), v2(dst.w, dst.h), tex);
-            //SDL_RenderCopy(GetRenderer(), tex, &src, &dst);
         }
     }
 

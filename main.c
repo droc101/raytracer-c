@@ -130,7 +130,6 @@ int main(int argc, char *argv[]) {
 
         Swap();
 
-
         UpdateInputStates();
         g->frame++;
 

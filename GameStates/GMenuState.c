@@ -31,11 +31,8 @@ void GMenuStateRender(GlobalState * State) {
     for (int x = 0; x < WindowWidth(); x += bg_tile_size.x) {
         for (int y = 0; y < WindowHeight(); y += bg_tile_size.y) {
             DrawTexture(v2(x, y), v2(bg_tile_size.x, bg_tile_size.y), gztex_interface_menu_bg_tile);
-            //SDL_RenderCopy(GetRenderer(), menu_bg_tex, NULL, &(SDL_Rect){x, y, bg_tile_size.x, bg_tile_size.y});
         }
     }
-
-    //RenderLevelSky(v2(9.63, -3.15), 3.25, 0);
 
     // draw the logo
     SDL_Rect logoRect;
@@ -44,7 +41,6 @@ void GMenuStateRender(GlobalState * State) {
     logoRect.w = 480;
     logoRect.h = 320;
     DrawTexture(v2(logoRect.x, logoRect.y), v2(logoRect.w, logoRect.h), gztex_interface_menu_logo);
-    //SDL_RenderCopy(GetRenderer(), menu_logo_tex, NULL, &logoRect);
 
     if (GetState()->frame % 60 < 30) {
         DrawTextAligned("Press Space", 32, 0xFFFFFFFF, v2(0, WindowHeight() - 150), v2(WindowWidth(), 32),

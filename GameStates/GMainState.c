@@ -123,11 +123,8 @@ void GMainStateUpdate(GlobalState * State) {
 void GMainStateRender(GlobalState* State) {
     Level *l = State->level;
 
-    //RenderLevelSky(l->position, l->rotation, State->FakeHeight);
-
     SDL_Rect coinIconRect = {WindowWidth() - 260, 16, 40, 40};
     DrawTexture(v2(WindowWidth() - 260, 16), v2(40, 40), gztex_interface_hud_ycoin);
-    //SDL_RenderCopy(GetRenderer(), hudCoinTexture, NULL, &coinIconRect);
 
     char coinStr[16];
     sprintf(coinStr, "%d", State->coins);
@@ -138,7 +135,6 @@ void GMainStateRender(GlobalState* State) {
     for (int bc = 0; bc < State->blueCoins; bc++) {
         coinIconRect.x = WindowWidth() - 260 + (bc * 48);
         DrawTexture(v2(coinIconRect.x, coinIconRect.y), v2(40, 40), gztex_interface_hud_bcoin);
-        //SDL_RenderCopy(GetRenderer(), hudBlueCoinTexture, NULL, &coinIconRect);
     }
 
     if (State->textBoxActive) {
