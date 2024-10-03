@@ -1,4 +1,7 @@
 # raytracer-c
+
+![icon](Assets/actor/BLOB2.png)
+
 Old-School first-person raycaster game written in C using [SDL2](https://www.libsdl.org/) for rendering and audio, and [zlib](https://www.zlib.net/) for asset compression.
 Runs on Windows and Linux.
 
@@ -7,16 +10,23 @@ Runs on Windows and Linux.
 and extract it to the root of the project as "SDL2".
 - Download [SDL2_Mixer 2.8.0 w64](https://github.com/libsdl-org/SDL_mixer/releases/download/release-2.8.0/SDL2_mixer-devel-2.8.0-mingw.zip) 
 and extract it to the root of the project as "SDL2_Mixer".
-- (**Windows Only**) Download [GLEW 2.2.0 w64](https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0-win32.zip) and extract it to the root of the project as "glew" (This just works™ on Linux, because Linux.)
+#### Windows Only:
+- Download [GLEW 2.2.0 w64](https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0-win32.zip) and extract it to the root of the project as "glew"
+- Dowbload [CGLM 0.9.4](https://github.com/recp/cglm/archive/refs/tags/v0.9.4.zip) and extract it to the root of the project as "cglm"
 
-Make sure you have [FindSDL2.cmake](https://github.com/tcbrindle/sdl2-cmake-scripts/blob/master/FindSDL2.cmake) and [FindSDL2_mixer.cmake](https://github.com/tcbrindle/sdl2-cmake-scripts/blob/master/FindSDL2_mixer.cmake)
- in your CMake modules directory.
+### Building
+Linux building requires sdl2, sdl2_mixer, glew and cglm development libraries to be installed.<br />
+Arch Packages:
+[glew](https://archlinux.org/packages/extra/x86_64/glew/),
+[cglm ⁽ᴬᵁᴿ⁾](https://aur.archlinux.org/packages/cglm),
+[sdl2](https://archlinux.org/packages/extra/x86_64/sdl2/),
+[sdl2_mixer](https://archlinux.org/packages/extra/x86_64/sdl2_mixer/)
 
-### Notes
-On Windows, you'll need to copy `SDL2/x86_64-w64-mingw32/bin/SDL2.dll`, `SDL2_mixer/x86_64-w64-mingw32/bin/SDL2_mixer.dll`, and `zlib/bin/libzlib1.dll` into your output directory. 
+Make sure you have [FindSDL2.cmake](https://github.com/tcbrindle/sdl2-cmake-scripts/blob/master/FindSDL2.cmake) and [FindSDL2_mixer.cmake](https://github.com/tcbrindle/sdl2-cmake-scripts/blob/master/FindSDL2_mixer.cmake) in your CMake modules directory.
 
-On Linux, you just need the sdl2, sdl2_mixer, glew, and zlib shared libraries installed (refer to your specific distro for that)
+### Running
+On Windows, you'll need to copy `SDL2/x86_64-w64-mingw32/bin/SDL2.dll`, `SDL2_mixer/x86_64-w64-mingw32/bin/SDL2_mixer.dll`, and `zlib/bin/libzlib1.dll` into your output directory.
 
 ### Tested on
-- Windows 10 and 11
+- Windows 11 (but should work on 10)
 - Arch Linux
