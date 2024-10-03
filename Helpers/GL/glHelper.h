@@ -10,6 +10,7 @@
 #include "../Drawing.h"
 #include "../Error.h"
 #include <cglm/cglm.h>
+#include "glDebug.h"
 
 typedef struct {
     GLuint vsh;

@@ -50,6 +50,8 @@ add_executable(game main.c Helpers/Input.h Helpers/Input.c defines.h Helpers/Dra
         Structs/Camera.h
         Helpers/RenderingHelpers.c
         Helpers/RenderingHelpers.h
+        Helpers/GL/glDebug.c
+        Helpers/GL/glDebug.h
 )
 
 set(SDL2_PATH "${CMAKE_SOURCE_DIR}/SDL2/x86_64-w64-mingw32")
