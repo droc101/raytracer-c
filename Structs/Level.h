@@ -51,10 +51,8 @@ void RemoveActor(Actor* actor);
 
 /**
  * Render the level
- * @param camPos Camera position
- * @param camRot Camera rotation
- * @param fakeHeight Camera fake height
+ * @param cam The camera to render from
  */
-void RenderLevel(Vector2 camPos, double camRot, double fakeHeight);
+void RenderLevelSky(Camera *cam);
 
 #endif //GAME_LEVEL_H

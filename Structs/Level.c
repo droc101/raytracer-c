@@ -196,21 +196,17 @@ void RemoveActor(Actor* actor) {
     BakeActorArray(l);
 }
 
-void RenderLevel(Vector2 camPos, double camRot, double fakeHeight) {
+void RenderLevelSky(Camera *cam) {
     Level *l = GetState()->level;
+
+    double camRot = cam->yaw;
 
     const int skyPos = (int)(camRot * 128 / PI) % 256;
     const int height = WindowHeight() / 2;
     const int offset = (int)(WindowWidth() * (1 - skyPos / 256.0));
-//    SDL_Rect src1 = {0, 0, skyPos, 256};
-//    SDL_Rect dest1 = {offset, 0, WindowWidth() * skyPos / 256, height};
-//    SDL_Rect src2 = {skyPos, 0, 256 - skyPos, 256};
-//    SDL_Rect dest2 = {0, 0, offset, height};
-    DrawTextureRegionMod(v2(offset, 0), v2(WindowWidth() * skyPos / 256, height), gztex_level_sky, v2(0, 0),
-                         v2(skyPos, 256), 0xFFFFFFFF);
-    DrawTextureRegionMod(v2(0, 0), v2(offset, height), gztex_level_sky, v2(skyPos, 0), v2(256, 256), 0xFFFFFFFF);
 
-    setColorUint(l->FloorColor);
-    draw_rect(0, height, WindowWidth(), height);
+    DrawTextureRegionMod(v2(offset, 0), v2(WindowWidth() * skyPos / 256, height), gztex_level_sky, v2(0, 0),
+                         v2(skyPos, 128), l->SkyColor);
+    DrawTextureRegionMod(v2(0, 0), v2(offset, height), gztex_level_sky, v2(skyPos, 0), v2(256 - skyPos, 128), l->SkyColor);
 }
 

@@ -35,7 +35,7 @@ void GMenuStateRender(GlobalState * State) {
         }
     }
 
-    //RenderLevel(v2(9.63, -3.15), 3.25, 0);
+    //RenderLevelSky(v2(9.63, -3.15), 3.25, 0);
 
     // draw the logo
     SDL_Rect logoRect;
