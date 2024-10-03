@@ -74,3 +74,7 @@ void RenderLevel3D(Level *l, Camera *cam) {
 
     GL_Disable3D();
 }
+
+void UpdateViewportSize() {
+    GL_UpdateViewportSize();
+}

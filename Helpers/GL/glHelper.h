@@ -100,4 +100,6 @@ void GL_DrawWall(Wall *w, mat4 *mvp, mat4 *mdl);
 void GL_Enable3D();
 void GL_Disable3D();
 
+void GL_UpdateViewportSize();
+
 #endif //GAME_GLHELPER_H

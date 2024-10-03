@@ -17,6 +17,7 @@
 #include "Helpers/Error.h"
 #include "Helpers/CommonAssets.h"
 #include "Helpers/RenderingHelpers.h"
+#include "Helpers/MathEx.h"
 
 int main(int argc, char *argv[]) {
 
@@ -45,7 +46,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    SDL_Window *w = SDL_CreateWindow(GAME_TITLE,SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,DEF_WIDTH, DEF_HEIGHT, SDL_WINDOW_OPENGL);
+    SDL_Window *w = SDL_CreateWindow(GAME_TITLE,SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,DEF_WIDTH, DEF_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
     if (w == NULL) {
         printf("SDL_CreateWindow Error: %s\n", SDL_GetError());
         SDL_Quit();
@@ -92,6 +93,10 @@ int main(int argc, char *argv[]) {
                 HandleMouseDown(e.button.button);
             } else if (e.type == SDL_MOUSEBUTTONUP) {
                 HandleMouseUp(e.button.button);
+            } else if (e.type == SDL_WINDOWEVENT) {
+                if (e.window.event == SDL_WINDOWEVENT_RESIZED) {
+                    UpdateViewportSize();
+                }
             }
         }
 
@@ -115,7 +120,7 @@ int main(int argc, char *argv[]) {
         g->cam->z = g->level->position.y;
         g->cam->yaw = g->level->rotation;
 
-        RenderLevel(g->level->position, g->level->rotation, g->FakeHeight);
+        RenderLevel(g->level->position, g->level->rotation, g->FakeHeight); // skybox
 
         RenderLevel3D(g->level, g->cam);
 

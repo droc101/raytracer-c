@@ -43,4 +43,6 @@ void RenderDestroy();
  */
 void RenderLevel3D(Level *l, Camera *cam);
 
+void UpdateViewportSize();
+
 #endif //GAME_RENDERINGHELPERS_H

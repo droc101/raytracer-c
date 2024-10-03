@@ -141,3 +141,12 @@ void draw_rect(int x, int y, int w, int h) {
     GL_DrawRect(v2(x, y), v2(w, h), drawColor);
 }
 
+Vector2 texture_size(const unsigned char *imageData) {
+    byte *Decompressed = DecompressAsset(imageData);
+
+    uint width = ReadUintA(Decompressed, 4);
+    uint height = ReadUintA(Decompressed, 8);
+
+    return v2(width, height);
+}
+

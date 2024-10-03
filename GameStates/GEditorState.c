@@ -769,7 +769,7 @@ void GEditorStateRender(GlobalState* State) {
         if (node->type == NODE_WALL_A) {
             const byte *tex = wallTextures[node->extra];
             if (tex != NULL) {
-                SDL_Point texSize = {64, 64}; //SDL_TextureSize(tex); // TODO
+                Vector2 texSize = texture_size(tex);
                 SDL_Rect src = {0, 0, texSize.x, texSize.y};
                 SDL_Rect dst = {10, 310, 64, 64};
                 //SDL_SetTextureColorMod(tex, 255, 255, 255);
@@ -782,7 +782,7 @@ void GEditorStateRender(GlobalState* State) {
 
         const byte *tex = wallTextures[(int) (texSld->value)];
         if (tex != NULL) {
-            SDL_Point texSize = {64, 64}; //SDL_TextureSize(tex); // TODO
+            Vector2 texSize = texture_size(tex);
             SDL_Rect src = {0, 0, texSize.x, texSize.y};
             SDL_Rect dst = {10, 360, 64, 64};
             //SDL_SetTextureColorMod(tex, 255, 255, 255);

@@ -91,4 +91,6 @@ void ClearDepthOnly();
 
 void Swap();
 
+Vector2 texture_size(const unsigned char *imageData);
+
 #endif //GAME_DRAWING_H

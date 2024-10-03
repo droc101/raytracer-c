@@ -58,6 +58,7 @@ void GL_Init() {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glDisable(GL_CULL_FACE);
+    glDisable(GL_SCISSOR_TEST);
 
 #ifndef NDEBUG
     glEnable(GL_DEBUG_OUTPUT);
@@ -247,8 +248,6 @@ GLuint GL_LoadTexture(const unsigned char *imageData) {
     }
 
     byte *Decompressed = DecompressAsset(imageData);
-
-
 
     //uint size = ReadUintA(Decompressed, 0);
     uint width = ReadUintA(Decompressed, 4);
@@ -443,4 +442,8 @@ void GL_Disable3D() {
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_MULTISAMPLE);
     glClear(GL_DEPTH_BUFFER_BIT);
+}
+
+void GL_UpdateViewportSize() {
+    glViewport(0, 0, WindowWidth(), WindowHeight());
 }

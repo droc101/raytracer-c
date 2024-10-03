@@ -104,7 +104,7 @@ void RenderCol(Level *l, int col, Vector2 position, double rotation) {
     byte shadeByte = 255 * shade;
 
     const byte *texture = raycast.CollisionWall.tex;
-    SDL_Point texSize = {64,64};//SDL_TextureSize(texture); // TODO tex size
+    Vector2 texSize = texture_size(texture);
     uint texW = texSize.x;
 
     double wallLength = raycast.CollisionWall.Length;
