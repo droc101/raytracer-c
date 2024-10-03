@@ -54,6 +54,7 @@ void GL_Init() {
     char *vendor = (char *) glGetString(GL_VENDOR);
     char *renderer = (char *) glGetString(GL_RENDERER);
     char *version = (char *) glGetString(GL_VERSION);
+    char *shading_language = (char *) glGetString(GL_SHADING_LANGUAGE_VERSION);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -69,6 +70,7 @@ void GL_Init() {
     printf("OpenGL Vendor: %s\n", vendor);
     printf("OpenGL Renderer: %s\n", renderer);
     printf("OpenGL Version: %s\n", version);
+    printf("GLSL: %s\n", shading_language);
 }
 
 Shader *GL_ConstructShader(char *fsh, char *vsh) {
@@ -391,7 +393,7 @@ void GL_DrawLine(Vector2 start, Vector2 end, uint color) {
     glDrawElements(GL_LINES, 2, GL_UNSIGNED_INT, NULL);
 }
 
-void GL_DrawWall(Wall *w, mat4 *mvp, mat4 *mdl) {
+void GL_DrawWall(Wall *w, mat4 *mvp, mat4 *mdl, Camera *cam, Level *l) {
     glUseProgram(wall_generic->program);
 
     GLuint tex = GL_LoadTexture(w->tex);
@@ -400,6 +402,19 @@ void GL_DrawWall(Wall *w, mat4 *mvp, mat4 *mdl) {
 
     glUniformMatrix4fv(glGetUniformLocation(wall_generic->program, "MODEL_WORLD_MATRIX"), 1, GL_FALSE, mdl[0][0]); // model -> world
     glUniformMatrix4fv(glGetUniformLocation(wall_generic->program, "WORLD_VIEW_MATRIX"), 1, GL_FALSE, mvp[0][0]); // world -> screen
+
+    glUniform1f(glGetUniformLocation(wall_generic->program, "camera_yaw"), cam->yaw);
+    glUniform1f(glGetUniformLocation(wall_generic->program, "wall_angle"), w->Angle);
+
+    uint color = l->FogColor;
+    float r = ((color >> 16) & 0xFF) / 255.0f;
+    float g = ((color >> 8) & 0xFF) / 255.0f;
+    float b = (color & 0xFF) / 255.0f;
+
+    glUniform3f(glGetUniformLocation(wall_generic->program, "fog_color"), r, g, b);
+
+    glUniform1f(glGetUniformLocation(wall_generic->program, "fog_start"), l->FogStart);
+    glUniform1f(glGetUniformLocation(wall_generic->program, "fog_end"), l->FogEnd);
 
     float vertices[4][5] = { // X Y Z U V
             {w->a.x, -0.5f, w->a.y, 0.0f, 0.0f},

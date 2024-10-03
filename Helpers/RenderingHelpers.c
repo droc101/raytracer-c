@@ -64,12 +64,12 @@ void RenderLevel3D(Level *l, Camera *cam) {
     glm_mat4_identity(*IDENTITY);
 
     for (int i = 0; i < l->staticWalls->size; i++) {
-        GL_DrawWall(SizedArrayGet(l->staticWalls, i), WORLD_VIEW_MATRIX, IDENTITY);
+        GL_DrawWall(SizedArrayGet(l->staticWalls, i), WORLD_VIEW_MATRIX, IDENTITY, cam, l);
     }
 
     for (int i = 0; i < l->staticActors->size; i++) {
         mat4 *actor = ActorTransformMatrix(SizedArrayGet(l->staticActors, i));
-        GL_DrawWall(((Actor*)SizedArrayGet(l->staticActors, i))->actorWall, WORLD_VIEW_MATRIX, actor);
+        GL_DrawWall(((Actor*)SizedArrayGet(l->staticActors, i))->actorWall, WORLD_VIEW_MATRIX, actor, cam, l);
         free(actor);
     }
 

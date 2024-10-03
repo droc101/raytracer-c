@@ -140,7 +140,7 @@ void GL_ClearColor(uint color);
  * @param mdl The model -> world matrix
  * @note This expects 3D mode to be enabled
  */
-void GL_DrawWall(Wall *w, mat4 *mvp, mat4 *mdl);
+void GL_DrawWall(Wall *w, mat4 *mvp, mat4 *mdl, Camera *cam, Level *l);
 
 /**
  * Enable 3D mode

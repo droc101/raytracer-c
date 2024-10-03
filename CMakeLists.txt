@@ -58,7 +58,7 @@ set(SDL2_PATH "${CMAKE_SOURCE_DIR}/lib/SDL2/x86_64-w64-mingw32")
 set(SDL2_MIXER_PATH "${CMAKE_SOURCE_DIR}/lib/SDL2_mixer/x86_64-w64-mingw32")
 set(ZLIB_ROOT "${CMAKE_SOURCE_DIR}/lib/zlib")
 
-find_package(SDL2 REQUIRED) # Graphics
+find_package(SDL2 REQUIRED) # Platform abstraction
 include_directories(${SDL2_INCLUDE_DIR})
 
 find_package(SDL2_mixer REQUIRED) # Audio
@@ -67,14 +67,14 @@ include_directories(${SDL2_MIXER_INCLUDE_DIR})
 find_package(ZLIB REQUIRED) # Decompression
 include_directories(${ZLIB_INCLUDE_DIRS})
 
-find_package(OpenGL REQUIRED)
+find_package(OpenGL REQUIRED) # Graphics
 target_include_directories(game PUBLIC ${OPENGL_INCLUDE_DIR})
 
 if (UNIX)
-    find_package(GLEW REQUIRED)
+    find_package(GLEW REQUIRED) # OpenGL Extension Wrangler
     target_include_directories(game PUBLIC ${GLEW_INCLUDE_DIRS})
 
-    target_include_directories(game PUBLIC "/usr/include/cglm")
+    target_include_directories(game PUBLIC "/usr/include/cglm") # C OpenGL Mathematics Library
 elseif (WIN32) # Thank you Windows, I hate you.
     target_include_directories(game PUBLIC "${CMAKE_SOURCE_DIR}/lib/cglm/include")
 
@@ -91,7 +91,7 @@ elseif (WIN32)
     target_link_libraries(game PRIVATE ${SDL2_LIBRARY} ${ZLIB_LIBRARIES} ${SDL2_MIXER_LIBRARY} ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} opengl32) # Don't pass extra l* flags on Windows (it isn't happy with them)
 endif ()
 
-add_custom_target(
+add_custom_target( # Python script for generating assets code
         run ALL
         COMMAND "python" ${CMAKE_CURRENT_SOURCE_DIR}/Assets/genassets.py ${CMAKE_CURRENT_SOURCE_DIR}/Assets/
         COMMENT "Generating assets"
