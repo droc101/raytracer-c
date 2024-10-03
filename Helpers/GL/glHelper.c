@@ -59,9 +59,6 @@ void GL_Init() {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glDisable(GL_CULL_FACE);
 
-
-    glClearColor(0.0f, 0.1f, 0.2f, 1.0f);
-
 #ifndef NDEBUG
     glEnable(GL_DEBUG_OUTPUT);
     glDebugMessageCallback(GL_DebugMessageCallback, NULL);
@@ -246,7 +243,7 @@ void GL_SetTexParams(const unsigned char *imageData, bool linear, bool repeat) {
 GLuint GL_LoadTexture(const unsigned char *imageData) {
     if (AssetGetType(imageData) != ASSET_TYPE_TEXTURE) {
         printf("Asset is not a texture\n");
-        Error("ToSDLSurface: Asset is not a texture");
+        Error("Asset is not a texture");
     }
 
     byte *Decompressed = DecompressAsset(imageData);
