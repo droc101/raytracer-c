@@ -1,6 +1,6 @@
 # raytracer-c
 
-![icon](Assets/actor/BLOB2.png)
+![](Assets/actor/BLOB2.png)
 
 Old-School first-person raycaster game written in C using [SDL2](https://www.libsdl.org/) for rendering and audio, and [zlib](https://www.zlib.net/) for asset compression.
 Runs on Windows and Linux.
@@ -18,7 +18,7 @@ and extract it to the root of the project as "SDL2_Mixer".
 Linux building requires sdl2, sdl2_mixer, glew and cglm development libraries to be installed.<br />
 Arch Packages:
 [glew](https://archlinux.org/packages/extra/x86_64/glew/),
-[cglm ⁽ᴬᵁᴿ⁾](https://aur.archlinux.org/packages/cglm),
+[cglmᴬᵁᴿ](https://aur.archlinux.org/packages/cglm),
 [sdl2](https://archlinux.org/packages/extra/x86_64/sdl2/),
 [sdl2_mixer](https://archlinux.org/packages/extra/x86_64/sdl2_mixer/)
 
