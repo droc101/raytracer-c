@@ -10,4 +10,5 @@ uniform float fog_end;
 
 void main() {
     COLOR = texture(alb, UV).rgba;
+    COLOR.a = 1.0f; // debug
 }

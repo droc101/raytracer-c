@@ -53,6 +53,7 @@ void RenderDestroy() {
 
 void RenderLevel3D(Level *l, Camera *cam) {
     GL_Enable3D();
+    //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 
     mat4 *WORLD_VIEW_MATRIX = GetMatrix(cam);
     mat4 *IDENTITY = malloc(sizeof(mat4));
@@ -70,6 +71,7 @@ void RenderLevel3D(Level *l, Camera *cam) {
 
     free(WORLD_VIEW_MATRIX);
 
+    //glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
     GL_Disable3D();
 }
 

@@ -88,18 +88,73 @@ void GL_DrawRect(Vector2 pos, Vector2 size, uint color);
  */
 void GL_DrawLine(Vector2 start, Vector2 end, uint color);
 
+/**
+ * Draw a texture in 2D
+ * @param pos The position in pixels
+ * @param size The size in pixels
+ * @param imageData The texture data
+ */
 void GL_DrawTexture(Vector2 pos, Vector2 size, const unsigned char* imageData);
+
+/**
+ * Draw a texture in 2D with a color mod
+ * @param pos The position in pixels
+ * @param size The size in pixels
+ * @param imageData The texture data
+ * @param color The modulate color
+ */
 void GL_DrawTextureMod(Vector2 pos, Vector2 size, const unsigned char* imageData, uint color);
+
+/**
+ * Draw a texture region in 2D
+ * @param pos The position in pixels
+ * @param size The size in pixels
+ * @param imageData The texture data
+ * @param region_start The start of the region in pixels
+ * @param region_end The end of the region in pixels
+ */
 void GL_DrawTextureRegion(Vector2 pos, Vector2 size, const unsigned char* imageData, Vector2 region_start, Vector2 region_end);
+
+/**
+ * Draw a texture region in 2D with a color mod
+ * @param pos The position in pixels
+ * @param size The size in pixels
+ * @param imageData The texture data
+ * @param region_start The start of the region in pixels
+ * @param region_end The end of the region in pixels
+ * @param color The modulate color
+ */
 void GL_DrawTextureRegionMod(Vector2 pos, Vector2 size, const unsigned char* imageData, Vector2 region_start, Vector2 region_end, uint color);
 
+/**
+ * Set the clear color
+ * @param color The color to clear the screen with
+ * @note This does in fact clear the screen
+ */
 void GL_ClearColor(uint color);
 
+/**
+ * Draw a wall in 3D
+ * @param w The wall to draw
+ * @param mvp The world -> screen matrix
+ * @param mdl The model -> world matrix
+ * @note This expects 3D mode to be enabled
+ */
 void GL_DrawWall(Wall *w, mat4 *mvp, mat4 *mdl);
 
+/**
+ * Enable 3D mode
+ */
 void GL_Enable3D();
+
+/**
+ * Disable 3D mode
+ */
 void GL_Disable3D();
 
+/**
+ * Update the viewport size
+ */
 void GL_UpdateViewportSize();
 
 #endif //GAME_GLHELPER_H

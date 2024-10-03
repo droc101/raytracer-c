@@ -9,6 +9,7 @@
 #include "../defines.h"
 #include "../config.h"
 #include "Drawing.h"
+#include "GL/glHelper.h"
 
 /**
  * Get the transformation matrix for a camera
@@ -43,6 +44,9 @@ void RenderDestroy();
  */
 void RenderLevel3D(Level *l, Camera *cam);
 
+/**
+ * Update the viewport size
+ */
 void UpdateViewportSize();
 
 #endif //GAME_RENDERINGHELPERS_H

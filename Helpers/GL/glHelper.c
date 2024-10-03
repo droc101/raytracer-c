@@ -408,6 +408,12 @@ void GL_DrawWall(Wall *w, mat4 *mvp, mat4 *mdl) {
             {w->a.x, 0.5f, w->a.y, 0.0f, 1.0f}
     };
 
+    float uvo = w->uvOffset;
+    float uvs = w->uvScale;
+    for (int i = 0; i < 4; i++) {
+        vertices[i][3] = vertices[i][3] * uvs + uvo;
+    }
+
     unsigned int indices[] = {
             0, 1, 2,
             0, 2, 3
