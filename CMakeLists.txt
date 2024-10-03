@@ -54,9 +54,9 @@ add_executable(game main.c Helpers/Input.h Helpers/Input.c defines.h Helpers/Dra
         Helpers/GL/glDebug.h
 )
 
-set(SDL2_PATH "${CMAKE_SOURCE_DIR}/SDL2/x86_64-w64-mingw32")
-set(SDL2_MIXER_PATH "${CMAKE_SOURCE_DIR}/SDL2_mixer/x86_64-w64-mingw32")
-set(ZLIB_ROOT "${CMAKE_SOURCE_DIR}/zlib")
+set(SDL2_PATH "${CMAKE_SOURCE_DIR}/lib/SDL2/x86_64-w64-mingw32")
+set(SDL2_MIXER_PATH "${CMAKE_SOURCE_DIR}/lib/SDL2_mixer/x86_64-w64-mingw32")
+set(ZLIB_ROOT "${CMAKE_SOURCE_DIR}/lib/zlib")
 
 find_package(SDL2 REQUIRED) # Graphics
 include_directories(${SDL2_INCLUDE_DIR})
@@ -76,12 +76,12 @@ if (UNIX)
 
     target_include_directories(game PUBLIC "/usr/include/cglm")
 elseif (WIN32) # Thank you Windows, I hate you.
-    target_include_directories(game PUBLIC "${CMAKE_SOURCE_DIR}/cglm/include")
+    target_include_directories(game PUBLIC "${CMAKE_SOURCE_DIR}/lib/cglm/include")
 
-    list(APPEND CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/glew")
+    list(APPEND CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/lib/glew")
     add_definitions(-DGLEW_STATIC)
-    set(GLEW_LIBRARIES "${CMAKE_SOURCE_DIR}/glew/lib/Release/x64/glew32s.lib")
-    set(GLEW_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/glew/include")
+    set(GLEW_LIBRARIES "${CMAKE_SOURCE_DIR}/lib/glew/lib/Release/x64/glew32s.lib")
+    set(GLEW_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/lib/glew/include")
     target_include_directories(game PUBLIC ${GLEW_INCLUDE_DIRS})
 endif ()
 
