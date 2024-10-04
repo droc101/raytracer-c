@@ -10,6 +10,7 @@ const byte *wallTextures[WALL_TEXTURE_COUNT] = {
         gztex_level_bricks,
         gztex_level_cross,
         gztex_level_wall2,
+        gztex_level_uvtest
 };
 
 const byte *actorTextures[ACTOR_TEXTURE_COUNT] = {

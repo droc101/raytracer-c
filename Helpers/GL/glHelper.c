@@ -417,16 +417,16 @@ void GL_DrawWall(Wall *w, mat4 *mvp, mat4 *mdl, Camera *cam, Level *l) {
     glUniform1f(glGetUniformLocation(wall_generic->program, "fog_end"), l->FogEnd);
 
     float vertices[4][5] = { // X Y Z U V
-            {w->a.x, -0.5f, w->a.y, 0.0f, 0.0f},
-            {w->b.x, -0.5f, w->b.y, w->Length, 0.0f},
-            {w->b.x, 0.5f, w->b.y, w->Length, 1.0f},
-            {w->a.x, 0.5f, w->a.y, 0.0f, 1.0f}
+            {w->a.x, 0.5f, w->a.y, 0.0f, 0.0f},
+            {w->b.x, 0.5f, w->b.y, w->Length, 0.0f},
+            {w->b.x, -0.5f, w->b.y, w->Length, 1.0f},
+            {w->a.x, -0.5f, w->a.y, 0.0f, 1.0f}
     };
 
     float uvo = w->uvOffset;
     float uvs = w->uvScale;
     for (int i = 0; i < 4; i++) {
-        vertices[i][3] = vertices[i][3] * uvs + uvo;
+        vertices[i][3] = (vertices[i][3] * uvs) + uvo;
     }
 
     unsigned int indices[] = {

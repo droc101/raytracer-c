@@ -8,7 +8,7 @@
 #include <SDL.h>
 #include "../defines.h"
 
-#define WALL_TEXTURE_COUNT 3
+#define WALL_TEXTURE_COUNT 4
 #define ACTOR_TEXTURE_COUNT 11
 
 extern SDL_Texture *menu_bg_tex;

@@ -4,6 +4,7 @@
 
 #include "RenderingHelpers.h"
 #include "GL/glHelper.h"
+#include "../Structs/Wall.h"
 
 mat4 *GetMatrix(Camera *cam) {
     vec3 cam_pos = {cam->x, cam->y, cam->z};
@@ -67,12 +68,15 @@ void RenderLevel3D(Level *l, Camera *cam) {
     }
 
     for (int i = 0; i < l->staticActors->size; i++) {
-        mat4 *actor = ActorTransformMatrix(SizedArrayGet(l->staticActors, i));
-        GL_DrawWall(((Actor*)SizedArrayGet(l->staticActors, i))->actorWall, WORLD_VIEW_MATRIX, actor, cam, l);
-        free(actor);
+        Actor *actor = SizedArrayGet(l->staticActors, i);
+        WallBake(actor->actorWall);
+        mat4 *actor_xfm = ActorTransformMatrix(actor);
+        GL_DrawWall(actor->actorWall, WORLD_VIEW_MATRIX, actor_xfm, cam, l);
+        free(actor_xfm);
     }
 
     free(WORLD_VIEW_MATRIX);
+    free(IDENTITY);
 
     //glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
     GL_Disable3D();
