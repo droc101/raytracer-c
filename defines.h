@@ -53,6 +53,7 @@ typedef struct {
     double dy;
     float uvScale;
     float uvOffset;
+    float height; // height of the wall for rendering. Does not affect collision
 } Wall;
 
 // Utility functions are in Structs/level.h
@@ -62,8 +63,8 @@ typedef struct {
     Vector2 position;
     double rotation;
     uint SkyColor;
-    uint FloorColor;
-    uint FloorLowerColor;
+    uint FloorTexture;
+    uint CeilingTexture; // 0 for none
     uint MusicID;
     uint FogColor;
     double FogStart;
@@ -136,6 +137,9 @@ typedef struct {
     byte paramB;
     byte paramC;
     byte paramD;
+    float yPosition; // y position for rendering. Does not affect collision
+    bool showShadow; // should the actor cast a shadow?
+    float shadowSize; // size of the shadow
 } Actor;
 
 // pi 🥧

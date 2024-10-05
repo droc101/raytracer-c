@@ -91,9 +91,8 @@ byte level_fogB;
 double level_fogStart;
 double level_fogEnd;
 
-byte level_floorR;
-byte level_floorG;
-byte level_floorB;
+uint level_floor_tex;
+byte level_ceil_tex;
 
 byte level_skyR;
 byte level_skyG;
@@ -106,7 +105,8 @@ Level *NodesToLevel() {
     l->FogStart = level_fogStart;
     l->FogEnd = level_fogEnd;
 
-    l->FloorColor = 0xFF << 24 | level_floorR << 16 | level_floorG << 8 | level_floorB;
+    l->FloorTexture = level_floor_tex;
+    l->CeilingTexture = level_ceil_tex;
     l->SkyColor = 0xFF << 24 | level_skyR << 16 | level_skyG << 8 | level_skyB;
 
     // reconstruct the level from the editor nodes
@@ -188,16 +188,12 @@ void slider_setFogEnd(double value) {
     level_fogEnd = value;
 }
 
-void slider_setFloorR(double value) {
-    level_floorR = (byte) value;
+void slider_setFloorTex(double value) {
+    level_floor_tex = (uint) value;
 }
 
-void slider_setFloorG(double value) {
-    level_floorG = (byte) value;
-}
-
-void slider_setFloorB(double value) {
-    level_floorB = (byte) value;
+void slider_setCeilTex(double value) {
+    level_ceil_tex = (byte) value;
 }
 
 void slider_setSkyR(double value) {
@@ -876,12 +872,11 @@ void SetEditorMode(EditorButton *btn) {
         CreateSlider("Fog B", 0, 255, level_fogB, 1, 16, v2(10, 350), v2(200, 24), slider_setFogB);
         CreateSlider("Fog Start", -50, 200, level_fogStart, 1, 50, v2(10, 400), v2(200, 24), slider_setFogStart);
         CreateSlider("Fog End", 0, 300, level_fogEnd, 1, 50, v2(10, 450), v2(200, 24), slider_setFogEnd);
-        CreateSlider("Floor R", 0, 255, level_floorR, 1, 16, v2(10, 500), v2(200, 24), slider_setFloorR);
-        CreateSlider("Floor G", 0, 255, level_floorG, 1, 16, v2(10, 550), v2(200, 24), slider_setFloorG);
-        CreateSlider("Floor B", 0, 255, level_floorB, 1, 16, v2(10, 600), v2(200, 24), slider_setFloorB);
-        CreateSlider("Sky R", 0, 255, level_skyR, 1, 16, v2(10, 650), v2(200, 24), slider_setSkyR);
-        CreateSlider("Sky G", 0, 255, level_skyG, 1, 16, v2(10, 700), v2(200, 24), slider_setSkyG);
-        CreateSlider("Sky B", 0, 255, level_skyB, 1, 16, v2(10, 750), v2(200, 24), slider_setSkyB);
+        CreateSlider("Floor Tex", 0, WALL_TEXTURE_COUNT - 1, level_floor_tex, 1, 16, v2(10, 500), v2(200, 24), slider_setFloorTex);
+        CreateSlider("Ceil Tex", 0, WALL_TEXTURE_COUNT, level_ceil_tex, 1, 16, v2(10, 550), v2(200, 24), slider_setCeilTex);
+        CreateSlider("Sky R", 0, 255, level_skyR, 1, 16, v2(10, 600), v2(200, 24), slider_setSkyR);
+        CreateSlider("Sky G", 0, 255, level_skyG, 1, 16, v2(10, 650), v2(200, 24), slider_setSkyG);
+        CreateSlider("Sky B", 0, 255, level_skyB, 1, 16, v2(10, 700), v2(200, 24), slider_setSkyB);
     }
 }
 
@@ -934,9 +929,8 @@ void GEditorStateSet() {
     level_fogB = l->FogColor;
     level_fogStart = l->FogStart;
     level_fogEnd = l->FogEnd;
-    level_floorR = l->FloorColor >> 16;
-    level_floorG = l->FloorColor >> 8;
-    level_floorB = l->FloorColor;
+    level_ceil_tex = l->CeilingTexture;
+    level_floor_tex = l->FloorTexture;
     level_skyR = l->SkyColor >> 16;
     level_skyG = l->SkyColor >> 8;
     level_skyB = l->SkyColor;

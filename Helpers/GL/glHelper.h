@@ -149,8 +149,11 @@ void GL_DrawWall(Wall *w, mat4 *mvp, mat4 *mdl, Camera *cam, Level *l);
  * @param mvp The world -> screen matrix
  * @param l The level
  * @param texture The texture to use
+ * @param height The height of the floor
  */
-void GL_DrawFloor(Vector2 vp1, Vector2 vp2, mat4 *mvp, Level *l, const unsigned char *texture);
+void GL_DrawFloor(Vector2 vp1, Vector2 vp2, mat4 *mvp, Level *l, const unsigned char *texture, float height, float shade);
+
+void GL_DrawShadow(Vector2 vp1, Vector2 vp2, mat4 *mvp, mat4 *mdl, Level *l);
 
 /**
  * Enable 3D mode

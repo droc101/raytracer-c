@@ -13,8 +13,11 @@
 
 void CoinInit(Actor *this) {
     this->solid = false;
-    this->actorWall = CreateWall(v2(0, -0.5), v2(0, 0.5), (this->paramB == 1) ? actorTextures[8] : actorTextures[7], 0.25, 0.0);
+    this->actorWall = CreateWall(v2(0, -0.125), v2(0, 0.125), (this->paramB == 1) ? actorTextures[8] : actorTextures[7], 1.0, 0.0);
     this->paramA = 0;
+    this->actorWall->height = 0.25f;
+    this->yPosition = -0.25f;
+    this->shadowSize = 0.1;
 }
 
 void CoinUpdate(Actor *this) {
@@ -31,7 +34,7 @@ void CoinUpdate(Actor *this) {
     this->rotation = atan2(dir.y, dir.x);
     this->rotation += PI;
 
-    if (CollideActorCylinder(this, GetState()->level->position)) {
+    if (CollideCylinder(this->position, 0.25, GetState()->level->position)) {
         if (this->paramB == 0) {
             GetState()->coins++;
         } else {

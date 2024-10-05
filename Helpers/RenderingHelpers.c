@@ -6,6 +6,7 @@
 #include "GL/glHelper.h"
 #include "../Structs/Wall.h"
 #include "../Structs/Vector2.h"
+#include "CommonAssets.h"
 
 mat4 *GetMatrix(Camera *cam) {
     vec3 cam_pos = {cam->x, cam->y, cam->z};
@@ -42,7 +43,7 @@ mat4 *GetMatrix(Camera *cam) {
 mat4 *ActorTransformMatrix(Actor *Actor) {
     mat4 *MODEL = malloc(sizeof(mat4));
     glm_mat4_identity(*MODEL);
-    glm_translate(*MODEL, (vec3){Actor->position.x, 0, Actor->position.y});
+    glm_translate(*MODEL, (vec3){Actor->position.x, Actor->yPosition, Actor->position.y});
     glm_rotate(*MODEL, -Actor->rotation, (vec3){0, 1, 0});
     return MODEL;
 }
@@ -67,7 +68,10 @@ void RenderLevel3D(Level *l, Camera *cam) {
     Vector2 floor_start = v2(l->position.x - 100, l->position.y - 100);
     Vector2 floor_end = v2(l->position.x + 100, l->position.y + 100);
 
-    GL_DrawFloor(floor_start, floor_end, WORLD_VIEW_MATRIX, l, gztex_level_floor);
+    GL_DrawFloor(floor_start, floor_end, WORLD_VIEW_MATRIX, l, wallTextures[l->FloorTexture], -0.5, 1.0);
+    if (l->CeilingTexture != 0) {
+        GL_DrawFloor(floor_start, floor_end, WORLD_VIEW_MATRIX, l, wallTextures[l->CeilingTexture - 1], 0.5, 0.8);
+    }
 
     for (int i = 0; i < l->staticWalls->size; i++) {
         GL_DrawWall(SizedArrayGet(l->staticWalls, i), WORLD_VIEW_MATRIX, IDENTITY, cam, l);
@@ -78,6 +82,15 @@ void RenderLevel3D(Level *l, Camera *cam) {
         WallBake(actor->actorWall);
         mat4 *actor_xfm = ActorTransformMatrix(actor);
         GL_DrawWall(actor->actorWall, WORLD_VIEW_MATRIX, actor_xfm, cam, l);
+
+        if (actor->showShadow) {
+            // remove the rotation and y position from the actor matrix so the shadow draws correctly
+            glm_rotate(*actor_xfm, actor->rotation, (vec3) {0, 1, 0});
+            glm_translate(*actor_xfm, (vec3) {0, -actor->yPosition, 0});
+
+            GL_DrawShadow(v2s(-0.5 * actor->shadowSize), v2s(0.5 * actor->shadowSize), WORLD_VIEW_MATRIX, actor_xfm, l);
+        }
+
         free(actor_xfm);
     }
 

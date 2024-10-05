@@ -16,6 +16,7 @@ Wall *CreateWall(Vector2 a, Vector2 b, const byte *tex, float uvScale, float uvO
     w->texId = FindWallTextureIndex(tex);
     w->uvScale = uvScale;
     w->uvOffset = uvOffset;
+    w->height = 1.0f;
     return w;
 }
 

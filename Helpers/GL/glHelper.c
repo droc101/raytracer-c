@@ -16,6 +16,7 @@ Shader *ui_textured;
 Shader *ui_colored;
 Shader *wall_generic;
 Shader *floor_generic;
+Shader *shadow;
 
 Buffer *ui_buffer;
 Buffer *wall_buffer;
@@ -52,6 +53,10 @@ void GL_Init() {
     char *floor_generic_fsh = (char *) DecompressAsset(gzshd_GL_floor_f);
     char *floor_generic_vsh = (char *) DecompressAsset(gzshd_GL_floor_v);
     floor_generic = GL_ConstructShader(floor_generic_fsh, floor_generic_vsh);
+
+    char *shadow_fsh = (char *) DecompressAsset(gzshd_GL_shadow_f);
+    char *shadow_vsh = (char *) DecompressAsset(gzshd_GL_shadow_v);
+    shadow = GL_ConstructShader(shadow_fsh, shadow_vsh);
 
     ui_buffer = GL_ConstructBuffer();
     wall_buffer = GL_ConstructBuffer();
@@ -422,10 +427,10 @@ void GL_DrawWall(Wall *w, mat4 *mvp, mat4 *mdl, Camera *cam, Level *l) {
     glUniform1f(glGetUniformLocation(wall_generic->program, "fog_end"), l->FogEnd);
 
     float vertices[4][5] = { // X Y Z U V
-            {w->a.x, 0.5f, w->a.y, 0.0f, 0.0f},
-            {w->b.x, 0.5f, w->b.y, w->Length, 0.0f},
-            {w->b.x, -0.5f, w->b.y, w->Length, 1.0f},
-            {w->a.x, -0.5f, w->a.y, 0.0f, 1.0f}
+            {w->a.x, 0.5f * w->height, w->a.y, 0.0f, 0.0f},
+            {w->b.x, 0.5f * w->height, w->b.y, w->Length, 0.0f},
+            {w->b.x, -0.5f * w->height, w->b.y, w->Length, 1.0f},
+            {w->a.x, -0.5f * w->height, w->a.y, 0.0f, 1.0f}
     };
 
     float uvo = w->uvOffset;
@@ -458,7 +463,7 @@ void GL_DrawWall(Wall *w, mat4 *mvp, mat4 *mdl, Camera *cam, Level *l) {
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 }
 
-void GL_DrawFloor(Vector2 vp1, Vector2 vp2, mat4 *mvp, Level *l, const unsigned char *texture) {
+void GL_DrawFloor(Vector2 vp1, Vector2 vp2, mat4 *mvp, Level *l, const unsigned char *texture, float height, float shade) {
     glUseProgram(floor_generic->program);
 
     GLuint tex = GL_LoadTexture(texture);
@@ -476,6 +481,9 @@ void GL_DrawFloor(Vector2 vp1, Vector2 vp2, mat4 *mvp, Level *l, const unsigned 
 
     glUniform1f(glGetUniformLocation(floor_generic->program, "fog_start"), l->FogStart);
     glUniform1f(glGetUniformLocation(floor_generic->program, "fog_end"), l->FogEnd);
+
+    glUniform1f(glGetUniformLocation(floor_generic->program, "height"), height);
+    glUniform1f(glGetUniformLocation(floor_generic->program, "shade"), shade);
 
     float vertices[4][2] = { // X Y Z U V
             {vp1.x, vp1.y},
@@ -498,6 +506,53 @@ void GL_DrawFloor(Vector2 vp1, Vector2 vp2, mat4 *mvp, Level *l, const unsigned 
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     GLint pos_attr_loc = glGetAttribLocation(floor_generic->program, "VERTEX");
+    glVertexAttribPointer(pos_attr_loc, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void *) 0);
+    glEnableVertexAttribArray(pos_attr_loc);
+
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
+}
+
+void GL_DrawShadow(Vector2 vp1, Vector2 vp2, mat4 *mvp, mat4 *mdl, Level *l) {
+    glUseProgram(shadow->program);
+
+    GLuint tex = GL_LoadTexture(gztex_vfx_shadow);
+
+    glUniform1i(glGetUniformLocation(shadow->program, "alb"), tex);
+
+    glUniformMatrix4fv(glGetUniformLocation(shadow->program, "WORLD_VIEW_MATRIX"), 1, GL_FALSE, mvp[0][0]); // world -> screen
+    glUniformMatrix4fv(glGetUniformLocation(shadow->program, "MODEL_WORLD_MATRIX"), 1, GL_FALSE, mdl[0][0]); // model -> world
+
+    uint color = l->FogColor;
+    float r = ((color >> 16) & 0xFF) / 255.0f;
+    float g = ((color >> 8) & 0xFF) / 255.0f;
+    float b = (color & 0xFF) / 255.0f;
+
+    glUniform3f(glGetUniformLocation(shadow->program, "fog_color"), r, g, b);
+
+    glUniform1f(glGetUniformLocation(shadow->program, "fog_start"), l->FogStart);
+    glUniform1f(glGetUniformLocation(shadow->program, "fog_end"), l->FogEnd);
+
+    float vertices[4][2] = { // X Y Z U V
+            {vp1.x, vp1.y},
+            {vp2.x, vp1.y},
+            {vp2.x, vp2.y},
+            {vp1.x, vp2.y}
+    };
+
+    unsigned int indices[] = {
+            0, 1, 2,
+            0, 2, 3
+    };
+
+    glBindVertexArray(wall_buffer->vao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, wall_buffer->vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, wall_buffer->ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    GLint pos_attr_loc = glGetAttribLocation(shadow->program, "VERTEX");
     glVertexAttribPointer(pos_attr_loc, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void *) 0);
     glEnableVertexAttribArray(pos_attr_loc);
 

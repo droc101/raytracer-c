@@ -117,6 +117,7 @@ int main(int argc, char *argv[]) {
         g->UpdateGame(g);
 
         g->cam->x = g->level->position.x;
+        g->cam->y = g->FakeHeight;
         g->cam->z = g->level->position.y;
         g->cam->yaw = g->level->rotation;
 

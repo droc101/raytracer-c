@@ -40,9 +40,8 @@ Level *LoadLevel(byte *data) {
             }
             case LEVEL_CMD_COLORS: {
                 uint sky = ReadUint(data, &i);
-                uint floor = ReadUint(data, &i);
+                volatile uint floor = ReadUint(data, &i); // volatile to avoid the compiler optimizing this out (it will break level loading)
                 l->SkyColor = sky;
-                l->FloorColor = floor;
                 break;
             }
             case LEVEL_CMD_ACTOR: {
@@ -69,6 +68,13 @@ Level *LoadLevel(byte *data) {
                 l->FogColor = color;
                 l->FogStart = start;
                 l->FogEnd = end;
+                break;
+            }
+            case LEVEL_CMD_FLOOR_CEIL: {
+                uint floor = ReadUint(data, &i);
+                uint ceil = ReadUint(data, &i);
+                l->FloorTexture = floor;
+                l->CeilingTexture = ceil;
                 break;
             }
             default:
@@ -118,12 +124,16 @@ LevelBytecode* GenerateBytecode(Level *l) {
     data[i] = LEVEL_CMD_COLORS;
     i++;
     WriteUint(data, &i, l->SkyColor);
-    WriteUint(data, &i, l->FloorColor);
+    WriteUint(data, &i, 0);
     data[i] = LEVEL_CMD_FOG;
     i++;
     WriteUint(data, &i, l->FogColor);
     WriteDouble(data, &i, l->FogStart);
     WriteDouble(data, &i, l->FogEnd);
+    data[i] = LEVEL_CMD_FLOOR_CEIL;
+    i++;
+    WriteUint(data, &i, l->FloorTexture);
+    WriteUint(data, &i, l->CeilingTexture);
     data[i] = LEVEL_CMD_FINISH;
     i++;
 

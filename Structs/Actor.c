@@ -54,6 +54,9 @@ Actor *CreateActor(Vector2 position, double rotation, int actorType, byte paramA
     actor->paramB = paramB;
     actor->paramC = paramC;
     actor->paramD = paramD;
+    actor->yPosition = 0.0f;
+    actor->showShadow = true;
+    actor->shadowSize = 1.0f;
     actor->Init = (void (*)(void *)) ActorInitFuncs[actorType];
     actor->Update = (void (*)(void *)) ActorUpdateFuncs[actorType];
     actor->Destroy = (void (*)(void *)) ActorDestroyFuncs[actorType];
