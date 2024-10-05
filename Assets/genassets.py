@@ -234,18 +234,11 @@ def recursive_search(path):
                 name = "gzbin_" + foldername + "_" + file.split(".")[0]
                 assets_c += bytes_to_c_array(data, name)
                 assets_h += c_header_array(name, len(data))
-            elif file.endswith(".frag"):
+            elif file.endswith(".glsl"):
                 count += 1
                 print("Converting " + path + file)
                 data = file_to_bytes(path + file)
-                name = "gzfsh_" + foldername + "_" + file.split(".")[0]
-                assets_c += bytes_to_c_array(data, name)
-                assets_h += c_header_array(name, len(data))
-            elif file.endswith(".vert"):
-                count += 1
-                print("Converting " + path + file)
-                data = file_to_bytes(path + file)
-                name = "gzvsh_" + foldername + "_" + file.split(".")[0]
+                name = "gzshd_" + foldername + "_" + file.split(".")[0]
                 assets_c += bytes_to_c_array(data, name)
                 assets_h += c_header_array(name, len(data))
             else:

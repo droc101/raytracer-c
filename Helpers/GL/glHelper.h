@@ -143,6 +143,16 @@ void GL_ClearColor(uint color);
 void GL_DrawWall(Wall *w, mat4 *mvp, mat4 *mdl, Camera *cam, Level *l);
 
 /**
+ * Draw the floor in 3D
+ * @param vp1 The start of the floor
+ * @param vp2 The end of the floor
+ * @param mvp The world -> screen matrix
+ * @param l The level
+ * @param texture The texture to use
+ */
+void GL_DrawFloor(Vector2 vp1, Vector2 vp2, mat4 *mvp, Level *l, const unsigned char *texture);
+
+/**
  * Enable 3D mode
  */
 void GL_Enable3D();

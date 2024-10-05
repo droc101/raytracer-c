@@ -15,6 +15,7 @@ SDL_GLContext ctx;
 Shader *ui_textured;
 Shader *ui_colored;
 Shader *wall_generic;
+Shader *floor_generic;
 
 Buffer *ui_buffer;
 Buffer *wall_buffer;
@@ -36,17 +37,21 @@ void GL_Init() {
         Error("Failed to init GLEW");
     }
 
-    char *hud_textured_fsh = (char *) DecompressAsset(gzfsh_shader_hud_textured);
-    char *hud_textured_vsh = (char *) DecompressAsset(gzvsh_shader_hud_textured);
+    char *hud_textured_fsh = (char *) DecompressAsset(gzshd_GL_hud_textured_f);
+    char *hud_textured_vsh = (char *) DecompressAsset(gzshd_GL_hud_textured_v);
     ui_textured = GL_ConstructShader(hud_textured_fsh, hud_textured_vsh);
 
-    char *hud_colored_fsh = (char *) DecompressAsset(gzfsh_shader_hud_color);
-    char *hud_colored_vsh = (char *) DecompressAsset(gzvsh_shader_hud_color);
+    char *hud_colored_fsh = (char *) DecompressAsset(gzshd_GL_hud_color_f);
+    char *hud_colored_vsh = (char *) DecompressAsset(gzshd_GL_hud_color_v);
     ui_colored = GL_ConstructShader(hud_colored_fsh, hud_colored_vsh);
 
-    char *wall_generic_fsh = (char *) DecompressAsset(gzfsh_shader_wall);
-    char *wall_generic_vsh = (char *) DecompressAsset(gzvsh_shader_wall);
+    char *wall_generic_fsh = (char *) DecompressAsset(gzshd_GL_wall_f);
+    char *wall_generic_vsh = (char *) DecompressAsset(gzshd_GL_wall_v);
     wall_generic = GL_ConstructShader(wall_generic_fsh, wall_generic_vsh);
+
+    char *floor_generic_fsh = (char *) DecompressAsset(gzshd_GL_floor_f);
+    char *floor_generic_vsh = (char *) DecompressAsset(gzshd_GL_floor_v);
+    floor_generic = GL_ConstructShader(floor_generic_fsh, floor_generic_vsh);
 
     ui_buffer = GL_ConstructBuffer();
     wall_buffer = GL_ConstructBuffer();
@@ -449,6 +454,52 @@ void GL_DrawWall(Wall *w, mat4 *mvp, mat4 *mdl, Camera *cam, Level *l) {
     GLint tex_attr_loc = glGetAttribLocation(wall_generic->program, "VERTEX_UV");
     glVertexAttribPointer(tex_attr_loc, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void *) (3 * sizeof(GLfloat)));
     glEnableVertexAttribArray(tex_attr_loc);
+
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
+}
+
+void GL_DrawFloor(Vector2 vp1, Vector2 vp2, mat4 *mvp, Level *l, const unsigned char *texture) {
+    glUseProgram(floor_generic->program);
+
+    GLuint tex = GL_LoadTexture(texture);
+
+    glUniform1i(glGetUniformLocation(floor_generic->program, "alb"), tex);
+
+    glUniformMatrix4fv(glGetUniformLocation(floor_generic->program, "WORLD_VIEW_MATRIX"), 1, GL_FALSE, mvp[0][0]); // world -> screen
+
+    uint color = l->FogColor;
+    float r = ((color >> 16) & 0xFF) / 255.0f;
+    float g = ((color >> 8) & 0xFF) / 255.0f;
+    float b = (color & 0xFF) / 255.0f;
+
+    glUniform3f(glGetUniformLocation(floor_generic->program, "fog_color"), r, g, b);
+
+    glUniform1f(glGetUniformLocation(floor_generic->program, "fog_start"), l->FogStart);
+    glUniform1f(glGetUniformLocation(floor_generic->program, "fog_end"), l->FogEnd);
+
+    float vertices[4][2] = { // X Y Z U V
+            {vp1.x, vp1.y},
+            {vp2.x, vp1.y},
+            {vp2.x, vp2.y},
+            {vp1.x, vp2.y}
+    };
+
+    unsigned int indices[] = {
+            0, 1, 2,
+            0, 2, 3
+    };
+
+    glBindVertexArray(wall_buffer->vao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, wall_buffer->vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, wall_buffer->ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    GLint pos_attr_loc = glGetAttribLocation(floor_generic->program, "VERTEX");
+    glVertexAttribPointer(pos_attr_loc, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void *) 0);
+    glEnableVertexAttribArray(pos_attr_loc);
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 }

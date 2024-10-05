@@ -3,6 +3,7 @@
 //
 
 #include "Camera.h"
+#include <math.h>
 
 /**
  * Create a camera with default values

@@ -5,6 +5,7 @@
 #include "RenderingHelpers.h"
 #include "GL/glHelper.h"
 #include "../Structs/Wall.h"
+#include "../Structs/Vector2.h"
 
 mat4 *GetMatrix(Camera *cam) {
     vec3 cam_pos = {cam->x, cam->y, cam->z};
@@ -12,7 +13,7 @@ mat4 *GetMatrix(Camera *cam) {
 
     mat4 IDENTITY = GLM_MAT4_IDENTITY_INIT;
     mat4 PERSPECTIVE = GLM_MAT4_ZERO_INIT;
-    glm_perspective(cam->fov, aspect, NEAR_Z, FAR_Z, PERSPECTIVE);
+    glm_perspective(glm_rad(cam->fov), aspect, NEAR_Z, FAR_Z, PERSPECTIVE);
 
     vec3 look_at = {cosf(cam->yaw), 0, sinf(cam->yaw)};
     vec3 up = {0, 1, 0};
@@ -62,6 +63,11 @@ void RenderLevel3D(Level *l, Camera *cam) {
     mat4 *WORLD_VIEW_MATRIX = GetMatrix(cam);
     mat4 *IDENTITY = malloc(sizeof(mat4));
     glm_mat4_identity(*IDENTITY);
+
+    Vector2 floor_start = v2(l->position.x - 100, l->position.y - 100);
+    Vector2 floor_end = v2(l->position.x + 100, l->position.y + 100);
+
+    GL_DrawFloor(floor_start, floor_end, WORLD_VIEW_MATRIX, l, gztex_level_floor);
 
     for (int i = 0; i < l->staticWalls->size; i++) {
         GL_DrawWall(SizedArrayGet(l->staticWalls, i), WORLD_VIEW_MATRIX, IDENTITY, cam, l);
