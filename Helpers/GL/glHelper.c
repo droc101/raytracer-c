@@ -336,7 +336,7 @@ GL_DrawTexture_Internal(Vector2 pos, Vector2 size, const unsigned char *imageDat
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ui_buffer->ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    GLint pos_attr_loc = glGetAttribLocation(ui_colored->program, "VERTEX");
+    GLint pos_attr_loc = glGetAttribLocation(ui_textured->program, "VERTEX");
     glVertexAttribPointer(pos_attr_loc, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void *) 0);
     glEnableVertexAttribArray(pos_attr_loc);
 
@@ -573,4 +573,68 @@ void GL_Disable3D() {
 
 void GL_UpdateViewportSize() {
     glViewport(0, 0, WindowWidth(), WindowHeight());
+}
+
+void GL_DrawTexturedArrays(float *vertices, uint *indices, int quad_count, const unsigned char *imageData, uint color) {
+    glUseProgram(ui_textured->program);
+
+    GLuint tex = GL_LoadTexture(imageData);
+
+    float a = ((color >> 24) & 0xFF) / 255.0f;
+    float r = ((color >> 16) & 0xFF) / 255.0f;
+    float g = ((color >> 8) & 0xFF) / 255.0f;
+    float b = (color & 0xFF) / 255.0f;
+
+    glUniform4f(glGetUniformLocation(ui_textured->program, "col"), r, g, b, a);
+
+    glUniform4f(glGetUniformLocation(ui_textured->program, "region"), -1, 0, 0, 0);
+
+    glUniform1i(glGetUniformLocation(ui_textured->program, "alb"), tex);
+
+    glBindVertexArray(ui_buffer->vao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, ui_buffer->vbo);
+    glBufferData(GL_ARRAY_BUFFER, quad_count * 16 * sizeof(float), vertices, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ui_buffer->ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, quad_count * 6 * sizeof(uint), indices, GL_STATIC_DRAW);
+
+    GLint pos_attr_loc = glGetAttribLocation(ui_textured->program, "VERTEX");
+    glVertexAttribPointer(pos_attr_loc, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void *) 0);
+    glEnableVertexAttribArray(pos_attr_loc);
+
+    GLint tex_attr_loc = glGetAttribLocation(ui_textured->program, "VERTEX_UV");
+    glVertexAttribPointer(tex_attr_loc, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void *) (2 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(tex_attr_loc);
+
+    glDrawElements(GL_TRIANGLES, quad_count * 6, GL_UNSIGNED_INT, NULL);
+}
+
+void GL_GenQuad(Vector2 pos, Vector2 size, Vector2 uv_start, Vector2 uv_end, float *vertices[][4], uint *indices[6], int quad_number) {
+    float NDC_pos_x = X_TO_NDC(pos.x);
+    float NDC_pos_y = Y_TO_NDC(pos.y);
+    float NDC_pos_end_x = X_TO_NDC(pos.x + size.x);
+    float NDC_pos_end_y = Y_TO_NDC(pos.y + size.y);
+
+    float verts[4][4] = {
+            {NDC_pos_x, NDC_pos_y, uv_start.x, uv_start.y},
+            {NDC_pos_end_x, NDC_pos_y, uv_end.x, uv_start.y},
+            {NDC_pos_end_x, NDC_pos_end_y, uv_end.x, uv_end.y},
+            {NDC_pos_x, NDC_pos_end_y, uv_start.x, uv_end.y}
+    };
+
+    unsigned int inds[6] = {
+            0, 1, 2,
+            0, 2, 3
+    };
+
+    for (int i = 0; i < 6; i++) {
+        inds[i] += quad_number * 4;
+    }
+
+    float *dest_verts = vertices + (sizeof(float[4][4]) * quad_number);
+    uint *dest_inds = indices + (sizeof(uint[6]) * quad_number);
+
+    memcpy(vertices, dest_verts, sizeof(verts));
+    memcpy(indices, dest_inds, sizeof(inds));
 }

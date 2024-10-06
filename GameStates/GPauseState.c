@@ -56,6 +56,8 @@ void GPauseStateUpdate(GlobalState * State) {
 }
 
 void GPauseStateRender(GlobalState* State) {
+    RenderLevel(State);
+
     setColorUint(0x80000000);
     draw_rect(0, 0, WindowWidth(), WindowHeight());
 

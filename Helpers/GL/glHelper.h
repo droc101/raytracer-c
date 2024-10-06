@@ -170,4 +170,11 @@ void GL_Disable3D();
  */
 void GL_UpdateViewportSize();
 
+void GL_DrawTexturedArrays(float *vertices, uint *indices, int quad_count, const unsigned char *imageData, uint color);
+void GL_GenQuad(Vector2 pos, Vector2 size, Vector2 uv_start, Vector2 uv_end, float *vertices[][4], uint *indices[6], int quad_number);
+
+float X_TO_NDC(float x);
+
+float Y_TO_NDC(float y);
+
 #endif //GAME_GLHELPER_H

@@ -13,6 +13,7 @@
 #include "Actor.h"
 #include "GlobalState.h"
 #include "../Helpers/CommonAssets.h"
+#include "../Helpers/RenderingHelpers.h"
 
 Level *CreateLevel() {
     Level *l = (Level*)malloc(sizeof(Level));
@@ -92,5 +93,10 @@ void RenderLevelSky(Camera *cam) {
     DrawTextureRegionMod(v2(offset, 0), v2(WindowWidth() * skyPos / 256, height), gztex_level_sky, v2(0, 0),
                          v2(skyPos, 128), l->SkyColor);
     DrawTextureRegionMod(v2(0, 0), v2(offset, height), gztex_level_sky, v2(skyPos, 0), v2(256 - skyPos, 128), l->SkyColor);
+}
+
+void RenderLevel(GlobalState *g) {
+    RenderLevelSky(g->cam);
+    RenderLevel3D(g->level, g->cam);
 }
 

@@ -40,7 +40,7 @@ Level *LoadLevel(byte *data) {
             }
             case LEVEL_CMD_COLORS: {
                 uint sky = ReadUint(data, &i);
-                volatile uint floor = ReadUint(data, &i); // volatile to avoid the compiler optimizing this out (it will break level loading)
+                i += sizeof (uint); // skip the second color
                 l->SkyColor = sky;
                 break;
             }

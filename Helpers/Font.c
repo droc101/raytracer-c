@@ -43,12 +43,18 @@ void FontDrawChar(Vector2 pos, char c, uint size, bool small, uint color) {
     dstRect.w = small ? size * 0.75 : size;
     dstRect.h = size;
 
-    GL_DrawTextureRegionMod(v2(dstRect.x, dstRect.y), v2(dstRect.w, dstRect.h), small ? gztex_interface_small_fonts : gztex_interface_font,
-                            v2(srcRect.x, srcRect.y),
-                            v2(srcRect.w, srcRect.h), color);
+    DrawTextureRegionMod(v2(dstRect.x, dstRect.y), v2(dstRect.w, dstRect.h), small ? gztex_interface_small_fonts : gztex_interface_font,
+                         v2(srcRect.x, srcRect.y),
+                         v2(srcRect.w, srcRect.h), color);
 }
 
 Vector2 FontDrawString(Vector2 pos, char* str, uint size, uint color, bool small) {
+    int str_len = strlen(str);
+    float *verts = malloc(sizeof(float[4][4]) * str_len);
+    uint *indices = malloc(sizeof(uint[6]) * str_len);
+    memset(verts, 0, sizeof(float[4][4]) * str_len);
+    memset(indices, 0, sizeof(uint[6]) * str_len);
+
     int x = pos.x;
     int y = pos.y;
     int i = 0;
@@ -62,10 +68,45 @@ Vector2 FontDrawString(Vector2 pos, char* str, uint size, uint color, bool small
             x = pos.x;
             y += size;
         }
-        FontDrawChar(v2(x, y), str[i], size, small, color);
+
+        float uv_per_char = 1.0f / strlen(fontChars);
+        int index = findChar(tolower(str[i]));
+        if (index == -1) {
+            index = findChar('U');
+        }
+
+        Vector2 ndc_pos = v2(X_TO_NDC(x), Y_TO_NDC(y));
+        Vector2 ndc_pos_end = v2(X_TO_NDC(x + sizeX), Y_TO_NDC(y + size));
+        float charUV = uv_per_char * index;
+        float charUVEnd = uv_per_char * (index + 1);
+
+        float quad[4][4] = {
+                {ndc_pos.x, ndc_pos.y, charUV, 0},
+                {ndc_pos.x, ndc_pos_end.y, charUV, 1},
+                {ndc_pos_end.x, ndc_pos_end.y, charUVEnd, 1},
+                {ndc_pos_end.x, ndc_pos.y, charUVEnd, 0}
+        };
+
+        memcpy(verts + i * 16, quad, sizeof(quad));
+
+        uint quad_indices[6] = {0, 1, 2,
+                                0, 2, 3};
+        for (int j = 0; j < 6; j++) {
+            quad_indices[j] += i * 4;
+        }
+
+        memcpy(indices + i * 6, quad_indices, sizeof(quad_indices));
+
+        //FontDrawChar(v2(x, y), str[i], size, small, color);
         x += sizeX;
         i++;
     }
+
+    GL_DrawTexturedArrays(verts, indices, str_len, small ? gztex_interface_small_fonts : gztex_interface_font, color);
+
+    free(verts);
+    free(indices);
+
     return v2(x + sizeX, y + size); // Return the bottom right corner of the text
 }
 

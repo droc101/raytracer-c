@@ -121,10 +121,6 @@ int main(int argc, char *argv[]) {
         g->cam->z = g->level->position.y;
         g->cam->yaw = g->level->rotation;
 
-        RenderLevelSky(g->cam);
-
-        RenderLevel3D(g->level, g->cam);
-
         g->RenderGame(g);
 
         FrameGraphDraw();

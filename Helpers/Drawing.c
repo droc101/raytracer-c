@@ -23,20 +23,20 @@ SDL_Window *GetWindow() {
     return window;
 }
 
-int WindowWidth() {
+inline int WindowWidth() {
     int w, h;
     SDL_GetWindowSize(window, &w, &h);
     return w;
 }
 
-int WindowHeight() {
+inline int WindowHeight() {
     int w, h;
     SDL_GetWindowSize(window, &w, &h);
     return h;
 }
 
 // Set the SDL color from an ARGB uint32
-void setColorUint(uint color) {
+inline void setColorUint(uint color) {
     drawColor = color;
 }
 
@@ -98,45 +98,47 @@ void SetTexParams(const unsigned char* imageData, bool linear, bool repeat) {
     GL_SetTexParams(imageData, linear, repeat);
 }
 
-void DrawLine(Vector2 start, Vector2 end) {
+inline void DrawLine(Vector2 start, Vector2 end) {
     GL_DrawLine(start, end, drawColor);
 }
 
-void DrawTexture(Vector2 pos, Vector2 size, const unsigned char* imageData) {
+inline void DrawTexture(Vector2 pos, Vector2 size, const unsigned char* imageData) {
     GL_DrawTexture(pos, size, imageData);
 
 }
-void DrawTextureMod(Vector2 pos, Vector2 size, const unsigned char* imageData, uint color) {
+inline void DrawTextureMod(Vector2 pos, Vector2 size, const unsigned char* imageData, uint color) {
     GL_DrawTextureMod(pos, size, imageData, color);
 
 }
-void DrawTextureRegion(Vector2 pos, Vector2 size, const unsigned char* imageData, Vector2 region_start, Vector2 region_end) {
+
+inline void DrawTextureRegion(Vector2 pos, Vector2 size, const unsigned char* imageData, Vector2 region_start, Vector2 region_end) {
     GL_DrawTextureRegion(pos, size, imageData, region_start, region_end);
 
 
 }
-void DrawTextureRegionMod(Vector2 pos, Vector2 size, const unsigned char* imageData, Vector2 region_start, Vector2 region_end, uint color) {
+
+inline void DrawTextureRegionMod(Vector2 pos, Vector2 size, const unsigned char* imageData, Vector2 region_start, Vector2 region_end, uint color) {
     GL_DrawTextureRegionMod(pos, size, imageData, region_start, region_end, color);
 }
 
-void ClearColor(uint color) {
+inline void ClearColor(uint color) {
     GL_ClearColor(color);
 }
 
-void ClearScreen() {
+inline void ClearScreen() {
     GL_ClearScreen();
 
 }
 
-void ClearDepthOnly() {
+inline void ClearDepthOnly() {
     GL_ClearDepthOnly();
 }
 
-void Swap() {
+inline void Swap() {
     GL_Swap();
 }
 
-void draw_rect(int x, int y, int w, int h) {
+inline void draw_rect(int x, int y, int w, int h) {
     GL_DrawRect(v2(x, y), v2(w, h), drawColor);
 }
 

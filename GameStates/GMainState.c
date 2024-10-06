@@ -123,6 +123,8 @@ void GMainStateUpdate(GlobalState * State) {
 void GMainStateRender(GlobalState* State) {
     Level *l = State->level;
 
+    RenderLevel(State);
+
     SDL_Rect coinIconRect = {WindowWidth() - 260, 16, 40, 40};
     DrawTexture(v2(WindowWidth() - 260, 16), v2(40, 40), gztex_interface_hud_ycoin);
 

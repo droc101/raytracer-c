@@ -55,4 +55,6 @@ void RemoveActor(Actor* actor);
  */
 void RenderLevelSky(Camera *cam);
 
+void RenderLevel(GlobalState *g);
+
 #endif //GAME_LEVEL_H
