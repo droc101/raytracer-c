@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include "../Helpers/Font.h"
 #include "../Helpers/TextBox.h"
+#include "../Helpers/Timing.h"
 
 void GMainStateUpdate(GlobalState * State) {
     if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE)) {
@@ -41,63 +42,16 @@ void GMainStateUpdate(GlobalState * State) {
         return;
     }
 
+    if (IsKeyJustPressed(SDL_SCANCODE_C)) {
+        Error("Manually triggered error.");
+    }
+
     if (IsKeyJustPressed(SDL_SCANCODE_T)) {
         TextBox tb = DEFINE_TEXT("TEXT BOX\n\nPAGE TWO", 2, 20, 0, 60, TEXT_BOX_H_ALIGN_CENTER, TEXT_BOX_V_ALIGN_TOP, TEXT_BOX_THEME_BLACK);
         ShowTextBox(tb);
     }
 
-    Vector2 moveVec = v2(0, 0);
-    if (IsKeyPressed(SDL_SCANCODE_W)) {
-        moveVec.x += 1;
-    } else if (IsKeyPressed(SDL_SCANCODE_S)) {
-        moveVec.x -= 1;
-    }
-
-#ifdef KEYBOARD_ROTATION
-    if (IsKeyPressed(SDL_SCANCODE_Q)) {
-        moveVec.y -= 1;
-    } else if (IsKeyPressed(SDL_SCANCODE_E)) {
-        moveVec.y += 1;
-    }
-#else
-    if (IsKeyPressed(SDL_SCANCODE_A)) {
-        moveVec.y -= 1;
-    } else if (IsKeyPressed(SDL_SCANCODE_D)) {
-        moveVec.y += 1;
-    }
-#endif
-
-    bool isMoving = moveVec.x != 0 || moveVec.y != 0;
-
-    if (isMoving) {
-        moveVec = Vector2Normalize(moveVec);
-    }
-
-    double spd = MOVE_SPEED;
-    if (IsKeyPressed(SDL_SCANCODE_LSHIFT)) {
-        spd = SLOW_MOVE_SPEED;
-    }
-
-    moveVec = Vector2Scale(moveVec, spd);
-    moveVec = Vector2Rotate(moveVec, l->rotation);
-
-    l->position = Move(l->position, moveVec, NULL);
-
-    // view bobbing (scam edition) 💀 (it's better now trust me)
-    if (spd == SLOW_MOVE_SPEED) {
-        if (isMoving) {
-            State->FakeHeight = sin(State->frame / 7.0) * 0.02;
-        } else {
-            State->FakeHeight = lerp(State->FakeHeight, 0, 0.1); // NOLINT(*-narrowing-conversions)
-        }
-    } else {
-        if (isMoving) {
-            State->FakeHeight = sin(State->frame / 7.0) * 0.04;
-        } else {
-            State->FakeHeight = lerp(State->FakeHeight, 0, 0.1); // NOLINT(*-narrowing-conversions)
-        }
-    }
-
+    const bool doPhysics = State->physicsFrame < GetTimeNs() / 16666667;
 #ifdef KEYBOARD_ROTATION
     if (IsKeyPressed(SDL_SCANCODE_A)) {
         l->rotation -= ROT_SPEED;
@@ -105,18 +59,69 @@ void GMainStateUpdate(GlobalState * State) {
         l->rotation += ROT_SPEED;
     }
 #else
-    l->rotation += ((double)GetMouseRel().x) / MOUSE_SENSITIVITY;
+    l->rotation += GetMouseRel().x / MOUSE_SENSITIVITY;
+#endif
+    if (doPhysics)
+    {
+        Vector2 moveVec = v2(0, 0);
+        State->physicsFrame++;
+        if (IsKeyPressed(SDL_SCANCODE_W)) {
+            moveVec.x += 1;
+        } else if (IsKeyPressed(SDL_SCANCODE_S)) {
+            moveVec.x -= 1;
+        }
+
+#ifdef KEYBOARD_ROTATION
+        if (IsKeyPressed(SDL_SCANCODE_Q)) {
+            moveVec.y -= 1;
+        } else if (IsKeyPressed(SDL_SCANCODE_E)) {
+            moveVec.y += 1;
+        }
+#else
+        if (IsKeyPressed(SDL_SCANCODE_A)) {
+            moveVec.y -= 1;
+        } else if (IsKeyPressed(SDL_SCANCODE_D)) {
+            moveVec.y += 1;
+        }
 #endif
 
-    if (IsKeyJustPressed(SDL_SCANCODE_C)) {
-        Error("Manually triggered error.");
-    }
+        bool isMoving = moveVec.x != 0 || moveVec.y != 0;
 
-    l->rotation = wrap(l->rotation, 0, 2 * PI);
+        if (isMoving) {
+            moveVec = Vector2Normalize(moveVec);
+        }
 
-    for (int i = 0; i < l->staticActors->size; i++) {
-        Actor *a = SizedArrayGet(l->staticActors, i);
-        a->Update(a);
+        double spd = MOVE_SPEED;
+        if (IsKeyPressed(SDL_SCANCODE_LSHIFT)) {
+            spd = SLOW_MOVE_SPEED;
+        }
+
+        moveVec = Vector2Scale(moveVec, spd);
+        moveVec = Vector2Rotate(moveVec, l->rotation);
+
+        l->position = Move(l->position, moveVec, NULL);
+
+        // view bobbing (scam edition) 💀 (it's better now trust me)
+        if (spd == SLOW_MOVE_SPEED) {
+            if (isMoving) {
+                State->FakeHeight = sin(State->frame / 7.0) * 0.02; // NOLINT(*-narrowing-conversions)
+            } else {
+                State->FakeHeight = lerp(State->FakeHeight, 0, 0.1); // NOLINT(*-narrowing-conversions)
+            }
+        } else {
+            if (isMoving) {
+                State->FakeHeight = sin(State->frame / 7.0) * 0.04; // NOLINT(*-narrowing-conversions)
+            } else {
+                State->FakeHeight = lerp(State->FakeHeight, 0, 0.1); // NOLINT(*-narrowing-conversions)
+            }
+        }
+
+        l->rotation = wrap(l->rotation, 0, 2 * PI);
+
+        for (int i = 0; i < l->staticActors->size; i++) {
+            Actor *a = SizedArrayGet(l->staticActors, i);
+            a->Update(a);
+        }
     }
 }
 

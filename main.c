@@ -74,9 +74,9 @@ int main(int argc, char *argv[]) {
 
     SDL_Event e;
     bool quit = false;
-    ulong frameStart, frameTime;
+    InitTiming();
     while (!quit) {
-        frameStart = GetTimeNs();
+        const ulong frameStart = GetTimeNs();
 
         while (SDL_PollEvent(&e) != 0) {
             if (e.type == SDL_QUIT) {
@@ -116,10 +116,10 @@ int main(int argc, char *argv[]) {
 
         g->UpdateGame(g);
 
-        g->cam->x = g->level->position.x;
-        g->cam->y = g->FakeHeight;
-        g->cam->z = g->level->position.y;
-        g->cam->yaw = g->level->rotation;
+        g->cam->x = (float)g->level->position.x;
+        g->cam->y = (float)g->FakeHeight;
+        g->cam->z = (float)g->level->position.y;
+        g->cam->yaw = (float)g->level->rotation;
 
         g->RenderGame(g);
 
@@ -134,12 +134,7 @@ int main(int argc, char *argv[]) {
             quit = true;
         }
 
-        frameTime = GetTimeNs() - frameStart;
-        FrameGraphUpdate(frameTime);
-        if (frameTime < TARGET_NS) {
-            ulong sleepTime = (TARGET_NS - frameTime) / 1000000;
-            SDL_Delay(sleepTime);
-        }
+        FrameGraphUpdate(GetTimeNs() - frameStart);
 
     }
     printf("Destructing Engine\n");

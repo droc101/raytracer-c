@@ -108,6 +108,7 @@ typedef struct {
     int coins;
     int blueCoins;
     ulong frame;
+    ulong physicsFrame;
     bool requestExit;
     Mix_Music *music; // background music
     Mix_Chunk *channels[SFX_CHANNEL_COUNT]; // sound effects
