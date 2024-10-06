@@ -28,7 +28,7 @@ void GL_Init() {
 
     ctx = SDL_GL_CreateContext(GetWindow());
 
-    SDL_GL_SetSwapInterval(1);
+    SDL_GL_SetSwapInterval(0);
 
     GLenum err;
     glewExperimental = GL_TRUE; // Please expose OpenGL 3.x+ interfaces
@@ -608,33 +608,4 @@ void GL_DrawTexturedArrays(float *vertices, uint *indices, int quad_count, const
     glEnableVertexAttribArray(tex_attr_loc);
 
     glDrawElements(GL_TRIANGLES, quad_count * 6, GL_UNSIGNED_INT, NULL);
-}
-
-void GL_GenQuad(Vector2 pos, Vector2 size, Vector2 uv_start, Vector2 uv_end, float *vertices[][4], uint *indices[6], int quad_number) {
-    float NDC_pos_x = X_TO_NDC(pos.x);
-    float NDC_pos_y = Y_TO_NDC(pos.y);
-    float NDC_pos_end_x = X_TO_NDC(pos.x + size.x);
-    float NDC_pos_end_y = Y_TO_NDC(pos.y + size.y);
-
-    float verts[4][4] = {
-            {NDC_pos_x, NDC_pos_y, uv_start.x, uv_start.y},
-            {NDC_pos_end_x, NDC_pos_y, uv_end.x, uv_start.y},
-            {NDC_pos_end_x, NDC_pos_end_y, uv_end.x, uv_end.y},
-            {NDC_pos_x, NDC_pos_end_y, uv_start.x, uv_end.y}
-    };
-
-    unsigned int inds[6] = {
-            0, 1, 2,
-            0, 2, 3
-    };
-
-    for (int i = 0; i < 6; i++) {
-        inds[i] += quad_number * 4;
-    }
-
-    float *dest_verts = vertices + (sizeof(float[4][4]) * quad_number);
-    uint *dest_inds = indices + (sizeof(uint[6]) * quad_number);
-
-    memcpy(vertices, dest_verts, sizeof(verts));
-    memcpy(indices, dest_inds, sizeof(inds));
 }

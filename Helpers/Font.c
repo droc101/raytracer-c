@@ -26,28 +26,6 @@ int findChar(char target) {
     return -1;  // Character not found
 }
 
-void FontDrawChar(Vector2 pos, char c, uint size, bool small, uint color) {
-    if (c == '?') printf("%c,%d,%d\n", c, findChar(c), findChar(tolower(c)));
-    int index = findChar(tolower(c));
-    if (index == -1) {
-        index = findChar('U');
-    }
-    SDL_Rect srcRect;
-    srcRect.x = index * (small ? SMALL_FONT_CHAR_WIDTH : FONT_CHAR_WIDTH);
-    srcRect.y = 0;
-    srcRect.w = small ? SMALL_FONT_CHAR_WIDTH : FONT_CHAR_WIDTH;
-    srcRect.h = FONT_CHAR_HEIGHT;
-    SDL_Rect dstRect;
-    dstRect.x = pos.x;
-    dstRect.y = pos.y;
-    dstRect.w = small ? size * 0.75 : size;
-    dstRect.h = size;
-
-    DrawTextureRegionMod(v2(dstRect.x, dstRect.y), v2(dstRect.w, dstRect.h), small ? gztex_interface_small_fonts : gztex_interface_font,
-                         v2(srcRect.x, srcRect.y),
-                         v2(srcRect.w, srcRect.h), color);
-}
-
 Vector2 FontDrawString(Vector2 pos, char* str, uint size, uint color, bool small) {
     int str_len = strlen(str);
     float *verts = malloc(sizeof(float[4][4]) * str_len);
