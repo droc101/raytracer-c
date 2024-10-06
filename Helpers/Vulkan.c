@@ -28,6 +28,12 @@ typedef struct {
     vec3 color;
 } Vertex;
 
+typedef struct {
+    mat4 model;
+    mat4 view;
+    mat4 proj;
+} UniformBufferObject;
+
 const List(Vertex) vertices = {
     4,
     (Vertex[]){
@@ -71,6 +77,7 @@ VkFormat swapChainImageFormat;
 VkExtent2D swapChainExtent;
 VkImageView *swapChainImageViews;
 VkRenderPass renderPass;
+VkDescriptorSetLayout descriptorSetLayout;
 VkPipelineLayout pipelineLayout;
 VkPipeline graphicsPipeline;
 VkFramebuffer *swapChainFramebuffers;
@@ -85,6 +92,9 @@ VkBuffer vertexBuffer;
 VkDeviceMemory vertexBufferMemory;
 VkBuffer indexBuffer;
 VkDeviceMemory indexBufferMemory;
+VkBuffer uniformBuffers[MAX_FRAMES_IN_FLIGHT];
+VkDeviceMemory uniformBuffersMemory[MAX_FRAMES_IN_FLIGHT];
+void **uniformBuffersMapped[MAX_FRAMES_IN_FLIGHT];
 
 /**
  * Provides information about the physical device's support for the swap chain.
@@ -453,6 +463,30 @@ static bool CreateRenderPass() {
     return true;
 }
 
+static bool CreateDescriptorSetLayout()
+{
+    VkDescriptorSetLayoutBinding layoutBinding = {
+        0,
+        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+        1,
+        VK_SHADER_STAGE_VERTEX_BIT,
+        NULL
+    };
+    VkDescriptorSetLayoutCreateInfo layoutInfo = {
+        VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+        NULL,
+        0,
+        1,
+        &layoutBinding
+    };
+    if (vkCreateDescriptorSetLayout(device, &layoutInfo, NULL, &descriptorSetLayout) != VK_SUCCESS)
+    {
+        VulkanError("Failed to create Vulkan descriptor set layout!");
+        return false;
+    }
+    return true;
+}
+
 static VkShaderModule CreateShaderModule(const uint32_t *code, const size_t size) {
     const VkShaderModuleCreateInfo createInfo = {
         VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
@@ -597,8 +631,8 @@ static bool CreateGraphicsPipeline() {
         VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
         NULL,
         0,
-        0,
-        NULL,
+        1,
+        &descriptorSetLayout,
         0,
         NULL
     };
@@ -804,6 +838,16 @@ static bool CreateIndexBuffer() {
     return true;
 }
 
+static bool CreateUniformBuffers()
+{
+    for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+        const VkDeviceSize bufferSize = sizeof(UniformBufferObject);
+        CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &uniformBuffers[i], &uniformBuffersMemory[i]);
+        vkMapMemory(device, uniformBuffersMemory[i], 0, bufferSize, 0, uniformBuffersMapped[i]);
+    }
+    return true;
+}
+
 static bool CreateCommandBuffers() {
     commandBuffers = malloc(sizeof(VkCommandBuffer*) * MAX_FRAMES_IN_FLIGHT);
     const VkCommandBufferAllocateInfo allocateInfo = {
@@ -907,8 +951,8 @@ static void RecordCommandBuffer(const VkCommandBuffer buffer, const uint32_t ima
  */
 bool InitVulkan(SDL_Window *window) {
     if (!CreateInstance(window) || !CreateSurface(window) || !PickPhysicalDevice() || !CreateLogicalDevice() || !
-        CreateSwapChain(window) || !CreateImageViews() || !CreateRenderPass() || !CreateGraphicsPipeline() || !
-        CreateFramebuffers() || !CreateCommandPools() || !CreateVertexBuffer() || !CreateIndexBuffer() || !
+        CreateSwapChain(window) || !CreateImageViews() || !CreateRenderPass() || !CreateDescriptorSetLayout() || !CreateGraphicsPipeline() || !
+        CreateFramebuffers() || !CreateCommandPools() || !CreateVertexBuffer() || !CreateIndexBuffer() || !CreateUniformBuffers() || !
         CreateCommandBuffers() || !CreateSyncObjects()) {
 
         CleanupVulkan();
@@ -925,9 +969,9 @@ void DrawFrame() {
                           &imageIndex);
     vkResetCommandBuffer(commandBuffers[currentFrame], 0);
     RecordCommandBuffer(commandBuffers[currentFrame], imageIndex);
-    VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]};
-    VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-    VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[currentFrame]};
+    const VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]};
+    const VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+    const VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[currentFrame]};
     const VkSubmitInfo submitInfo = {
         VK_STRUCTURE_TYPE_SUBMIT_INFO,
         NULL,
@@ -942,7 +986,7 @@ void DrawFrame() {
     if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) {
         VulkanError("Failed to submit Vulkan draw command buffer!");
     }
-    VkSwapchainKHR swapChains[] = {swapChain};
+    const VkSwapchainKHR swapChains[] = {swapChain};
     const VkPresentInfoKHR presentInfo = {
         VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
         NULL,
@@ -969,6 +1013,11 @@ void CleanupVulkan() {
     vkDestroyPipeline(device, graphicsPipeline, NULL);
     vkDestroyPipelineLayout(device, pipelineLayout, NULL);
     vkDestroyRenderPass(device, renderPass, NULL);
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+        vkDestroyBuffer(device, uniformBuffers[i], NULL);
+        vkFreeMemory(device, uniformBuffersMemory[i], NULL);
+    }
+    vkDestroyDescriptorSetLayout(device, descriptorSetLayout, NULL);
     vkDestroyBuffer(device, indexBuffer, NULL);
     vkFreeMemory(device, indexBufferMemory, NULL);
     vkDestroyBuffer(device, vertexBuffer, NULL);

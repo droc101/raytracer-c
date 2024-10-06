@@ -1,47 +1,47 @@
 #ifndef ASSETS_H
 #define ASSETS_H
 
-extern const unsigned char gztex_actor_BLOB2[];
-extern const unsigned char gztex_actor_bluecoin[];
-extern const unsigned char gztex_actor_coin[];
-extern const unsigned char gztex_actor_demon[];
-extern const unsigned char gztex_actor_iq[];
-extern const unsigned char gztex_actor_key[];
-extern const unsigned char gztex_actor_monster1[];
-extern const unsigned char gztex_actor_monster2[];
-extern const unsigned char gztex_actor_monster3[];
-extern const unsigned char gztex_actor_shadow[];
-
-extern const unsigned char gzmpg_audio_field[];
-
-extern const unsigned char gztex_interface_barrel[];
-extern const unsigned char gztex_interface_font[];
-extern const unsigned char gztex_interface_hud_bcoin[];
-extern const unsigned char gztex_interface_hud_gcoin[];
-extern const unsigned char gztex_interface_hud_ycoin[];
-extern const unsigned char gztex_interface_icon[];
-extern const unsigned char gztex_interface_menu_bg_tile[];
-extern const unsigned char gztex_interface_menu_bg_tile_red[];
-extern const unsigned char gztex_interface_menu_logo[];
-extern const unsigned char gztex_interface_small_fonts[];
-
 extern const unsigned char gztex_level_bricks[];
-extern const unsigned char gztex_level_cross[];
 extern const unsigned char gztex_level_sky[];
 extern const unsigned char gztex_level_smile[];
+extern const unsigned char gztex_level_cross[];
 extern const unsigned char gztex_level_wall2[];
 
-extern const unsigned char gzbin_leveldata_hallway[];
-extern const unsigned char gzbin_leveldata_hub[];
-extern const unsigned char gzbin_leveldata_test_level[];
+extern const unsigned char gzmpg_audio_field[];
 
 extern const unsigned char gzwav_sfx_popdown[];
 extern const unsigned char gzwav_sfx_popup[];
 
-extern const unsigned char gzfrag_shader_basic[];
-extern const unsigned char gzvert_shader_basic[];
-
 extern const unsigned char gztex_vfx_shadow[];
+
+extern const unsigned char gzvert_shader_basic[];
+extern const unsigned char gzfrag_shader_basic[];
+
+extern const unsigned char gztex_actor_key[];
+extern const unsigned char gztex_actor_monster1[];
+extern const unsigned char gztex_actor_monster2[];
+extern const unsigned char gztex_actor_monster3[];
+extern const unsigned char gztex_actor_bluecoin[];
+extern const unsigned char gztex_actor_BLOB2[];
+extern const unsigned char gztex_actor_coin[];
+extern const unsigned char gztex_actor_iq[];
+extern const unsigned char gztex_actor_shadow[];
+extern const unsigned char gztex_actor_demon[];
+
+extern const unsigned char gzbin_leveldata_test_level[];
+extern const unsigned char gzbin_leveldata_hallway[];
+extern const unsigned char gzbin_leveldata_hub[];
+
+extern const unsigned char gztex_interface_hud_bcoin[];
+extern const unsigned char gztex_interface_font[];
+extern const unsigned char gztex_interface_menu_logo[];
+extern const unsigned char gztex_interface_hud_gcoin[];
+extern const unsigned char gztex_interface_icon[];
+extern const unsigned char gztex_interface_menu_bg_tile_red[];
+extern const unsigned char gztex_interface_hud_ycoin[];
+extern const unsigned char gztex_interface_small_fonts[];
+extern const unsigned char gztex_interface_barrel[];
+extern const unsigned char gztex_interface_menu_bg_tile[];
 
 
 #define ASSET_COUNT 34
