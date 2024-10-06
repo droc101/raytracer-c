@@ -17,7 +17,6 @@
 #include "Helpers/Error.h"
 #include "Helpers/CommonAssets.h"
 #include "Helpers/RenderingHelpers.h"
-#include "Helpers/MathEx.h"
 
 int main(int argc, char *argv[]) {
 

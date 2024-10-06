@@ -10,7 +10,8 @@ const byte *wallTextures[WALL_TEXTURE_COUNT] = {
         gztex_level_bricks,
         gztex_level_cross,
         gztex_level_wall2,
-        gztex_level_uvtest
+        gztex_level_uvtest,
+        gztex_level_floor
 };
 
 const byte *actorTextures[ACTOR_TEXTURE_COUNT] = {
@@ -28,7 +29,9 @@ const byte *actorTextures[ACTOR_TEXTURE_COUNT] = {
 };
 
 void InitCommonAssets() {
-    // obsoleted by opengl texture loading
+    SetTexParams(gztex_interface_menu_bg_tile, true, true);
+    SetTexParams(gztex_interface_menu_bg_tile_red, true, true);
+    SetTexParams(gztex_vfx_shadow, false, false);
 }
 
 int FindWallTextureIndex(const byte *tex) {

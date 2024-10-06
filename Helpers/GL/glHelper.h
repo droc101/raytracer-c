@@ -170,10 +170,28 @@ void GL_Disable3D();
  */
 void GL_UpdateViewportSize();
 
+/**
+ * Draw arrays using the ui_textured shader
+ * @param vertices Vertex data [x, y, u, v] with UVs in NDC
+ * @param indices Index data
+ * @param quad_count The number of quads to draw
+ * @param imageData The texture to use
+ * @param color The modulate color
+ */
 void GL_DrawTexturedArrays(float *vertices, uint *indices, int quad_count, const unsigned char *imageData, uint color);
 
+/**
+ * Convert screen X to NDC
+ * @param x X position in pixels
+ * @return The NDC position
+ */
 float X_TO_NDC(float x);
 
+/**
+ * Convert screen Y to NDC
+ * @param y Y position in pixels
+ * @return The NDC position
+ */
 float Y_TO_NDC(float y);
 
 #endif //GAME_GLHELPER_H

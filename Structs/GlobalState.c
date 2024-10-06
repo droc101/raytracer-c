@@ -163,6 +163,7 @@ void PlaySoundEffect(byte *asset) {
 
 void DestroyGlobalState() {
     DestroyLevel(state.level);
+    free(state.cam);
     if (state.music != NULLPTR) {
         Mix_HaltMusic();
         Mix_FreeMusic(state.music);
