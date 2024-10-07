@@ -185,9 +185,13 @@ void GL_DrawBuffer(Buffer *buf, Shader *shd, int count) {
 void GL_DestroyGL() {
     GL_DestroyShader(ui_textured);
     GL_DestroyShader(ui_colored);
+    GL_DestroyShader(wall_generic);
+    GL_DestroyShader(floor_generic);
+    GL_DestroyShader(shadow);
     glUseProgram(0);
     glDisableVertexAttribArray(0);
     GL_DestroyBuffer(ui_buffer);
+    GL_DestroyBuffer(wall_buffer);
     SDL_GL_DeleteContext(ctx);
 }
 
@@ -240,19 +244,6 @@ void GL_DrawRect(Vector2 pos, Vector2 size, uint color) {
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 }
 
-void GL_SetTexParams(const unsigned char *imageData, bool linear, bool repeat) {
-    byte *Decompressed = DecompressAsset(imageData);
-
-    uint id = ReadUintA(Decompressed, 12);
-    glBindTexture(GL_TEXTURE_2D, textures[id]);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, repeat ? GL_REPEAT : GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, repeat ? GL_REPEAT : GL_CLAMP_TO_EDGE);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, linear ? GL_LINEAR : GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, linear ? GL_LINEAR : GL_NEAREST);
-}
-
 GLuint GL_LoadTexture(const unsigned char *imageData) {
     if (AssetGetType(imageData) != ASSET_TYPE_TEXTURE) {
         printf("Asset is not a texture\n");
@@ -293,9 +284,22 @@ GLuint GL_LoadTexture(const unsigned char *imageData) {
     return id;
 }
 
-void
-GL_DrawTexture_Internal(Vector2 pos, Vector2 size, const unsigned char *imageData, uint color, Vector2 region_start,
-                        Vector2 region_end) {
+void GL_SetTexParams(const unsigned char *imageData, bool linear, bool repeat) {
+    GL_LoadTexture(imageData); // make sure the texture is loaded
+
+    byte *Decompressed = DecompressAsset(imageData);
+
+    uint id = ReadUintA(Decompressed, 12);
+    glBindTexture(GL_TEXTURE_2D, textures[id]);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, repeat ? GL_REPEAT : GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, repeat ? GL_REPEAT : GL_CLAMP_TO_EDGE);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, linear ? GL_LINEAR : GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, linear ? GL_LINEAR : GL_NEAREST);
+}
+
+void GL_DrawTexture_Internal(Vector2 pos, Vector2 size, const unsigned char *imageData, uint color, Vector2 region_start, Vector2 region_end) {
     glUseProgram(ui_textured->program);
 
     GLuint tex = GL_LoadTexture(imageData);

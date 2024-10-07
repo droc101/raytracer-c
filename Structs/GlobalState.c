@@ -181,6 +181,7 @@ void PlaySoundEffect(byte *asset) {
 void DestroyGlobalState() {
     SDL_RemoveTimer(state.FixedFramerateUpdate);
     DestroyLevel(state.level);
+    free(state.cam);
     if (state.music != NULLPTR) {
         Mix_HaltMusic();
         Mix_FreeMusic(state.music);

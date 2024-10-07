@@ -26,6 +26,7 @@ int findChar(char target) {
     return -1;  // Character not found
 }
 
+// TODO: make this function less gl specific
 Vector2 FontDrawString(Vector2 pos, char* str, uint size, uint color, bool small) {
     int str_len = strlen(str);
     float *verts = malloc(sizeof(float[4][4]) * str_len);
@@ -75,7 +76,6 @@ Vector2 FontDrawString(Vector2 pos, char* str, uint size, uint color, bool small
 
         memcpy(indices + i * 6, quad_indices, sizeof(quad_indices));
 
-        //FontDrawChar(v2(x, y), str[i], size, small, color);
         x += sizeX;
         i++;
     }

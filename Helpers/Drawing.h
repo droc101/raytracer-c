@@ -71,26 +71,85 @@ byte* getColorUint(uint color);
  */
 uint MixColors(uint color_a, uint color_b);
 
+/**
+ * Set the texture parameters (linear, repeat)
+ * @param imageData The texture data
+ * @param linear Whether to use linear filtering (blurring)
+ * @param repeat Whether to repeat the texture
+ */
 void SetTexParams(const unsigned char* imageData, bool linear, bool repeat);
 
+/**
+ * Draw a line from start to end
+ * @param start The start of the line
+ * @param end The end of the line
+ */
 void DrawLine(Vector2 start, Vector2 end);
 
+/**
+ * Draw a texture on a rectangle
+ * @param pos The position of the rectangle
+ * @param size The size of the rectangle
+ * @param imageData The texture data
+ */
 void DrawTexture(Vector2 pos, Vector2 size, const unsigned char* imageData);
 
+/**
+ * Draw a texture on a rectangle with a color
+ * @param pos The position of the rectangle
+ * @param size The size of the rectangle
+ * @param imageData The texture data
+ * @param color The color to draw with
+ */
 void DrawTextureMod(Vector2 pos, Vector2 size, const unsigned char* imageData, uint color);
 
+/**
+ * Draw a texture region on a rectangle
+ * @param pos The position of the rectangle
+ * @param size The size of the rectangle
+ * @param imageData The texture data
+ * @param region_start The start of the region (in pixels)
+ * @param region_end The end of the region (in pixels)
+ */
 void DrawTextureRegion(Vector2 pos, Vector2 size, const unsigned char* imageData, Vector2 region_start, Vector2 region_end);
 
+/**
+ * Draw a texture region on a rectangle with a color
+ * @param pos The position of the rectangle
+ * @param size The size of the rectangle
+ * @param imageData The texture data
+ * @param region_start The start of the region (in pixels)
+ * @param region_end The end of the region (in pixels)
+ * @param color The color to draw with
+ */
 void DrawTextureRegionMod(Vector2 pos, Vector2 size, const unsigned char* imageData, Vector2 region_start, Vector2 region_end, uint color);
 
+/**
+ * Clear the screen with a color
+ * @param color The color to clear with
+ */
 void ClearColor(uint color);
 
+/**
+ * Clear the screen with the last used color
+ */
 void ClearScreen();
 
+/**
+ * Clear the depth buffer
+ */
 void ClearDepthOnly();
 
+/**
+ * Swap the buffers
+ */
 void Swap();
 
+/**
+ * Get the size of a texture
+ * @param imageData The texture data
+ * @return The size of the texture
+ */
 Vector2 texture_size(const unsigned char *imageData);
 
 #endif //GAME_DRAWING_H
