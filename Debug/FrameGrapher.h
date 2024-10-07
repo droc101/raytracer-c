@@ -5,6 +5,8 @@
 #ifndef GAME_FRAMEGRAPHER_H
 #define GAME_FRAMEGRAPHER_H
 
+#include "../defines.h"
+
 // How many frames to store in the graph
 #define FRAMEGRAPH_HISTORY_SIZE 120
 
@@ -26,7 +28,7 @@
 #define FRAMEGRAPH_ENABLE
 
 
-void FrameGraphUpdate(unsigned long ns);
+void FrameGraphUpdate(ulong ns);
 void FrameGraphDraw();
 
 #endif //GAME_FRAMEGRAPHER_H
