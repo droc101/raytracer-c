@@ -12,6 +12,7 @@
 #include "GLevelSelectState.h"
 #include "../Helpers/CommonAssets.h"
 #include "../Helpers/TextBox.h"
+#include "GMainState.h"
 
 void GMenuStateUpdate(GlobalState * State) {
 

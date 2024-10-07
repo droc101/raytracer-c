@@ -34,7 +34,7 @@ void CoinUpdate(Actor *this) {
     this->rotation = atan2(dir.y, dir.x);
     this->rotation += PI;
 
-    if (CollideCylinder(this->position, 0.25, GetState()->level->position)) {
+    if (CollideCylinder(this->position, 0.5, GetState()->level->position)) {
         if (this->paramB == 0) {
             GetState()->coins++;
         } else {
