@@ -37,3 +37,6 @@ cmake-build-*/
 /lib/SDL2
 /lib/SDL2_mixer
 # we include zlib because it is a pain to get
+
+# This file is generated on build
+/Assets/Assets.c
