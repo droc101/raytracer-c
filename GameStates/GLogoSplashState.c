@@ -14,7 +14,7 @@
 #include "../Helpers/TextBox.h"
 #include "GMenuState.h"
 
-uint32_t GLogoSplashStateFixedUpdate(const uint32_t interval, GlobalState* State) {
+uint GLogoSplashStateFixedUpdate(const uint interval, GlobalState* State) {
 
     if (State->frame == 20) {
         PlaySoundEffect(gzwav_sfx_coincling);

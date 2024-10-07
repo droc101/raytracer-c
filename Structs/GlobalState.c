@@ -75,13 +75,13 @@ void UseAmmo(int amount) {
     }
 }
 
-uint32_t DefaultFixedUpdate(const uint32_t interval, GlobalState* param)
+uint DefaultFixedUpdate(const uint interval, GlobalState* param)
 {
     param->frame++;
     return interval;
 }
 
-void SetUpdateCallback(void (* const UpdateGame)(GlobalState* State), uint32_t (* const FixedUpdateGame)(uint32_t interval, GlobalState* State), const CurrentState currentState) {
+void SetUpdateCallback(void (* const UpdateGame)(GlobalState* State), uint (* const FixedUpdateGame)(uint interval, GlobalState* State), const CurrentState currentState) {
     state.frame = 0;
     state.UpdateGame = UpdateGame;
     state.currentState = currentState;

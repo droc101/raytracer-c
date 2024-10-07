@@ -59,7 +59,7 @@ void GMainStateUpdate(GlobalState * State) {
 #endif
 }
 
-uint32_t GMainStateFixedUpdate(const uint32_t interval, GlobalState *State)
+uint GMainStateFixedUpdate(const uint interval, GlobalState *State)
 {
     Level *l = State->level;
     Vector2 moveVec = v2(0, 0);
