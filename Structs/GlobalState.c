@@ -75,9 +75,26 @@ void UseAmmo(int amount) {
     }
 }
 
-void SetUpdateCallback(void (*UpdateGame)(GlobalState* State)) {
+uint32_t DefaultFixedUpdate(const uint32_t interval, GlobalState* param)
+{
+    param->frame++;
+    return interval;
+}
+
+void SetUpdateCallback(void (* const UpdateGame)(GlobalState* State), uint32_t (* const FixedUpdateGame)(uint32_t interval, GlobalState* State), const CurrentState currentState) {
     state.frame = 0;
-    state.UpdateGame = (void (*)(void *)) UpdateGame;
+    state.UpdateGame = UpdateGame;
+    state.currentState = currentState;
+    SDL_RemoveTimer(state.FixedFramerateUpdate);
+    if (FixedUpdateGame) // yummy null
+    {
+        state.FixedFramerateUpdate = SDL_AddTimer(16, (SDL_TimerCallback)FixedUpdateGame, GetState());
+    }
+    else
+    {
+        // ReSharper disable once CppRedundantCastExpression
+        state.FixedFramerateUpdate = SDL_AddTimer(16, (SDL_TimerCallback)DefaultFixedUpdate, GetState());
+    }
 }
 
 void SetRenderCallback(void (*RenderGame)(GlobalState* State)) {
@@ -162,6 +179,7 @@ void PlaySoundEffect(byte *asset) {
 }
 
 void DestroyGlobalState() {
+    SDL_RemoveTimer(state.FixedFramerateUpdate);
     DestroyLevel(state.level);
     if (state.music != NULLPTR) {
         Mix_HaltMusic();

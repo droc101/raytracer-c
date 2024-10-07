@@ -61,5 +61,5 @@ void GMenuStateRender(GlobalState * State) {
 
 void GMenuStateSet() {
     SetRenderCallback(GMenuStateRender);
-    SetUpdateCallback(GMenuStateUpdate);
+    SetUpdateCallback(GMenuStateUpdate, NULL, MENU_STATE); // Fixed update is not needed for this state
 }

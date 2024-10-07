@@ -12,7 +12,6 @@
 #include "../Helpers/Collision.h"
 #include "GPauseState.h"
 #include "GEditorState.h"
-#include "../Helpers/CommonAssets.h"
 #include <stdio.h>
 #include "../Helpers/Font.h"
 #include "../Helpers/TextBox.h"
@@ -29,8 +28,6 @@ void GMainStateUpdate(GlobalState * State) {
         return;
     }
 #endif
-
-    Level *l = State->level;
 
     if (State->textBoxActive) {
         if (IsKeyJustPressed(SDL_SCANCODE_SPACE)) {
@@ -51,78 +48,81 @@ void GMainStateUpdate(GlobalState * State) {
         ShowTextBox(tb);
     }
 
-    const bool doPhysics = State->physicsFrame < GetTimeNs() / 16666667;
 #ifdef KEYBOARD_ROTATION
     if (IsKeyPressed(SDL_SCANCODE_A)) {
-        l->rotation -= ROT_SPEED;
+        State->level->rotation -= ROT_SPEED;
     } else if (IsKeyPressed(SDL_SCANCODE_D)) {
-        l->rotation += ROT_SPEED;
+        State->level->rotation += ROT_SPEED;
     }
 #else
-    l->rotation += GetMouseRel().x / MOUSE_SENSITIVITY;
+    State->level->rotation += GetMouseRel().x / MOUSE_SENSITIVITY;
 #endif
-    if (doPhysics)
-    {
-        Vector2 moveVec = v2(0, 0);
-        State->physicsFrame++;
-        if (IsKeyPressed(SDL_SCANCODE_W)) {
-            moveVec.x += 1;
-        } else if (IsKeyPressed(SDL_SCANCODE_S)) {
-            moveVec.x -= 1;
-        }
+}
+
+uint32_t GMainStateFixedUpdate(const uint32_t interval, GlobalState *State)
+{
+    Level *l = State->level;
+    Vector2 moveVec = v2(0, 0);
+    if (IsKeyPressed(SDL_SCANCODE_W)) {
+        moveVec.x += 1;
+    } else if (IsKeyPressed(SDL_SCANCODE_S)) {
+        moveVec.x -= 1;
+    }
 
 #ifdef KEYBOARD_ROTATION
-        if (IsKeyPressed(SDL_SCANCODE_Q)) {
-            moveVec.y -= 1;
-        } else if (IsKeyPressed(SDL_SCANCODE_E)) {
-            moveVec.y += 1;
-        }
+    if (IsKeyPressed(SDL_SCANCODE_Q)) {
+        moveVec.y -= 1;
+    } else if (IsKeyPressed(SDL_SCANCODE_E)) {
+        moveVec.y += 1;
+    }
 #else
-        if (IsKeyPressed(SDL_SCANCODE_A)) {
-            moveVec.y -= 1;
-        } else if (IsKeyPressed(SDL_SCANCODE_D)) {
-            moveVec.y += 1;
-        }
+    if (IsKeyPressed(SDL_SCANCODE_A)) {
+        moveVec.y -= 1;
+    } else if (IsKeyPressed(SDL_SCANCODE_D)) {
+        moveVec.y += 1;
+    }
 #endif
 
-        bool isMoving = moveVec.x != 0 || moveVec.y != 0;
+    const bool isMoving = moveVec.x != 0 || moveVec.y != 0;
 
+    if (isMoving) {
+        moveVec = Vector2Normalize(moveVec);
+    }
+
+    double spd = MOVE_SPEED;
+    if (IsKeyPressed(SDL_SCANCODE_LSHIFT)) {
+        spd = SLOW_MOVE_SPEED;
+    }
+
+    moveVec = Vector2Scale(moveVec, spd);
+    moveVec = Vector2Rotate(moveVec, l->rotation);
+
+    l->position = Move(l->position, moveVec, NULL);
+
+    // view bobbing (scam edition) 💀 (it's better now trust me)
+    if (spd == SLOW_MOVE_SPEED) {
         if (isMoving) {
-            moveVec = Vector2Normalize(moveVec);
-        }
-
-        double spd = MOVE_SPEED;
-        if (IsKeyPressed(SDL_SCANCODE_LSHIFT)) {
-            spd = SLOW_MOVE_SPEED;
-        }
-
-        moveVec = Vector2Scale(moveVec, spd);
-        moveVec = Vector2Rotate(moveVec, l->rotation);
-
-        l->position = Move(l->position, moveVec, NULL);
-
-        // view bobbing (scam edition) 💀 (it's better now trust me)
-        if (spd == SLOW_MOVE_SPEED) {
-            if (isMoving) {
-                State->FakeHeight = sin(State->physicsFrame / 7.0) * 0.02; // NOLINT(*-narrowing-conversions)
-            } else {
-                State->FakeHeight = lerp(State->FakeHeight, 0, 0.1); // NOLINT(*-narrowing-conversions)
-            }
+            State->FakeHeight = sin(State->frame / 7.0) * 0.02; // NOLINT(*-narrowing-conversions)
         } else {
-            if (isMoving) {
-                State->FakeHeight = sin(State->physicsFrame / 7.0) * 0.04; // NOLINT(*-narrowing-conversions)
-            } else {
-                State->FakeHeight = lerp(State->FakeHeight, 0, 0.1); // NOLINT(*-narrowing-conversions)
-            }
+            State->FakeHeight = lerp(State->FakeHeight, 0, 0.1); // NOLINT(*-narrowing-conversions)
         }
-
-        l->rotation = wrap(l->rotation, 0, 2 * PI);
-
-        for (int i = 0; i < l->staticActors->size; i++) {
-            Actor *a = SizedArrayGet(l->staticActors, i);
-            a->Update(a);
+    } else {
+        if (isMoving) {
+            State->FakeHeight = sin(State->frame / 7.0) * 0.04; // NOLINT(*-narrowing-conversions)
+        } else {
+            State->FakeHeight = lerp(State->FakeHeight, 0, 0.1); // NOLINT(*-narrowing-conversions)
         }
     }
+
+    l->rotation = wrap(l->rotation, 0, 2 * PI);
+
+    for (int i = 0; i < l->staticActors->size; i++) {
+        Actor *a = SizedArrayGet(l->staticActors, i);
+        a->Update(a);
+    }
+
+    State->frame++;
+    return interval;
 }
 
 void GMainStateRender(GlobalState* State) {
@@ -155,6 +155,6 @@ void GMainStateRender(GlobalState* State) {
 
 void GMainStateSet() {
     SetRenderCallback(GMainStateRender);
-    SetUpdateCallback(GMainStateUpdate);
+    SetUpdateCallback(GMainStateUpdate, GMainStateFixedUpdate, MAIN_STATE);
 }
 

@@ -56,6 +56,6 @@ void GLevelSelectStateRender(GlobalState * State) {
 
 void GLevelSelectStateSet() {
     SetRenderCallback(GLevelSelectStateRender);
-    SetUpdateCallback(GLevelSelectStateUpdate);
+    SetUpdateCallback(GLevelSelectStateUpdate, NULL, LEVEL_SELECT_STATE); // Fixed update is not needed for this state
 }
 

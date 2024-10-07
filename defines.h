@@ -96,19 +96,29 @@ typedef struct {
     void (*Close)(void *tbox);
 } TextBox;
 
+typedef enum {
+    EDITOR_STATE,
+    LEVEL_SELECT_STATE,
+    LOGO_SPLASH_STATE,
+    MAIN_STATE,
+    MENU_STATE,
+    PAUSE_STATE
+} CurrentState;
+
 // Global state of the game
-typedef struct {
+typedef struct GlobalState {
     Level *level; // Current level
-    void (*UpdateGame)(void* State); // State update function
+    void (*UpdateGame)(struct GlobalState* State); // State update function
     void (*RenderGame)(void* State); // State render function
+    SDL_TimerID FixedFramerateUpdate;
+    CurrentState currentState;
     int hp; // Player health
     int maxHp; // Player max health
     int ammo; // Player ammo
     int maxAmmo; // Player max ammo
     int coins;
     int blueCoins;
-    ulong frame;
-    ulong physicsFrame;
+    ulong frame; // THIS IS COUNTER FOR FIXED FRAMES, NOT TOTAL FRAMES
     bool requestExit;
     Mix_Music *music; // background music
     Mix_Chunk *channels[SFX_CHANNEL_COUNT]; // sound effects

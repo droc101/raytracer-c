@@ -8,11 +8,6 @@
 #include "../defines.h"
 
 /**
- * Set some values so that @c GetTimeNs and @c GetTimeS return time the program has been running
- */
-void InitTiming();
-
-/**
  * Get the time the program has been running in nanoseconds
  * @return Time in nanoseconds
  */

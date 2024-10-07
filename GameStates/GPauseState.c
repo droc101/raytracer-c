@@ -90,6 +90,6 @@ void GPauseStateRender(GlobalState* State) {
 void GPauseStateSet() {
     PlaySoundEffect(gzwav_sfx_popup);
     SetRenderCallback(GPauseStateRender);
-    SetUpdateCallback(GPauseStateUpdate);
+    SetUpdateCallback(GPauseStateUpdate, NULL, PAUSE_STATE); // Fixed update is not needed for this state
     pauseSelected = 0;
 }

@@ -979,7 +979,7 @@ void GEditorStateSet() {
     }
 
     SetRenderCallback(GEditorStateRender);
-    SetUpdateCallback(GEditorStateUpdate);
+    SetUpdateCallback(GEditorStateUpdate, NULL, EDITOR_STATE);
 
 
 }

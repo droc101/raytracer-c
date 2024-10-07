@@ -74,7 +74,6 @@ int main(int argc, char *argv[]) {
 
     SDL_Event e;
     bool quit = false;
-    InitTiming();
     while (!quit) {
         const ulong frameStart = GetTimeNs();
 
@@ -100,6 +99,8 @@ int main(int argc, char *argv[]) {
             }
         }
 
+
+
         ClearDepthOnly();
 
         ResetDPrintYPos();
@@ -107,14 +108,14 @@ int main(int argc, char *argv[]) {
         GlobalState *g = GetState();
 
 #ifndef KEYBOARD_ROTATION
-        SDL_SetRelativeMouseMode(g->UpdateGame == GMainStateUpdate ? SDL_TRUE : SDL_FALSE);
+        SDL_SetRelativeMouseMode(g->currentState == MAIN_STATE ? SDL_TRUE : SDL_FALSE);
         // warp the mouse to the center of the screen if we are in the main game state
-        if (g->UpdateGame == GMainStateUpdate) {
+        if (g->currentState == MAIN_STATE) {
             SDL_WarpMouseInWindow(GetWindow(), WindowWidth() / 2, WindowHeight() / 2);
         }
 #endif
 
-        g->UpdateGame(g);
+        if (g->UpdateGame) g->UpdateGame(g);
 
         g->cam->x = (float)g->level->position.x;
         g->cam->y = (float)g->FakeHeight;
@@ -128,7 +129,7 @@ int main(int argc, char *argv[]) {
         Swap();
 
         UpdateInputStates();
-        g->frame++;
+        // g->frame++;
 
         if (g->requestExit) {
             quit = true;

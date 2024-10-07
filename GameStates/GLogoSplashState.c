@@ -14,7 +14,7 @@
 #include "../Helpers/TextBox.h"
 #include "GMenuState.h"
 
-void GLogoSplashStateUpdate(GlobalState * State) {
+uint32_t GLogoSplashStateFixedUpdate(const uint32_t interval, GlobalState* State) {
 
     if (State->frame == 20) {
         PlaySoundEffect(gzwav_sfx_coincling);
@@ -23,6 +23,9 @@ void GLogoSplashStateUpdate(GlobalState * State) {
     if (State->frame == 120) {
         GMenuStateSet();
     }
+
+    State->frame++;
+    return interval;
 }
 
 void GLogoSplashStateRender(GlobalState * State) {
@@ -40,6 +43,6 @@ void GLogoSplashStateRender(GlobalState * State) {
 
 void GLogoSplashStateSet() {
     SetRenderCallback(GLogoSplashStateRender);
-    SetUpdateCallback(GLogoSplashStateUpdate);
+    SetUpdateCallback(NULL, GLogoSplashStateFixedUpdate, LOGO_SPLASH_STATE); // Non-fixed is not needed for this state
 }
 
