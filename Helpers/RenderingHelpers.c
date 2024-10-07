@@ -105,7 +105,7 @@ void UpdateViewportSize() {
     GL_UpdateViewportSize();
 }
 
-void DrawBatchedQuads(BatchedQuadArray *batch, const unsigned char *imageData, uint color) {
+void DrawBatchedQuadsTextured(BatchedQuadArray *batch, const unsigned char *imageData, uint color) {
     GL_DrawTexturedArrays(batch->verts, batch->indices, batch->quad_count, imageData, color);
 }
 

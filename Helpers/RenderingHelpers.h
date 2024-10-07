@@ -12,9 +12,9 @@
 #include "GL/glHelper.h"
 
 typedef struct {
-    float *verts;
-    uint *indices;
-    int quad_count;
+    float *verts; // float[quad_count][4] with X,Y,U,V
+    uint *indices; // uint[6*quad_count] with indices
+    int quad_count; // Number of quads in the array
 } BatchedQuadArray;
 
 /**
@@ -55,7 +55,14 @@ void RenderLevel3D(Level *l, Camera *cam);
  */
 void UpdateViewportSize();
 
-void DrawBatchedQuads(BatchedQuadArray *batch, const unsigned char *imageData, uint color);
+
+/**
+ * Draw a `BatchedQuadArray` to the screen. This is faster than multiple draw calls, but harder to use.
+ * @param batch The batch to draw
+ * @param imageData The texture to use
+ * @param color The color to use
+ */
+void DrawBatchedQuadsTextured(BatchedQuadArray *batch, const unsigned char *imageData, uint color);
 
 /**
  * Convert screen X to NDC

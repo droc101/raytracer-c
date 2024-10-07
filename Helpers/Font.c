@@ -83,7 +83,7 @@ Vector2 FontDrawString(Vector2 pos, char* str, uint size, uint color, bool small
     quads.verts = verts;
     quads.indices = indices;
     quads.quad_count = str_len;
-    DrawBatchedQuads(&quads, small ? gztex_interface_small_fonts : gztex_interface_font, color);
+    DrawBatchedQuadsTextured(&quads, small ? gztex_interface_small_fonts : gztex_interface_font, color);
 
     free(verts);
     free(indices);
