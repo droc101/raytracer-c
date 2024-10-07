@@ -28,6 +28,7 @@
 #define FRAMEGRAPH_ENABLE
 
 // Disable to draw the graph
+// Drawing the graph has a significant performance impact
 #define FRAMEGRAPH_FPS_ONLY
 
 void FrameGraphUpdate(ulong ns);
