@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
     printf("Build time: %s at %s\n", __DATE__, __TIME__);
     printf("Version: %s\n", VERSION);
 
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER) != 0) {
         printf("SDL_Init Error: %s\n", SDL_GetError());
         return 1;
     }
