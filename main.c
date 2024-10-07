@@ -16,6 +16,7 @@
 #include "config.h"
 #include "Helpers/Error.h"
 #include "Helpers/CommonAssets.h"
+#include "Helpers/RenderingHelpers.h"
 
 int main(int argc, char *argv[]) {
 
@@ -27,6 +28,16 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    // OpenGL Window Properties (Don't do this if using Vulkan)
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, MSAA_SAMPLES);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
+    SDL_GL_SetAttribute(
+            SDL_GL_CONTEXT_PROFILE_MASK,
+            SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
     Mix_AllocateChannels(SFX_CHANNEL_COUNT);
 
     if (Mix_OpenAudio(22050, AUDIO_S16, 2, 2048) < 0) {
@@ -34,7 +45,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    SDL_Window *w = SDL_CreateWindow(GAME_TITLE,SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,DEF_WIDTH, DEF_HEIGHT, SDL_WINDOW_RESIZABLE);
+    SDL_Window *w = SDL_CreateWindow(GAME_TITLE,SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,DEF_WIDTH, DEF_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
     if (w == NULL) {
         printf("SDL_CreateWindow Error: %s\n", SDL_GetError());
         SDL_Quit();
@@ -42,20 +53,14 @@ int main(int argc, char *argv[]) {
     }
     SetWindow(w);
 
+    RenderInit();
+
     SDL_SetWindowMinimumSize(w, MIN_WIDTH, MIN_HEIGHT);
     SDL_SetWindowMaximumSize(w, MAX_WIDTH, MAX_HEIGHT);
 
-    SDL_Surface *icon = ToSDLSurface((const unsigned char *) gztex_interface_icon, FILTER_LINEAR);
+    SDL_Surface *icon = ToSDLSurface((const unsigned char *) gztex_interface_icon, "1");
     SDL_SetWindowIcon(w, icon);
 
-    SDL_Renderer *tr = SDL_CreateRenderer(GetWindow(), -1, SDL_RENDERER_ACCELERATED);
-    if (tr == NULL) {
-        SDL_DestroyWindow(GetWindow());
-        printf("SDL_CreateRenderer Error: %s\n", SDL_GetError());
-        SDL_Quit();
-        return 1;
-    }
-    SetRenderer(tr);
     SetSignalHandler(); // catch exceptions in release mode
 
     printf("Initializing Engine\n");
@@ -68,9 +73,8 @@ int main(int argc, char *argv[]) {
 
     SDL_Event e;
     bool quit = false;
-    ulong frameStart, frameTime;
     while (!quit) {
-        frameStart = GetTimeNs();
+        const ulong frameStart = GetTimeNs();
 
         while (SDL_PollEvent(&e) != 0) {
             if (e.type == SDL_QUIT) {
@@ -87,50 +91,58 @@ int main(int argc, char *argv[]) {
                 HandleMouseDown(e.button.button);
             } else if (e.type == SDL_MOUSEBUTTONUP) {
                 HandleMouseUp(e.button.button);
+            } else if (e.type == SDL_WINDOWEVENT) {
+                if (e.window.event == SDL_WINDOWEVENT_RESIZED) {
+                    UpdateViewportSize();
+                }
             }
         }
+
+
+
+        ClearDepthOnly();
 
         ResetDPrintYPos();
 
         GlobalState *g = GetState();
 
 #ifndef KEYBOARD_ROTATION
-        SDL_SetRelativeMouseMode(g->UpdateGame == GMainStateUpdate ? SDL_TRUE : SDL_FALSE);
+        SDL_SetRelativeMouseMode(g->currentState == MAIN_STATE ? SDL_TRUE : SDL_FALSE);
         // warp the mouse to the center of the screen if we are in the main game state
-        if (g->UpdateGame == GMainStateUpdate) {
+        if (g->currentState == MAIN_STATE) {
             SDL_WarpMouseInWindow(GetWindow(), WindowWidth() / 2, WindowHeight() / 2);
         }
 #endif
 
-        g->UpdateGame(g);
+        if (g->UpdateGame) g->UpdateGame(g);
+
+        g->cam->x = (float)g->level->position.x;
+        g->cam->y = (float)g->FakeHeight;
+        g->cam->z = (float)g->level->position.y;
+        g->cam->yaw = (float)g->level->rotation;
 
         g->RenderGame(g);
 
         FrameGraphDraw();
 
-        SDL_RenderPresent(GetRenderer());
+        Swap();
 
         UpdateInputStates();
-        g->frame++;
+        // g->frame++;
 
         if (g->requestExit) {
             quit = true;
         }
 
-        frameTime = GetTimeNs() - frameStart;
-        FrameGraphUpdate(frameTime);
-        if (frameTime < TARGET_NS) {
-            ulong sleepTime = (TARGET_NS - frameTime) / 1000000;
-            SDL_Delay(sleepTime);
-        }
+        FrameGraphUpdate(GetTimeNs() - frameStart);
 
     }
     printf("Destructing Engine\n");
     DestroyGlobalState();
-    SDL_DestroyRenderer(GetRenderer());
     SDL_DestroyWindow(GetWindow());
     SDL_FreeSurface(icon);
     InvalidateAssetCache(); // Free all assets
+    RenderDestroy();
     SDL_Quit();
     return 0;
 }

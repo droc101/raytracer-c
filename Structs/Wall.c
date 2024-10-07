@@ -8,7 +8,7 @@
 #include "../Helpers/Drawing.h"
 #include "../Helpers/CommonAssets.h"
 
-Wall *CreateWall(Vector2 a, Vector2 b, SDL_Texture *tex, float uvScale, float uvOffset) {
+Wall *CreateWall(Vector2 a, Vector2 b, const byte *tex, float uvScale, float uvOffset) {
     Wall *w = malloc(sizeof(Wall));
     w->a = a;
     w->b = b;
@@ -16,6 +16,7 @@ Wall *CreateWall(Vector2 a, Vector2 b, SDL_Texture *tex, float uvScale, float uv
     w->texId = FindWallTextureIndex(tex);
     w->uvScale = uvScale;
     w->uvOffset = uvOffset;
+    w->height = 1.0f;
     return w;
 }
 

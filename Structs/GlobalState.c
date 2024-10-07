@@ -8,6 +8,7 @@
 #include "../Assets/AssetReader.h"
 #include "../Helpers/LevelEntries.h"
 #include "../Helpers/LevelLoader.h"
+#include "Camera.h"
 
 GlobalState state;
 
@@ -31,6 +32,7 @@ void InitState() {
     }
     state.FakeHeight = 0;
     state.textBoxActive = false;
+    state.cam = CreateCamera();
     StopMusic();
     Mix_ChannelFinished(ChannelFinished);
 }
@@ -73,9 +75,26 @@ void UseAmmo(int amount) {
     }
 }
 
-void SetUpdateCallback(void (*UpdateGame)(GlobalState* State)) {
+uint DefaultFixedUpdate(const uint interval, GlobalState* param)
+{
+    param->frame++;
+    return interval;
+}
+
+void SetUpdateCallback(void (* const UpdateGame)(GlobalState* State), uint (* const FixedUpdateGame)(uint interval, GlobalState* State), const CurrentState currentState) {
     state.frame = 0;
-    state.UpdateGame = (void (*)(void *)) UpdateGame;
+    state.UpdateGame = UpdateGame;
+    state.currentState = currentState;
+    SDL_RemoveTimer(state.FixedFramerateUpdate);
+    if (FixedUpdateGame) // yummy null
+    {
+        state.FixedFramerateUpdate = SDL_AddTimer(16, (SDL_TimerCallback)FixedUpdateGame, GetState());
+    }
+    else
+    {
+        // ReSharper disable once CppRedundantCastExpression
+        state.FixedFramerateUpdate = SDL_AddTimer(16, (SDL_TimerCallback)DefaultFixedUpdate, GetState());
+    }
 }
 
 void SetRenderCallback(void (*RenderGame)(GlobalState* State)) {
@@ -160,7 +179,9 @@ void PlaySoundEffect(byte *asset) {
 }
 
 void DestroyGlobalState() {
+    SDL_RemoveTimer(state.FixedFramerateUpdate);
     DestroyLevel(state.level);
+    free(state.cam);
     if (state.music != NULLPTR) {
         Mix_HaltMusic();
         Mix_FreeMusic(state.music);

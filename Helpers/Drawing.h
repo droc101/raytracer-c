@@ -8,21 +8,6 @@
 #include "SDL.h"
 #include "../defines.h"
 
-#define FILTER_NEAREST "0" // pixelated texture (nearest neighbor)
-#define FILTER_LINEAR "1" // smooth texture (linear)
-
-/**
- * Set the renderer to draw to
- * @param r The renderer to use
- */
-void SetRenderer(SDL_Renderer *r);
-
-/**
- * Get the renderer to draw to
- * @return the renderer
- */
-SDL_Renderer *GetRenderer();
-
 /**
  * Set the main window
  * @param w The window to use
@@ -66,32 +51,6 @@ void draw_rect(int x, int y, int w, int h);
 SDL_Surface* ToSDLSurface(const unsigned char* imageData, char *filterMode);
 
 /**
- * Convert a texture asset to an SDL_Texture
- * @param imageData Decompressed image data
- * @param filterMode Texture filtering mode
- * @return The @c SDL_Texture
- */
-SDL_Texture* ToSDLTexture(const unsigned char* imageData, char *filterMode);
-
-/**
- * Get the size of a texture
- * @param texture The texture to get the size of
- * @return Size of the texture as an @c SDL_Point
- */
-SDL_Point SDL_TextureSize(SDL_Texture *texture);
-
-/**
- * Draw one column of a texture to the screen
- * @param texture The texture to draw
- * @param sx Source X position
- * @param dx Destination X position
- * @param dy Destination Y position
- * @param dh Destination height
- * @note Soruce = texture, Destination = screen
- */
-void DrawTextureColumn(SDL_Texture* texture, int sx, int dx, int dy, int dh);
-
-/**
  * Set the color to draw with
  * @param color Color as uint, @c 0xAARRGGBB
  */
@@ -105,17 +64,92 @@ void setColorUint(uint color);
 byte* getColorUint(uint color);
 
 /**
- * Take a screenshot of the current window and return it as a texture
- * @return window screenshot as a texture
- */
-SDL_Texture *GetScreenshot();
-
-/**
  * Mix two colors together
  * @param color_a Color A
  * @param color_b Color B
  * @return Color A mixed with Color B
  */
 uint MixColors(uint color_a, uint color_b);
+
+/**
+ * Set the texture parameters (linear, repeat)
+ * @param imageData The texture data
+ * @param linear Whether to use linear filtering (blurring)
+ * @param repeat Whether to repeat the texture
+ */
+void SetTexParams(const unsigned char* imageData, bool linear, bool repeat);
+
+/**
+ * Draw a line from start to end
+ * @param start The start of the line
+ * @param end The end of the line
+ */
+void DrawLine(Vector2 start, Vector2 end);
+
+/**
+ * Draw a texture on a rectangle
+ * @param pos The position of the rectangle
+ * @param size The size of the rectangle
+ * @param imageData The texture data
+ */
+void DrawTexture(Vector2 pos, Vector2 size, const unsigned char* imageData);
+
+/**
+ * Draw a texture on a rectangle with a color
+ * @param pos The position of the rectangle
+ * @param size The size of the rectangle
+ * @param imageData The texture data
+ * @param color The color to draw with
+ */
+void DrawTextureMod(Vector2 pos, Vector2 size, const unsigned char* imageData, uint color);
+
+/**
+ * Draw a texture region on a rectangle
+ * @param pos The position of the rectangle
+ * @param size The size of the rectangle
+ * @param imageData The texture data
+ * @param region_start The start of the region (in pixels)
+ * @param region_end The end of the region (in pixels)
+ */
+void DrawTextureRegion(Vector2 pos, Vector2 size, const unsigned char* imageData, Vector2 region_start, Vector2 region_end);
+
+/**
+ * Draw a texture region on a rectangle with a color
+ * @param pos The position of the rectangle
+ * @param size The size of the rectangle
+ * @param imageData The texture data
+ * @param region_start The start of the region (in pixels)
+ * @param region_end The end of the region (in pixels)
+ * @param color The color to draw with
+ */
+void DrawTextureRegionMod(Vector2 pos, Vector2 size, const unsigned char* imageData, Vector2 region_start, Vector2 region_end, uint color);
+
+/**
+ * Clear the screen with a color
+ * @param color The color to clear with
+ */
+void ClearColor(uint color);
+
+/**
+ * Clear the screen with the last used color
+ */
+void ClearScreen();
+
+/**
+ * Clear the depth buffer
+ */
+void ClearDepthOnly();
+
+/**
+ * Swap the buffers
+ */
+void Swap();
+
+/**
+ * Get the size of a texture
+ * @param imageData The texture data
+ * @return The size of the texture
+ */
+Vector2 texture_size(const unsigned char *imageData);
 
 #endif //GAME_DRAWING_H

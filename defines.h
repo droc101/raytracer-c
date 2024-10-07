@@ -12,7 +12,7 @@
 #include "config.h"
 
 // "boolean"
-#define bool uint8_t // unsigned 8-bit integer (nonzero is true)
+#define bool _Bool
 #define true 1
 #define false 0
 
@@ -29,11 +29,23 @@ typedef struct {
     double y;
 } Vector2;
 
+typedef struct {
+    float x;
+    float z;
+    float y;
+
+    float pitch;
+    float yaw;
+    float roll;
+
+    float fov;
+} Camera;
+
 // Utility functions are in Structs/wall.h
 typedef struct {
     Vector2 a;
     Vector2 b;
-    SDL_Texture *tex;
+    const byte *tex;
     int texId;
     double Length;
     double Angle;
@@ -41,6 +53,7 @@ typedef struct {
     double dy;
     float uvScale;
     float uvOffset;
+    float height; // height of the wall for rendering. Does not affect collision
 } Wall;
 
 // Utility functions are in Structs/level.h
@@ -50,8 +63,8 @@ typedef struct {
     Vector2 position;
     double rotation;
     uint SkyColor;
-    uint FloorColor;
-    uint FloorLowerColor;
+    uint FloorTexture;
+    uint CeilingTexture; // 0 for none
     uint MusicID;
     uint FogColor;
     double FogStart;
@@ -83,18 +96,29 @@ typedef struct {
     void (*Close)(void *tbox);
 } TextBox;
 
+typedef enum {
+    EDITOR_STATE,
+    LEVEL_SELECT_STATE,
+    LOGO_SPLASH_STATE,
+    MAIN_STATE,
+    MENU_STATE,
+    PAUSE_STATE
+} CurrentState;
+
 // Global state of the game
-typedef struct {
+typedef struct GlobalState {
     Level *level; // Current level
-    void (*UpdateGame)(void* State); // State update function
+    void (*UpdateGame)(struct GlobalState* State); // State update function
     void (*RenderGame)(void* State); // State render function
+    SDL_TimerID FixedFramerateUpdate;
+    CurrentState currentState;
     int hp; // Player health
     int maxHp; // Player max health
     int ammo; // Player ammo
     int maxAmmo; // Player max ammo
     int coins;
     int blueCoins;
-    ulong frame;
+    ulong frame; // THIS IS COUNTER FOR FIXED FRAMES, NOT TOTAL FRAMES
     bool requestExit;
     Mix_Music *music; // background music
     Mix_Chunk *channels[SFX_CHANNEL_COUNT]; // sound effects
@@ -104,6 +128,8 @@ typedef struct {
     bool textBoxActive;
     TextBox textBox;
     int textBoxPage;
+
+    Camera *cam;
 } GlobalState;
 
 // Actor (interactable/moving wall) struct
@@ -122,6 +148,9 @@ typedef struct {
     byte paramB;
     byte paramC;
     byte paramD;
+    float yPosition; // y position for rendering. Does not affect collision
+    bool showShadow; // should the actor cast a shadow?
+    float shadowSize; // size of the shadow
 } Actor;
 
 // pi 🥧

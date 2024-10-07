@@ -31,6 +31,9 @@
 # CMake
 cmake-build-*/
 
-# SDL2 files
-/SDL2/
-/SDL2_mixer/
+# Libraries
+/lib/cglm
+/lib/glew
+/lib/SDL2
+/lib/SDL2_mixer
+# we include zlib because it is a pain to get

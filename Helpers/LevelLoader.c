@@ -19,13 +19,13 @@ Level *LoadLevel(byte *data) {
         switch (opcode) {
             case LEVEL_CMD_WALL: {
                 double v1 = ReadDouble(data, &i);
-                double v2 = ReadDouble(data, &i);
+                double vt2 = ReadDouble(data, &i);
                 double v3 = ReadDouble(data, &i);
                 double v4 = ReadDouble(data, &i);
                 uint tid = ReadUint(data, &i);
                 float uvScale = ReadFloat(data, &i);
-                Vector2 va = vec2(v1, v2);
-                Vector2 vb = vec2(v3, v4);
+                Vector2 va = v2(v1, vt2);
+                Vector2 vb = v2(v3, v4);
                 Wall *w = CreateWall(va, vb, wallTextures[tid], uvScale, 0.0);
                 ListAdd(l->walls, w);
                 break;
@@ -34,15 +34,14 @@ Level *LoadLevel(byte *data) {
                 double x = ReadDouble(data, &i);
                 double y = ReadDouble(data, &i);
                 double r = ReadDouble(data, &i);
-                l->position = vec2(x, y);
+                l->position = v2(x, y);
                 l->rotation = r;
                 break;
             }
             case LEVEL_CMD_COLORS: {
                 uint sky = ReadUint(data, &i);
-                uint floor = ReadUint(data, &i);
+                i += sizeof (uint); // skip the second color
                 l->SkyColor = sky;
-                l->FloorColor = floor;
                 break;
             }
             case LEVEL_CMD_ACTOR: {
@@ -54,7 +53,7 @@ Level *LoadLevel(byte *data) {
                 byte paramB = ReadByte(data, &i);
                 byte paramC = ReadByte(data, &i);
                 byte paramD = ReadByte(data, &i);
-                Actor *a = CreateActor(vec2(x, y), r, type, paramA, paramB, paramC, paramD);
+                Actor *a = CreateActor(v2(x, y), r, type, paramA, paramB, paramC, paramD);
                 ListAdd(l->actors, a);
                 break;
             }
@@ -69,6 +68,13 @@ Level *LoadLevel(byte *data) {
                 l->FogColor = color;
                 l->FogStart = start;
                 l->FogEnd = end;
+                break;
+            }
+            case LEVEL_CMD_FLOOR_CEIL: {
+                uint floor = ReadUint(data, &i);
+                uint ceil = ReadUint(data, &i);
+                l->FloorTexture = floor;
+                l->CeilingTexture = ceil;
                 break;
             }
             default:
@@ -118,12 +124,16 @@ LevelBytecode* GenerateBytecode(Level *l) {
     data[i] = LEVEL_CMD_COLORS;
     i++;
     WriteUint(data, &i, l->SkyColor);
-    WriteUint(data, &i, l->FloorColor);
+    WriteUint(data, &i, 0);
     data[i] = LEVEL_CMD_FOG;
     i++;
     WriteUint(data, &i, l->FogColor);
     WriteDouble(data, &i, l->FogStart);
     WriteDouble(data, &i, l->FogEnd);
+    data[i] = LEVEL_CMD_FLOOR_CEIL;
+    i++;
+    WriteUint(data, &i, l->FloorTexture);
+    WriteUint(data, &i, l->CeilingTexture);
     data[i] = LEVEL_CMD_FINISH;
     i++;
 

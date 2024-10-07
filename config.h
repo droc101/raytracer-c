@@ -23,9 +23,9 @@
 
 #pragma region Movement
 
-#define MOVE_SPEED 0.125 // Player movement speed
-#define SLOW_MOVE_SPEED 0.025 // Player movement speed when shift is held
-#define MOUSE_SENSITIVITY 100 // higher is less sensitive
+#define MOVE_SPEED 0.1 // Player movement speed
+#define SLOW_MOVE_SPEED 0.01 // Player movement speed when shift is held
+#define MOUSE_SENSITIVITY 200 // higher is less sensitive
 
 //#define KEYBOARD_ROTATION // Uncomment to enable keyboard rotation and disable mouse rotation
 #define ROT_SPEED 0.04 // Keyboard rotation speed
@@ -51,7 +51,7 @@
 #pragma endregion
 
 // Program information
-#define VERSION "0.0.1"
+#define VERSION "0.0.1/gl"
 #define COPYRIGHT "2024 Droc101 Development"
 #define GAME_TITLE "Game." // Used for window title
 
@@ -70,5 +70,11 @@
 
 // Target frame rate (the game is tied to this, so be careful! :D)
 #define TARGET_FPS 60
+
+#define FOV 90 // Field of view
+#define NEAR_Z 0.01
+#define FAR_Z 1000
+
+#define MSAA_SAMPLES 4 // usually 2, 4, or 8
 
 #endif //GAME_CONFIG_H

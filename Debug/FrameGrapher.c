@@ -18,17 +18,15 @@ void FG_PushIntoArray(double value) {
     framerates[FRAMEGRAPH_HISTORY_SIZE-1] = value;
 }
 
-void FrameGraphUpdate(unsigned long ns) {
+void FrameGraphUpdate(ulong ns) {
     if (GetState()->frame % FRAMEGRAPH_INTERVAL == 0) {
         if (ns == 0) { ns = 1; }
-        double fps = 1000000000.0 / ns;
-        FG_PushIntoArray(fps);
+        FG_PushIntoArray(1000000000.0 / ns);
     }
 }
 
 void FrameGraphDraw() {
 #ifdef FRAMEGRAPH_ENABLE
-    SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_BLEND);
     int x = 10;
     uint color;
     for (int i = 0; i < FRAMEGRAPH_HISTORY_SIZE; i++) {
@@ -55,15 +53,17 @@ void FrameGraphDraw() {
     setColorUint(0x80808080);
     int y = WindowHeight() - (TARGET_FPS*FRAMEGRAPH_V_SCALE) - 10;
     draw_rect(x, y, FRAMEGRAPH_HISTORY_SIZE * 2, 2);
-    FontDrawString(vec2(10, y - 5), "Target FPS", 12, 0xff00ffff, true);
+    FontDrawString(v2(10, y - 5), "Target FPS", 12, 0xff00ffff, true);
 
     // draw a line at the bottom
     setColorUint(0x80808080);
     draw_rect(x, WindowHeight() - 10, FRAMEGRAPH_HISTORY_SIZE * 2, 2);
 
+    // set the alpha to 255
+    color |= 0xff000000;
     setColorUint(color);
     char fps[20];
     sprintf(fps, "FPS: %.2f", framerates[FRAMEGRAPH_HISTORY_SIZE - 1]);
-    FontDrawString(vec2(10, WindowHeight() - 32), fps, 16, color, true);
+    FontDrawString(v2(10, WindowHeight() - 32), fps, 16, color, true);
 #endif
 }

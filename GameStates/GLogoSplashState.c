@@ -14,7 +14,7 @@
 #include "../Helpers/TextBox.h"
 #include "GMenuState.h"
 
-void GLogoSplashStateUpdate(GlobalState * State) {
+uint GLogoSplashStateFixedUpdate(const uint interval, GlobalState* State) {
 
     if (State->frame == 20) {
         PlaySoundEffect(gzwav_sfx_coincling);
@@ -23,23 +23,26 @@ void GLogoSplashStateUpdate(GlobalState * State) {
     if (State->frame == 120) {
         GMenuStateSet();
     }
+
+    State->frame++;
+    return interval;
 }
 
 void GLogoSplashStateRender(GlobalState * State) {
     setColorUint(0x0);
-    SDL_Renderer *renderer = GetRenderer();
-    SDL_RenderClear(renderer);
+    ClearColor(0xFF000000);
     if (State->frame < 20 || State->frame > 100) {
         return;
     }
 
-    // draw logo 300x300 centered
     SDL_Rect dest = {WindowWidth()/2 - 150, WindowHeight()/2 - 150, 300, 300};
-    SDL_RenderCopy(renderer, studioLogoTex, NULL, &dest);
+    DrawTexture(v2(dest.x, dest.y), v2(dest.w, dest.h), gztex_interface_studio);
+
+    FontDrawString(v2(10, 10), "OpenGL Branch", 16, 0xFFFFFFFF, true);
 }
 
 void GLogoSplashStateSet() {
     SetRenderCallback(GLogoSplashStateRender);
-    SetUpdateCallback(GLogoSplashStateUpdate);
+    SetUpdateCallback(NULL, GLogoSplashStateFixedUpdate, LOGO_SPLASH_STATE); // Non-fixed is not needed for this state
 }
 

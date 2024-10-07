@@ -10,6 +10,8 @@
 #include "SDL.h"
 #include "Drawing.h"
 #include "CommonAssets.h"
+#include "GL/glHelper.h"
+#include "../Assets/Assets.h"
 
 const char fontChars[] = "abcdefghijklmnopqrstuvwxyz0123456789.:-,/\\|[]{}();'\"<>`~!@#$%^*_=+?";
 
@@ -24,27 +26,14 @@ int findChar(char target) {
     return -1;  // Character not found
 }
 
-void FontDrawChar(Vector2 pos, char c, uint size, bool small) {
-    if (c == '?') printf("%c,%d,%d\n", c, findChar(c), findChar(tolower(c)));
-    int index = findChar(tolower(c));
-    if (index == -1) {
-        index = findChar('U');
-    }
-    SDL_Rect srcRect;
-    srcRect.x = index * (small ? SMALL_FONT_CHAR_WIDTH : FONT_CHAR_WIDTH);
-    srcRect.y = 0;
-    srcRect.w = small ? SMALL_FONT_CHAR_WIDTH : FONT_CHAR_WIDTH;
-    srcRect.h = FONT_CHAR_HEIGHT;
-    SDL_Rect dstRect;
-    dstRect.x = pos.x;
-    dstRect.y = pos.y;
-    dstRect.w = small ? size * 0.75 : size;
-    dstRect.h = size;
-    SDL_RenderCopy(GetRenderer(), small ? smallFontTexture : fontTexture, &srcRect, &dstRect);
-}
-
+// TODO: make this function less gl specific
 Vector2 FontDrawString(Vector2 pos, char* str, uint size, uint color, bool small) {
-    SDL_SetTextureColorMod(small ? smallFontTexture : fontTexture, (color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF);
+    int str_len = strlen(str);
+    float *verts = malloc(sizeof(float[4][4]) * str_len);
+    uint *indices = malloc(sizeof(uint[6]) * str_len);
+    memset(verts, 0, sizeof(float[4][4]) * str_len);
+    memset(indices, 0, sizeof(uint[6]) * str_len);
+
     int x = pos.x;
     int y = pos.y;
     int i = 0;
@@ -58,11 +47,45 @@ Vector2 FontDrawString(Vector2 pos, char* str, uint size, uint color, bool small
             x = pos.x;
             y += size;
         }
-        FontDrawChar(vec2(x, y), str[i], size, small);
+
+        float uv_per_char = 1.0f / strlen(fontChars);
+        int index = findChar(tolower(str[i]));
+        if (index == -1) {
+            index = findChar('U');
+        }
+
+        Vector2 ndc_pos = v2(X_TO_NDC(x), Y_TO_NDC(y));
+        Vector2 ndc_pos_end = v2(X_TO_NDC(x + sizeX), Y_TO_NDC(y + size));
+        float charUV = uv_per_char * index;
+        float charUVEnd = uv_per_char * (index + 1);
+
+        float quad[4][4] = {
+                {ndc_pos.x, ndc_pos.y, charUV, 0},
+                {ndc_pos.x, ndc_pos_end.y, charUV, 1},
+                {ndc_pos_end.x, ndc_pos_end.y, charUVEnd, 1},
+                {ndc_pos_end.x, ndc_pos.y, charUVEnd, 0}
+        };
+
+        memcpy(verts + i * 16, quad, sizeof(quad));
+
+        uint quad_indices[6] = {0, 1, 2,
+                                0, 2, 3};
+        for (int j = 0; j < 6; j++) {
+            quad_indices[j] += i * 4;
+        }
+
+        memcpy(indices + i * 6, quad_indices, sizeof(quad_indices));
+
         x += sizeX;
         i++;
     }
-    return vec2(x+sizeX, y+size); // Return the bottom right corner of the text
+
+    GL_DrawTexturedArrays(verts, indices, str_len, small ? gztex_interface_small_fonts : gztex_interface_font, color);
+
+    free(verts);
+    free(indices);
+
+    return v2(x + sizeX, y + size); // Return the bottom right corner of the text
 }
 
 Vector2 MeasureText(char* str, uint size, bool small) {
@@ -82,7 +105,7 @@ Vector2 MeasureText(char* str, uint size, bool small) {
 
     textWidth = max(textWidth, tempWidth);
 
-    return vec2(textWidth, textHeight);
+    return v2(textWidth, textHeight);
 }
 
 int StringLineCount(char *str) {
@@ -152,7 +175,7 @@ void DrawTextAligned(char* str, uint size, uint color, Vector2 rect_pos, Vector2
         } else {
             x = rect_pos.x;
         }
-        FontDrawString(vec2(x, y), line, size, color, small);
+        FontDrawString(v2(x, y), line, size, color, small);
         y += size;
     }
 

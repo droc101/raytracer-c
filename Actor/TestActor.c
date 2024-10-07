@@ -10,13 +10,13 @@
 
 void TestActorInit(Actor *this) {
     this->solid = true;
-    this->actorWall = CreateWall(vec2(-0.5, 0), vec2(0.5, 0), actorTextures[0], 1.0, 0.0);
+    this->actorWall = CreateWall(v2(-0.5, 0), v2(0.5, 0), actorTextures[0], 1.0, 0.0);
 }
 
 void TestActorUpdate(Actor *this) {
     this->rotation += 0.01;
 
-    Vector2 MoveDir = vec2(0, 0.05);
+    Vector2 MoveDir = v2(0, 0.05);
     MoveDir = Vector2Rotate(MoveDir, this->rotation);
 
     MoveDir = Move(this->position, MoveDir, this);
