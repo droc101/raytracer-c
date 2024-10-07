@@ -10,8 +10,8 @@
 #include "SDL.h"
 #include "Drawing.h"
 #include "CommonAssets.h"
-#include "GL/glHelper.h"
 #include "../Assets/Assets.h"
+#include "RenderingHelpers.h"
 
 const char fontChars[] = "abcdefghijklmnopqrstuvwxyz0123456789.:-,/\\|[]{}();'\"<>`~!@#$%^*_=+?";
 
@@ -26,7 +26,6 @@ int findChar(char target) {
     return -1;  // Character not found
 }
 
-// TODO: make this function less gl specific
 Vector2 FontDrawString(Vector2 pos, char* str, uint size, uint color, bool small) {
     int str_len = strlen(str);
     float *verts = malloc(sizeof(float[4][4]) * str_len);
@@ -80,7 +79,11 @@ Vector2 FontDrawString(Vector2 pos, char* str, uint size, uint color, bool small
         i++;
     }
 
-    GL_DrawTexturedArrays(verts, indices, str_len, small ? gztex_interface_small_fonts : gztex_interface_font, color);
+    BatchedQuadArray quads;
+    quads.verts = verts;
+    quads.indices = indices;
+    quads.quad_count = str_len;
+    DrawBatchedQuads(&quads, small ? gztex_interface_small_fonts : gztex_interface_font, color);
 
     free(verts);
     free(indices);

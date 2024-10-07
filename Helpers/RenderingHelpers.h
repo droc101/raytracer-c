@@ -11,6 +11,12 @@
 #include "Drawing.h"
 #include "GL/glHelper.h"
 
+typedef struct {
+    float *verts;
+    uint *indices;
+    int quad_count;
+} BatchedQuadArray;
+
 /**
  * Get the transformation matrix for a camera
  * @param cam The camera
@@ -49,4 +55,19 @@ void RenderLevel3D(Level *l, Camera *cam);
  */
 void UpdateViewportSize();
 
+void DrawBatchedQuads(BatchedQuadArray *batch, const unsigned char *imageData, uint color);
+
+/**
+ * Convert screen X to NDC
+ * @param x X position in pixels
+ * @return The NDC position
+ */
+float X_TO_NDC(float x);
+
+/**
+ * Convert screen Y to NDC
+ * @param y Y position in pixels
+ * @return The NDC position
+ */
+float Y_TO_NDC(float y);
 #endif //GAME_RENDERINGHELPERS_H

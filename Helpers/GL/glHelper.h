@@ -185,13 +185,13 @@ void GL_DrawTexturedArrays(float *vertices, uint *indices, int quad_count, const
  * @param x X position in pixels
  * @return The NDC position
  */
-float X_TO_NDC(float x);
+float GL_X_TO_NDC(float x);
 
 /**
  * Convert screen Y to NDC
  * @param y Y position in pixels
  * @return The NDC position
  */
-float Y_TO_NDC(float y);
+float GL_Y_TO_NDC(float y);
 
 #endif //GAME_GLHELPER_H

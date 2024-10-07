@@ -195,11 +195,11 @@ void GL_DestroyGL() {
     SDL_GL_DeleteContext(ctx);
 }
 
-float X_TO_NDC(float x) {
+float GL_X_TO_NDC(float x) {
     return (x / WindowWidth()) * 2.0f - 1.0f;
 }
 
-float Y_TO_NDC(float y) {
+float GL_Y_TO_NDC(float y) {
     return 1.0f - (y / WindowHeight()) * 2.0f;
 }
 
@@ -213,8 +213,8 @@ void GL_DrawRect(Vector2 pos, Vector2 size, uint color) {
 
     glUniform4f(glGetUniformLocation(ui_colored->program, "col"), r, g, b, a);
 
-    Vector2 NDC_pos = v2(X_TO_NDC(pos.x), Y_TO_NDC(pos.y));
-    Vector2 NDC_pos_end = v2(X_TO_NDC(pos.x + size.x), Y_TO_NDC(pos.y + size.y));
+    Vector2 NDC_pos = v2(GL_X_TO_NDC(pos.x), GL_Y_TO_NDC(pos.y));
+    Vector2 NDC_pos_end = v2(GL_X_TO_NDC(pos.x + size.x), GL_Y_TO_NDC(pos.y + size.y));
 
 
     float vertices[4][2] = {
@@ -316,8 +316,8 @@ void GL_DrawTexture_Internal(Vector2 pos, Vector2 size, const unsigned char *ima
 
     glUniform1i(glGetUniformLocation(ui_textured->program, "alb"), tex);
 
-    Vector2 NDC_pos = v2(X_TO_NDC(pos.x), Y_TO_NDC(pos.y));
-    Vector2 NDC_pos_end = v2(X_TO_NDC(pos.x + size.x), Y_TO_NDC(pos.y + size.y));
+    Vector2 NDC_pos = v2(GL_X_TO_NDC(pos.x), GL_Y_TO_NDC(pos.y));
+    Vector2 NDC_pos_end = v2(GL_X_TO_NDC(pos.x + size.x), GL_Y_TO_NDC(pos.y + size.y));
 
 
     float vertices[4][4] = {
@@ -379,8 +379,8 @@ void GL_DrawLine(Vector2 start, Vector2 end, uint color) {
 
     glUniform4f(glGetUniformLocation(ui_colored->program, "col"), r, g, b, a);
 
-    Vector2 NDC_start = v2(X_TO_NDC(start.x), Y_TO_NDC(start.y));
-    Vector2 NDC_end = v2(X_TO_NDC(end.x), Y_TO_NDC(end.y));
+    Vector2 NDC_start = v2(GL_X_TO_NDC(start.x), GL_Y_TO_NDC(start.y));
+    Vector2 NDC_end = v2(GL_X_TO_NDC(end.x), GL_Y_TO_NDC(end.y));
 
     // Calculate the 2 corner vertices of each point for a thick line
     float vertices[2][2] = {
