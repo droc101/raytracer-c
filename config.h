@@ -51,7 +51,7 @@
 #pragma endregion
 
 // Program information
-#define VERSION "0.0.1"
+#define VERSION "0.0.1-dev"
 #define COPYRIGHT "2024 Droc101 Development"
 #define GAME_TITLE "Game." // Used for window title
 
@@ -76,5 +76,7 @@
 #define FAR_Z 1000
 
 #define MSAA_SAMPLES 4 // usually 2, 4, or 8
+
+#define VSYNC_ENABLE 1
 
 #endif //GAME_CONFIG_H

@@ -28,7 +28,7 @@ void GL_Init() {
 
     ctx = SDL_GL_CreateContext(GetWindow());
 
-    SDL_GL_SetSwapInterval(0);
+    SDL_GL_SetSwapInterval(VSYNC_ENABLE);
 
     GLenum err;
     glewExperimental = GL_TRUE; // Please expose OpenGL 3.x+ interfaces
