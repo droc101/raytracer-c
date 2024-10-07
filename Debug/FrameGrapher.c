@@ -27,6 +27,7 @@ void FrameGraphUpdate(ulong ns) {
 
 void FrameGraphDraw() {
 #ifdef FRAMEGRAPH_ENABLE
+#ifndef FRAMEGRAPH_FPS_ONLY
     int x = 10;
     uint color;
     for (int i = 0; i < FRAMEGRAPH_HISTORY_SIZE; i++) {
@@ -58,7 +59,9 @@ void FrameGraphDraw() {
     // draw a line at the bottom
     setColorUint(0x80808080);
     draw_rect(x, WindowHeight() - 10, FRAMEGRAPH_HISTORY_SIZE * 2, 2);
-
+#else
+    uint color = 0x4000ff00;
+#endif
     // set the alpha to 255
     color |= 0xff000000;
     setColorUint(color);

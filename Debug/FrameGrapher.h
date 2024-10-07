@@ -27,6 +27,8 @@
 // Enable or disable the frame graph (just the rendering)
 #define FRAMEGRAPH_ENABLE
 
+// Disable to draw the graph
+#define FRAMEGRAPH_FPS_ONLY
 
 void FrameGraphUpdate(ulong ns);
 void FrameGraphDraw();
