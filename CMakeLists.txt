@@ -13,8 +13,46 @@ if (WIN32)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --static")
 endif ()
 
-# I have no idea why it has decided to start adding newlines, but it still works soooooo
-add_executable(game main.c Helpers/Input.h Helpers/Input.c defines.h Helpers/Drawing.h Helpers/Drawing.c Assets/Assets.h Assets/Assets.c Structs/Vector2.h Structs/Vector2.c Helpers/MathEx.h Helpers/MathEx.c Structs/Ray.h Structs/Ray.c Structs/Wall.h Structs/Wall.c Helpers/List.h Helpers/List.c Structs/Level.h Structs/Level.c Helpers/Font.c Helpers/Font.h Helpers/Error.c Helpers/Error.h Helpers/LevelLoader.c Helpers/LevelLoader.h Structs/GlobalState.c Structs/GlobalState.h GameStates/GMainState.c GameStates/GMainState.h GameStates/GMenuState.c GameStates/GMenuState.h Structs/Actor.c Structs/Actor.h Actor/TestActor.c Actor/TestActor.h GameStates/GPauseState.c GameStates/GPauseState.h
+add_executable(
+        game
+        main.c
+        Helpers/Input.h
+        Helpers/Input.c
+        defines.h
+        Helpers/Drawing.h
+        Helpers/Drawing.c
+        Assets/Assets.h
+        Assets/Assets.c
+        Structs/Vector2.h
+        Structs/Vector2.c
+        Helpers/MathEx.h
+        Helpers/MathEx.c
+        Structs/Ray.h
+        Structs/Ray.c
+        Structs/Wall.h
+        Structs/Wall.c
+        Helpers/List.h
+        Helpers/List.c
+        Structs/Level.h
+        Structs/Level.c
+        Helpers/Font.c
+        Helpers/Font.h
+        Helpers/Error.c
+        Helpers/Error.h
+        Helpers/LevelLoader.c
+        Helpers/LevelLoader.h
+        Structs/GlobalState.c
+        Structs/GlobalState.h
+        GameStates/GMainState.c
+        GameStates/GMainState.h
+        GameStates/GMenuState.c
+        GameStates/GMenuState.h
+        Structs/Actor.c
+        Structs/Actor.h
+        Actor/TestActor.c
+        Actor/TestActor.h
+        GameStates/GPauseState.c
+        GameStates/GPauseState.h
         Debug/FrameGrapher.c
         Debug/FrameGrapher.h
         Debug/DPrint.c

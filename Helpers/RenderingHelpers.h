@@ -55,7 +55,6 @@ void RenderLevel3D(Level *l, Camera *cam);
  */
 void UpdateViewportSize();
 
-
 /**
  * Draw a `BatchedQuadArray` to the screen. This is faster than multiple draw calls, but harder to use.
  * @param batch The batch to draw
