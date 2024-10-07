@@ -35,8 +35,8 @@ void FrameGraphDraw() {
         int height = framerates[i]*FRAMEGRAPH_V_SCALE;
 
 #ifdef FRAMEGRAPH_ENABLE_CAPPING
-        if (height > (TARGET_FPS*2)*FRAMEGRAPH_V_SCALE) {
-            height = (TARGET_FPS*2)*FRAMEGRAPH_V_SCALE;
+        if (height > (FRAMEGRAPH_THRESHOLD_GOOD*2)*FRAMEGRAPH_V_SCALE) {
+            height = (FRAMEGRAPH_THRESHOLD_GOOD*2)*FRAMEGRAPH_V_SCALE;
         }
 #endif
 
@@ -52,7 +52,7 @@ void FrameGraphDraw() {
 
     // draw a line at the target frame time
     setColorUint(0x80808080);
-    int y = WindowHeight() - (TARGET_FPS*FRAMEGRAPH_V_SCALE) - 10;
+    int y = WindowHeight() - (FRAMEGRAPH_THRESHOLD_GOOD*FRAMEGRAPH_V_SCALE) - 10;
     draw_rect(x, y, FRAMEGRAPH_HISTORY_SIZE * 2, 2);
     FontDrawString(v2(10, y - 5), "Target FPS", 12, 0xff00ffff, true);
 

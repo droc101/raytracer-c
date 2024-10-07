@@ -156,7 +156,7 @@ typedef struct {
 // pi 🥧
 #define PI 3.14159265358979323846
 
-#define TARGET_MS (1000 / TARGET_FPS)
-#define TARGET_NS (1000000000 / TARGET_FPS) // nanoseconds because precision
+#define PHYSICS_TARGET_MS (1000 / PHYSICS_TARGET_TPS)
+#define PHYSICS_TARGET_NS (1000000000 / PHYSICS_TARGET_TPS) // nanoseconds because precision
 
 #endif //GAME_DEFINES_H

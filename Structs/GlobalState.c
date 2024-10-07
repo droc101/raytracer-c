@@ -88,12 +88,12 @@ void SetUpdateCallback(void (* const UpdateGame)(GlobalState* State), uint (* co
     SDL_RemoveTimer(state.FixedFramerateUpdate);
     if (FixedUpdateGame) // yummy null
     {
-        state.FixedFramerateUpdate = SDL_AddTimer(16, (SDL_TimerCallback)FixedUpdateGame, GetState());
+        state.FixedFramerateUpdate = SDL_AddTimer(PHYSICS_TARGET_MS, (SDL_TimerCallback)FixedUpdateGame, GetState());
     }
     else
     {
         // ReSharper disable once CppRedundantCastExpression
-        state.FixedFramerateUpdate = SDL_AddTimer(16, (SDL_TimerCallback)DefaultFixedUpdate, GetState());
+        state.FixedFramerateUpdate = SDL_AddTimer(PHYSICS_TARGET_MS, (SDL_TimerCallback)DefaultFixedUpdate, GetState());
     }
 }
 

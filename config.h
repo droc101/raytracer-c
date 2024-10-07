@@ -68,8 +68,8 @@
 // (sound effects that can play at the same time)
 #define SFX_CHANNEL_COUNT 16
 
-// Target frame rate (the game is tied to this, so be careful! :D)
-#define TARGET_FPS 60
+// Target physics updates per second (be careful with this)
+#define PHYSICS_TARGET_TPS 60
 
 #define FOV 90 // Field of view
 #define NEAR_Z 0.01
