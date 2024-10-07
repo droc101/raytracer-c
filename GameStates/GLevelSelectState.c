@@ -48,9 +48,9 @@ void GLevelSelectStateRender(GlobalState * State) {
     FontDrawString(v2(20, 20), GAME_TITLE, 128, 0xFFFFFFFF, false);
     FontDrawString(v2(20, 150), "Press Space to start.", 32, 0xFFa0a0a0, false);
 
-    char * levelName = gLevelEntries[GLevelSelectState_SelectedLevel].internalName;
+    char *levelName = gLevelEntries[GLevelSelectState_SelectedLevel].internalName;
     char levelNameBuffer[64];
-    sprintf(levelNameBuffer, "%02d  %s", GLevelSelectState_SelectedLevel+1, levelName);
+    sprintf(levelNameBuffer, "%02d %s", GLevelSelectState_SelectedLevel+1, levelName);
     DrawTextAligned(levelNameBuffer, 32, 0xFFFFFFFF, v2(50, 300), v2(WindowWidth() - 50, 300), FONT_HALIGN_LEFT, FONT_VALIGN_MIDDLE, false);
 }
 
