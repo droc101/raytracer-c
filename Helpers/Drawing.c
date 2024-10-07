@@ -102,6 +102,13 @@ inline void DrawLine(Vector2 start, Vector2 end) {
     GL_DrawLine(start, end, drawColor);
 }
 
+inline void DrawOutlineRect(Vector2 pos, Vector2 size) {
+    DrawLine(pos, v2(pos.x + size.x, pos.y));
+    DrawLine(pos, v2(pos.x, pos.y + size.y));
+    DrawLine(v2(pos.x + size.x, pos.y), Vector2Add(pos, size));
+    DrawLine(v2(pos.x, pos.y + size.y), Vector2Add(pos, size));
+}
+
 inline void DrawTexture(Vector2 pos, Vector2 size, const unsigned char* imageData) {
     GL_DrawTexture(pos, size, imageData);
 

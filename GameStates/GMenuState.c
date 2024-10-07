@@ -13,17 +13,25 @@
 #include "../Helpers/CommonAssets.h"
 #include "../Helpers/TextBox.h"
 #include "GMainState.h"
+#include "../Helpers/UI/UiStack.h"
+#include "../Helpers/UI/Controls/Button.h"
+#include "../Helpers/UI/Controls/Slider.h"
+
+UiStack *menuStack;
+
+void StartGame() {
+#ifdef USE_LEVEL_SELECT
+    GLevelSelectStateSet();
+#else
+    GMainStateSet();
+#endif
+}
+
+void QuitGame() {
+    GetState()->requestExit = true;
+}
 
 void GMenuStateUpdate(GlobalState * State) {
-
-    if (IsKeyJustPressed(SDL_SCANCODE_SPACE)) {
-        // change to the main game state
-#ifdef USE_LEVEL_SELECT
-        GLevelSelectStateSet();
-#else
-        GMainStateSet();
-#endif
-    }
 }
 
 void GMenuStateRender(GlobalState * State) {
@@ -44,11 +52,6 @@ void GMenuStateRender(GlobalState * State) {
     logoRect.h = 320;
     DrawTexture(v2(logoRect.x, logoRect.y), v2(logoRect.w, logoRect.h), gztex_interface_menu_logo);
 
-    if (GetState()->frame % 60 < 30) {
-        DrawTextAligned("Press Space", 32, 0xFFFFFFFF, v2(0, WindowHeight() - 150), v2(WindowWidth(), 32),
-                        FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, false);
-    }
-
 #ifndef NDEBUG
     FontDrawString(v2(20, 200), "DEBUG BUILD", 16, 0xFF00FF00, true);
 #endif
@@ -58,9 +61,19 @@ void GMenuStateRender(GlobalState * State) {
     sprintf(buffer, "Engine %s\n%s", VERSION, COPYRIGHT);
     DrawTextAligned(buffer, 16, 0xFF000000, v2(WindowWidth() - 208, WindowHeight() - 208), v2(200, 200), FONT_HALIGN_RIGHT, FONT_VALIGN_BOTTOM, true);
     DrawTextAligned(buffer, 16, 0xFFa0a0a0, v2(WindowWidth() - 210, WindowHeight() - 210), v2(200, 200), FONT_HALIGN_RIGHT, FONT_VALIGN_BOTTOM, true);
+
+    ProcessUiStack(menuStack);
+    DrawUiStack(menuStack);
 }
 
 void GMenuStateSet() {
+
+    if (menuStack == NULLPTR) {
+        menuStack = CreateUiStack();
+        UiStackPush(menuStack, CreateButtonControl(v2(0, 80), v2(480, 40), "Start", StartGame, MIDDLE_CENTER));
+        UiStackPush(menuStack, CreateButtonControl(v2(0, 180), v2(480, 40), "Quit", QuitGame, MIDDLE_CENTER));
+    }
+
     SetRenderCallback(GMenuStateRender);
     SetUpdateCallback(GMenuStateUpdate, NULL, MENU_STATE); // Fixed update is not needed for this state
 }

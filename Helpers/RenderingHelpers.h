@@ -76,4 +76,5 @@ float X_TO_NDC(float x);
  * @return The NDC position
  */
 float Y_TO_NDC(float y);
+
 #endif //GAME_RENDERINGHELPERS_H

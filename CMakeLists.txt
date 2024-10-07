@@ -90,6 +90,12 @@ add_executable(
         Helpers/RenderingHelpers.h
         Helpers/GL/glDebug.c
         Helpers/GL/glDebug.h
+        Helpers/UI/UiStack.c
+        Helpers/UI/UiStack.h
+        Helpers/UI/Controls/Button.c
+        Helpers/UI/Controls/Button.h
+        Helpers/UI/Controls/Slider.c
+        Helpers/UI/Controls/Slider.h
 )
 
 set(SDL2_PATH "${CMAKE_SOURCE_DIR}/lib/SDL2/x86_64-w64-mingw32")

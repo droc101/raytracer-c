@@ -86,6 +86,8 @@ void SetTexParams(const unsigned char* imageData, bool linear, bool repeat);
  */
 void DrawLine(Vector2 start, Vector2 end);
 
+void DrawOutlineRect(Vector2 pos, Vector2 size);
+
 /**
  * Draw a texture on a rectangle
  * @param pos The position of the rectangle
