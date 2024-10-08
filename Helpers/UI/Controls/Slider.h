@@ -21,6 +21,20 @@ typedef struct {
     void (*callback)(double);
 } SliderData;
 
+/**
+ * Create a new Slider Control
+ * @param position The position of the slider
+ * @param size The size of the slider
+ * @param label The label of the slider
+ * @param callback The callback function to call when the slider value changes
+ * @param anchor The anchor of the slider
+ * @param min The minimum value of the slider
+ * @param max The maximum value of the slider
+ * @param value The initial value of the slider
+ * @param step The step value of the slider
+ * @param altStep The step value of the slider when holding shift
+ * @return The new Slider Control
+ */
 Control *CreateSliderControl(Vector2 position, Vector2 size, char *label, void (*callback)(double), ControlAnchor anchor, double min, double max, double value, double step, double altStep);
 
 void DestroySlider(Control *c);

@@ -16,6 +16,15 @@ typedef struct {
     bool enabled;
 } ButtonData;
 
+/**
+ * Create a new Button Control
+ * @param position The position of the button
+ * @param size The size of the button
+ * @param text The text of the button
+ * @param callback The callback function to call when the button is clicked
+ * @param anchor The anchor of the button
+ * @return The new Button Control
+ */
 Control *CreateButtonControl(Vector2 position, Vector2 size, char *text, void (*callback)(), ControlAnchor anchor);
 
 void DestroyButton(Control *c);

@@ -88,6 +88,11 @@ Vector2 CalculateControlPosition(Control *control);
  */
 Control *CreateEmptyControl();
 
+/**
+ * Add a control to the UiStack
+ * @param stack The UiStack to add the control to
+ * @param control The control to add
+ */
 void UiStackPush(UiStack *stack, Control *control);
 
 #endif //GAME_UISTACK_H
