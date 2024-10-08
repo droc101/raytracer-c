@@ -7,6 +7,7 @@ Runs on Windows and Linux.
 
 ### Setup
 Make sure you have [FindSDL2.cmake](https://github.com/tcbrindle/sdl2-cmake-scripts/blob/master/FindSDL2.cmake) and [FindSDL2_mixer.cmake](https://github.com/tcbrindle/sdl2-cmake-scripts/blob/master/FindSDL2_mixer.cmake) in your CMake modules directory.
+You need Python 3 (as the command `python`) with PIL or Pillow installed to run the asset compression script (required to build)
 
 #### Setup - Windows
 Extract the following libraries into the `lib` directory (create it if it doesn't exist):
