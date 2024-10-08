@@ -39,7 +39,6 @@ void UpdateSlider(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlInd
     SliderData *data = (SliderData *) c->ControlData;
 
     bool pressed = IsMouseButtonPressed(SDL_BUTTON_LEFT);
-    bool rpressed = IsMouseButtonJustPressed(SDL_BUTTON_RIGHT);
 
     if (pressed) {
         double newVal = remap(GetMousePos().x - c->anchoredPosition.x, 0.0, c->size.x, data->min, data->max);
