@@ -77,6 +77,6 @@
 
 #define MSAA_SAMPLES 4 // usually 2, 4, or 8
 
-#define VSYNC_ENABLE 1
+#define VSYNC_ENABLE 0
 
 #endif //GAME_CONFIG_H
