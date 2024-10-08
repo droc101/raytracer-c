@@ -68,7 +68,11 @@ RayCastResult HitscanLevel(Level l, Vector2 pos, double angle, bool scanWalls, b
             if (!a->solid && !alwaysCollideActors) {
                 continue;
             }
-            Wall w = GetTransformedWall(a);
+            Wall w;
+
+            if (!GetTransformedWall(a, &w)) {
+                continue;
+            }
             RayCastResult r = Intersect(w, pos, angle);
             if (r.Collided) {
                 if (r.Distance < closestDist) {

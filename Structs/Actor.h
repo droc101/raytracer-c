@@ -36,9 +36,10 @@ void FreeActor(Actor *actor);
 /**
  * Transform an actor's wall by its position and rotation
  * @param actor Actor to use
- * @return Transformed wall
- * @note Make sure to free the wall after use
+ * @param wall Wall to transform
+ * @return True if the wall was transformed successfully
+ * @note The @c wall variable should NOT be the actor's original wall.
  */
-Wall GetTransformedWall(Actor *actor);
+bool GetTransformedWall(Actor *actor, Wall *wall);
 
 #endif //GAME_ACTOR_H

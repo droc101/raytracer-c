@@ -44,8 +44,10 @@ Vector2 Move(Vector2 position, Vector2 moveVec, void *ignore) {
             continue;
         }
         if (a->solid) {
-            Wall aWall = GetTransformedWall(a);
-            moveVec = CollideWall(&aWall, position, moveVec);
+            Wall aWall;
+            if (GetTransformedWall(a, &aWall)) {
+                moveVec = CollideWall(&aWall, position, moveVec);
+            }
         }
     }
     position = Vector2Add(position, moveVec);
@@ -57,7 +59,10 @@ bool CollideCylinder(Vector2 cylOrigin, double cylRadius, Vector2 testPoint) {
 }
 
 bool CollideActorCylinder(Actor *a, Vector2 testPoint) {
-    Wall transformedWall = GetTransformedWall(a);
+    Wall transformedWall;
+    if (!GetTransformedWall(a, &transformedWall)) {
+        return false;
+    }
     double radius = transformedWall.Length / 2;
     return CollideCylinder(a->position, radius, testPoint);
 }
