@@ -8,7 +8,7 @@
 #include "../config.h"
 
 #if !defined NDEBUG || defined ERROR_TRACE_IN_RELEASE
-#define Error(error) _Error_Internal(error, __FILE_NAME__, __LINE__, __func__)
+#define Error(error) Error_Internal(error, __FILE_NAME__, __LINE__, __func__)
 #else
 #define Error(error) _Error_Internal(error, "none", 0, "none")
 #endif
@@ -21,7 +21,7 @@
  * @param function Function name
  * @warning Do not use this function directly, use the Error macro instead
  */
-_Noreturn void _Error_Internal(char* error, const char* file, int line, const char* function);
+_Noreturn void Error_Internal(char* error, const char* file, int line, const char* function);
 
 /**
  * Friendly error handler

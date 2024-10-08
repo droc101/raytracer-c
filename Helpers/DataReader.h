@@ -59,7 +59,7 @@ float ReadFloat(byte *data, int *offset);
  * @return The byte read
  * @note Increments the offset by 1
  */
-byte ReadByte(byte *data, int *offset);
+byte ReadByte(const byte *data, int *offset);
 
 
 /**

@@ -75,7 +75,7 @@ float ReadFloat(byte *data, int *offset) {
     return f;
 }
 
-byte ReadByte(byte *data, int *offset) {
+byte ReadByte(const byte *data, int *offset) {
     byte b = data[*offset];
     *offset += sizeof(byte);
     return b;

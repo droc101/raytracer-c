@@ -13,7 +13,7 @@
 #include <zlib.h>
 #include "CommonAssets.h"
 
-_Noreturn void _Error_Internal(char* error, const char* file, int line, const char* function) {
+_Noreturn void Error_Internal(char* error, const char* file, int line, const char* function) {
     char buf[256];
     sprintf(buf, "Error: %s\n \n%s:%d (%s)", error, file, line, function);
     printf("%s", buf);
@@ -56,7 +56,7 @@ _Noreturn void FriendlyError(char* title, char* description) {
 //    }
 }
 
-void _SignalHandler(int sig) {
+void SignalHandler(int sig) {
     if (sig == SIGSEGV) {
         Error("Segmentation Fault");
     } else if (sig == SIGFPE) {
@@ -66,7 +66,7 @@ void _SignalHandler(int sig) {
 
 void SetSignalHandler() {
 #ifdef NDEBUG
-    signal(SIGSEGV, _SignalHandler);
-    signal(SIGFPE, _SignalHandler);
+    signal(SIGSEGV, SignalHandler);
+    signal(SIGFPE, SignalHandler);
 #endif
 }
