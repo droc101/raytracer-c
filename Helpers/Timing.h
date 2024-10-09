@@ -7,6 +7,8 @@
 
 #include "../defines.h"
 
+void InitTimers();
+
 /**
  * Get the time the program has been running in nanoseconds
  * @return Time in nanoseconds

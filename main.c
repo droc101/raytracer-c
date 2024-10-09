@@ -71,6 +71,8 @@ int main(int argc, char *argv[]) {
 
     GLogoSplashStateSet();
 
+    InitTimers();
+
     SDL_Event e;
     bool quit = false;
     while (!quit) {
