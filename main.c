@@ -74,6 +74,8 @@ int main(int argc, char *argv[]) {
 
     InitVulkan(w);
 
+    InitTimers();
+
     while (!quit) {
         // frameStart = GetTimeNs();
 

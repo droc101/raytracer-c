@@ -7,6 +7,8 @@
 
 #include "../defines.h"
 
+void InitTimers();
+
 ulong GetTimeNs();
 
 ulong GetTimeS();

@@ -2,8 +2,12 @@
 // Created by Noah on 7/5/2024.
 //
 
+#include <cglm/cglm.h>
+#include <cglm/clipspace/persp_lh_no.h>
+#include <cglm/clipspace/view_lh.h>
 #include "Vulkan.h"
 #include "Error.h"
+#include "Timing.h"
 #include "../Assets/AssetReader.h"
 #include "../Assets/Assets.h"
 
@@ -94,14 +98,16 @@ VkBuffer indexBuffer;
 VkDeviceMemory indexBufferMemory;
 VkBuffer uniformBuffers[MAX_FRAMES_IN_FLIGHT];
 VkDeviceMemory uniformBuffersMemory[MAX_FRAMES_IN_FLIGHT];
-void **uniformBuffersMapped[MAX_FRAMES_IN_FLIGHT];
+void *uniformBuffersMapped[MAX_FRAMES_IN_FLIGHT];
+VkDescriptorPool descriptorPool;
+VkDescriptorSet descriptorSets[MAX_FRAMES_IN_FLIGHT];
 
 /**
  * Provides information about the physical device's support for the swap chain.
  * @param pDevice The physical device to query for
  * @return A @c SwapChainSupportDetails struct
  */
-static SwapChainSupportDetails QuerySwapChainSupport(const VkPhysicalDevice pDevice) { // NOLINT(misc-misplaced-const)
+static SwapChainSupportDetails QuerySwapChainSupport(const VkPhysicalDevice pDevice) {
     SwapChainSupportDetails details = {0, NULL, 0, NULL};
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(pDevice, surface, &details.capabilities);
     vkGetPhysicalDeviceSurfaceFormatsKHR(pDevice, surface, &details.formatCount, NULL);
@@ -185,7 +191,7 @@ static bool PickPhysicalDevice() {
     vkEnumeratePhysicalDevices(instance, &deviceCount, devices);
     bool match = false;
     for (uint32_t i = 0; i < deviceCount; i++) {
-        const VkPhysicalDevice pDevice = devices[i]; // NOLINT(misc-misplaced-const)
+        const VkPhysicalDevice pDevice = devices[i];
         VkPhysicalDeviceFeatures deviceFeatures;
         vkGetPhysicalDeviceFeatures(pDevice, &deviceFeatures);
         if (!deviceFeatures.geometryShader) continue;
@@ -231,7 +237,7 @@ static bool PickPhysicalDevice() {
             }
         }
     }
-    if (!match) {VulkanError("Could not find a suitable GPU!");}
+    if (!match) { VulkanError("Could not find a suitable GPU!"); }
     return match;
 }
 
@@ -258,7 +264,8 @@ static bool CreateLogicalDevice() {
         1,
         &queuePriority
     };
-    if (queueFamilyIndices.presentFamily != queueFamilyIndices.graphicsFamily && queueFamilyIndices.presentFamily != queueFamilyIndices.transferFamily) {
+    if (queueFamilyIndices.presentFamily != queueFamilyIndices.graphicsFamily && queueFamilyIndices.presentFamily !=
+        queueFamilyIndices.transferFamily) {
         queueCreateInfo[queueCount++] = (VkDeviceQueueCreateInfo){
             VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
             NULL,
@@ -365,7 +372,8 @@ static bool CreateSwapChain(SDL_Window *window) {
         VK_TRUE,
         VK_NULL_HANDLE
     };
-    if (queueFamilyIndices.presentFamily != queueFamilyIndices.graphicsFamily && queueFamilyIndices.presentFamily != queueFamilyIndices.transferFamily) {
+    if (queueFamilyIndices.presentFamily != queueFamilyIndices.graphicsFamily && queueFamilyIndices.presentFamily !=
+        queueFamilyIndices.transferFamily) {
         createInfo.queueFamilyIndexCount++;
     }
     if (vkCreateSwapchainKHR(device, &createInfo, NULL, &swapChain) != VK_SUCCESS) {
@@ -463,8 +471,7 @@ static bool CreateRenderPass() {
     return true;
 }
 
-static bool CreateDescriptorSetLayout()
-{
+static bool CreateDescriptorSetLayout() {
     VkDescriptorSetLayoutBinding layoutBinding = {
         0,
         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
@@ -479,8 +486,7 @@ static bool CreateDescriptorSetLayout()
         1,
         &layoutBinding
     };
-    if (vkCreateDescriptorSetLayout(device, &layoutInfo, NULL, &descriptorSetLayout) != VK_SUCCESS)
-    {
+    if (vkCreateDescriptorSetLayout(device, &layoutInfo, NULL, &descriptorSetLayout) != VK_SUCCESS) {
         VulkanError("Failed to create Vulkan descriptor set layout!");
         return false;
     }
@@ -546,7 +552,7 @@ static bool CreateGraphicsPipeline() {
             {
                 0,
                 0,
-                VK_FORMAT_R32G32_SFLOAT,
+                VK_FORMAT_R32G32B32_SFLOAT,
                 offsetof(Vertex, pos)
             },
             {
@@ -580,7 +586,7 @@ static bool CreateGraphicsPipeline() {
         VK_FALSE,
         VK_FALSE,
         VK_POLYGON_MODE_FILL,
-        VK_CULL_MODE_BACK_BIT,
+        VK_CULL_MODE_NONE,
         VK_FRONT_FACE_CLOCKWISE,
         VK_FALSE,
         0,
@@ -735,7 +741,8 @@ static bool CreateBuffer(const VkDeviceSize size, const VkBufferUsageFlags usage
             queueFamilyIndices.presentFamily
         }
     };
-    if (queueFamilyIndices.presentFamily != queueFamilyIndices.graphicsFamily && queueFamilyIndices.presentFamily != queueFamilyIndices.transferFamily) {
+    if (queueFamilyIndices.presentFamily != queueFamilyIndices.graphicsFamily && queueFamilyIndices.presentFamily !=
+        queueFamilyIndices.transferFamily) {
         bufferInfo.queueFamilyIndexCount++;
     }
     if (vkCreateBuffer(device, &bufferInfo, NULL, buffer) != VK_SUCCESS) {
@@ -768,7 +775,7 @@ static bool CreateBuffer(const VkDeviceSize size, const VkBufferUsageFlags usage
     return false;
 }
 
-static void CopyBuffer(const VkBuffer srcBuffer, const VkBuffer dstBuffer, const VkDeviceSize size) { // NOLINT(misc-misplaced-const)
+static void CopyBuffer(const VkBuffer srcBuffer, const VkBuffer dstBuffer, const VkDeviceSize size) {
     const VkCommandBufferAllocateInfo allocateInfo = {
         VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
         NULL,
@@ -808,13 +815,18 @@ static bool CreateVertexBuffer() {
     const VkDeviceSize bufferSize = sizeof(vertices.data[0]) * vertices.length;
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
-    if (!CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &stagingBuffer, &stagingBufferMemory)) return false;
+    if (!CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &stagingBuffer,
+                      &stagingBufferMemory))
+        return false;
     void *data;
     vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
     memcpy(data, vertices.data, bufferSize);
     vkUnmapMemory(device, stagingBufferMemory);
 
-    if (!CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &vertexBuffer, &vertexBufferMemory)) return false;
+    if (!CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                      VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &vertexBuffer, &vertexBufferMemory))
+        return false;
     CopyBuffer(stagingBuffer, vertexBuffer, bufferSize);
     vkDestroyBuffer(device, stagingBuffer, NULL);
     vkFreeMemory(device, stagingBufferMemory, NULL);
@@ -825,25 +837,88 @@ static bool CreateIndexBuffer() {
     const VkDeviceSize bufferSize = sizeof(indices.data[0]) * indices.length;
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
-    if (!CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &stagingBuffer, &stagingBufferMemory)) return false;
+    if (!CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &stagingBuffer,
+                      &stagingBufferMemory))
+        return false;
     void *data;
     vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
     memcpy(data, indices.data, bufferSize);
     vkUnmapMemory(device, stagingBufferMemory);
 
-    if (!CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &indexBuffer, &indexBufferMemory)) return false;
+    if (!CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+                      VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &indexBuffer, &indexBufferMemory))
+        return false;
     CopyBuffer(stagingBuffer, indexBuffer, bufferSize);
     vkDestroyBuffer(device, stagingBuffer, NULL);
     vkFreeMemory(device, stagingBufferMemory, NULL);
     return true;
 }
 
-static bool CreateUniformBuffers()
-{
+static bool CreateUniformBuffers() {
     for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
         const VkDeviceSize bufferSize = sizeof(UniformBufferObject);
-        CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &uniformBuffers[i], &uniformBuffersMemory[i]);
-        vkMapMemory(device, uniformBuffersMemory[i], 0, bufferSize, 0, uniformBuffersMapped[i]);
+        CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &uniformBuffers[i],
+                     &uniformBuffersMemory[i]);
+        vkMapMemory(device, uniformBuffersMemory[i], 0, bufferSize, 0, &uniformBuffersMapped[i]);
+    }
+    return true;
+}
+
+static bool CreateDescriptorPool() {
+    VkDescriptorPoolSize poolSize = {
+        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+        MAX_FRAMES_IN_FLIGHT
+    };
+    VkDescriptorPoolCreateInfo poolCreateInfo = {
+        VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+        NULL,
+        0,
+        MAX_FRAMES_IN_FLIGHT,
+        1,
+        &poolSize
+    };
+    if (vkCreateDescriptorPool(device, &poolCreateInfo, NULL, &descriptorPool) != VK_SUCCESS) {
+        VulkanError("Failed to create Vulkan descriptor pool!");
+        return false;
+    }
+    return true;
+}
+
+static bool CreateDescriptorSets() {
+    VkDescriptorSetLayout layouts[MAX_FRAMES_IN_FLIGHT];
+    for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) { layouts[i] = descriptorSetLayout; }
+    const VkDescriptorSetAllocateInfo allocateInfo = {
+        VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+        NULL,
+        descriptorPool,
+        MAX_FRAMES_IN_FLIGHT,
+        layouts
+    };
+    if (vkAllocateDescriptorSets(device, &allocateInfo, descriptorSets) != VK_SUCCESS) {
+        VulkanError("Failed to allocate Vulkan descriptor sets!");
+        return false;
+    }
+    for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+        VkDescriptorBufferInfo bufferInfo = {
+            uniformBuffers[i],
+            0,
+            sizeof(UniformBufferObject)
+        };
+        VkWriteDescriptorSet writeDescriptors = {
+            VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+            NULL,
+            descriptorSets[i],
+            0,
+            0,
+            1,
+            VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+            NULL,
+            &bufferInfo,
+            NULL
+        };
+        vkUpdateDescriptorSets(device, 1, &writeDescriptors, 0, NULL);
     }
     return true;
 }
@@ -890,7 +965,7 @@ static bool CreateSyncObjects() {
     return true;
 }
 
-static void RecordCommandBuffer(const VkCommandBuffer buffer, const uint32_t imageIndex) { // NOLINT(misc-misplaced-const)
+static void RecordCommandBuffer(const VkCommandBuffer buffer, const uint32_t imageIndex) {
     const VkCommandBufferBeginInfo beginInfo = {
         VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
         NULL,
@@ -934,6 +1009,8 @@ static void RecordCommandBuffer(const VkCommandBuffer buffer, const uint32_t ima
     vkCmdSetScissor(buffer, 0, 1, &scissor);
     vkCmdBindVertexBuffers(buffer, 0, 1, (VkBuffer[1]){vertexBuffer}, (VkDeviceSize[1]){0});
     vkCmdBindIndexBuffer(buffer, indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+    vkCmdBindDescriptorSets(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1,
+                            &descriptorSets[currentFrame], 0, NULL);
     vkCmdDrawIndexed(buffer, indices.length, 1, 0, 0, 0);
     vkCmdEndRenderPass(buffer);
     if (vkEndCommandBuffer(buffer) != VK_SUCCESS) {
@@ -950,9 +1027,11 @@ static void RecordCommandBuffer(const VkCommandBuffer buffer, const uint32_t ima
  * @see CreateLogicalDevice
  */
 bool InitVulkan(SDL_Window *window) {
+    // ReSharper disable once CppDFAConstantConditions
     if (!CreateInstance(window) || !CreateSurface(window) || !PickPhysicalDevice() || !CreateLogicalDevice() || !
-        CreateSwapChain(window) || !CreateImageViews() || !CreateRenderPass() || !CreateDescriptorSetLayout() || !CreateGraphicsPipeline() || !
-        CreateFramebuffers() || !CreateCommandPools() || !CreateVertexBuffer() || !CreateIndexBuffer() || !CreateUniformBuffers() || !
+        CreateSwapChain(window) || !CreateImageViews() || !CreateRenderPass() || !CreateDescriptorSetLayout() || !
+        CreateGraphicsPipeline() || !CreateFramebuffers() || !CreateCommandPools() || !CreateVertexBuffer() || !
+        CreateIndexBuffer() || !CreateUniformBuffers() || !CreateDescriptorPool() || !CreateDescriptorSets() || !
         CreateCommandBuffers() || !CreateSyncObjects()) {
 
         CleanupVulkan();
@@ -961,12 +1040,26 @@ bool InitVulkan(SDL_Window *window) {
     return true;
 }
 
+static void UpdateUniformBuffer(const uint32_t currentFrame) {
+    UniformBufferObject bufferObject = {
+        GLM_MAT4_IDENTITY_INIT,
+        GLM_MAT4_IDENTITY_INIT,
+        GLM_MAT4_IDENTITY_INIT
+    };
+    glm_rotate(bufferObject.model, SDL_GetTicks64() * PI / 10000, GLM_YUP);
+    glm_lookat_lh((vec3){2.0f, 2.0f, 2.0f}, GLM_VEC3_ZERO, ((vec3){0.0f, -1.0f, 0.0f}), bufferObject.view);
+    glm_perspective_lh_no(PI / 4, swapChainExtent.width / swapChainExtent.height, 0.1f, 10.0f, bufferObject.proj);
+    // bufferObject.proj[1][1] *= -1;
+    memcpy(uniformBuffersMapped[currentFrame], &bufferObject, sizeof(bufferObject));
+}
+
 void DrawFrame() {
     vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
-    vkResetFences(device, 1, &inFlightFences[currentFrame]);
     uint32_t imageIndex;
     vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE,
                           &imageIndex);
+    UpdateUniformBuffer(currentFrame);
+    vkResetFences(device, 1, &inFlightFences[currentFrame]);
     vkResetCommandBuffer(commandBuffers[currentFrame], 0);
     RecordCommandBuffer(commandBuffers[currentFrame], imageIndex);
     const VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]};
@@ -1017,6 +1110,7 @@ void CleanupVulkan() {
         vkDestroyBuffer(device, uniformBuffers[i], NULL);
         vkFreeMemory(device, uniformBuffersMemory[i], NULL);
     }
+    vkDestroyDescriptorPool(device, descriptorPool, NULL);
     vkDestroyDescriptorSetLayout(device, descriptorSetLayout, NULL);
     vkDestroyBuffer(device, indexBuffer, NULL);
     vkFreeMemory(device, indexBufferMemory, NULL);

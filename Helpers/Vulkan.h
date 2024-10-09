@@ -8,7 +8,6 @@
 #include "../defines.h"
 #include <SDL_vulkan.h>
 #include <vulkan/vulkan.h>
-#include "../cglm-0.9.4/include/cglm/cglm.h"
 
 #define VULKAN_VERSION VK_MAKE_VERSION(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH)
 #ifndef NDEBUG
