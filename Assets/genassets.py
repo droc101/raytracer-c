@@ -206,37 +206,38 @@ def recursive_search(path):
         if os.path.isdir(path + file):
             recursive_search(path + file + "/")
         else:
+            path_from_assets = path.split("Assets/")[1]
             if file.endswith(".png"):
                 count += 1
-                print("Converting " + path + file)
+                print("Converting " + path_from_assets + file)
                 data = png_to_bytes(path + file)
                 name = "gztex_" + foldername + "_" + file.split(".")[0]
                 assets_c += bytes_to_c_array(data, name)
                 assets_h += c_header_array(name, len(data))
             elif file.endswith(".mp3"):
                 count += 1
-                print("Converting " + path + file)
+                print("Converting " + path_from_assets + file)
                 data = mp3_to_bytes(path + file)
                 name = "gzmpg_" + foldername + "_" + file.split(".")[0]
                 assets_c += bytes_to_c_array(data, name)
                 assets_h += c_header_array(name, len(data))
             elif file.endswith(".wav"):
                 count += 1
-                print("Converting " + path + file)
+                print("Converting " + path_from_assets + file)
                 data = wav_to_bytes(path + file)
                 name = "gzwav_" + foldername + "_" + file.split(".")[0]
                 assets_c += bytes_to_c_array(data, name)
                 assets_h += c_header_array(name, len(data))
             elif file.endswith(".bin"):
                 count += 1
-                print("Converting " + path + file)
+                print("Converting " + path_from_assets + file)
                 data = file_to_bytes(path + file)
                 name = "gzbin_" + foldername + "_" + file.split(".")[0]
                 assets_c += bytes_to_c_array(data, name)
                 assets_h += c_header_array(name, len(data))
             elif file.endswith(".glsl"):
                 count += 1
-                print("Converting " + path + file)
+                print("Converting " + path_from_assets + file)
                 data = file_to_bytes(path + file)
                 name = "gzshd_" + foldername + "_" + file.split(".")[0]
                 assets_c += bytes_to_c_array(data, name)
