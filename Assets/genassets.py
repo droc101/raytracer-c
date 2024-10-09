@@ -207,7 +207,9 @@ def recursive_search(path):
             recursive_search(path + file + "/")
         else:
             path_from_assets = path.split("Assets/")[1]
-            if file.endswith(".png"):
+            if file.endswith(".c") or file.endswith(".h") or file.endswith(".py"):
+                pass
+            elif file.endswith(".png"):
                 count += 1
                 print("Converting " + path_from_assets + file)
                 data = png_to_bytes(path + file)
