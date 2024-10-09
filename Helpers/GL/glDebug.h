@@ -2,6 +2,8 @@
 // Created by droc101 on 10/2/2024.
 //
 
+#ifndef NDEBUG
+
 #ifndef GAME_GLDEBUG_H
 #define GAME_GLDEBUG_H
 
@@ -22,3 +24,5 @@ void GL_DebugMessageCallback(GLenum source, GLenum type, GLuint id,
                              const GLchar *msg, const void *data);
 
 #endif //GAME_GLDEBUG_H
+
+#endif //NDEBUG
