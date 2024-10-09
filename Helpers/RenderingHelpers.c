@@ -109,6 +109,10 @@ void DrawBatchedQuadsTextured(BatchedQuadArray *batch, const unsigned char *imag
     GL_DrawTexturedArrays(batch->verts, batch->indices, batch->quad_count, imageData, color);
 }
 
+void DrawBatchedQuadsColored(BatchedQuadArray *batch, uint color) {
+    GL_DrawColoredArrays(batch->verts, batch->indices, batch->quad_count, color);
+}
+
 float X_TO_NDC(float x) {
     return GL_X_TO_NDC(x);
 }

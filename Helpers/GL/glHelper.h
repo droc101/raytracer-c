@@ -189,6 +189,15 @@ void GL_UpdateViewportSize();
 void GL_DrawTexturedArrays(float *vertices, uint *indices, int quad_count, const unsigned char *imageData, uint color);
 
 /**
+ * Draw arrays using the ui_colored shader
+ * @param vertices Vertex data [x, y] with positions in NDC
+ * @param indices Index data
+ * @param quad_count The number of quads to draw
+ * @param color The color to draw
+ */
+void GL_DrawColoredArrays(float *vertices, uint *indices, int quad_count, uint color);
+
+/**
  * Convert screen X to NDC
  * @param x X position in pixels
  * @return The NDC position

@@ -579,6 +579,31 @@ void GL_UpdateViewportSize() {
     glViewport(0, 0, WindowWidth(), WindowHeight());
 }
 
+void GL_DrawColoredArrays(float *vertices, uint *indices, int quad_count, uint color) {
+    glUseProgram(ui_colored->program);
+
+    float a = ((color >> 24) & 0xFF) / 255.0f;
+    float r = ((color >> 16) & 0xFF) / 255.0f;
+    float g = ((color >> 8) & 0xFF) / 255.0f;
+    float b = (color & 0xFF) / 255.0f;
+
+    glUniform4f(glGetUniformLocation(ui_textured->program, "col"), r, g, b, a);
+
+    glBindVertexArray(ui_buffer->vao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, ui_buffer->vbo);
+    glBufferData(GL_ARRAY_BUFFER, quad_count * 16 * sizeof(float), vertices, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ui_buffer->ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, quad_count * 6 * sizeof(uint), indices, GL_STATIC_DRAW);
+
+    GLint pos_attr_loc = glGetAttribLocation(ui_colored->program, "VERTEX");
+    glVertexAttribPointer(pos_attr_loc, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void *) 0);
+    glEnableVertexAttribArray(pos_attr_loc);
+
+    glDrawElements(GL_TRIANGLES, quad_count * 6, GL_UNSIGNED_INT, NULL);
+}
+
 void GL_DrawTexturedArrays(float *vertices, uint *indices, int quad_count, const unsigned char *imageData, uint color) {
     glUseProgram(ui_textured->program);
 
