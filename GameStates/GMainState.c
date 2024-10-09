@@ -61,6 +61,10 @@ void GMainStateUpdate(GlobalState * State) {
 
 uint GMainStateFixedUpdate(const uint interval, GlobalState *State)
 {
+    if (State->textBoxActive) {
+        return interval;
+    }
+
     Level *l = State->level;
     Vector2 moveVec = v2(0, 0);
     if (IsKeyPressed(SDL_SCANCODE_W)) {
