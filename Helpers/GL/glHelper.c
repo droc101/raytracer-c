@@ -61,11 +61,6 @@ void GL_Init() {
     ui_buffer = GL_ConstructBuffer();
     wall_buffer = GL_ConstructBuffer();
 
-    char *vendor = (char *) glGetString(GL_VENDOR);
-    char *renderer = (char *) glGetString(GL_RENDERER);
-    char *version = (char *) glGetString(GL_VERSION);
-    char *shading_language = (char *) glGetString(GL_SHADING_LANGUAGE_VERSION);
-
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glDisable(GL_CULL_FACE);
@@ -75,6 +70,11 @@ void GL_Init() {
     glEnable(GL_DEBUG_OUTPUT);
     glDebugMessageCallback(GL_DebugMessageCallback, NULL);
 #endif
+
+    char *vendor = (char *) glGetString(GL_VENDOR);
+    char *renderer = (char *) glGetString(GL_RENDERER);
+    char *version = (char *) glGetString(GL_VERSION);
+    char *shading_language = (char *) glGetString(GL_SHADING_LANGUAGE_VERSION);
 
     printf("OpenGL Initialized\n");
     printf("OpenGL Vendor: %s\n", vendor);
@@ -174,12 +174,6 @@ void GL_ClearDepthOnly() {
 
 void GL_Swap() {
     SDL_GL_SwapWindow(GetWindow());
-}
-
-void GL_DrawBuffer(Buffer *buf, Shader *shd, int count) {
-    GL_UseShader(shd);
-    glBindVertexArray(buf->vao);
-    glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, 0);
 }
 
 void GL_DestroyGL() {
