@@ -130,7 +130,7 @@ def wav_to_bytes(path):
     return header
 
 # Convert a file to bytes (raw)
-def file_to_bytes(path):
+def file_to_bytes(path, type):
     global aid
 
     file = open(path, "rb")
@@ -153,7 +153,7 @@ def file_to_bytes(path):
     header.extend(int_to_bytes(len(data)))  # Compressed length
     header.extend(int_to_bytes(decompressed_len))  # Decompressed length
     header.extend(int_to_bytes(aid))  # Asset ID
-    header.extend(int_to_bytes(3))  # Asset Type (3 = bin)
+    header.extend(int_to_bytes(type))  # Asset Type (3 = bin)
 
     header.extend(data)
 
@@ -233,14 +233,14 @@ def recursive_search(path):
             elif file.endswith(".bin"):
                 count += 1
                 print("Converting " + path_from_assets + file)
-                data = file_to_bytes(path + file)
+                data = file_to_bytes(path + file, 3)
                 name = "gzbin_" + foldername + "_" + file.split(".")[0]
                 assets_c += bytes_to_c_array(data, name)
                 assets_h += c_header_array(name, len(data))
             elif file.endswith(".glsl"):
                 count += 1
                 print("Converting " + path_from_assets + file)
-                data = file_to_bytes(path + file)
+                data = file_to_bytes(path + file, 4)
                 name = "gzshd_" + foldername + "_" + file.split(".")[0]
                 assets_c += bytes_to_c_array(data, name)
                 assets_h += c_header_array(name, len(data))
