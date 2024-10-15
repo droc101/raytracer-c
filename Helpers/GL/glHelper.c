@@ -35,7 +35,7 @@ void GL_Init() {
     err = glewInit();
     if (err != GLEW_OK) {
         SDL_GL_DeleteContext(ctx);
-        Error("Failed to init GLEW");
+        Error("Failed to start OpenGL. Your GPU or drivers may not support OpenGL 4.6.");
     }
 
     char *hud_textured_fsh = (char *) DecompressAsset(gzshd_GL_hud_textured_f);
