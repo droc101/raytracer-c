@@ -9,7 +9,7 @@
 
 /**
  * Resets the DPrint Y position to the top of the screen
- * @note Should only be called once at the start of the frame
+ * @note Should only be called once at the start of the physicsFrame
  */
 void ResetDPrintYPos();
 

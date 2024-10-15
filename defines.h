@@ -118,11 +118,11 @@ typedef struct GlobalState {
     int maxAmmo; // Player max ammo
     int coins;
     int blueCoins;
-    ulong frame; // THIS IS COUNTER FOR FIXED FRAMES, NOT TOTAL FRAMES
+    ulong physicsFrame;
     bool requestExit;
     Mix_Music *music; // background music
     Mix_Chunk *channels[SFX_CHANNEL_COUNT]; // sound effects
-    double FakeHeight; // fake camera height for rendering
+    double CameraY;
     int levelID;
 
     bool textBoxActive;
@@ -141,7 +141,7 @@ typedef struct {
     int health; // health. may be unused for some actors
     void *extra_data; // extra data for the actor
     void (*Init)(void *self); // call once to set up the actor
-    void (*Update)(void *self); // call every frame to update the actor
+    void (*Update)(void *self); // call every physicsFrame to update the actor
     void (*Destroy)(void *self); // call once to clean up the actor
     int actorType; // type of actor. do not change this after creation.
     byte paramA; // extra parameters for the actor. saved in level data, so can be used during Init

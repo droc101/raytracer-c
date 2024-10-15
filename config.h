@@ -34,7 +34,7 @@
 
 #pragma region Debug
 
-// See /Debug/FrameGrapher.h for frame grapher settings
+// See /Debug/FrameGrapher.h for physicsFrame grapher settings
 
 // Press F6 while in game to open the level editor
 #define ENABLE_LEVEL_EDITOR

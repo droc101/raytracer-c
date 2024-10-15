@@ -106,15 +106,15 @@ uint GMainStateFixedUpdate(const uint interval, GlobalState *State)
     // view bobbing (scam edition) 💀 (it's better now trust me)
     if (spd == SLOW_MOVE_SPEED) {
         if (isMoving) {
-            State->FakeHeight = sin(State->frame / 7.0) * 0.02; // NOLINT(*-narrowing-conversions)
+            State->CameraY = sin(State->physicsFrame / 7.0) * 0.02; // NOLINT(*-narrowing-conversions)
         } else {
-            State->FakeHeight = lerp(State->FakeHeight, 0, 0.1); // NOLINT(*-narrowing-conversions)
+            State->CameraY = lerp(State->CameraY, 0, 0.1); // NOLINT(*-narrowing-conversions)
         }
     } else {
         if (isMoving) {
-            State->FakeHeight = sin(State->frame / 7.0) * 0.04; // NOLINT(*-narrowing-conversions)
+            State->CameraY = sin(State->physicsFrame / 7.0) * 0.04; // NOLINT(*-narrowing-conversions)
         } else {
-            State->FakeHeight = lerp(State->FakeHeight, 0, 0.1); // NOLINT(*-narrowing-conversions)
+            State->CameraY = lerp(State->CameraY, 0, 0.1); // NOLINT(*-narrowing-conversions)
         }
     }
 
@@ -125,7 +125,7 @@ uint GMainStateFixedUpdate(const uint interval, GlobalState *State)
         a->Update(a);
     }
 
-    State->frame++;
+    State->physicsFrame++;
     return interval;
 }
 

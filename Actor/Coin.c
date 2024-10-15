@@ -22,7 +22,7 @@ void CoinInit(Actor *this) {
 
 void CoinUpdate(Actor *this) {
 
-    if (GetState()->frame % 8 == 0) {
+    if (GetState()->physicsFrame % 8 == 0) {
         this->paramA++;
         this->paramA = this->paramA % 4;
 

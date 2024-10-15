@@ -24,7 +24,7 @@
 // How much to scale the graph by (60fps target and 2x scale makes it a nice square)
 #define FRAMEGRAPH_V_SCALE 2
 
-// Enable or disable the frame graph (just the rendering)
+// Enable or disable the physicsFrame graph (just the rendering)
 #define FRAMEGRAPH_ENABLE
 
 // Disable to draw the graph

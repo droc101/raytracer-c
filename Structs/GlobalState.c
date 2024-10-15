@@ -23,14 +23,14 @@ void InitState() {
     state.maxAmmo = 100;
     state.coins = 0;
     state.blueCoins = 0;
-    state.frame = 0;
+    state.physicsFrame = 0;
     state.level = CreateLevel(); // empty level so we don't segfault
     state.requestExit = false;
     state.music = NULLPTR;
     for (int i = 0; i < SFX_CHANNEL_COUNT; i++) {
         state.channels[i] = NULLPTR;
     }
-    state.FakeHeight = 0;
+    state.CameraY = 0;
     state.textBoxActive = false;
     state.cam = CreateCamera();
     StopMusic();
@@ -77,12 +77,12 @@ void UseAmmo(int amount) {
 
 uint DefaultFixedUpdate(const uint interval, GlobalState* param)
 {
-    param->frame++;
+    param->physicsFrame++;
     return interval;
 }
 
 void SetUpdateCallback(void (* const UpdateGame)(GlobalState* State), uint (* const FixedUpdateGame)(uint interval, GlobalState* State), const CurrentState currentState) {
-    state.frame = 0;
+    state.physicsFrame = 0;
     state.UpdateGame = UpdateGame;
     state.currentState = currentState;
     SDL_RemoveTimer(state.FixedFramerateUpdate);

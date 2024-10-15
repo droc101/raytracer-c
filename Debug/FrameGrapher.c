@@ -19,7 +19,7 @@ void FG_PushIntoArray(double value) {
 }
 
 void FrameGraphUpdate(ulong ns) {
-    if (GetState()->frame % FRAMEGRAPH_INTERVAL == 0) {
+    if (GetState()->physicsFrame % FRAMEGRAPH_INTERVAL == 0) {
         if (ns == 0) { ns = 1; }
         FG_PushIntoArray(1000000000.0 / ns);
     }
@@ -50,7 +50,7 @@ void FrameGraphDraw() {
         draw_rect(x+(i*2), y, 2, height);
     }
 
-    // draw a line at the target frame time
+    // draw a line at the target physicsFrame time
     setColorUint(0x80808080);
     int y = WindowHeight() - (FRAMEGRAPH_THRESHOLD_GOOD*FRAMEGRAPH_V_SCALE) - 10;
     draw_rect(x, y, FRAMEGRAPH_HISTORY_SIZE * 2, 2);

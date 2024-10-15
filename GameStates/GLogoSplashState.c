@@ -16,22 +16,22 @@
 
 uint GLogoSplashStateFixedUpdate(const uint interval, GlobalState* State) {
 
-    if (State->frame == 20) {
+    if (State->physicsFrame == 20) {
         PlaySoundEffect(gzwav_sfx_coincling);
     }
 
-    if (State->frame == 120) {
+    if (State->physicsFrame == 120) {
         GMenuStateSet();
     }
 
-    State->frame++;
+    State->physicsFrame++;
     return interval;
 }
 
 void GLogoSplashStateRender(GlobalState * State) {
     setColorUint(0x0);
     ClearColor(0xFF000000);
-    if (State->frame < 20 || State->frame > 100) {
+    if (State->physicsFrame < 20 || State->physicsFrame > 100) {
         return;
     }
 

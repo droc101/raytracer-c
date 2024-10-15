@@ -44,7 +44,7 @@ void HandleMouseUp(int button);
 
 /**
  * Updates input states
- * @note Only call this once per frame
+ * @note Only call this once per physicsFrame
  */
 void UpdateInputStates();
 

@@ -119,7 +119,7 @@ int main(int argc, char *argv[]) {
         if (g->UpdateGame) g->UpdateGame(g);
 
         g->cam->x = (float)g->level->position.x;
-        g->cam->y = (float)g->FakeHeight;
+        g->cam->y = (float)g->CameraY;
         g->cam->z = (float)g->level->position.y;
         g->cam->yaw = (float)g->level->rotation;
 
@@ -130,7 +130,7 @@ int main(int argc, char *argv[]) {
         Swap();
 
         UpdateInputStates();
-        // g->frame++;
+        // g->physicsFrame++;
 
         if (g->requestExit) {
             quit = true;
