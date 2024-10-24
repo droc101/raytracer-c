@@ -32,7 +32,7 @@ void GMainStateUpdate(GlobalState * State) {
     if (State->textBoxActive) {
         if (IsKeyJustPressed(SDL_SCANCODE_SPACE)) {
             State->textBoxPage++;
-            if (State->textBoxPage >= State->textBox.rows) {
+            if (State->textBoxPage >= (StringLineCount(State->textBox.text)) / State->textBox.rows) {
                 State->textBoxActive = false;
             }
         }
@@ -44,7 +44,7 @@ void GMainStateUpdate(GlobalState * State) {
     }
 
     if (IsKeyJustPressed(SDL_SCANCODE_T)) {
-        TextBox tb = DEFINE_TEXT("TEXT BOX\n\nPAGE TWO", 2, 20, 0, 60, TEXT_BOX_H_ALIGN_CENTER, TEXT_BOX_V_ALIGN_TOP, TEXT_BOX_THEME_BLACK);
+        TextBox tb = DEFINE_TEXT("TEXT BOX", 2, 20, 0, 60, TEXT_BOX_H_ALIGN_CENTER, TEXT_BOX_V_ALIGN_TOP, TEXT_BOX_THEME_BLACK);
         ShowTextBox(tb);
     }
 
