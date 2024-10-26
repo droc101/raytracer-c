@@ -59,6 +59,10 @@ void UpdateSlider(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlInd
         }
     }
 
+    if (!IsMouseInRect(c->anchoredPosition, c->size)) {
+        return;
+    }
+
     bool pressed = IsMouseButtonPressed(SDL_BUTTON_LEFT);
 
     if (pressed) {

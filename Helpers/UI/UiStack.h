@@ -97,4 +97,12 @@ Control *CreateEmptyControl();
  */
 void UiStackPush(UiStack *stack, Control *control);
 
+/**
+ * Check if the mouse is in a rectangle
+ * @param pos The position of the rectangle
+ * @param size The size of the rectangle
+ * @return Whether the mouse is in the rectangle
+ */
+bool IsMouseInRect(Vector2 pos, Vector2 size);
+
 #endif //GAME_UISTACK_H
