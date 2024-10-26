@@ -24,7 +24,7 @@ Level *CreateLevel() {
     l->SkyColor = 0xff82c5ff;
     l->FloorTexture = 0;
     l->CeilingTexture = 0;
-    l->MusicID = -1;
+    l->MusicID = 0;
     l->FogColor = 0xff000000;
     l->FogStart = 10;
     l->FogEnd = 30;

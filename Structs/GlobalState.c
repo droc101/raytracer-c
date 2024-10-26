@@ -101,15 +101,15 @@ void SetRenderCallback(void (*RenderGame)(GlobalState* State)) {
     state.RenderGame = (void (*)(void *)) RenderGame;
 }
 
-const byte *music[] = {
+const byte *music[MUSIC_COUNT] = {
         gzmpg_audio_field
 };
 
 void ChangeLevel(Level *l) {
     DestroyLevel(state.level);
     state.level = l;
-    if (l->MusicID != -1) {
-        ChangeMusic(music[l->MusicID]);
+    if (l->MusicID != 0) {
+        ChangeMusic(music[l->MusicID - 1]);
     } else {
         StopMusic();
     }

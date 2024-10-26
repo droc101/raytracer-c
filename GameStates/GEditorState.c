@@ -98,6 +98,8 @@ byte level_skyR;
 byte level_skyG;
 byte level_skyB;
 
+uint musicId;
+
 Level *NodesToLevel() {
     Level *l = CreateLevel();
 
@@ -108,6 +110,8 @@ Level *NodesToLevel() {
     l->FloorTexture = level_floor_tex;
     l->CeilingTexture = level_ceil_tex;
     l->SkyColor = 0xFF << 24 | level_skyR << 16 | level_skyG << 8 | level_skyB;
+
+    l->MusicID = musicId;
 
     // reconstruct the level from the editor nodes
     for (int i = 0; i < EditorNodes->size; i++) {
@@ -156,6 +160,10 @@ void CreateSlider(char *label, double min, double max, double value, double step
     slider->size.y = 48; // 24px for the label, 24px for the slider
     slider->callback = callback;
     ListAdd(EditorSliders, slider);
+}
+
+void slider_setMusic(double value) {
+    musicId = (byte) value;
 }
 
 void slider_setNodeRotation(double value) {
@@ -877,6 +885,7 @@ void SetEditorMode(EditorButton *btn) {
         CreateSlider("Sky R", 0, 255, level_skyR, 1, 16, v2(10, 600), v2(200, 24), slider_setSkyR);
         CreateSlider("Sky G", 0, 255, level_skyG, 1, 16, v2(10, 650), v2(200, 24), slider_setSkyG);
         CreateSlider("Sky B", 0, 255, level_skyB, 1, 16, v2(10, 700), v2(200, 24), slider_setSkyB);
+        CreateSlider("Music", 0, MUSIC_COUNT, musicId, 1, 1, v2(10, 750), v2(200, 24), slider_setMusic);
     }
 }
 
@@ -934,6 +943,7 @@ void GEditorStateSet() {
     level_skyR = l->SkyColor >> 16;
     level_skyG = l->SkyColor >> 8;
     level_skyB = l->SkyColor;
+    musicId = l->MusicID;
 
     // add a node for the player
     EditorNode *playerNode = malloc(sizeof(EditorNode));

@@ -7,6 +7,9 @@
 
 #include "../defines.h"
 
+#define MUSIC_COUNT 1
+extern const byte *music[MUSIC_COUNT];
+
 /**
  * Initialize the global state
  * @warning This function should only be called once

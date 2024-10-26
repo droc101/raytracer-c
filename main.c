@@ -9,7 +9,6 @@
 #include "Structs/GlobalState.h"
 #include "GameStates/GLogoSplashState.h"
 #include "Debug/FrameGrapher.h"
-#include "GameStates/GMainState.h"
 #include "Debug/DPrint.h"
 #include "Assets/AssetReader.h"
 #include "Helpers/Timing.h"
@@ -91,9 +90,6 @@ int main(int argc, char *argv[]) {
                 }
             }
         }
-
-
-
         ClearDepthOnly();
 
         ResetDPrintYPos();

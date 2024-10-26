@@ -77,6 +77,11 @@ Level *LoadLevel(byte *data) {
                 l->CeilingTexture = ceil;
                 break;
             }
+            case LEVEL_CMD_MUSIC: {
+                uint music = ReadUint(data, &i);
+                l->MusicID = music;
+                break;
+            }
             default:
                 printf("Unknown level opcode %u at offset %u", opcode, i);
                 fflush(stdout);
@@ -134,6 +139,9 @@ LevelBytecode* GenerateBytecode(Level *l) {
     i++;
     WriteUint(data, &i, l->FloorTexture);
     WriteUint(data, &i, l->CeilingTexture);
+    data[i] = LEVEL_CMD_MUSIC;
+    i++;
+    WriteUint(data, &i, l->MusicID);
     data[i] = LEVEL_CMD_FINISH;
     i++;
 
