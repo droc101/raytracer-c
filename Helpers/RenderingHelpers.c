@@ -48,6 +48,11 @@ mat4 *ActorTransformMatrix(Actor *Actor) {
     return MODEL;
 }
 
+void RenderPreInit() {
+    GL_PreInit();
+
+}
+
 void RenderInit() {
     GL_Init();
     GL_Disable3D(); // just to make sure we are in the correct state

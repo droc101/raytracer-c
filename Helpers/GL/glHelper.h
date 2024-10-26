@@ -24,6 +24,12 @@ typedef struct {
     GLuint ebo;
 } Buffer;
 
+
+/**
+ * Set SDL_GL flags (this must be done before the SDL window is created)
+ */
+void GL_PreInit();
+
 /**
  * Initialize OpenGL
  */
