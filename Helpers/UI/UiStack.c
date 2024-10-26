@@ -29,6 +29,7 @@ UiStack *CreateUiStack() {
     stack->Controls = CreateList();
     stack->ActiveControl = -1;
     stack->ActiveControlState = NORMAL;
+    stack->focusedControl = -1;
     return stack;
 }
 
@@ -56,8 +57,10 @@ void ProcessUiStack(UiStack *stack) {
         Vector2 localMousePos = v2(mousePos.x - c->anchoredPosition.x, mousePos.y - c->anchoredPosition.y);
         if (localMousePos.x >= 0 && localMousePos.x <= c->size.x && localMousePos.y >= 0 && localMousePos.y <= c->size.y) {
             stack->ActiveControl = i;
-            if (IsMouseButtonPressed(SDL_BUTTON_LEFT)) {
+            if (IsMouseButtonPressed(SDL_BUTTON_LEFT) || IsKeyJustPressed(SDL_SCANCODE_SPACE)) {
                 stack->ActiveControlState = ACTIVE;
+                // make this control the focused control
+                stack->focusedControl = i;
             } else {
                 stack->ActiveControlState = HOVER;
             }
@@ -69,12 +72,38 @@ void ProcessUiStack(UiStack *stack) {
         Control *c = (Control *) ListGet(stack->Controls, stack->ActiveControl);
         ControlUpdateFuncs[c->type](stack, c, v2(mousePos.x - c->position.x, mousePos.y - c->position.y), stack->ActiveControl);
     }
+
+    if (stack->focusedControl != -1) {
+        Control *c = (Control *) ListGet(stack->Controls, stack->focusedControl);
+        ControlUpdateFuncs[c->type](stack, c, v2(mousePos.x - c->position.x, mousePos.y - c->position.y), stack->focusedControl);
+    }
+
+    // process tab and shift+tab to cycle through controls
+    if (IsKeyJustPressed(SDL_SCANCODE_TAB)) {
+        if (stack->focusedControl == -1) {
+            stack->focusedControl = 0;
+        } else {
+            stack->focusedControl = (stack->focusedControl + 1) % stack->Controls->size;
+        }
+    } else if (IsKeyJustPressed(SDL_SCANCODE_TAB) && IsKeyPressed(SDL_SCANCODE_LSHIFT)) {
+        if (stack->focusedControl == -1) {
+            stack->focusedControl = stack->Controls->size - 1;
+        } else {
+            stack->focusedControl = (stack->focusedControl - 1) % stack->Controls->size;
+        }
+    }
 }
 
 void DrawUiStack(UiStack *stack) {
     for (int i = 0; i < stack->Controls->size; i++) {
         Control *c = (Control *) ListGet(stack->Controls, i);
         ControlDrawFuncs[c->type](c, i == stack->ActiveControl ? stack->ActiveControlState : NORMAL, c->anchoredPosition);
+
+        // if this is the focused control, draw a border around it
+        if (i == stack->focusedControl) {
+            setColorUint(0xFFFFFFFF);
+            DrawOutlineRect(c->anchoredPosition, c->size);
+        }
     }
 }
 

@@ -104,7 +104,7 @@ inline void DrawLine(Vector2 start, Vector2 end) {
 
 inline void DrawOutlineRect(Vector2 pos, Vector2 size) {
     DrawLine(pos, v2(pos.x + size.x, pos.y));
-    DrawLine(pos, v2(pos.x, pos.y + size.y));
+    DrawLine(pos, v2(pos.x, pos.y + size.y + 1));
     DrawLine(v2(pos.x + size.x, pos.y), Vector2Add(pos, size));
     DrawLine(v2(pos.x, pos.y + size.y), Vector2Add(pos, size));
 }

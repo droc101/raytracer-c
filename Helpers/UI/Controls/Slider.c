@@ -38,6 +38,27 @@ void DestroySlider(Control *c) {
 void UpdateSlider(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlIndex) {
     SliderData *data = (SliderData *) c->ControlData;
 
+    // handle l and r arrow keys
+    if (stack->focusedControl == ctlIndex) {
+        if (IsKeyJustPressed(SDL_SCANCODE_LEFT)) {
+            data->value -= data->step;
+            if (data->value < data->min) {
+                data->value = data->min;
+            }
+            if (data->callback != NULL) {
+                data->callback(data->value);
+            }
+        } else if (IsKeyJustPressed(SDL_SCANCODE_RIGHT)) {
+            data->value += data->step;
+            if (data->value > data->max) {
+                data->value = data->max;
+            }
+            if (data->callback != NULL) {
+                data->callback(data->value);
+            }
+        }
+    }
+
     bool pressed = IsMouseButtonPressed(SDL_BUTTON_LEFT);
 
     if (pressed) {

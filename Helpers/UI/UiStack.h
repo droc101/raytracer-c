@@ -47,6 +47,8 @@ typedef struct {
 
     int ActiveControl;
     ControlState ActiveControlState;
+
+    int focusedControl;
 } UiStack;
 
 /**

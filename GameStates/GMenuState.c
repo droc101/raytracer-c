@@ -72,6 +72,8 @@ void GMenuStateSet() {
         menuStack = CreateUiStack();
         UiStackPush(menuStack, CreateButtonControl(v2(0, 80), v2(480, 40), "Start", StartGame, MIDDLE_CENTER));
         UiStackPush(menuStack, CreateButtonControl(v2(0, 180), v2(480, 40), "Quit", QuitGame, MIDDLE_CENTER));
+
+        menuStack->focusedControl = 0; // focus the start button so you can just press space to start the game
     }
 
     SetRenderCallback(GMenuStateRender);
