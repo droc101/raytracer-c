@@ -11,6 +11,7 @@ set(CMAKE_C_FLAGS_RELEASE "-g0 -O3 -s -DNDEBUG -Wl,--gc-sections -fdata-sections
 # Add --static flag when building on Windows to include libwinpthread-1.dll
 if (WIN32)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --static")
+    set(CMAKE_AUTO_RCC ON)
 endif ()
 
 add_executable(
@@ -96,6 +97,7 @@ add_executable(
         Structs/UI/Controls/Button.h
         Structs/UI/Controls/Slider.c
         Structs/UI/Controls/Slider.h
+        $<$<BOOL:${WIN32}>:game.rc>
 )
 
 set(SDL2_PATH "${CMAKE_SOURCE_DIR}/lib/SDL2/x86_64-w64-mingw32")
