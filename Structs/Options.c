@@ -3,6 +3,7 @@
 //
 
 #include "Options.h"
+#include <stdio.h>
 
 void DefaultOptions(Options *options) {
     options->renderer = 0;
@@ -20,7 +21,7 @@ char *GetOptionsPath() {
     strcpy(filePath, folderPath);
     strcat(filePath, fileName);
 
-    free(folderPath);
+    SDL_free(folderPath);
     return filePath;
 }
 
