@@ -40,3 +40,4 @@ cmake-build-*/
 
 # This file is generated on build
 /Assets/Assets.c
+*.aps
