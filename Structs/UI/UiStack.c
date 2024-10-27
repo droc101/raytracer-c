@@ -79,7 +79,7 @@ void ProcessUiStack(UiStack *stack) {
     }
 
     // process tab and shift+tab to cycle through controls
-    if (IsKeyJustPressed(SDL_SCANCODE_TAB)) {
+    if (IsKeyJustPressed(SDL_SCANCODE_TAB) && !IsKeyPressed(SDL_SCANCODE_LSHIFT)) {
         if (stack->focusedControl == -1) {
             stack->focusedControl = 0;
         } else {
