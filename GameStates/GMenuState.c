@@ -16,6 +16,7 @@
 #include "../Structs/UI/UiStack.h"
 #include "../Structs/UI/Controls/Button.h"
 #include "../Structs/UI/Controls/Slider.h"
+#include "GOptionsState.h"
 
 UiStack *menuStack;
 
@@ -29,6 +30,10 @@ void StartGame() {
 
 void QuitGame() {
     GetState()->requestExit = true;
+}
+
+void OpenOptions() {
+    GOptionsStateSet();
 }
 
 void GMenuStateUpdate(GlobalState * State) {
@@ -71,6 +76,7 @@ void GMenuStateSet() {
     if (menuStack == NULLPTR) {
         menuStack = CreateUiStack();
         UiStackPush(menuStack, CreateButtonControl(v2(0, 80), v2(480, 40), "Start", StartGame, MIDDLE_CENTER));
+        UiStackPush(menuStack, CreateButtonControl(v2(0, 130), v2(480, 40), "Options", OpenOptions, MIDDLE_CENTER));
         UiStackPush(menuStack, CreateButtonControl(v2(0, 180), v2(480, 40), "Quit", QuitGame, MIDDLE_CENTER));
 
         menuStack->focusedControl = 0; // focus the start button, so you can just press space to start the game

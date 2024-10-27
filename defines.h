@@ -102,8 +102,22 @@ typedef enum {
     LOGO_SPLASH_STATE,
     MAIN_STATE,
     MENU_STATE,
-    PAUSE_STATE
+    PAUSE_STATE,
+    OPTIONS_STATE
 } CurrentState;
+
+typedef enum Renderer {
+    RENDERER_OPENGL
+} Renderer;
+
+typedef struct Options {
+    Renderer renderer;
+    double musicVolume;
+    double sfxVolume;
+    double masterVolume;
+    int uiScale;
+    bool fullscreen;
+} Options;
 
 // Global state of the game
 typedef struct GlobalState {
@@ -130,6 +144,8 @@ typedef struct GlobalState {
     int textBoxPage;
 
     Camera *cam;
+
+    Options options;
 } GlobalState;
 
 // Actor (interactable/moving wall) struct

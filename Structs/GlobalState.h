@@ -16,6 +16,16 @@ extern const byte *music[MUSIC_COUNT];
  */
 void InitState();
 
+/**
+ * Update the volume from the options
+ * @note This function should be called whenever the options are changed
+ */
+void UpdateVolume();
+
+/**
+ * Show a text box
+ * @param tb Text box to show
+ */
 void ShowTextBox(TextBox tb);
 
 /**

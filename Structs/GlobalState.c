@@ -9,6 +9,7 @@
 #include "../Helpers/LevelEntries.h"
 #include "../Helpers/LevelLoader.h"
 #include "Camera.h"
+#include "Options.h"
 
 GlobalState state;
 
@@ -33,8 +34,21 @@ void InitState() {
     state.CameraY = 0;
     state.textBoxActive = false;
     state.cam = CreateCamera();
+    LoadOptions(&state.options);
+
+    UpdateVolume();
+
     StopMusic();
     Mix_ChannelFinished(ChannelFinished);
+}
+
+void UpdateVolume() {
+    double sfxVol = state.options.sfxVolume;
+    double musicVol = state.options.musicVolume;
+    sfxVol *= state.options.masterVolume;
+    musicVol *= state.options.masterVolume;
+    Mix_Volume(-1, (int) (sfxVol * MIX_MAX_VOLUME));
+    Mix_VolumeMusic((int) (musicVol * MIX_MAX_VOLUME));
 }
 
 void ShowTextBox(TextBox tb) {
@@ -179,6 +193,7 @@ void PlaySoundEffect(byte *asset) {
 }
 
 void DestroyGlobalState() {
+    SaveOptions(&state.options);
     SDL_RemoveTimer(state.FixedFramerateUpdate);
     DestroyLevel(state.level);
     free(state.cam);

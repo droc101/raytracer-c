@@ -98,6 +98,10 @@ add_executable(
         Structs/UI/Controls/Slider.c
         Structs/UI/Controls/Slider.h
         $<$<BOOL:${WIN32}>:game.rc>
+        Structs/Options.c
+        Structs/Options.h
+        GameStates/GOptionsState.c
+        GameStates/GOptionsState.h
 )
 
 set(SDL2_PATH "${CMAKE_SOURCE_DIR}/lib/SDL2/x86_64-w64-mingw32")

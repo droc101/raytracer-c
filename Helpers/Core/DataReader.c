@@ -81,6 +81,19 @@ byte ReadByte(const byte *data, int *offset) {
     return b;
 }
 
+void ReadString(const byte *data, int *offset, char *str, int maxLen) {
+    memset(str, 0, maxLen);
+    int len = ReadUint(data, offset);
+    memcpy(str, data + *offset, len);
+    *offset += len;
+}
+
+void WriteString(byte *data, int *offset, const char *str) {
+    WriteUint(data, offset, strlen(str));
+    memcpy(data + *offset, str, strlen(str));
+    *offset += strlen(str);
+}
+
 void WriteDouble(byte *data, int *offset, double d) {
     // Reverse the byte order
     for (int i = 0; i < sizeof(double) / 2; i++) {

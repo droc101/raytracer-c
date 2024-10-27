@@ -6,6 +6,8 @@
 #include "../../../Helpers/Core/Input.h"
 #include "../../../Helpers/Graphics/Font.h"
 #include "../../../Helpers/Graphics/Drawing.h"
+#include "../../GlobalState.h"
+#include "../../../Assets/Assets.h"
 
 Control *CreateButtonControl(Vector2 position, Vector2 size, char *text, void (*callback)(), ControlAnchor anchor) {
     Control *btn = CreateEmptyControl();
@@ -31,6 +33,7 @@ void DestroyButton(Control *c) {
 void UpdateButton(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlIndex) {
     ButtonData *data = (ButtonData *) c->ControlData;
     if (data->enabled && ((IsMouseButtonJustReleased(SDL_BUTTON_LEFT) && IsMouseInRect(c->anchoredPosition, c->size)) || IsKeyJustPressed(SDL_SCANCODE_SPACE))) {
+        PlaySoundEffect(gzwav_sfx_click);
         data->callback();
     }
 }
