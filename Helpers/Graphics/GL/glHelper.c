@@ -12,14 +12,14 @@
 
 SDL_GLContext ctx;
 
-Shader *ui_textured;
-Shader *ui_colored;
-Shader *wall_generic;
-Shader *floor_generic;
-Shader *shadow;
+GL_Shader *ui_textured;
+GL_Shader *ui_colored;
+GL_Shader *wall_generic;
+GL_Shader *floor_generic;
+GL_Shader *shadow;
 
-Buffer *ui_buffer;
-Buffer *wall_buffer;
+GL_Buffer *ui_buffer;
+GL_Buffer *wall_buffer;
 
 GLuint textures[ASSET_COUNT];
 
@@ -95,11 +95,11 @@ void GL_Init() {
     printf("GLSL: %s\n", shading_language);
 }
 
-Shader *GL_ConstructShader(char *fsh, char *vsh) {
+GL_Shader *GL_ConstructShader(char *fsh, char *vsh) {
     GLint status;
     char err_buf[512];
 
-    Shader *shd = malloc(sizeof(Shader));
+    GL_Shader *shd = malloc(sizeof(GL_Shader));
 
     shd->vsh = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(shd->vsh, 1, (const GLchar *const *) &vsh, NULL);
@@ -137,19 +137,19 @@ Shader *GL_ConstructShader(char *fsh, char *vsh) {
     return shd;
 }
 
-void GL_UseShader(Shader *shd) {
+void GL_UseShader(GL_Shader *shd) {
     glUseProgram(shd->program);
 }
 
-void GL_DestroyShader(Shader *shd) {
+void GL_DestroyShader(GL_Shader *shd) {
     glDeleteShader(shd->vsh);
     glDeleteShader(shd->fsh);
     glDeleteProgram(shd->program);
     free(shd);
 }
 
-Buffer *GL_ConstructBuffer() {
-    Buffer *buf = malloc(sizeof(Buffer));
+GL_Buffer *GL_ConstructBuffer() {
+    GL_Buffer *buf = malloc(sizeof(GL_Buffer));
 
     glGenVertexArrays(1, &buf->vao);
     glGenBuffers(1, &buf->vbo);
@@ -158,7 +158,7 @@ Buffer *GL_ConstructBuffer() {
     return buf;
 }
 
-void GL_DestroyBuffer(Buffer *buf) {
+void GL_DestroyBuffer(GL_Buffer *buf) {
     glDeleteVertexArrays(1, &buf->vao);
     glDeleteBuffers(1, &buf->vbo);
     glDeleteBuffers(1, &buf->ebo);

@@ -38,7 +38,7 @@ Vector2 MeasureText(char* str, uint size, bool small);
  * Get a line of text from a string
  * @param str String to get line from
  * @param line Line number to get
- * @param out Buffer to store the line in
+ * @param out GL_Buffer to store the line in
  */
 void TextGetLine(char *str, int line, char *out);
 

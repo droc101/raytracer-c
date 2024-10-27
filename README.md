@@ -16,7 +16,7 @@ and extract it as `SDL2`.
 - Download [SDL2_Mixer 2.8.0 w64](https://github.com/libsdl-org/SDL_mixer/releases/download/release-2.8.0/SDL2_mixer-devel-2.8.0-mingw.zip) 
 and extract it as `SDL2_Mixer`.
 - Download [GLEW 2.2.0 w64](https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0-win32.zip) and extract it as `glew`
-- Dowbload [CGLM 0.9.4](https://github.com/recp/cglm/archive/refs/tags/v0.9.4.zip) and extract it as `cglm`
+- Download [CGLM 0.9.4](https://github.com/recp/cglm/archive/refs/tags/v0.9.4.zip) and extract it as `cglm`
 
 #### Setup - Linux
 Linux building requires sdl2, sdl2_mixer, glew and cglm development libraries to be installed.

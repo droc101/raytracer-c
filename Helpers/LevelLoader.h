@@ -28,7 +28,7 @@ uint ReadUintA(byte *data, int offset);
  */
 Level *LoadLevel(byte *data);
 
-typedef struct {
+typedef struct LevelBytecode {
     byte *data;
     int size;
 } LevelBytecode;

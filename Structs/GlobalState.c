@@ -149,7 +149,7 @@ void StopMusic() {
     if (state.music != NULLPTR) { // stop and free the current music
         Mix_HaltMusic();
         Mix_FreeMusic(state.music);
-        state.music = NULLPTR; // set to NULL so we don't free it again if this function fails
+        state.music = NULLPTR; // set to NULL, so we don't free it again if this function fails
     }
 }
 

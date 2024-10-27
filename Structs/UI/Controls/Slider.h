@@ -8,7 +8,7 @@
 #include "../UiStack.h"
 #include "../../Vector2.h"
 
-typedef struct {
+typedef struct SliderData {
     char *label;
 
     double min;

@@ -24,12 +24,12 @@
 #define NULLPTR NULL
 
 // Utility functions are in Structs/Vector2.h
-typedef struct {
+typedef struct Vector2 {
     double x;
     double y;
 } Vector2;
 
-typedef struct {
+typedef struct Camera {
     float x;
     float z;
     float y;
@@ -42,7 +42,7 @@ typedef struct {
 } Camera;
 
 // Utility functions are in Structs/wall.h
-typedef struct {
+typedef struct Wall {
     Vector2 a;
     Vector2 b;
     const byte *tex;
@@ -57,7 +57,7 @@ typedef struct {
 } Wall;
 
 // Utility functions are in Structs/level.h
-typedef struct {
+typedef struct Level {
     List *actors;
     List *walls;
     Vector2 position;
@@ -74,14 +74,14 @@ typedef struct {
 } Level;
 
 // Utility functions are in Structs/ray.h
-typedef struct {
+typedef struct RayCastResult {
     Vector2 CollisionPoint;
     double Distance;
     bool Collided;
     Wall CollisionWall;
 } RayCastResult;
 
-typedef struct {
+typedef struct TextBox {
     char *text;
     int rows;
     int cols;
@@ -133,7 +133,7 @@ typedef struct GlobalState {
 } GlobalState;
 
 // Actor (interactable/moving wall) struct
-typedef struct {
+typedef struct Actor {
     Vector2 position;
     double rotation;
     Wall *actorWall; // (0,0) in this wall is the actor's position (also transformed by rotation)

@@ -34,7 +34,7 @@ typedef enum {
 
 EditorMode CurrentEditorMode = EDITOR_MODE_MOVE;
 
-typedef struct {
+typedef struct EditorButton {
     void *icon;
     char *text;
 
@@ -49,7 +49,7 @@ typedef struct {
 
 List *EditorButtons;
 
-typedef struct {
+typedef struct EditorSlider {
     char *label;
     double min;
     double max;
@@ -71,7 +71,7 @@ typedef enum {
     NODE_PLAYER
 } EditorNodeType;
 
-typedef struct {
+typedef struct EditorNode {
     EditorNodeType type;
     int index;
     Vector2 position;

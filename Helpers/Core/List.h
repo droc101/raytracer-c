@@ -13,13 +13,13 @@ typedef struct Node {
 } Node;
 
 // Doubly linked list
-typedef struct {
+typedef struct List {
     Node *head;
     Node *tail;
     int size;
 } List;
 
-typedef struct {
+typedef struct SizedArray {
     void **elements;
     int size;
 } SizedArray;

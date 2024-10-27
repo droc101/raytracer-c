@@ -12,17 +12,17 @@
 #include "cglm/cglm.h"
 #include "glDebug.h"
 
-typedef struct {
+typedef struct GL_Shader {
     GLuint vsh;
     GLuint fsh;
     GLuint program;
-} Shader;
+} GL_Shader;
 
-typedef struct {
+typedef struct GL_Buffer {
     GLuint vao;
     GLuint vbo;
     GLuint ebo;
-} Buffer;
+} GL_Buffer;
 
 
 /**
@@ -41,14 +41,14 @@ void GL_Init();
  * @param vsh The vertex shader source
  * @return The shader struct
  */
-Shader *GL_ConstructShader(char *fsh, char *vsh);
+GL_Shader *GL_ConstructShader(char *fsh, char *vsh);
 
 /**
  * Create a buffer object
  * @note This should be reused as much as possible
  * @return The buffer struct
  */
-Buffer *GL_ConstructBuffer();
+GL_Buffer *GL_ConstructBuffer();
 
 /**
  * Clear the screen

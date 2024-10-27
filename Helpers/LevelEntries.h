@@ -8,7 +8,7 @@
 #include "../Assets/Assets.h"
 #include "../defines.h"
 
-typedef struct {
+typedef struct LevelEntry {
     char * internalName;
     unsigned char* levelData;
     char * displayName;

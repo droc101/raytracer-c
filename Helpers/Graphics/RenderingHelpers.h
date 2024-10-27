@@ -11,7 +11,7 @@
 #include "Drawing.h"
 #include "GL/glHelper.h"
 
-typedef struct {
+typedef struct BatchedQuadArray {
     float *verts; // float[quad_count][4] with X,Y,U,V for textured quads, float[quad_count][2] with X,Y for untextured quads
     uint *indices; // uint[6*quad_count] with indices
     int quad_count; // Number of quads in the array

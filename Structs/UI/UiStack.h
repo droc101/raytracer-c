@@ -31,7 +31,7 @@ typedef enum {
     BOTTOM_RIGHT
 } ControlAnchor;
 
-typedef struct {
+typedef struct Control {
     ControlType type;
     ControlAnchor anchor;
     Vector2 position;
@@ -42,7 +42,7 @@ typedef struct {
     void *ControlData;
 } Control;
 
-typedef struct {
+typedef struct UiStack {
     List *Controls;
 
     int ActiveControl;
