@@ -10,12 +10,8 @@
 #include "../Helpers/Graphics/Font.h"
 #include "../Structs/GlobalState.h"
 #include "GLevelSelectState.h"
-#include "../Helpers/CommonAssets.h"
-#include "../Helpers/TextBox.h"
-#include "GMainState.h"
 #include "../Structs/UI/UiStack.h"
 #include "../Structs/UI/Controls/Button.h"
-#include "../Structs/UI/Controls/Slider.h"
 #include "GOptionsState.h"
 
 UiStack *menuStack;

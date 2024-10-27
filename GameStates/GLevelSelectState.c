@@ -12,7 +12,6 @@
 #include "../Helpers/Core/MathEx.h"
 #include "../Helpers/LevelEntries.h"
 #include "GMenuState.h"
-#include "../Helpers/CommonAssets.h"
 
 int GLevelSelectState_SelectedLevel = 0;
 

@@ -16,6 +16,16 @@ typedef struct CheckBoxData {
     void (*callback)(bool);
 } CheckBoxData;
 
+/**
+ * Create a new Checkbox Control
+ * @param position The position of the checkbox
+ * @param size The size of the checkbox
+ * @param label The label of the checkbox
+ * @param callback The callback function to call when the checkbox is checked or unchecked
+ * @param anchor The anchor of the checkbox
+ * @param checked Whether the checkbox is checked or not
+ * @return The new Checkbox Control
+ */
 Control *CreateCheckboxControl(Vector2 position, Vector2 size, char *label, void (*callback)(bool), ControlAnchor anchor, bool checked);
 
 void DestroyCheckbox(Control *c);

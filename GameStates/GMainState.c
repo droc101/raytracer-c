@@ -15,7 +15,6 @@
 #include <stdio.h>
 #include "../Helpers/Graphics/Font.h"
 #include "../Helpers/TextBox.h"
-#include "../Helpers/Core/Timing.h"
 
 void GMainStateUpdate(GlobalState * State) {
     if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE)) {

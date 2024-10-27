@@ -18,6 +18,18 @@ typedef struct RadioButtonData {
     void (*callback)(bool, byte, byte);
 } RadioButtonData;
 
+/**
+ * Create a new RadioButton Control
+ * @param position The position of the RadioButton
+ * @param size The size of the RadioButton
+ * @param label The label of the RadioButton
+ * @param callback The callback function to call when the RadioButton is checked
+ * @param anchor The anchor of the RadioButton
+ * @param checked Whether the RadioButton is checked or not
+ * @param groupId The group id of the RadioButton. RadioButtons with the same group id will be mutually exclusive.
+ * @param id The id of the RadioButton. This is passed to the callback function when the RadioButton is checked.
+ * @return The new RadioButton Control
+ */
 Control *CreateRadioButtonControl(Vector2 position, Vector2 size, char *label, void (*callback)(bool, byte, byte), ControlAnchor anchor, bool checked, byte groupId, byte id);
 
 void DestroyRadioButton(Control *c);

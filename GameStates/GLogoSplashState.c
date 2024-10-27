@@ -3,15 +3,11 @@
 //
 
 #include "GLogoSplashState.h"
-#include <stdio.h>
 #include "../Helpers/Core/Input.h"
 #include "../Structs/Ray.h"
 #include "../Helpers/Graphics/Drawing.h"
-#include "../Helpers/Graphics/Font.h"
 #include "../Structs/GlobalState.h"
 #include "GLevelSelectState.h"
-#include "../Helpers/CommonAssets.h"
-#include "../Helpers/TextBox.h"
 #include "GMenuState.h"
 
 uint GLogoSplashStateFixedUpdate(const uint interval, GlobalState* State) {
