@@ -3,14 +3,14 @@
 //
 
 #include "GPauseState.h"
-#include "../Helpers/Input.h"
+#include "../Helpers/Core/Input.h"
 #include "../Structs/Ray.h"
-#include "../Helpers/Drawing.h"
-#include "../Helpers/Font.h"
+#include "../Helpers/Graphics/Drawing.h"
+#include "../Helpers/Graphics/Font.h"
 #include "../Structs/GlobalState.h"
 #include "GMainState.h"
 #include "GMenuState.h"
-#include "../Helpers/MathEx.h"
+#include "../Helpers/Core/MathEx.h"
 #include "../Helpers/LevelEntries.h"
 #include "GLevelSelectState.h"
 #include <stdio.h>

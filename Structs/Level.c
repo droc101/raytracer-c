@@ -6,14 +6,14 @@
 #include "Vector2.h"
 #include "Wall.h"
 #include "Level.h"
-#include "../Helpers/Drawing.h"
+#include "../Helpers/Graphics/Drawing.h"
 #include "Ray.h"
-#include "../Helpers/MathEx.h"
-#include "../Helpers/Error.h"
+#include "../Helpers/Core/MathEx.h"
+#include "../Helpers/Core/Error.h"
 #include "Actor.h"
 #include "GlobalState.h"
 #include "../Helpers/CommonAssets.h"
-#include "../Helpers/RenderingHelpers.h"
+#include "../Helpers/Graphics/RenderingHelpers.h"
 
 Level *CreateLevel() {
     Level *l = (Level*)malloc(sizeof(Level));

@@ -3,13 +3,13 @@
 //
 
 #include "GLevelSelectState.h"
-#include "../Helpers/Input.h"
-#include "../Helpers/Drawing.h"
-#include "../Helpers/Font.h"
+#include "../Helpers/Core/Input.h"
+#include "../Helpers/Graphics/Drawing.h"
+#include "../Helpers/Graphics/Font.h"
 #include "../Structs/GlobalState.h"
 #include <stdio.h>
 #include "GMainState.h"
-#include "../Helpers/MathEx.h"
+#include "../Helpers/Core/MathEx.h"
 #include "../Helpers/LevelEntries.h"
 #include "GMenuState.h"
 #include "../Helpers/CommonAssets.h"

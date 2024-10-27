@@ -6,7 +6,7 @@
 #define GAME_BUTTON_H
 
 #include "../UiStack.h"
-#include "../../../Structs/Vector2.h"
+#include "../../Vector2.h"
 
 typedef struct {
     char *text;

@@ -3,8 +3,8 @@
 //
 
 #include "TextBox.h"
-#include "Font.h"
-#include "Drawing.h"
+#include "Graphics/Font.h"
+#include "Graphics/Drawing.h"
 
 #define BOX_OUTER_PADDING 14
 #define TEXT_BOX_FONT_SIZE 24

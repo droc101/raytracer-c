@@ -5,11 +5,11 @@
 #ifndef GAME_GLHELPER_H
 #define GAME_GLHELPER_H
 
-#include <SDL.h>
-#include <GL/glew.h>
+#include "SDL.h"
+#include "GL/glew.h"
 #include "../Drawing.h"
-#include "../Error.h"
-#include <cglm/cglm.h>
+#include "../../Core/Error.h"
+#include "cglm/cglm.h"
 #include "glDebug.h"
 
 typedef struct {

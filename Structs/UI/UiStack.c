@@ -3,8 +3,8 @@
 //
 
 #include "UiStack.h"
-#include "../Input.h"
-#include "../../Structs/Vector2.h"
+#include "../../Helpers/Core/Input.h"
+#include "../Vector2.h"
 
 #include "Controls/Button.h"
 #include "Controls/Slider.h"

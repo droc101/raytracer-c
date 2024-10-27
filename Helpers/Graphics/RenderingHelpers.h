@@ -5,9 +5,9 @@
 #ifndef GAME_RENDERINGHELPERS_H
 #define GAME_RENDERINGHELPERS_H
 
-#include <cglm/cglm.h>
-#include "../defines.h"
-#include "../config.h"
+#include "cglm/cglm.h"
+#include "../../defines.h"
+#include "../../config.h"
 #include "Drawing.h"
 #include "GL/glHelper.h"
 

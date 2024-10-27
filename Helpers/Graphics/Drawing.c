@@ -3,12 +3,12 @@
 //
 
 #include <stdio.h>
-#include "../defines.h"
+#include "../../defines.h"
 #include "SDL.h"
 #include "Drawing.h"
-#include "Error.h"
-#include "../Assets/AssetReader.h"
-#include "../Helpers/LevelLoader.h" // for ReadUInt
+#include "../Core/Error.h"
+#include "../../Assets/AssetReader.h"
+#include "../LevelLoader.h" // for ReadUInt
 #include "GL/glHelper.h"
 
 SDL_Window *window;

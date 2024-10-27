@@ -5,7 +5,7 @@
 #ifndef GAME_DEFINES_H
 #define GAME_DEFINES_H
 
-#include "Helpers/List.h"
+#include "Helpers/Core/List.h"
 #include <SDL.h>
 #include <SDL_mixer.h>
 #include <stdint.h>

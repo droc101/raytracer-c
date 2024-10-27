@@ -2,20 +2,20 @@
 #include <SDL.h>
 #include <SDL_mixer.h>
 #include <stdio.h>
-#include "Helpers/Drawing.h"
+#include "Helpers/Graphics/Drawing.h"
 #include "defines.h"
-#include "Helpers/Input.h"
+#include "Helpers/Core/Input.h"
 #include "Structs/Level.h"
 #include "Structs/GlobalState.h"
 #include "GameStates/GLogoSplashState.h"
 #include "Debug/FrameGrapher.h"
 #include "Debug/DPrint.h"
 #include "Assets/AssetReader.h"
-#include "Helpers/Timing.h"
+#include "Helpers/Core/Timing.h"
 #include "config.h"
-#include "Helpers/Error.h"
+#include "Helpers/Core/Error.h"
 #include "Helpers/CommonAssets.h"
-#include "Helpers/RenderingHelpers.h"
+#include "Helpers/Graphics/RenderingHelpers.h"
 
 int main(int argc, char *argv[]) {
 

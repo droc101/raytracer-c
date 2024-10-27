@@ -4,18 +4,18 @@
 
 #include <stdio.h>
 #include "GMenuState.h"
-#include "../Helpers/Input.h"
+#include "../Helpers/Core/Input.h"
 #include "../Structs/Ray.h"
-#include "../Helpers/Drawing.h"
-#include "../Helpers/Font.h"
+#include "../Helpers/Graphics/Drawing.h"
+#include "../Helpers/Graphics/Font.h"
 #include "../Structs/GlobalState.h"
 #include "GLevelSelectState.h"
 #include "../Helpers/CommonAssets.h"
 #include "../Helpers/TextBox.h"
 #include "GMainState.h"
-#include "../Helpers/UI/UiStack.h"
-#include "../Helpers/UI/Controls/Button.h"
-#include "../Helpers/UI/Controls/Slider.h"
+#include "../Structs/UI/UiStack.h"
+#include "../Structs/UI/Controls/Button.h"
+#include "../Structs/UI/Controls/Slider.h"
 
 UiStack *menuStack;
 

@@ -4,11 +4,11 @@
 
 #include "glHelper.h"
 #include <stdio.h>
-#include "../../Assets/AssetReader.h"
-#include "../../Assets/Assets.h"
-#include "../../Structs/Vector2.h"
-#include "../LevelLoader.h"
-#include <cglm/cglm.h>
+#include "../../../Assets/AssetReader.h"
+#include "../../../Assets/Assets.h"
+#include "../../../Structs/Vector2.h"
+#include "../../LevelLoader.h"
+#include "cglm/cglm.h"
 
 SDL_GLContext ctx;
 

@@ -4,7 +4,7 @@
 
 #include "CommonAssets.h"
 #include "../Assets/Assets.h"
-#include "../Helpers/Drawing.h"
+#include "Graphics/Drawing.h"
 
 const byte *wallTextures[WALL_TEXTURE_COUNT] = {
         gztex_level_bricks,

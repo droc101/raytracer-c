@@ -5,7 +5,7 @@
 #ifndef GAME_TIMING_H
 #define GAME_TIMING_H
 
-#include "../defines.h"
+#include "../../defines.h"
 
 void InitTimers();
 

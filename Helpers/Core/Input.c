@@ -3,7 +3,7 @@
 //
 
 #include "Input.h"
-#include "../Structs/Vector2.h"
+#include "../../Structs/Vector2.h"
 
 // every key is tracked, even if it's not used
 // this *could* be optimized, but it's not necessary

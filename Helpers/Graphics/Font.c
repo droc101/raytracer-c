@@ -6,11 +6,11 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdio.h>
-#include "MathEx.h"
+#include "../Core/MathEx.h"
 #include "SDL.h"
 #include "Drawing.h"
-#include "CommonAssets.h"
-#include "../Assets/Assets.h"
+#include "../CommonAssets.h"
+#include "../../Assets/Assets.h"
 #include "RenderingHelpers.h"
 
 const char fontChars[] = "abcdefghijklmnopqrstuvwxyz0123456789.:-,/\\|[]{}();'\"<>`~!@#$%^*_=+?";

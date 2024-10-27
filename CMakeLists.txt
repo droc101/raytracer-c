@@ -16,29 +16,29 @@ endif ()
 add_executable(
         game
         main.c
-        Helpers/Input.h
-        Helpers/Input.c
+        Helpers/Core/Input.h
+        Helpers/Core/Input.c
         defines.h
-        Helpers/Drawing.h
-        Helpers/Drawing.c
+        Helpers/Graphics/Drawing.h
+        Helpers/Graphics/Drawing.c
         Assets/Assets.h
         Assets/Assets.c
         Structs/Vector2.h
         Structs/Vector2.c
-        Helpers/MathEx.h
-        Helpers/MathEx.c
+        Helpers/Core/MathEx.h
+        Helpers/Core/MathEx.c
         Structs/Ray.h
         Structs/Ray.c
         Structs/Wall.h
         Structs/Wall.c
-        Helpers/List.h
-        Helpers/List.c
+        Helpers/Core/List.h
+        Helpers/Core/List.c
         Structs/Level.h
         Structs/Level.c
-        Helpers/Font.c
-        Helpers/Font.h
-        Helpers/Error.c
-        Helpers/Error.h
+        Helpers/Graphics/Font.c
+        Helpers/Graphics/Font.h
+        Helpers/Core/Error.c
+        Helpers/Core/Error.h
         Helpers/LevelLoader.c
         Helpers/LevelLoader.h
         Structs/GlobalState.c
@@ -57,12 +57,12 @@ add_executable(
         Debug/FrameGrapher.h
         Debug/DPrint.c
         Debug/DPrint.h
-        Helpers/Timing.c
-        Helpers/Timing.h
+        Helpers/Core/Timing.c
+        Helpers/Core/Timing.h
         Assets/AssetReader.c
         Assets/AssetReader.h
-        Helpers/DataReader.c
-        Helpers/DataReader.h
+        Helpers/Core/DataReader.c
+        Helpers/Core/DataReader.h
         Helpers/Collision.c
         Helpers/Collision.h
         GameStates/GEditorState.c
@@ -82,20 +82,20 @@ add_executable(
         Actor/Goal.h
         GameStates/GLogoSplashState.c
         GameStates/GLogoSplashState.h
-        Helpers/GL/glHelper.c
-        Helpers/GL/glHelper.h
+        Helpers/Graphics/GL/glHelper.c
+        Helpers/Graphics/GL/glHelper.h
         Structs/Camera.c
         Structs/Camera.h
-        Helpers/RenderingHelpers.c
-        Helpers/RenderingHelpers.h
-        Helpers/GL/glDebug.c
-        Helpers/GL/glDebug.h
-        Helpers/UI/UiStack.c
-        Helpers/UI/UiStack.h
-        Helpers/UI/Controls/Button.c
-        Helpers/UI/Controls/Button.h
-        Helpers/UI/Controls/Slider.c
-        Helpers/UI/Controls/Slider.h
+        Helpers/Graphics/RenderingHelpers.c
+        Helpers/Graphics/RenderingHelpers.h
+        Helpers/Graphics/GL/glDebug.c
+        Helpers/Graphics/GL/glDebug.h
+        Structs/UI/UiStack.c
+        Structs/UI/UiStack.h
+        Structs/UI/Controls/Button.c
+        Structs/UI/Controls/Button.h
+        Structs/UI/Controls/Slider.c
+        Structs/UI/Controls/Slider.h
 )
 
 set(SDL2_PATH "${CMAKE_SOURCE_DIR}/lib/SDL2/x86_64-w64-mingw32")

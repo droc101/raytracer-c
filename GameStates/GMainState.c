@@ -4,18 +4,18 @@
 
 #include "GMainState.h"
 #include <math.h>
-#include "../Helpers/Input.h"
-#include "../Helpers/Error.h"
-#include "../Helpers/MathEx.h"
-#include "../Helpers/Drawing.h"
+#include "../Helpers/Core/Input.h"
+#include "../Helpers/Core/Error.h"
+#include "../Helpers/Core/MathEx.h"
+#include "../Helpers/Graphics/Drawing.h"
 #include "../Debug/DPrint.h"
 #include "../Helpers/Collision.h"
 #include "GPauseState.h"
 #include "GEditorState.h"
 #include <stdio.h>
-#include "../Helpers/Font.h"
+#include "../Helpers/Graphics/Font.h"
 #include "../Helpers/TextBox.h"
-#include "../Helpers/Timing.h"
+#include "../Helpers/Core/Timing.h"
 
 void GMainStateUpdate(GlobalState * State) {
     if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE)) {

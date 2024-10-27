@@ -5,7 +5,7 @@
 #include "../defines.h"
 #include "Wall.h"
 #include <math.h>
-#include "../Helpers/Drawing.h"
+#include "../Helpers/Graphics/Drawing.h"
 #include "../Helpers/CommonAssets.h"
 
 Wall *CreateWall(Vector2 a, Vector2 b, const byte *tex, float uvScale, float uvOffset) {

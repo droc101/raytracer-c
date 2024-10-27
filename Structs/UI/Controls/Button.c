@@ -3,9 +3,9 @@
 //
 
 #include "Button.h"
-#include "../../Input.h"
-#include "../../Font.h"
-#include "../../Drawing.h"
+#include "../../../Helpers/Core/Input.h"
+#include "../../../Helpers/Graphics/Font.h"
+#include "../../../Helpers/Graphics/Drawing.h"
 
 Control *CreateButtonControl(Vector2 position, Vector2 size, char *text, void (*callback)(), ControlAnchor anchor) {
     Control *btn = CreateEmptyControl();

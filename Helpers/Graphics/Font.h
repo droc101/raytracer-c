@@ -5,7 +5,7 @@
 #ifndef GAME_FONT_H
 #define GAME_FONT_H
 
-#include "../Structs/Vector2.h"
+#include "../../Structs/Vector2.h"
 
 /**
  * Draw a string of text to the screen

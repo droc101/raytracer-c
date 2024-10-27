@@ -6,7 +6,7 @@
 #define GAME_DRAWING_H
 
 #include "SDL.h"
-#include "../defines.h"
+#include "../../defines.h"
 
 /**
  * Set the main window

@@ -5,7 +5,7 @@
 #ifndef GAME_DATAREADER_H
 #define GAME_DATAREADER_H
 
-#include "../defines.h"
+#include "../../defines.h"
 
 // The "A" functions don't increment the offset, they just read from the given offset
 

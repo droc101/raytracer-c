@@ -6,7 +6,7 @@
 #define GAME_INPUT_H
 
 #include "SDL.h"
-#include "../defines.h"
+#include "../../defines.h"
 
 #define INP_RELEASED 0
 #define INP_JUST_PRESSED 1

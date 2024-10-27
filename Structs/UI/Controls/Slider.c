@@ -3,10 +3,10 @@
 //
 
 #include "Slider.h"
-#include "../../Input.h"
-#include "../../Font.h"
-#include "../../Drawing.h"
-#include "../../MathEx.h"
+#include "../../../Helpers/Core/Input.h"
+#include "../../../Helpers/Graphics/Font.h"
+#include "../../../Helpers/Graphics/Drawing.h"
+#include "../../../Helpers/Core/MathEx.h"
 #include <math.h>
 #include <stdio.h>
 

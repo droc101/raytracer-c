@@ -5,7 +5,7 @@
 #ifndef GAME_ERROR_H
 #define GAME_ERROR_H
 
-#include "../config.h"
+#include "../../config.h"
 
 #if !defined NDEBUG || defined ERROR_TRACE_IN_RELEASE
 #define Error(error) Error_Internal(error, __FILE_NAME__, __LINE__, __func__)

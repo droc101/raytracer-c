@@ -5,12 +5,12 @@
 #include "../config.h"
 #include "GEditorState.h"
 #include "../Structs/GlobalState.h"
-#include "../Helpers/Input.h"
-#include "../Helpers/Drawing.h"
+#include "../Helpers/Core/Input.h"
+#include "../Helpers/Graphics/Drawing.h"
 #include "GMainState.h"
-#include "../Helpers/MathEx.h"
+#include "../Helpers/Core/MathEx.h"
 #include <stdio.h>
-#include "../Helpers/Font.h"
+#include "../Helpers/Graphics/Font.h"
 #include "../Structs/Actor.h"
 #include <math.h>
 #include "../Helpers/LevelLoader.h"

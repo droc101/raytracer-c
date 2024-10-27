@@ -4,9 +4,9 @@
 
 #include "RenderingHelpers.h"
 #include "GL/glHelper.h"
-#include "../Structs/Wall.h"
-#include "../Structs/Vector2.h"
-#include "CommonAssets.h"
+#include "../../Structs/Wall.h"
+#include "../../Structs/Vector2.h"
+#include "../CommonAssets.h"
 
 mat4 *GetMatrix(Camera *cam) {
     vec3 cam_pos = {cam->x, cam->y, cam->z};

@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "List.h"
-#include "../defines.h"
+#include "../../defines.h"
 #include "Error.h"
 
 Node* createNode(void *data) {

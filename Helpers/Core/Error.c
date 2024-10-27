@@ -4,14 +4,14 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include "../defines.h"
+#include "../../defines.h"
 #include "Error.h"
-#include "Drawing.h"
-#include "Font.h"
+#include "../Graphics/Drawing.h"
+#include "../Graphics/Font.h"
 #include <string.h>
 #include <signal.h>
-#include <zlib.h>
-#include "CommonAssets.h"
+#include "zlib.h"
+#include "../CommonAssets.h"
 
 _Noreturn void Error_Internal(char* error, const char* file, int line, const char* function) {
     char buf[256];

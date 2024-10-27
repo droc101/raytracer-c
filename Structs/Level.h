@@ -8,7 +8,7 @@
 #include "../defines.h"
 #include "Vector2.h"
 #include "Wall.h"
-#include "../Helpers/List.h"
+#include "../Helpers/Core/List.h"
 #include "SDL.h"
 
 /**

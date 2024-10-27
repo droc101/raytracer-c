@@ -4,9 +4,9 @@
 
 #include <stdio.h>
 #include "LevelLoader.h"
-#include "Error.h"
+#include "Core/Error.h"
 #include "../Structs/Actor.h"
-#include "DataReader.h"
+#include "Core/DataReader.h"
 #include "../Helpers/CommonAssets.h"
 
 Level *LoadLevel(byte *data) {
