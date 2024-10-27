@@ -8,7 +8,7 @@
 
 #include "Controls/Button.h"
 #include "Controls/Slider.h"
-#include "Controls/Checkbox.h"
+#include "Controls/CheckBox.h"
 #include "Controls/RadioButton.h"
 
 void (*ControlDestroyFuncs[4])(Control *) = {
