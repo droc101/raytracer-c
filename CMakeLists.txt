@@ -102,6 +102,10 @@ add_executable(
         Structs/Options.h
         GameStates/GOptionsState.c
         GameStates/GOptionsState.h
+        Structs/UI/Controls/CheckBox.c
+        Structs/UI/Controls/CheckBox.h
+        Structs/UI/Controls/RadioButton.c
+        Structs/UI/Controls/RadioButton.h
 )
 
 set(SDL2_PATH "${CMAKE_SOURCE_DIR}/lib/SDL2/x86_64-w64-mingw32")

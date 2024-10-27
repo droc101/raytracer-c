@@ -16,6 +16,8 @@
 #include "../Structs/UI/UiStack.h"
 #include "../Structs/UI/Controls/Button.h"
 #include "../Structs/UI/Controls/Slider.h"
+#include "../Structs/UI/Controls/CheckBox.h"
+#include "../Structs/UI/Controls/RadioButton.h"
 
 UiStack *optionsStack;
 
@@ -38,7 +40,23 @@ void SldOptionsSfxVolume(double value) {
     UpdateVolume();
 }
 
+void CbOptionsFullscreen(bool value) {
+    GetState()->options.fullscreen = value;
+    SDL_SetWindowFullscreen(GetWindow(), value ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+}
+
+void SldOptionsUiScale(double value) {
+    GetState()->options.uiScale = value;
+    // TODO: implement UI scaling
+}
+
+void RbOptionsRenderer(bool value, byte groupId, byte id) {
+    GetState()->options.renderer = id;
+    // Renderer change will happen on next restart
+}
+
 void GOptionsStateUpdate(GlobalState * State) {
+
 }
 
 void GOptionsStateRender(GlobalState * State) {
@@ -50,7 +68,7 @@ void GOptionsStateRender(GlobalState * State) {
     Vector2 tileRegion = v2(tilesOnScreen.x * bg_tex_size.x, tilesOnScreen.y * bg_tex_size.y);
     DrawTextureRegion(v2(0, 0), v2(WindowWidth(), WindowHeight()), gztex_interface_menu_bg_tile, v2(0, 0), tileRegion);
 
-    DrawTextAligned("Options", 32, 0xFFFFFFFF, v2s(0), v2(WindowWidth(), 200), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, false);
+    DrawTextAligned("Options", 32, 0xFFFFFFFF, v2s(0), v2(WindowWidth(), 100), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, false);
 
     ProcessUiStack(optionsStack);
     DrawUiStack(optionsStack);
@@ -60,11 +78,17 @@ void GOptionsStateSet() {
 
     if (optionsStack == NULLPTR) {
         optionsStack = CreateUiStack();
-        UiStackPush(optionsStack, CreateSliderControl(v2(0, 80), v2(480, 40), "Master Volume", SldOptionsMasterVolume, TOP_CENTER, 0.0, 1.0, GetState()->options.masterVolume, 0.01, 0.1));
-        UiStackPush(optionsStack, CreateSliderControl(v2(0, 105), v2(480, 40), "Music Volume", SldOptionsMusicVolume, TOP_CENTER, 0.0, 1.0, GetState()->options.musicVolume, 0.01, 0.1));
-        UiStackPush(optionsStack, CreateSliderControl(v2(0, 130), v2(480, 40), "SFX Volume", SldOptionsSfxVolume, TOP_CENTER, 0.0, 1.0, GetState()->options.sfxVolume, 0.01, 0.1));
-        UiStackPush(optionsStack, CreateButtonControl(v2(0, -80), v2(480, 40), "Done", BtnOptionsBack, BOTTOM_CENTER));
+        UiStackPush(optionsStack, CreateSliderControl(v2(0, 40), v2(480, 40), "Master Volume", SldOptionsMasterVolume, TOP_CENTER, 0.0, 1.0, GetState()->options.masterVolume, 0.01, 0.1));
+        UiStackPush(optionsStack, CreateSliderControl(v2(0, 65), v2(480, 40), "Music Volume", SldOptionsMusicVolume, TOP_CENTER, 0.0, 1.0, GetState()->options.musicVolume, 0.01, 0.1));
+        UiStackPush(optionsStack, CreateSliderControl(v2(0, 90), v2(480, 40), "SFX Volume", SldOptionsSfxVolume, TOP_CENTER, 0.0, 1.0, GetState()->options.sfxVolume, 0.01, 0.1));
+        UiStackPush(optionsStack, CreateCheckboxControl(v2(0, 115), v2(480, 40), "Fullscreen", CbOptionsFullscreen, TOP_CENTER, GetState()->options.fullscreen));
+        UiStackPush(optionsStack, CreateRadioButtonControl(v2(0, 140), v2(480, 40), "OpenGL", RbOptionsRenderer, TOP_CENTER, GetState()->options.renderer == RENDERER_OPENGL, 0, RENDERER_OPENGL));
+        UiStackPush(optionsStack, CreateRadioButtonControl(v2(0, 165), v2(480, 40), "Vulkan //todo", RbOptionsRenderer, TOP_CENTER, GetState()->options.renderer == RENDERER_VULKAN, 0, RENDERER_VULKAN));
+        UiStackPush(optionsStack, CreateSliderControl(v2(0, 190), v2(480, 40), "UI Scale //todo", SldOptionsUiScale, TOP_CENTER, 1.0, 4.0, GetState()->options.uiScale, 1.0, 1.0));
+
+        UiStackPush(optionsStack, CreateButtonControl(v2(0, -40), v2(480, 40), "Done", BtnOptionsBack, BOTTOM_CENTER));
     }
+    optionsStack->focusedControl = -1;
 
     SetRenderCallback(GOptionsStateRender);
     SetUpdateCallback(GOptionsStateUpdate, NULL, OPTIONS_STATE); // Fixed update is not needed for this state

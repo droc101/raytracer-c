@@ -11,6 +11,8 @@
 typedef enum {
     BUTTON,
     SLIDER,
+    CHECKBOX,
+    RADIO_BUTTON,
 } ControlType;
 
 typedef enum {

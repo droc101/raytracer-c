@@ -27,6 +27,9 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    InitState();
+    // TODO: You now have GetState()->options.renderer to determine the renderer. Use this.
+
     RenderPreInit();
 
     Mix_AllocateChannels(SFX_CHANNEL_COUNT);
@@ -42,6 +45,7 @@ int main(int argc, char *argv[]) {
         SDL_Quit();
         return 1;
     }
+    SDL_SetWindowFullscreen(w, GetState()->options.fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
     SetWindow(w);
 
     RenderInit();
@@ -56,7 +60,7 @@ int main(int argc, char *argv[]) {
 
     printf("Initializing Engine\n");
     InitCommonAssets();
-    InitState();
+
 
     ChangeLevelByID(STARTING_LEVEL);
 

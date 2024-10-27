@@ -34,6 +34,8 @@ void UpdateButton(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlInd
     ButtonData *data = (ButtonData *) c->ControlData;
     if (data->enabled && ((IsMouseButtonJustReleased(SDL_BUTTON_LEFT) && IsMouseInRect(c->anchoredPosition, c->size)) || IsKeyJustPressed(SDL_SCANCODE_SPACE))) {
         PlaySoundEffect(gzwav_sfx_click);
+        ConsumeMouseButton(SDL_BUTTON_LEFT);
+        ConsumeKey(SDL_SCANCODE_SPACE);
         data->callback();
     }
 }

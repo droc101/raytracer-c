@@ -107,7 +107,8 @@ typedef enum {
 } CurrentState;
 
 typedef enum Renderer {
-    RENDERER_OPENGL
+    RENDERER_OPENGL,
+    RENDERER_VULKAN
 } Renderer;
 
 typedef struct Options {

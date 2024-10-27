@@ -41,6 +41,7 @@ void UpdateSlider(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlInd
     // handle l and r arrow keys
     if (stack->focusedControl == ctlIndex) {
         if (IsKeyJustPressed(SDL_SCANCODE_LEFT)) {
+            ConsumeKey(SDL_SCANCODE_LEFT);
             data->value -= data->step;
             if (data->value < data->min) {
                 data->value = data->min;
@@ -49,6 +50,7 @@ void UpdateSlider(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlInd
                 data->callback(data->value);
             }
         } else if (IsKeyJustPressed(SDL_SCANCODE_RIGHT)) {
+            ConsumeKey(SDL_SCANCODE_RIGHT);
             data->value += data->step;
             if (data->value > data->max) {
                 data->value = data->max;

@@ -120,8 +120,6 @@ inline void DrawTextureMod(Vector2 pos, Vector2 size, const unsigned char* image
 
 inline void DrawTextureRegion(Vector2 pos, Vector2 size, const unsigned char* imageData, Vector2 region_start, Vector2 region_end) {
     GL_DrawTextureRegion(pos, size, imageData, region_start, region_end);
-
-
 }
 
 inline void DrawTextureRegionMod(Vector2 pos, Vector2 size, const unsigned char* imageData, Vector2 region_start, Vector2 region_end, uint color) {

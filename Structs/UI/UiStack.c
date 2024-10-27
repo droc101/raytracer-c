@@ -8,20 +8,28 @@
 
 #include "Controls/Button.h"
 #include "Controls/Slider.h"
+#include "Controls/Checkbox.h"
+#include "Controls/RadioButton.h"
 
 void (*ControlDestroyFuncs[4])(Control *) = {
         DestroyButton, // BUTTON
         DestroySlider, // SLIDER
+        DestroyCheckbox, // CHECKBOX
+        DestroyRadioButton, // RADIO_BUTTON
 };
 
 void (*ControlDrawFuncs[4])(Control *, ControlState state, Vector2 position) = {
         DrawButton, // BUTTON
         DrawSlider, // SLIDER
+        DrawCheckbox, // CHECKBOX
+        DrawRadioButton, // RADIO_BUTTON
 };
 
 void (*ControlUpdateFuncs[4])(UiStack *stack, Control *, Vector2 localMousePos, uint ctlIndex) = {
         UpdateButton, // BUTTON
         UpdateSlider, // SLIDER
+        UpdateCheckbox, // CHECKBOX
+        UpdateRadioButton, // RADIO_BUTTON
 };
 
 UiStack *CreateUiStack() {
@@ -48,11 +56,15 @@ void ProcessUiStack(UiStack *stack) {
 
     Vector2 mousePos = GetMousePos();
 
-    // iterate through the controls in reverse order so that the last control is on top and gets priority
     for (int i = stack->Controls->size - 1; i >= 0; i--) {
         Control *c = (Control *) ListGet(stack->Controls, i);
 
         c->anchoredPosition = CalculateControlPosition(c);
+    }
+
+    // iterate through the controls in reverse order so that the last control is on top and gets priority
+    for (int i = stack->Controls->size - 1; i >= 0; i--) {
+        Control *c = (Control *) ListGet(stack->Controls, i);
 
         Vector2 localMousePos = v2(mousePos.x - c->anchoredPosition.x, mousePos.y - c->anchoredPosition.y);
         if (localMousePos.x >= 0 && localMousePos.x <= c->size.x && localMousePos.y >= 0 && localMousePos.y <= c->size.y) {
@@ -68,14 +80,12 @@ void ProcessUiStack(UiStack *stack) {
         }
     }
 
-    if (stack->ActiveControl != -1) {
-        Control *c = (Control *) ListGet(stack->Controls, stack->ActiveControl);
-        ControlUpdateFuncs[c->type](stack, c, v2(mousePos.x - c->position.x, mousePos.y - c->position.y), stack->ActiveControl);
-    }
-
     if (stack->focusedControl != -1) {
         Control *c = (Control *) ListGet(stack->Controls, stack->focusedControl);
         ControlUpdateFuncs[c->type](stack, c, v2(mousePos.x - c->position.x, mousePos.y - c->position.y), stack->focusedControl);
+    } else if (stack->ActiveControl != -1) {
+        Control *c = (Control *) ListGet(stack->Controls, stack->ActiveControl);
+        ControlUpdateFuncs[c->type](stack, c, v2(mousePos.x - c->position.x, mousePos.y - c->position.y), stack->ActiveControl);
     }
 
     // process tab and shift+tab to cycle through controls
