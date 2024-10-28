@@ -52,6 +52,11 @@ void RbOptionsRenderer(bool value, byte groupId, byte id) {
     // Renderer change will happen on next restart
 }
 
+void CbOptionsVsync(bool value) {
+    GetState()->options.vsync = value;
+    // VSync change will happen on next restart
+}
+
 void GOptionsStateUpdate(GlobalState * State) {
 
 }
@@ -82,6 +87,7 @@ void GOptionsStateSet() {
         UiStackPush(optionsStack, CreateRadioButtonControl(v2(0, 140), v2(480, 40), "OpenGL", RbOptionsRenderer, TOP_CENTER, GetState()->options.renderer == RENDERER_OPENGL, 0, RENDERER_OPENGL));
         UiStackPush(optionsStack, CreateRadioButtonControl(v2(0, 165), v2(480, 40), "Vulkan //todo", RbOptionsRenderer, TOP_CENTER, GetState()->options.renderer == RENDERER_VULKAN, 0, RENDERER_VULKAN));
         UiStackPush(optionsStack, CreateSliderControl(v2(0, 190), v2(480, 40), "UI Scale //todo", SldOptionsUiScale, TOP_CENTER, 1.0, 4.0, GetState()->options.uiScale, 1.0, 1.0));
+        UiStackPush(optionsStack, CreateCheckboxControl(v2(0, 215), v2(480, 40), "VSync", CbOptionsVsync, TOP_CENTER, GetState()->options.vsync));
 
         UiStackPush(optionsStack, CreateButtonControl(v2(0, -40), v2(480, 40), "Done", BtnOptionsBack, BOTTOM_CENTER));
     }

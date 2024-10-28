@@ -12,6 +12,7 @@ void DefaultOptions(Options *options) {
     options->masterVolume = 1.0;
     options->uiScale = 1;
     options->fullscreen = false;
+    options->vsync = false;
 }
 
 char *GetOptionsPath() {

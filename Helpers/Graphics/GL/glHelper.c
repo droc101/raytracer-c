@@ -9,6 +9,7 @@
 #include "../../../Structs/Vector2.h"
 #include "../../LevelLoader.h"
 #include "cglm/cglm.h"
+#include "../../../Structs/GlobalState.h"
 
 SDL_GLContext ctx;
 
@@ -40,7 +41,7 @@ void GL_Init() {
 
     ctx = SDL_GL_CreateContext(GetWindow());
 
-    SDL_GL_SetSwapInterval(VSYNC_ENABLE);
+    SDL_GL_SetSwapInterval(GetState()->options.vsync ? 1 : 0);
 
     GLenum err;
     glewExperimental = GL_TRUE; // Please expose OpenGL 3.x+ interfaces
@@ -278,6 +279,9 @@ GLuint GL_LoadTexture(const unsigned char *imageData) {
     glActiveTexture(GL_TEXTURE0 + id);
     glBindTexture(GL_TEXTURE_2D, textures[id]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixelData);
+
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, -1.5f);
+
     glGenerateMipmap(GL_TEXTURE_2D);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);

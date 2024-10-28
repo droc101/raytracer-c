@@ -118,7 +118,8 @@ typedef struct Options {
     double masterVolume;
     int uiScale;
     bool fullscreen;
-} Options;
+    bool vsync;
+} __attribute__((packed)) Options; // This is packed because it is saved to disk
 
 // Global state of the game
 typedef struct GlobalState {

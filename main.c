@@ -1,4 +1,3 @@
-
 #include <SDL.h>
 #include <SDL_mixer.h>
 #include <stdio.h>
@@ -21,6 +20,7 @@ int main(int argc, char *argv[]) {
 
     printf("Build time: %s at %s\n", __DATE__, __TIME__);
     printf("Version: %s\n", VERSION);
+    printf("Initializing Engine\n");
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER) != 0) {
         printf("SDL_Init Error: %s\n", SDL_GetError());
@@ -58,7 +58,6 @@ int main(int argc, char *argv[]) {
 
     SetSignalHandler(); // catch exceptions in release mode
 
-    printf("Initializing Engine\n");
     InitCommonAssets();
 
 
@@ -67,6 +66,8 @@ int main(int argc, char *argv[]) {
     GLogoSplashStateSet();
 
     InitTimers();
+
+    printf("Engine initialized, entering mainloop\n");
 
     SDL_Event e;
     bool quit = false;
@@ -130,7 +131,7 @@ int main(int argc, char *argv[]) {
         FrameGraphUpdate(GetTimeNs() - frameStart);
 
     }
-    printf("Destructing Engine\n");
+    printf("Mainloop exited, cleaning up engine...1\n");
     DestroyGlobalState();
     SDL_DestroyWindow(GetWindow());
     SDL_FreeSurface(icon);
