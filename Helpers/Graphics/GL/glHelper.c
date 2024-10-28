@@ -292,8 +292,6 @@ GLuint GL_LoadTextureFromAsset(const unsigned char *imageData) {
 
     GL_AssetTextureMap[id] = slot;
 
-    printf("Registered asset %d to slot %d\n", id, slot);
-
     return GL_AssetTextureMap[id];
 }
 
