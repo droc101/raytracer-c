@@ -10,7 +10,7 @@
 #if !defined NDEBUG || defined ERROR_TRACE_IN_RELEASE
 #define Error(error) Error_Internal(error, __FILE_NAME__, __LINE__, __func__)
 #else
-#define Error(error) _Error_Internal(error, "none", 0, "none")
+#define Error(error) Error_Internal(error, "none", 0, "none")
 #endif
 
 /**
