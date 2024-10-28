@@ -131,7 +131,7 @@ int main(int argc, char *argv[]) {
         FrameGraphUpdate(GetTimeNs() - frameStart);
 
     }
-    printf("Mainloop exited, cleaning up engine...1\n");
+    printf("Mainloop exited, cleaning up engine...\n");
     DestroyGlobalState();
     SDL_DestroyWindow(GetWindow());
     SDL_FreeSurface(icon);

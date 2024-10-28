@@ -189,7 +189,6 @@ void PlaySoundEffect(byte *asset) {
     }
     printf("PlaySoundEffect Error: No available channels.\n");
     Mix_FreeChunk(chunk);
-
 }
 
 void DestroyGlobalState() {
