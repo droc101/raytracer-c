@@ -45,8 +45,8 @@ void InitState() {
 void UpdateVolume() {
     double sfxVol = state.options.sfxVolume;
     double musicVol = state.options.musicVolume;
-    sfxVol *= state.options.masterVolume;
-    musicVol *= state.options.masterVolume;
+    double masterVol = state.options.masterVolume;
+    Mix_MasterVolume((int) (masterVol * MIX_MAX_VOLUME));
     Mix_Volume(-1, (int) (sfxVol * MIX_MAX_VOLUME));
     Mix_VolumeMusic((int) (musicVol * MIX_MAX_VOLUME));
 }

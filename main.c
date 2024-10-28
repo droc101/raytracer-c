@@ -39,7 +39,8 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    SDL_Window *w = SDL_CreateWindow(GAME_TITLE,SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,DEF_WIDTH, DEF_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+    Uint32 rendererFlags = GetState()->options.renderer == RENDERER_OPENGL ? SDL_WINDOW_OPENGL : SDL_WINDOW_VULKAN;
+    SDL_Window *w = SDL_CreateWindow(GAME_TITLE,SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,DEF_WIDTH, DEF_HEIGHT, rendererFlags | SDL_WINDOW_RESIZABLE);
     if (w == NULL) {
         printf("SDL_CreateWindow Error: %s\n", SDL_GetError());
         SDL_Quit();
@@ -137,6 +138,9 @@ int main(int argc, char *argv[]) {
     SDL_FreeSurface(icon);
     InvalidateAssetCache(); // Free all assets
     RenderDestroy();
+    Mix_CloseAudio();
+    Mix_Quit();
+    SDL_QuitSubSystem(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_TIMER);
     SDL_Quit();
     return 0;
 }
