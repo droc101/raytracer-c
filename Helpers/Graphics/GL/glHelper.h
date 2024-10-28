@@ -55,6 +55,9 @@ GL_Buffer *GL_ConstructBuffer();
  */
 void GL_ClearScreen();
 
+GLuint GL_LoadTextureFromAsset(const unsigned char *imageData);
+int GL_RegisterTexture(const unsigned char *pixelData, int width, int height);
+
 /**
  * Clear only the depth buffer
  */

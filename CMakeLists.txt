@@ -14,6 +14,15 @@ if (WIN32)
     set(CMAKE_AUTO_RCC ON)
 endif ()
 
+# Enable LTO in release builds
+if (CMAKE_BUILD_TYPE STREQUAL "Release")
+    include(CheckIPOSupported)
+    check_ipo_supported(RESULT result)
+    if (result)
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+    endif ()
+endif ()
+
 add_executable(
         game
         main.c

@@ -22,7 +22,15 @@ GL_Shader *shadow;
 GL_Buffer *ui_buffer;
 GL_Buffer *wall_buffer;
 
-GLuint textures[ASSET_COUNT];
+#define MAX_TEXTURES 256
+
+#if MAX_TEXTURES < ASSET_COUNT
+#error MAX_TEXTURES must be greater than or equal to ASSET_COUNT
+#endif
+
+GLuint GL_Textures[MAX_TEXTURES];
+int GL_NextFreeSlot = 0;
+int GL_AssetTextureMap[ASSET_COUNT];
 
 void GL_PreInit() {
     SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
@@ -33,6 +41,9 @@ void GL_PreInit() {
             SDL_GL_CONTEXT_PROFILE_MASK,
             SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
+    memset(GL_AssetTextureMap, 0, sizeof(GL_AssetTextureMap));
+    memset(GL_Textures, 0, sizeof(GL_Textures));
 }
 
 void GL_Init() {
@@ -251,7 +262,7 @@ void GL_DrawRect(Vector2 pos, Vector2 size, uint color) {
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 }
 
-GLuint GL_LoadTexture(const unsigned char *imageData) {
+GLuint GL_LoadTextureFromAsset(const unsigned char *imageData) {
     if (AssetGetType(imageData) != ASSET_TYPE_TEXTURE) {
         printf("Asset is not a texture\n");
         Error("Asset is not a texture");
@@ -269,15 +280,30 @@ GLuint GL_LoadTexture(const unsigned char *imageData) {
     }
 
     // if the texture is already loaded, don't load it again
-    if (textures[id] != 0) {
-        return id;
+    if (GL_AssetTextureMap[id] != 0) {
+        if (glIsTexture(GL_Textures[GL_AssetTextureMap[id]])) {
+            return GL_AssetTextureMap[id];
+        }
     }
 
     const byte *pixelData = Decompressed + (sizeof(uint) * 4);
 
-    glGenTextures(1, &textures[id]);
-    glActiveTexture(GL_TEXTURE0 + id);
-    glBindTexture(GL_TEXTURE_2D, textures[id]);
+    int slot = GL_RegisterTexture(pixelData, width, height);
+
+    GL_AssetTextureMap[id] = slot;
+
+    printf("Registered asset %d to slot %d\n", id, slot);
+
+    return GL_AssetTextureMap[id];
+}
+
+int GL_RegisterTexture(const unsigned char *pixelData, int width, int height) {
+
+    int slot = GL_NextFreeSlot;
+
+    glGenTextures(1, &GL_Textures[slot]);
+    glActiveTexture(GL_TEXTURE0 + slot);
+    glBindTexture(GL_TEXTURE_2D, GL_Textures[slot]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixelData);
 
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, -1.5f);
@@ -292,16 +318,18 @@ GLuint GL_LoadTexture(const unsigned char *imageData) {
 
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV, pixelData);
 
-    return id;
+    GL_NextFreeSlot++;
+
+    return slot;
 }
 
 void GL_SetTexParams(const unsigned char *imageData, bool linear, bool repeat) {
-    GL_LoadTexture(imageData); // make sure the texture is loaded
+    GL_LoadTextureFromAsset(imageData); // make sure the texture is loaded
 
     byte *Decompressed = DecompressAsset(imageData);
 
     uint id = ReadUintA(Decompressed, 12);
-    glBindTexture(GL_TEXTURE_2D, textures[id]);
+    glBindTexture(GL_TEXTURE_2D, GL_Textures[GL_AssetTextureMap[id]]);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, repeat ? GL_REPEAT : GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, repeat ? GL_REPEAT : GL_CLAMP_TO_EDGE);
@@ -313,7 +341,7 @@ void GL_SetTexParams(const unsigned char *imageData, bool linear, bool repeat) {
 void GL_DrawTexture_Internal(Vector2 pos, Vector2 size, const unsigned char *imageData, uint color, Vector2 region_start, Vector2 region_end) {
     glUseProgram(ui_textured->program);
 
-    GLuint tex = GL_LoadTexture(imageData);
+    GLuint tex = GL_LoadTextureFromAsset(imageData);
 
     float a = ((color >> 24) & 0xFF) / 255.0f;
     float r = ((color >> 16) & 0xFF) / 255.0f;
@@ -421,7 +449,7 @@ void GL_DrawLine(Vector2 start, Vector2 end, uint color) {
 void GL_DrawWall(Wall *w, mat4 *mvp, mat4 *mdl, Camera *cam, Level *l) {
     glUseProgram(wall_generic->program);
 
-    GLuint tex = GL_LoadTexture(w->tex);
+    GLuint tex = GL_LoadTextureFromAsset(w->tex);
 
     glUniform1i(glGetUniformLocation(wall_generic->program, "alb"), tex);
 
@@ -481,7 +509,7 @@ void GL_DrawWall(Wall *w, mat4 *mvp, mat4 *mdl, Camera *cam, Level *l) {
 void GL_DrawFloor(Vector2 vp1, Vector2 vp2, mat4 *mvp, Level *l, const unsigned char *texture, float height, float shade) {
     glUseProgram(floor_generic->program);
 
-    GLuint tex = GL_LoadTexture(texture);
+    GLuint tex = GL_LoadTextureFromAsset(texture);
 
     glUniform1i(glGetUniformLocation(floor_generic->program, "alb"), tex);
 
@@ -530,7 +558,7 @@ void GL_DrawFloor(Vector2 vp1, Vector2 vp2, mat4 *mvp, Level *l, const unsigned 
 void GL_DrawShadow(Vector2 vp1, Vector2 vp2, mat4 *mvp, mat4 *mdl, Level *l) {
     glUseProgram(shadow->program);
 
-    GLuint tex = GL_LoadTexture(gztex_vfx_shadow);
+    GLuint tex = GL_LoadTextureFromAsset(gztex_vfx_shadow);
 
     glUniform1i(glGetUniformLocation(shadow->program, "alb"), tex);
 
@@ -618,7 +646,7 @@ void GL_DrawColoredArrays(float *vertices, uint *indices, int quad_count, uint c
 void GL_DrawTexturedArrays(float *vertices, uint *indices, int quad_count, const unsigned char *imageData, uint color) {
     glUseProgram(ui_textured->program);
 
-    GLuint tex = GL_LoadTexture(imageData);
+    GLuint tex = GL_LoadTextureFromAsset(imageData);
 
     float a = ((color >> 24) & 0xFF) / 255.0f;
     float r = ((color >> 16) & 0xFF) / 255.0f;
