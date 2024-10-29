@@ -19,7 +19,7 @@ void SetWindow(SDL_Window *w) {
     window = w;
 }
 
-SDL_Window *GetWindow() {
+inline SDL_Window *GetWindow() {
     return window;
 }
 
@@ -115,7 +115,6 @@ inline void DrawTexture(Vector2 pos, Vector2 size, const unsigned char* imageDat
 }
 inline void DrawTextureMod(Vector2 pos, Vector2 size, const unsigned char* imageData, uint color) {
     GL_DrawTextureMod(pos, size, imageData, color);
-
 }
 
 inline void DrawTextureRegion(Vector2 pos, Vector2 size, const unsigned char* imageData, Vector2 region_start, Vector2 region_end) {

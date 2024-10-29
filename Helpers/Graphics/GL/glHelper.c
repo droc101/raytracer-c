@@ -173,7 +173,7 @@ void GL_DestroyBuffer(GL_Buffer *buf) {
     free(buf);
 }
 
-void GL_ClearScreen() {
+inline void GL_ClearScreen() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
@@ -188,11 +188,11 @@ void GL_ClearColor(uint color) {
     GL_ClearScreen();
 }
 
-void GL_ClearDepthOnly() {
+inline void GL_ClearDepthOnly() {
     glClear(GL_DEPTH_BUFFER_BIT);
 }
 
-void GL_Swap() {
+inline void GL_Swap() {
     SDL_GL_SwapWindow(GetWindow());
 }
 
@@ -209,11 +209,11 @@ void GL_DestroyGL() {
     SDL_GL_DeleteContext(ctx);
 }
 
-float GL_X_TO_NDC(float x) {
+inline float GL_X_TO_NDC(float x) {
     return (x / WindowWidth()) * 2.0f - 1.0f;
 }
 
-float GL_Y_TO_NDC(float y) {
+inline float GL_Y_TO_NDC(float y) {
     return 1.0f - (y / WindowHeight()) * 2.0f;
 }
 
@@ -388,20 +388,20 @@ void GL_DrawTexture_Internal(Vector2 pos, Vector2 size, const unsigned char *ima
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 }
 
-void GL_DrawTexture(Vector2 pos, Vector2 size, const unsigned char *imageData) {
+inline void GL_DrawTexture(Vector2 pos, Vector2 size, const unsigned char *imageData) {
     GL_DrawTexture_Internal(pos, size, imageData, 0xFFFFFFFF, v2(-1, 0), v2s(0));
 }
 
-void GL_DrawTextureMod(Vector2 pos, Vector2 size, const unsigned char *imageData, uint color) {
+inline void GL_DrawTextureMod(Vector2 pos, Vector2 size, const unsigned char *imageData, uint color) {
     GL_DrawTexture_Internal(pos, size, imageData, color, v2(-1, 0), v2s(0));
 }
 
-void GL_DrawTextureRegion(Vector2 pos, Vector2 size, const unsigned char *imageData, Vector2 region_start,
+inline void GL_DrawTextureRegion(Vector2 pos, Vector2 size, const unsigned char *imageData, Vector2 region_start,
                           Vector2 region_end) {
     GL_DrawTexture_Internal(pos, size, imageData, 0xFFFFFFFF, region_start, region_end);
 }
 
-void GL_DrawTextureRegionMod(Vector2 pos, Vector2 size, const unsigned char *imageData, Vector2 region_start,
+inline void GL_DrawTextureRegionMod(Vector2 pos, Vector2 size, const unsigned char *imageData, Vector2 region_start,
                              Vector2 region_end, uint color) {
     GL_DrawTexture_Internal(pos, size, imageData, color, region_start, region_end);
 }
@@ -600,19 +600,19 @@ void GL_DrawShadow(Vector2 vp1, Vector2 vp2, mat4 *mvp, mat4 *mdl, Level *l) {
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 }
 
-void GL_Enable3D() {
+inline void GL_Enable3D() {
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_MULTISAMPLE);
     glClear(GL_DEPTH_BUFFER_BIT);
 }
 
-void GL_Disable3D() {
+inline void GL_Disable3D() {
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_MULTISAMPLE);
     glClear(GL_DEPTH_BUFFER_BIT);
 }
 
-void GL_UpdateViewportSize() {
+inline void GL_UpdateViewportSize() {
     glViewport(0, 0, WindowWidth(), WindowHeight());
 }
 

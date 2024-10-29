@@ -50,7 +50,6 @@ mat4 *ActorTransformMatrix(Actor *Actor) {
 
 void RenderPreInit() {
     GL_PreInit();
-
 }
 
 void RenderInit() {
@@ -106,22 +105,22 @@ void RenderLevel3D(Level *l, Camera *cam) {
     GL_Disable3D();
 }
 
-void UpdateViewportSize() {
+inline void UpdateViewportSize() {
     GL_UpdateViewportSize();
 }
 
-void DrawBatchedQuadsTextured(BatchedQuadArray *batch, const unsigned char *imageData, uint color) {
+inline void DrawBatchedQuadsTextured(BatchedQuadArray *batch, const unsigned char *imageData, uint color) {
     GL_DrawTexturedArrays(batch->verts, batch->indices, batch->quad_count, imageData, color);
 }
 
-void DrawBatchedQuadsColored(BatchedQuadArray *batch, uint color) {
+inline void DrawBatchedQuadsColored(BatchedQuadArray *batch, uint color) {
     GL_DrawColoredArrays(batch->verts, batch->indices, batch->quad_count, color);
 }
 
-float X_TO_NDC(float x) {
+inline float X_TO_NDC(float x) {
     return GL_X_TO_NDC(x);
 }
 
-float Y_TO_NDC(float y) {
+inline float Y_TO_NDC(float y) {
     return GL_Y_TO_NDC(y);
 }
