@@ -4,6 +4,7 @@
 
 #include "Input.h"
 #include "../../Structs/Vector2.h"
+#include "../../Structs/GlobalState.h"
 
 // every key is tracked, even if it's not used
 // this *could* be optimized, but it's not necessary
@@ -83,7 +84,7 @@ bool IsMouseButtonJustReleased(int button) {
 }
 
 Vector2 GetMousePos() {
-    return v2(mouseX, mouseY);
+    return Vector2Scale(v2(mouseX, mouseY), 1.0 / GetState()->options.uiScale);
 }
 
 Vector2 GetMouseRel() {

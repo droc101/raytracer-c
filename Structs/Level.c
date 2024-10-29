@@ -86,11 +86,13 @@ void RenderLevelSky(Camera *cam) {
 
     double camRot = cam->yaw;
 
-    const int skyPos = (int)(camRot * 128 / PI) % 256;
-    const int height = WindowHeight() / 2;
-    const int offset = (int)(WindowWidth() * (1 - skyPos / 256.0));
+    Vector2 wndSize = ActualWindowSize();
 
-    DrawTextureRegionMod(v2(offset, 0), v2(WindowWidth() * skyPos / 256, height), gztex_level_sky, v2(0, 0),
+    const int skyPos = (int)(camRot * 128 / PI) % 256;
+    const int height = wndSize.y / 2;
+    const int offset = (int)(wndSize.x * (1 - skyPos / 256.0));
+
+    DrawTextureRegionMod(v2(offset, 0), v2(wndSize.x * skyPos / 256, height), gztex_level_sky, v2(0, 0),
                          v2(skyPos, 128), l->SkyColor);
     DrawTextureRegionMod(v2(0, 0), v2(offset, height), gztex_level_sky, v2(skyPos, 0), v2(256 - skyPos, 128), l->SkyColor);
 }

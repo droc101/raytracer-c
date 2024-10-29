@@ -613,7 +613,8 @@ inline void GL_Disable3D() {
 }
 
 inline void GL_UpdateViewportSize() {
-    glViewport(0, 0, WindowWidth(), WindowHeight());
+    Vector2 actualWinSize = ActualWindowSize();
+    glViewport(0, 0, actualWinSize.x, actualWinSize.y);
 }
 
 void GL_DrawColoredArrays(float *vertices, uint *indices, int quad_count, uint color) {

@@ -33,6 +33,12 @@ int WindowWidth();
 int WindowHeight();
 
 /**
+ * Get the actual size of the window, ignoring UI scale
+ * @return The actual size of the window
+ */
+Vector2 ActualWindowSize();
+
+/**
  * Draw a solid color rectangle
  * @param x X position
  * @param y Y position

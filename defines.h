@@ -116,7 +116,7 @@ typedef struct Options {
     double musicVolume;
     double sfxVolume;
     double masterVolume;
-    int uiScale;
+    double uiScale;
     bool fullscreen;
     bool vsync;
 } __attribute__((packed)) Options; // This is packed because it is saved to disk

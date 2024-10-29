@@ -10,6 +10,7 @@
 #include "../../Assets/AssetReader.h"
 #include "../LevelLoader.h" // for ReadUInt
 #include "GL/glHelper.h"
+#include "../../Structs/GlobalState.h"
 
 SDL_Window *window;
 
@@ -26,13 +27,21 @@ inline SDL_Window *GetWindow() {
 inline int WindowWidth() {
     int w, h;
     SDL_GetWindowSize(window, &w, &h);
+    w /= GetState()->options.uiScale;
     return w;
 }
 
 inline int WindowHeight() {
     int w, h;
     SDL_GetWindowSize(window, &w, &h);
+    h /= GetState()->options.uiScale;
     return h;
+}
+
+inline Vector2 ActualWindowSize() {
+    int w, h;
+    SDL_GetWindowSize(window, &w, &h);
+    return v2(w, h);
 }
 
 // Set the SDL color from an ARGB uint32
