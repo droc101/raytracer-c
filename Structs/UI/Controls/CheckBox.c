@@ -33,7 +33,7 @@ void DestroyCheckbox(Control *c) {
 void UpdateCheckbox(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlIndex) {
     CheckBoxData *data = (CheckBoxData *) c->ControlData;
 
-    if ((IsMouseButtonJustReleased(SDL_BUTTON_LEFT) && IsMouseInRect(c->anchoredPosition, c->size)) || IsKeyJustPressed(SDL_SCANCODE_SPACE)) {
+    if (HasActivation(stack, c)) {
         PlaySoundEffect(gzwav_sfx_click);
         data->checked = !data->checked;
 

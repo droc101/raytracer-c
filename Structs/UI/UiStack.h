@@ -107,4 +107,6 @@ void UiStackPush(UiStack *stack, Control *control);
  */
 bool IsMouseInRect(Vector2 pos, Vector2 size);
 
+bool HasActivation(UiStack *stack, Control *Control);
+
 #endif //GAME_UISTACK_H

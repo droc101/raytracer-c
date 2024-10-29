@@ -51,10 +51,20 @@ void DestroyUiStack(UiStack *stack) {
 }
 
 void ProcessUiStack(UiStack *stack) {
+    Vector2 mousePos = GetMousePos();
+
+    if (stack->focusedControl != -1) {
+        Control *c = (Control *) ListGet(stack->Controls, stack->focusedControl);
+        ControlUpdateFuncs[c->type](stack, c, v2(mousePos.x - c->position.x, mousePos.y - c->position.y), stack->focusedControl);
+    } else if (stack->ActiveControl != -1) {
+        Control *c = (Control *) ListGet(stack->Controls, stack->ActiveControl);
+        ControlUpdateFuncs[c->type](stack, c, v2(mousePos.x - c->position.x, mousePos.y - c->position.y), stack->ActiveControl);
+    }
+
     stack->ActiveControl = -1;
     stack->ActiveControlState = NORMAL;
 
-    Vector2 mousePos = GetMousePos();
+
 
     for (int i = stack->Controls->size - 1; i >= 0; i--) {
         Control *c = (Control *) ListGet(stack->Controls, i);
@@ -78,14 +88,6 @@ void ProcessUiStack(UiStack *stack) {
             }
             break;
         }
-    }
-
-    if (stack->focusedControl != -1) {
-        Control *c = (Control *) ListGet(stack->Controls, stack->focusedControl);
-        ControlUpdateFuncs[c->type](stack, c, v2(mousePos.x - c->position.x, mousePos.y - c->position.y), stack->focusedControl);
-    } else if (stack->ActiveControl != -1) {
-        Control *c = (Control *) ListGet(stack->Controls, stack->ActiveControl);
-        ControlUpdateFuncs[c->type](stack, c, v2(mousePos.x - c->position.x, mousePos.y - c->position.y), stack->ActiveControl);
     }
 
     // process tab and shift+tab to cycle through controls
@@ -169,4 +171,26 @@ void UiStackPush(UiStack *stack, Control *control) {
 bool IsMouseInRect(Vector2 pos, Vector2 size) {
     Vector2 mousePos = GetMousePos();
     return mousePos.x >= pos.x && mousePos.x <= pos.x + size.x && mousePos.y >= pos.y && mousePos.y <= pos.y + size.y;
+}
+
+bool HasMouseActivation(UiStack *stack, Control *Control) {
+    return IsMouseInRect(Control->anchoredPosition, Control->size) &&
+            IsMouseButtonJustReleased(SDL_BUTTON_LEFT);
+
+}
+
+bool HasKeyboardActivation(UiStack *stack, Control *Control) {
+    return (IsKeyJustPressed(SDL_SCANCODE_RETURN) || IsKeyJustPressed(SDL_SCANCODE_SPACE));
+}
+
+bool HasActivation(UiStack *stack, Control *Control) {
+    int index = ListFind(stack->Controls, Control);
+    bool focus = false;
+    if (index == stack->ActiveControl) {
+        focus |= HasMouseActivation(stack, Control);
+    }
+    if (index == stack->focusedControl) {
+        focus |= HasKeyboardActivation(stack, Control);
+    }
+    return focus;
 }

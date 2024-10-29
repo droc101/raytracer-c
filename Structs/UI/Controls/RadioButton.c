@@ -35,7 +35,7 @@ void DestroyRadioButton(Control *c) {
 void UpdateRadioButton(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlIndex) {
     RadioButtonData *data = (RadioButtonData *) c->ControlData;
 
-    if ((IsMouseButtonJustReleased(SDL_BUTTON_LEFT) && IsMouseInRect(c->anchoredPosition, c->size)) || IsKeyJustPressed(SDL_SCANCODE_SPACE)) {
+    if (HasActivation(stack, c)) {
         if (data->checked) {
             return; // do not allow re-checking
         }
