@@ -55,7 +55,20 @@ GL_Buffer *GL_ConstructBuffer();
  */
 void GL_ClearScreen();
 
+/**
+ * Load and register a texture from an asset
+ * @param imageData The asset data (not decompressed)
+ * @return The slot the texture was registered in
+ */
 GLuint GL_LoadTextureFromAsset(const unsigned char *imageData);
+
+/**
+ * Register a texture from pixel data
+ * @param pixelData The raw RGBA8 pixel data
+ * @param width The width of the texture
+ * @param height The height of the texture
+ * @return The slot the texture was registered in
+ */
 int GL_RegisterTexture(const unsigned char *pixelData, int width, int height);
 
 /**

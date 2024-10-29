@@ -86,6 +86,11 @@ void SetTexParams(const unsigned char* imageData, bool linear, bool repeat);
  */
 void DrawLine(Vector2 start, Vector2 end);
 
+/**
+ * Draw a 1px outline of a rectangle
+ * @param pos The position
+ * @param size The size
+ */
 void DrawOutlineRect(Vector2 pos, Vector2 size);
 
 /**
