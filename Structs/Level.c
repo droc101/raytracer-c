@@ -86,7 +86,7 @@ void RenderLevelSky(Camera *cam) {
 
     double camRot = cam->yaw;
 
-    Vector2 wndSize = ActualWindowSize();
+    Vector2 wndSize = v2(WindowWidth(), WindowHeight());
 
     const int skyPos = (int)(camRot * 128 / PI) % 256;
     const int height = wndSize.y / 2;

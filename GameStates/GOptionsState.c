@@ -42,11 +42,6 @@ void CbOptionsFullscreen(bool value) {
     SDL_SetWindowFullscreen(GetWindow(), value ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
 }
 
-void SldOptionsUiScale(double value) {
-    GetState()->options.uiScale = value;
-    // TODO: implement UI scaling
-}
-
 void RbOptionsRenderer(bool value, byte groupId, byte id) {
     GetState()->options.renderer = id;
     // Renderer change will happen on next restart
@@ -86,8 +81,7 @@ void GOptionsStateSet() {
         UiStackPush(optionsStack, CreateCheckboxControl(v2(0, 115), v2(480, 40), "Fullscreen", CbOptionsFullscreen, TOP_CENTER, GetState()->options.fullscreen));
         UiStackPush(optionsStack, CreateRadioButtonControl(v2(0, 140), v2(480, 40), "OpenGL", RbOptionsRenderer, TOP_CENTER, GetState()->options.renderer == RENDERER_OPENGL, 0, RENDERER_OPENGL));
         UiStackPush(optionsStack, CreateRadioButtonControl(v2(0, 165), v2(480, 40), "Vulkan //todo", RbOptionsRenderer, TOP_CENTER, GetState()->options.renderer == RENDERER_VULKAN, 0, RENDERER_VULKAN));
-        UiStackPush(optionsStack, CreateSliderControl(v2(0, 190), v2(480, 40), "UI Scale", SldOptionsUiScale, TOP_CENTER, 1.0, 2.0, GetState()->options.uiScale, 0.25, 1.0));
-        UiStackPush(optionsStack, CreateCheckboxControl(v2(0, 215), v2(480, 40), "VSync", CbOptionsVsync, TOP_CENTER, GetState()->options.vsync));
+        UiStackPush(optionsStack, CreateCheckboxControl(v2(0, 190), v2(480, 40), "VSync", CbOptionsVsync, TOP_CENTER, GetState()->options.vsync));
 
         UiStackPush(optionsStack, CreateButtonControl(v2(0, -40), v2(480, 40), "Done", BtnOptionsBack, BOTTOM_CENTER));
     }

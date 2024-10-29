@@ -7,6 +7,7 @@
 #include "../../Structs/Wall.h"
 #include "../../Structs/Vector2.h"
 #include "../CommonAssets.h"
+#include "../../Structs/GlobalState.h"
 
 mat4 *GetMatrix(Camera *cam) {
     vec3 cam_pos = {cam->x, cam->y, cam->z};
@@ -106,6 +107,8 @@ void RenderLevel3D(Level *l, Camera *cam) {
 }
 
 inline void UpdateViewportSize() {
+    float newScale = (float)ActualWindowSize().x / (float)DEF_WIDTH;
+    GetState()->options.uiScale = newScale;
     GL_UpdateViewportSize();
 }
 

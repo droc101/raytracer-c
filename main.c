@@ -48,6 +48,7 @@ int main(int argc, char *argv[]) {
     }
     SDL_SetWindowFullscreen(w, GetState()->options.fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
     SetWindow(w);
+    UpdateViewportSize();
 
     RenderInit();
 
@@ -92,6 +93,7 @@ int main(int argc, char *argv[]) {
                 HandleMouseUp(e.button.button);
             } else if (e.type == SDL_WINDOWEVENT) {
                 if (e.window.event == SDL_WINDOWEVENT_RESIZED) {
+
                     UpdateViewportSize();
                 }
             }
