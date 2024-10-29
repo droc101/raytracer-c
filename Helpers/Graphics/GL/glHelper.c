@@ -22,7 +22,7 @@ GL_Shader *shadow;
 GL_Buffer *ui_buffer;
 GL_Buffer *wall_buffer;
 
-#define MAX_TEXTURES 256
+#define MAX_TEXTURES 64
 
 #if MAX_TEXTURES < ASSET_COUNT
 #error MAX_TEXTURES must be greater than or equal to ASSET_COUNT
@@ -42,7 +42,7 @@ void GL_PreInit() {
             SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-    memset(GL_AssetTextureMap, 0, sizeof(GL_AssetTextureMap));
+    memset(GL_AssetTextureMap, -1, sizeof(GL_AssetTextureMap));
     memset(GL_Textures, 0, sizeof(GL_Textures));
 }
 
@@ -147,10 +147,6 @@ GL_Shader *GL_ConstructShader(char *fsh, char *vsh) {
     }
 
     return shd;
-}
-
-void GL_UseShader(GL_Shader *shd) {
-    glUseProgram(shd->program);
 }
 
 void GL_DestroyShader(GL_Shader *shd) {
@@ -280,7 +276,7 @@ GLuint GL_LoadTextureFromAsset(const unsigned char *imageData) {
     }
 
     // if the texture is already loaded, don't load it again
-    if (GL_AssetTextureMap[id] != 0) {
+    if (GL_AssetTextureMap[id] != -1) {
         if (glIsTexture(GL_Textures[GL_AssetTextureMap[id]])) {
             return GL_AssetTextureMap[id];
         }
@@ -290,9 +286,11 @@ GLuint GL_LoadTextureFromAsset(const unsigned char *imageData) {
 
     int slot = GL_RegisterTexture(pixelData, width, height);
 
+    //printf("Registered asset %d to slot %d\n", id, slot);
+
     GL_AssetTextureMap[id] = slot;
 
-    return GL_AssetTextureMap[id];
+    return slot;
 }
 
 int GL_RegisterTexture(const unsigned char *pixelData, int width, int height) {
@@ -327,8 +325,10 @@ void GL_SetTexParams(const unsigned char *imageData, bool linear, bool repeat) {
     byte *Decompressed = DecompressAsset(imageData);
 
     uint id = ReadUintA(Decompressed, 12);
-    glBindTexture(GL_TEXTURE_2D, GL_Textures[GL_AssetTextureMap[id]]);
 
+    GLuint tex = GL_Textures[GL_AssetTextureMap[id]];
+
+    glBindTexture(GL_TEXTURE_2D, tex);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, repeat ? GL_REPEAT : GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, repeat ? GL_REPEAT : GL_CLAMP_TO_EDGE);
 

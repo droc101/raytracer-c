@@ -56,15 +56,14 @@ void ProcessUiStack(UiStack *stack) {
     if (stack->focusedControl != -1) {
         Control *c = (Control *) ListGet(stack->Controls, stack->focusedControl);
         ControlUpdateFuncs[c->type](stack, c, v2(mousePos.x - c->position.x, mousePos.y - c->position.y), stack->focusedControl);
-    } else if (stack->ActiveControl != -1) {
+    }
+    if (stack->ActiveControl != -1) {
         Control *c = (Control *) ListGet(stack->Controls, stack->ActiveControl);
         ControlUpdateFuncs[c->type](stack, c, v2(mousePos.x - c->position.x, mousePos.y - c->position.y), stack->ActiveControl);
     }
 
     stack->ActiveControl = -1;
     stack->ActiveControlState = NORMAL;
-
-
 
     for (int i = stack->Controls->size - 1; i >= 0; i--) {
         Control *c = (Control *) ListGet(stack->Controls, i);
