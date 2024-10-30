@@ -113,8 +113,7 @@ void DrawUiStack(UiStack *stack) {
         // if this is the focused control, draw a border around it
         if (i == stack->focusedControl) {
             setColorUint(0xFFFFFFFF);
-            DrawOutlineRect(v2(c->anchoredPosition.x - 2, c->anchoredPosition.y - 2), v2(c->size.x + 4, c->size.y + 4));
-            DrawOutlineRect(v2(c->anchoredPosition.x - 1, c->anchoredPosition.y - 1), v2(c->size.x + 2, c->size.y + 2));
+            DrawOutlineRect(v2(c->anchoredPosition.x - 2, c->anchoredPosition.y - 2), v2(c->size.x + 4, c->size.y + 4), 3);
         }
     }
 }

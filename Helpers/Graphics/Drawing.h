@@ -89,15 +89,17 @@ void SetTexParams(const unsigned char* imageData, bool linear, bool repeat);
  * Draw a line from start to end
  * @param start The start of the line
  * @param end The end of the line
+ * @param thickness The thickness of the line
  */
-void DrawLine(Vector2 start, Vector2 end);
+void DrawLine(Vector2 start, Vector2 end, float thickness);
 
 /**
  * Draw a 1px outline of a rectangle
  * @param pos The position
  * @param size The size
+ * @param thickness The thickness of the outline
  */
-void DrawOutlineRect(Vector2 pos, Vector2 size);
+void DrawOutlineRect(Vector2 pos, Vector2 size, float thickness);
 
 /**
  * Draw a texture on a rectangle

@@ -102,13 +102,16 @@ void GL_SetTexParams(const unsigned char* imageData, bool linear, bool repeat);
  */
 void GL_DrawRect(Vector2 pos, Vector2 size, uint color);
 
+void GL_DrawRectOutline(Vector2 pos, Vector2 size, uint color, float thickness);
+
 /**
  * Draw a line
  * @param start The start position in pixels
  * @param end The end position in pixels
  * @param color The color to draw
+ * @param thickness The thickness of the line
  */
-void GL_DrawLine(Vector2 start, Vector2 end, uint color);
+void GL_DrawLine(Vector2 start, Vector2 end, uint color, float thickness);
 
 /**
  * Draw a texture in 2D

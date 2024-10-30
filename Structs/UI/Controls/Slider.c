@@ -96,7 +96,7 @@ void DrawSlider(Control *c, ControlState state, Vector2 position) {
     setColorUint(color);
     draw_rect(position.x, position.y, c->size.x, c->size.y);
     setColorUint(0xFFFFFFFF);
-    DrawOutlineRect(position, c->size);
+    DrawOutlineRect(position, c->size, 1);
 
     SliderData *data = (SliderData *) c->ControlData;
     double handlePos = remap(data->value, data->min, data->max, 0, c->size.x - 10);

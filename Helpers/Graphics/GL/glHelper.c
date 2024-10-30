@@ -258,6 +258,55 @@ void GL_DrawRect(Vector2 pos, Vector2 size, uint color) {
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 }
 
+void GL_DrawRectOutline(Vector2 pos, Vector2 size, uint color, float thickness) {
+
+//    if (fabs(thickness - 1.0f) > 0.0001f) {
+//        glEnable(GL_LINE_SMOOTH);
+//    } else {
+//        glDisable(GL_LINE_SMOOTH);
+//    }
+
+    glLineWidth(thickness);
+
+    glUseProgram(ui_colored->program);
+
+    float a = ((color >> 24) & 0xFF) / 255.0f;
+    float r = ((color >> 16) & 0xFF) / 255.0f;
+    float g = ((color >> 8) & 0xFF) / 255.0f;
+    float b = (color & 0xFF) / 255.0f;
+
+    glUniform4f(glGetUniformLocation(ui_colored->program, "col"), r, g, b, a);
+
+    Vector2 NDC_pos = v2(GL_X_TO_NDC(pos.x), GL_Y_TO_NDC(pos.y));
+    Vector2 NDC_pos_end = v2(GL_X_TO_NDC(pos.x + size.x), GL_Y_TO_NDC(pos.y + size.y));
+
+
+    float vertices[4][2] = {
+            {NDC_pos.x,     NDC_pos.y},
+            {NDC_pos_end.x, NDC_pos.y},
+            {NDC_pos_end.x, NDC_pos_end.y},
+            {NDC_pos.x,     NDC_pos_end.y}
+    };
+
+    unsigned int indices[] = {
+            0, 1, 2,3
+    };
+
+    glBindVertexArray(ui_buffer->vao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, ui_buffer->vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ui_buffer->ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    GLint pos_attr_loc = glGetAttribLocation(ui_colored->program, "VERTEX");
+    glVertexAttribPointer(pos_attr_loc, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void *) 0);
+    glEnableVertexAttribArray(pos_attr_loc);
+
+    glDrawElements(GL_LINE_LOOP, 4, GL_UNSIGNED_INT, NULL);
+}
+
 GLuint GL_LoadTextureFromAsset(const unsigned char *imageData) {
     if (AssetGetType(imageData) != ASSET_TYPE_TEXTURE) {
         printf("Asset is not a texture\n");
@@ -406,7 +455,14 @@ inline void GL_DrawTextureRegionMod(Vector2 pos, Vector2 size, const unsigned ch
     GL_DrawTexture_Internal(pos, size, imageData, color, region_start, region_end);
 }
 
-void GL_DrawLine(Vector2 start, Vector2 end, uint color) {
+void GL_DrawLine(Vector2 start, Vector2 end, uint color, float thickness) {
+
+//    if (fabs(thickness - 1.0f) > 0.0001f) {
+//        glEnable(GL_LINE_SMOOTH);
+//    } else {
+//        glDisable(GL_LINE_SMOOTH);
+//    }
+
     glUseProgram(ui_colored->program);
 
     float a = ((color >> 24) & 0xFF) / 255.0f;
@@ -441,6 +497,7 @@ void GL_DrawLine(Vector2 start, Vector2 end, uint color) {
     glVertexAttribPointer(pos_attr_loc, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void *) 0);
     glEnableVertexAttribArray(pos_attr_loc);
 
+    glLineWidth(thickness);
     glDrawElements(GL_LINES, 2, GL_UNSIGNED_INT, NULL);
 }
 

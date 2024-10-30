@@ -107,15 +107,12 @@ void SetTexParams(const unsigned char* imageData, bool linear, bool repeat) {
     GL_SetTexParams(imageData, linear, repeat);
 }
 
-inline void DrawLine(Vector2 start, Vector2 end) {
-    GL_DrawLine(start, end, drawColor);
+inline void DrawLine(Vector2 start, Vector2 end, float thickness) {
+    GL_DrawLine(start, end, drawColor, thickness * GetState()->options.uiScale);
 }
 
-inline void DrawOutlineRect(Vector2 pos, Vector2 size) {
-    DrawLine(pos, v2(pos.x + size.x, pos.y));
-    DrawLine(pos, v2(pos.x, pos.y + size.y + 1));
-    DrawLine(v2(pos.x + size.x, pos.y), Vector2Add(pos, size));
-    DrawLine(v2(pos.x, pos.y + size.y), Vector2Add(pos, size));
+inline void DrawOutlineRect(Vector2 pos, Vector2 size, float thickness) {
+    GL_DrawRectOutline(pos, size, drawColor, thickness * GetState()->options.uiScale);
 }
 
 inline void DrawTexture(Vector2 pos, Vector2 size, const unsigned char* imageData) {

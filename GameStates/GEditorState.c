@@ -674,7 +674,7 @@ void GEditorStateRender(GlobalState* State) {
             Vector2 screenPosB = v2((nodeB->position.x * EditorZoom) + EditorPanX,
                                     (nodeB->position.y * EditorZoom) + EditorPanY);
             setColorUint(0xFFFFFFFF);
-            DrawLine(v2(screenPos.x, screenPos.y), v2(screenPosB.x, screenPosB.y));
+            DrawLine(v2(screenPos.x, screenPos.y), v2(screenPosB.x, screenPosB.y), 2);
         }
 
         uint color = 0;
@@ -716,7 +716,7 @@ void GEditorStateRender(GlobalState* State) {
         // for player and actor nodes, draw a line indicating rotation
         if (node->type == NODE_PLAYER || node->type == NODE_ACTOR) {
             Vector2 lineEnd = v2(screenPos.x + (cos(node->rotation) * 20), screenPos.y + (sin(node->rotation) * 20));
-            DrawLine(screenPos, lineEnd);
+            DrawLine(screenPos, lineEnd, 1);
         }
     }
 

@@ -63,7 +63,7 @@ void DrawButton(Control *c, ControlState state, Vector2 position) {
     setColorUint(color);
     draw_rect(position.x, position.y, c->size.x, c->size.y);
     setColorUint(0xFF000000);
-    DrawOutlineRect(position, c->size);
+    DrawOutlineRect(position, c->size, 1);
 
     DrawTextAligned(data->text, 16, 0xFF000000, position, c->size, FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
 }
