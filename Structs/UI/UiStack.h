@@ -99,6 +99,8 @@ Control *CreateEmptyControl();
  */
 void UiStackPush(UiStack *stack, Control *control);
 
+void UiStackRemove(UiStack *stack, Control *control);
+
 /**
  * Check if the mouse is in a rectangle
  * @param pos The position of the rectangle
@@ -107,6 +109,12 @@ void UiStackPush(UiStack *stack, Control *control);
  */
 bool IsMouseInRect(Vector2 pos, Vector2 size);
 
+/**
+ * Check if a control is activated (keyboard or mouse)
+ * @param stack The UiStack to check
+ * @param Control The control to check
+ * @return Whether the control is activated
+ */
 bool HasActivation(UiStack *stack, Control *Control);
 
 #endif //GAME_UISTACK_H

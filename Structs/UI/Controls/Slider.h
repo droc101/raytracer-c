@@ -36,6 +36,7 @@ char *SliderLabelPercent(Control *slider);
  * @param value The initial value of the slider
  * @param step The step value of the slider
  * @param altStep The step value of the slider when holding shift
+ * @param getLabel The function to get the label of the slider
  * @return The new Slider Control
  */
 Control *CreateSliderControl(Vector2 position, Vector2 size, char *label, void (*callback)(double), ControlAnchor anchor, double min, double max, double value, double step, double altStep, char *(*getLabel)(Control *slider));

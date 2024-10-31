@@ -14,6 +14,12 @@
 #include "../CommonAssets.h"
 
 _Noreturn void Error_Internal(char* error, const char* file, int line, const char* function) {
+
+#ifndef NDEBUG
+    // emit sigtrap to allow debugger to catch the error
+    raise(SIGTRAP);
+#endif
+
     char buf[256];
     sprintf(buf, "Error: %s\n \n%s:%d (%s)", error, file, line, function);
     printf("%s", buf);

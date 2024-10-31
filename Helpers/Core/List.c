@@ -11,8 +11,7 @@
 Node* createNode(void *data) {
     Node* newNode = (Node*)malloc(sizeof(Node));
     if (newNode == NULLPTR) {
-        printf("List: malloc fail\n");
-        exit(1);
+        Error("Node: malloc fail");
     }
     newNode->data = data;
     newNode->prev = NULLPTR;
@@ -23,8 +22,7 @@ Node* createNode(void *data) {
 List* CreateList() {
     List* newList = (List*)malloc(sizeof(List));
     if (newList == NULLPTR) {
-        printf("List: malloc fail\n");
-        exit(1);
+        Error("List: malloc fail");
     }
     newList->head = NULLPTR;
     newList->tail = NULLPTR;
@@ -77,8 +75,7 @@ void ListRemoveAt(List *list, int index) {
 
 void ListInsertAfter(List* list, Node* prevNode, void *data) {
     if (prevNode == NULLPTR) {
-        printf("List: Previous node cannot be NULL\n");
-        return;
+        Error("List: Previous node is NULL");
     }
 
     Node* newNode = createNode(data);
@@ -100,8 +97,7 @@ void* ListGet(List* list, int index) {
         i++;
     }
     if (current == NULLPTR) {
-        printf("List: Index out of bounds\n");
-        exit(1);
+        Error("List: Index out of bounds");
     }
     return current->data;
 }

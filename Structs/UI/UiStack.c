@@ -166,6 +166,12 @@ void UiStackPush(UiStack *stack, Control *control) {
     ListAdd(stack->Controls, control);
 }
 
+void UiStackRemove(UiStack *stack, Control *control) {
+    ControlDestroyFuncs[control->type](control);
+
+    ListRemoveAt(stack->Controls, ListFind(stack->Controls, control));
+}
+
 bool IsMouseInRect(Vector2 pos, Vector2 size) {
     Vector2 mousePos = GetMousePos();
     return mousePos.x >= pos.x && mousePos.x <= pos.x + size.x && mousePos.y >= pos.y && mousePos.y <= pos.y + size.y;

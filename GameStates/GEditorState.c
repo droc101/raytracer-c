@@ -15,6 +15,11 @@
 #include <math.h>
 #include "../Helpers/LevelLoader.h"
 #include "../Helpers/CommonAssets.h"
+#include "../Structs/UI/UiStack.h"
+#include "../Structs/UI/Controls/Button.h"
+#include "../Structs/UI/Controls/Slider.h"
+#include "../Structs/UI/Controls/RadioButton.h"
+#include "../Structs/UI/Controls/CheckBox.h"
 
 double EditorZoom = 20.0;
 double EditorPanX = 0.0;
@@ -23,6 +28,8 @@ bool EditorInitComplete = false;
 bool EditorSnapToGrid = true;
 
 int EditorSelectedNode = -1;
+
+int EditorBaseControlCount = -1;
 
 typedef enum {
     EDITOR_MODE_ADD, // click to add a node
@@ -34,35 +41,7 @@ typedef enum {
 
 EditorMode CurrentEditorMode = EDITOR_MODE_MOVE;
 
-typedef struct EditorButton {
-    void *icon;
-    char *text;
-
-    void (*callback)();
-
-    bool enabled;
-    bool toggled;
-    bool toggle_mode;
-    Vector2 position;
-    Vector2 size;
-} EditorButton;
-
-List *EditorButtons;
-
-typedef struct EditorSlider {
-    char *label;
-    double min;
-    double max;
-    double value;
-    double step;
-    double altStep; // step when shift is held
-    Vector2 position;
-    Vector2 size;
-
-    void (*callback)(double value);
-} EditorSlider;
-
-List *EditorSliders;
+UiStack *editorUiStack;
 
 typedef enum {
     NODE_WALL_A,
@@ -148,18 +127,8 @@ Level *NodesToLevel() {
 
 void CreateSlider(char *label, double min, double max, double value, double step, double altStep, Vector2 position,
                   Vector2 size, void (*callback)(double value)) {
-    EditorSlider *slider = malloc(sizeof(EditorSlider));
-    slider->label = label;
-    slider->min = min;
-    slider->max = max;
-    slider->value = value;
-    slider->step = step;
-    slider->altStep = altStep;
-    slider->position = position;
-    slider->size = size;
-    slider->size.y = 48; // 24px for the label, 24px for the slider
-    slider->callback = callback;
-    ListAdd(EditorSliders, slider);
+    Control *slider = CreateSliderControl(position, size, label, callback, TOP_LEFT, min, max, value, step, altStep, NULLPTR);
+    UiStackPush(editorUiStack, slider);
 }
 
 void slider_setMusic(double value) {
@@ -255,85 +224,6 @@ void GEditorStateUpdate(GlobalState* State) {
         EditorPanY += mouseDelta.y;
     }
 
-    for (int i = 0; i < EditorButtons->size; i++) {
-        EditorButton *button = ListGet(EditorButtons, i);
-        bool hovered = false;
-        bool pressed = false;
-        Vector2 mousePos = GetMousePos();
-        if (mousePos.x >= button->position.x && mousePos.x <= button->position.x + button->size.x &&
-            mousePos.y >= button->position.y && mousePos.y <= button->position.y + button->size.y) {
-            hovered = true;
-        }
-        pressed = IsMouseButtonJustPressed(SDL_BUTTON_LEFT) && hovered;
-
-        if (pressed) {
-            ConsumeMouseButton(SDL_BUTTON_LEFT);
-            if (button->toggle_mode) {
-                button->toggled = !button->toggled;
-            }
-            if (button->callback != NULL) {
-                button->callback(button);
-            }
-        }
-    }
-
-    for (int i = 0; i < EditorSliders->size; i++) {
-        EditorSlider *slider = ListGet(EditorSliders, i);
-        bool hovered = false;
-        bool pressed = false;
-        bool rpressed = false;
-        Vector2 mousePos = GetMousePos();
-        if (mousePos.x >= slider->position.x && mousePos.x <= slider->position.x + slider->size.x &&
-            mousePos.y >= slider->position.y && mousePos.y <= slider->position.y + slider->size.y) {
-            hovered = true;
-        }
-        pressed = IsMouseButtonPressed(SDL_BUTTON_LEFT) && hovered;
-        rpressed = IsMouseButtonJustPressed(SDL_BUTTON_RIGHT) && hovered;
-
-        if (rpressed) {
-            // increment or decrement the slider value by 1 depending on which side of the slider box the mouse is on (go from midpoint, not knob)
-            double localMouseX = mousePos.x - slider->position.x;
-            localMouseX /= slider->size.x;
-            localMouseX -= 0.5;
-            if (localMouseX < 0) {
-                slider->value -= min(1, slider->step);
-                slider->value = max(slider->min, slider->value);
-                if (slider->callback != NULL) {
-                    slider->callback(slider->value);
-                }
-                return;
-            } else {
-                slider->value += max(1, slider->step);
-                slider->value = min(slider->max, slider->value);
-                if (slider->callback != NULL) {
-                    slider->callback(slider->value);
-                }
-                return;
-            }
-        } else if (pressed) {
-            double newValue = remap(mousePos.x - slider->position.x, 0, slider->size.x, slider->min, slider->max);
-
-
-            if (IsKeyPressed(SDL_SCANCODE_LSHIFT) || IsKeyPressed(SDL_SCANCODE_RSHIFT)) {
-                newValue = round(newValue / slider->altStep) * slider->altStep;
-            } else {
-                newValue = round(newValue / slider->step) * slider->step;
-            }
-
-            if (newValue < slider->min) {
-                newValue = slider->min;
-            } else if (newValue > slider->max) {
-                newValue = slider->max;
-            }
-
-            slider->value = newValue;
-            if (slider->callback != NULL) {
-                slider->callback(newValue);
-            }
-
-            return; // don't allow anything else to be clicked while dragging a slider
-        }
-    }
 
     if (CurrentEditorMode == EDITOR_MODE_MOVE) {
         // check if we are hovering over a node
@@ -398,8 +288,9 @@ void GEditorStateUpdate(GlobalState* State) {
             }
         }
     } else if (CurrentEditorMode == EDITOR_MODE_ADD) {
-        EditorSlider *modeSld = ListGet(EditorSliders, 0);
-        int mode = modeSld->value;
+        Control *modeSld = ListGet(editorUiStack->Controls, 0 + EditorBaseControlCount);
+        SliderData *sldData = (SliderData *) modeSld->ControlData;
+        int mode = sldData->value;
         switch (mode) {
             case 0: {
                 if (IsMouseButtonJustPressed(SDL_BUTTON_LEFT)) {
@@ -412,8 +303,9 @@ void GEditorStateUpdate(GlobalState* State) {
                         worldPos.y = round(worldPos.y);
                     }
 
-                    EditorSlider *texSld = ListGet(EditorSliders, 1);
-                    int tex = texSld->value;
+                    Control *texSld = ListGet(editorUiStack->Controls, 1 + EditorBaseControlCount);
+                    SliderData *texData = (SliderData *) texSld->ControlData;
+                    int tex = texData->value;
 
 
                     // Create 2 nodes for a wall
@@ -499,7 +391,10 @@ void GEditorStateUpdate(GlobalState* State) {
             }
         }
 
-        ListClear(EditorSliders);
+        // TODO: clear controls
+        while (editorUiStack->Controls->size > EditorBaseControlCount) {
+            UiStackRemove(editorUiStack, ListGet(editorUiStack->Controls, EditorBaseControlCount));
+        }
 
         EditorNode *node = ListGet(EditorNodes, EditorSelectedNode);
         switch (node->type) {
@@ -530,85 +425,6 @@ void GEditorStateUpdate(GlobalState* State) {
         }
     }
 #endif
-}
-
-void DrawEditorButton(EditorButton *btn) {
-    // check if hovered
-    bool hovered = false;
-    bool pressed = false;
-    Vector2 mousePos = GetMousePos();
-    if (mousePos.x >= btn->position.x && mousePos.x <= btn->position.x + btn->size.x &&
-        mousePos.y >= btn->position.y && mousePos.y <= btn->position.y + btn->size.y) {
-        hovered = true;
-    }
-    pressed = IsMouseButtonPressed(SDL_BUTTON_RIGHT) && hovered;
-
-    uint btnColor;
-    if (btn->toggled) {
-        if (pressed) {
-            btnColor = 0xFF6ebcff;
-        } else if (hovered) {
-            btnColor = 0xFF7dc3ff;
-        } else {
-            btnColor = 0xFF8ac9ff;
-        }
-    } else if (pressed) {
-        btnColor = 0xFF8ac9ff;
-    } else if (hovered) {
-        btnColor = 0xFFa1d4ff;
-    } else {
-        btnColor = 0xFFc2e3ff;
-    }
-
-    if (!btn->enabled) {
-        btnColor = 0xFF808080;
-    }
-
-    setColorUint(btnColor);
-    draw_rect(btn->position.x, btn->position.y, btn->size.x, btn->size.y);
-
-    DrawTextAligned(btn->text, 16, 0xFF000000, btn->position, btn->size, FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
-}
-
-void DrawEditorSlider(EditorSlider *sld) {
-
-    setColorUint(0x80000000);
-    draw_rect(sld->position.x, sld->position.y, sld->size.x, sld->size.y);
-
-    setColorUint(0xFF808080);
-    draw_rect(sld->position.x, sld->position.y + 32, sld->size.x, 2);
-
-    bool hovered = false;
-    bool pressed = false;
-    Vector2 mousePos = GetMousePos();
-    if (mousePos.x >= sld->position.x && mousePos.x <= sld->position.x + sld->size.x &&
-        mousePos.y >= sld->position.y && mousePos.y <= sld->position.y + sld->size.y) {
-        hovered = true;
-    }
-    pressed = IsMouseButtonPressed(SDL_BUTTON_LEFT) && hovered;
-
-    uint btnColor;
-    if (pressed) {
-        btnColor = 0xFF8ac9ff;
-    } else if (hovered) {
-        btnColor = 0xFFa1d4ff;
-    } else {
-        btnColor = 0xFFc2e3ff;
-    }
-
-    double knobPos = remap(sld->value, sld->min, sld->max, 0, sld->size.x);
-    setColorUint(btnColor);
-    draw_rect(sld->position.x + knobPos - 8, sld->position.y + 24, 16, 16);
-
-    char buf[32];
-    if (sld->step >= 1 && sld->altStep > 1) {
-        sprintf(buf, "%s: %.0f", sld->label, sld->value);
-    } else {
-        sprintf(buf, "%s: %.2f", sld->label, sld->value);
-    }
-
-    DrawTextAligned(buf, 16, 0xFFFFFFFF, v2(sld->position.x, sld->position.y), v2(sld->size.x, 24),
-                    FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
 }
 
 void GEditorStateRender(GlobalState* State) {
@@ -752,17 +568,8 @@ void GEditorStateRender(GlobalState* State) {
         FontDrawString(v2(screenPos.x + 20, screenPos.y + 10), nodeInfo, 16, 0xFFFFFFFF, false);
     }
 
-    // Draw buttons
-    for (int i = 0; i < EditorButtons->size; i++) {
-        EditorButton *button = ListGet(EditorButtons, i);
-        DrawEditorButton(button);
-    }
-
-    // Draw sliders
-    for (int i = 0; i < EditorSliders->size; i++) {
-        EditorSlider *slider = ListGet(EditorSliders, i);
-        DrawEditorSlider(slider);
-    }
+    ProcessUiStack(editorUiStack);
+    DrawUiStack(editorUiStack);
 
     // if we are editing the properties of a wall a node, draw its texture
     if (CurrentEditorMode == EDITOR_MODE_PROPERTIES && EditorSelectedNode != -1) {
@@ -775,9 +582,10 @@ void GEditorStateRender(GlobalState* State) {
             }
         }
     } else if (CurrentEditorMode == EDITOR_MODE_ADD) {
-        EditorSlider *texSld = ListGet(EditorSliders, 1);
+        Control *texSld = ListGet(editorUiStack->Controls, 1 + EditorBaseControlCount);
+        SliderData *sliderData = (SliderData *) texSld->ControlData;
 
-        const byte *tex = wallTextures[(int) (texSld->value)];
+        const byte *tex = wallTextures[(int) (sliderData->value)];
         if (tex != NULL) {
             SDL_Rect dst = {10, 360, 64, 64};
             DrawTexture(v2(dst.x, dst.y), v2(dst.w, dst.h), tex);
@@ -787,29 +595,22 @@ void GEditorStateRender(GlobalState* State) {
 #endif
 }
 
-void CreateButton(char *text, Vector2 position, Vector2 size, void (*callback)(), bool enabled, bool toggle_mode) {
-    EditorButton *button = malloc(sizeof(EditorButton));
-    button->text = text;
-    button->position = position;
-    button->size = size;
-    button->callback = callback;
-    button->enabled = enabled;
-    button->toggled = false;
-    button->toggle_mode = toggle_mode;
-    ListAdd(EditorButtons, button);
+void CreateButton(char *text, Vector2 position, Vector2 size, void (*callback)(), bool enabled) {
+    Control *button = CreateButtonControl(position, size, text, callback, TOP_LEFT);
+    UiStackPush(editorUiStack, button);
 }
 
-void BtnZoomIn(EditorButton *btn) {
+void BtnZoomIn() {
     EditorZoom += 2.0;
     EditorZoom = clampf(EditorZoom, 10.0, 60.0);
 }
 
-void BtnZoomOut(EditorButton *btn) {
+void BtnZoomOut() {
     EditorZoom -= 2.0;
     EditorZoom = clampf(EditorZoom, 10.0, 60.0);
 }
 
-void BtnZoomReset(EditorButton *btn) {
+void BtnZoomReset() {
     EditorZoom = 20.0;
 }
 
@@ -830,8 +631,8 @@ void BtnCopyBytecode() {
     free(buf);
 }
 
-void ToggleSnapToGrid(EditorButton *btn) {
-    EditorSnapToGrid = btn->toggled;
+void ToggleSnapToGrid(bool enabled) {
+    EditorSnapToGrid = enabled;
 }
 
 void BtnPrevNode() {
@@ -852,28 +653,26 @@ void BtnNextNode() {
     }
 }
 
-void SetEditorMode(EditorButton *btn) {
-    for (int i = 0; i < 5; i++) {
-        EditorButton *button = ListGet(EditorButtons, i);
-        button->toggled = false;
+void SetEditorMode(bool _c, byte _g, byte id) {
+
+    // Remove all controls that were added for the previous mode
+    while (editorUiStack->Controls->size > EditorBaseControlCount) {
+        UiStackRemove(editorUiStack, ListGet(editorUiStack->Controls, EditorBaseControlCount));
     }
-    btn->toggled = true;
 
-    ListClear(EditorSliders);
-
-    if (strcmp(btn->text, "Add") == 0) {
+    if (id == 0) {
         CurrentEditorMode = EDITOR_MODE_ADD;
         CreateSlider("Add Actor?", 0, 1, 0, 1, 1, v2(10, 250), v2(200, 24), NULL);
         CreateSlider("Wall Tex", 0, WALL_TEXTURE_COUNT - 1, 0, 1, 16, v2(10, 300), v2(200, 24), NULL);
-    } else if (strcmp(btn->text, "Move") == 0) {
+    } else if (id == 1) {
         EditorSelectedNode = -1;
         CurrentEditorMode = EDITOR_MODE_MOVE;
-    } else if (strcmp(btn->text, "Delete") == 0) {
+    } else if (id == 2) {
         CurrentEditorMode = EDITOR_MODE_DELETE;
-    } else if (strcmp(btn->text, "Prop") == 0) {
+    } else if (id == 3) {
         CurrentEditorMode = EDITOR_MODE_PROPERTIES;
         EditorSelectedNode = 0;
-    } else if (strcmp(btn->text, "Level") == 0) {
+    } else if (id == 4) {
         CurrentEditorMode = EDITOR_MODE_LEVEL;
         CreateSlider("Fog R", 0, 255, level_fogR, 1, 16, v2(10, 250), v2(200, 24), slider_setFogR);
         CreateSlider("Fog G", 0, 255, level_fogG, 1, 16, v2(10, 300), v2(200, 24), slider_setFogG);
@@ -895,33 +694,29 @@ void GEditorStateSet() {
         EditorPanX = WindowWidth() / 2;
         EditorPanY = WindowHeight() / 2;
 
-        EditorButtons = CreateList();
-        EditorSliders = CreateList();
+        editorUiStack = CreateUiStack();
         EditorNodes = CreateList(); // will be freed immediately after this function, but we create it here to avoid nullptr free
 
-        CreateButton("Add", v2(10, 10), v2(100, 24), SetEditorMode, true, true);
-        CreateButton("Move", v2(120, 10), v2(100, 24), SetEditorMode, true, true);
-        CreateButton("Delete", v2(230, 10), v2(100, 24), SetEditorMode, true, true);
-        CreateButton("Prop", v2(340, 10), v2(100, 24), SetEditorMode, true, true);
-        CreateButton("Level", v2(450, 10), v2(100, 24), SetEditorMode, true, true);
+        UiStackPush(editorUiStack, CreateRadioButtonControl(v2(10, 10), v2(100, 24), "Add", SetEditorMode, TOP_LEFT, true, 0, 0));
+        UiStackPush(editorUiStack, CreateRadioButtonControl(v2(120, 10), v2(100, 24), "Move", SetEditorMode, TOP_LEFT, false, 0, 1));
+        UiStackPush(editorUiStack, CreateRadioButtonControl(v2(230, 10), v2(100, 24), "Delete", SetEditorMode, TOP_LEFT, false, 0, 2));
+        UiStackPush(editorUiStack, CreateRadioButtonControl(v2(340, 10), v2(100, 24), "Prop", SetEditorMode, TOP_LEFT, false, 0, 3));
+        UiStackPush(editorUiStack, CreateRadioButtonControl(v2(450, 10), v2(100, 24), "Level", SetEditorMode, TOP_LEFT, false, 0, 4));
 
-        CreateButton("+", v2(10, 50), v2(80, 24), BtnZoomIn, true, false);
-        CreateButton("-", v2(10, 78), v2(80, 24), BtnZoomOut, true, false);
-        CreateButton("0", v2(10, 106), v2(80, 24), BtnZoomReset, true, false);
+        CreateButton("+", v2(10, 50), v2(80, 24), BtnZoomIn, true);
+        CreateButton("-", v2(10, 78), v2(80, 24), BtnZoomOut, true);
+        CreateButton("0", v2(10, 106), v2(80, 24), BtnZoomReset, true);
 
-        CreateButton("PREV", v2(100, 50), v2(80, 24), BtnPrevNode, true, false);
-        CreateButton("NEXT", v2(100, 78), v2(80, 24), BtnNextNode, true, false);
+        CreateButton("PREV", v2(100, 50), v2(80, 24), BtnPrevNode, true);
+        CreateButton("NEXT", v2(100, 78), v2(80, 24), BtnNextNode, true);
 
-        EditorButton *moveButton = ListGet(EditorButtons, 4);
-        moveButton->toggled = true;
+        UiStackPush(editorUiStack, CreateCheckboxControl(v2(10, 134), v2(80, 24), "Snap", ToggleSnapToGrid, TOP_LEFT, EditorSnapToGrid));
 
-        CreateButton("Snap", v2(10, 154), v2(80, 24), ToggleSnapToGrid, true, true);
-        EditorButton *snapButton = ListGet(EditorButtons, EditorButtons->size - 1);
-        snapButton->toggled = EditorSnapToGrid;
+        CreateButton("Build", v2(10, 182), v2(80, 24), BtnCopyBytecode, true);
 
-        CreateButton("Build", v2(10, 182), v2(80, 24), BtnCopyBytecode, true, false);
+        EditorBaseControlCount = ListGetSize(editorUiStack->Controls) ;
 
-        SetEditorMode(ListGet(EditorButtons, 1));
+        SetEditorMode(false, 0, 0);
 
         EditorInitComplete = true;
     }
