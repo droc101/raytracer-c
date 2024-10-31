@@ -24,6 +24,13 @@ char *SliderLabelPercent(Control *slider) {
     return buf;
 }
 
+char *SliderLabelInteger(Control *slider) {
+    SliderData *data = (SliderData *) slider->ControlData;
+    char *buf = malloc(64);
+    sprintf(buf, "%s: %.0f", data->label, data->value);
+    return buf;
+}
+
 Control *CreateSliderControl(Vector2 position, Vector2 size, char *label, void (*callback)(double), ControlAnchor anchor, double min, double max, double value, double step, double altStep, char *(*getLabel)(Control *slider)) {
     if (getLabel == NULL) {
         getLabel = DefaultSliderLabelCallback;
@@ -136,6 +143,7 @@ void DrawSlider(Control *c, ControlState state, Vector2 position) {
     draw_rect(position.x + handlePos, position.y, 10, c->size.y);
 
     char *buf = data->getLabel(c);
+    DrawTextAligned(buf, 16, 0xff000000, Vector2Add(position, v2s(2)), c->size, FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
     DrawTextAligned(buf, 16, 0xFFFFFFFF, position, c->size, FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
     free(buf);
 }

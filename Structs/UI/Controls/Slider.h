@@ -24,6 +24,8 @@ typedef struct SliderData {
 
 char *SliderLabelPercent(Control *slider);
 
+char *SliderLabelInteger(Control *slider);
+
 /**
  * Create a new Slider Control
  * @param position The position of the slider

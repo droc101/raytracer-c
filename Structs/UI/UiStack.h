@@ -68,8 +68,9 @@ void DestroyUiStack(UiStack *stack);
 /**
  * Process the UiStack
  * @param stack The UiStack to process
+ * @return Whether the mouse is over a control
  */
-void ProcessUiStack(UiStack *stack);
+bool ProcessUiStack(UiStack *stack);
 
 /**
  * Draw the UiStack

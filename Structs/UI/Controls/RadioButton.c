@@ -66,7 +66,10 @@ void UpdateRadioButton(UiStack *stack, Control *c, Vector2 localMousePos, uint c
 
 void DrawRadioButton(Control *c, ControlState state, Vector2 position) {
     RadioButtonData *data = (RadioButtonData *) c->ControlData;
-    DrawTextAligned(data->label, 16, 0xFFFFFFFF, c->anchoredPosition, c->size, FONT_HALIGN_LEFT, FONT_VALIGN_MIDDLE, true);
+
+    uint textColor = data->checked ? 0xFFFFFFFF : 0xFFc0c0c0;
+
+    DrawTextAligned(data->label, 16, textColor, c->anchoredPosition, c->size, FONT_HALIGN_LEFT, FONT_VALIGN_MIDDLE, true);
 
     setColorUint(0xFF0000ff);
 

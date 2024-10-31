@@ -50,7 +50,7 @@ void DestroyUiStack(UiStack *stack) {
     free(stack);
 }
 
-void ProcessUiStack(UiStack *stack) {
+bool ProcessUiStack(UiStack *stack) {
     Vector2 mousePos = GetMousePos();
 
     if (stack->focusedControl != -1) {
@@ -103,6 +103,9 @@ void ProcessUiStack(UiStack *stack) {
             stack->focusedControl = (stack->focusedControl - 1) % stack->Controls->size;
         }
     }
+
+    // return whether the mouse is over a control
+    return stack->ActiveControl != -1;
 }
 
 void DrawUiStack(UiStack *stack) {
@@ -124,6 +127,7 @@ Vector2 CalculateControlPosition(Control *control) {
 
     switch (anchor) {
         case TOP_LEFT:
+            pos = v2(0, 0);
             break;
         case TOP_CENTER:
             pos.x = (WindowWidth() - control->size.x) / 2;

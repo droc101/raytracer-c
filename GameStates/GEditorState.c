@@ -126,8 +126,8 @@ Level *NodesToLevel() {
 }
 
 void CreateSlider(char *label, double min, double max, double value, double step, double altStep, Vector2 position,
-                  Vector2 size, void (*callback)(double value)) {
-    Control *slider = CreateSliderControl(position, size, label, callback, TOP_LEFT, min, max, value, step, altStep, NULLPTR);
+                  Vector2 size, void (*callback)(double value), char *(*getLabel)(Control *slider)) {
+    Control *slider = CreateSliderControl(position, size, label, callback, TOP_LEFT, min, max, value, step, altStep, getLabel);
     UiStackPush(editorUiStack, slider);
 }
 
@@ -224,6 +224,9 @@ void GEditorStateUpdate(GlobalState* State) {
         EditorPanY += mouseDelta.y;
     }
 
+    if (editorUiStack->ActiveControl != -1) {
+        return; // eat input if we are interacting with a control
+    }
 
     if (CurrentEditorMode == EDITOR_MODE_MOVE) {
         // check if we are hovering over a node
@@ -400,25 +403,25 @@ void GEditorStateUpdate(GlobalState* State) {
         switch (node->type) {
             case NODE_PLAYER:
                 CreateSlider("ang", 0, 359, radToDeg(node->rotation), 1, 45, v2(10, 250), v2(200, 24),
-                             slider_setNodeRotation);
+                             slider_setNodeRotation, NULL);
                 break;
             case NODE_ACTOR:
                 CreateSlider("ang", 0, 359, radToDeg(node->rotation), 1, 45, v2(10, 250), v2(200, 24),
-                             slider_setNodeRotation);
+                             slider_setNodeRotation, NULLPTR);
                 CreateSlider("Type", 0, GetActorTypeCount() - 1, node->extra, 1, 16, v2(10, 300), v2(200, 24),
-                             slider_setNodeExtra);
+                             slider_setNodeExtra, SliderLabelInteger);
                 CreateSlider("Param A", 0, 255, (node->extra2 >> 24) & 0xFF, 1, 16, v2(10, 350), v2(200, 24),
-                             slider_setActorParamA);
+                             slider_setActorParamA, SliderLabelInteger);
                 CreateSlider("Param B", 0, 255, (node->extra2 >> 16) & 0xFF, 1, 16, v2(10, 400), v2(200, 24),
-                             slider_setActorParamB);
+                             slider_setActorParamB, SliderLabelInteger);
                 CreateSlider("Param C", 0, 255, (node->extra2 >> 8) & 0xFF, 1, 16, v2(10, 450), v2(200, 24),
-                             slider_setActorParamC);
+                             slider_setActorParamC, SliderLabelInteger);
                 CreateSlider("Param D", 0, 255, node->extra2 & 0xFF, 1, 16, v2(10, 500), v2(200, 24),
-                             slider_setActorParamD);
+                             slider_setActorParamD, SliderLabelInteger);
                 break;
             case NODE_WALL_A:
                 CreateSlider("Tex", 0, WALL_TEXTURE_COUNT - 1, node->extra, 1, 16, v2(10, 250), v2(200, 24),
-                             slider_setNodeExtra);
+                             slider_setNodeExtra, SliderLabelInteger);
                 break;
             default:
                 break;
@@ -473,10 +476,10 @@ void GEditorStateRender(GlobalState* State) {
                         FONT_VALIGN_MIDDLE, false);
     }
 
-    double worldSpaceX = (WindowWidth() / 2 - EditorPanX) / EditorZoom;
-    double worldSpaceY = (WindowHeight() / 2 - EditorPanY) / EditorZoom;
-    sprintf(buf, "Position: (%.2f, %.2f)", worldSpaceX, worldSpaceY);
-    DrawTextAligned(buf, 16, 0xFFFFFFFF, v2(560, 10), v2(200, 24), FONT_HALIGN_LEFT, FONT_VALIGN_MIDDLE, false);
+//    double worldSpaceX = (WindowWidth() / 2 - EditorPanX) / EditorZoom;
+//    double worldSpaceY = (WindowHeight() / 2 - EditorPanY) / EditorZoom;
+//    sprintf(buf, "Position: (%.2f, %.2f)", worldSpaceX, worldSpaceY);
+//    DrawTextAligned(buf, 16, 0xFFFFFFFF, v2(560, 10), v2(200, 24), FONT_HALIGN_LEFT, FONT_VALIGN_MIDDLE, false);
 
     // Draw nodes
     int hoveredNode = -1;
@@ -660,10 +663,15 @@ void SetEditorMode(bool _c, byte _g, byte id) {
         UiStackRemove(editorUiStack, ListGet(editorUiStack->Controls, EditorBaseControlCount));
     }
 
+    int sy = 250;
+    int sp = 10;
+    int szy = 24;
+
     if (id == 0) {
         CurrentEditorMode = EDITOR_MODE_ADD;
-        CreateSlider("Add Actor?", 0, 1, 0, 1, 1, v2(10, 250), v2(200, 24), NULL);
-        CreateSlider("Wall Tex", 0, WALL_TEXTURE_COUNT - 1, 0, 1, 16, v2(10, 300), v2(200, 24), NULL);
+        CreateSlider("Add Actor?", 0, 1, 0, 1, 1, v2(10, sy), v2(200, szy), NULL, SliderLabelInteger);
+        sy += szy + sp;
+        CreateSlider("Wall Tex", 0, WALL_TEXTURE_COUNT - 1, 0, 1, 16, v2(10, sy), v2(200, szy), NULL, SliderLabelInteger);
     } else if (id == 1) {
         EditorSelectedNode = -1;
         CurrentEditorMode = EDITOR_MODE_MOVE;
@@ -674,17 +682,27 @@ void SetEditorMode(bool _c, byte _g, byte id) {
         EditorSelectedNode = 0;
     } else if (id == 4) {
         CurrentEditorMode = EDITOR_MODE_LEVEL;
-        CreateSlider("Fog R", 0, 255, level_fogR, 1, 16, v2(10, 250), v2(200, 24), slider_setFogR);
-        CreateSlider("Fog G", 0, 255, level_fogG, 1, 16, v2(10, 300), v2(200, 24), slider_setFogG);
-        CreateSlider("Fog B", 0, 255, level_fogB, 1, 16, v2(10, 350), v2(200, 24), slider_setFogB);
-        CreateSlider("Fog Start", -50, 200, level_fogStart, 1, 50, v2(10, 400), v2(200, 24), slider_setFogStart);
-        CreateSlider("Fog End", 0, 300, level_fogEnd, 1, 50, v2(10, 450), v2(200, 24), slider_setFogEnd);
-        CreateSlider("Floor Tex", 0, WALL_TEXTURE_COUNT - 1, level_floor_tex, 1, 16, v2(10, 500), v2(200, 24), slider_setFloorTex);
-        CreateSlider("Ceil Tex", 0, WALL_TEXTURE_COUNT, level_ceil_tex, 1, 16, v2(10, 550), v2(200, 24), slider_setCeilTex);
-        CreateSlider("Sky R", 0, 255, level_skyR, 1, 16, v2(10, 600), v2(200, 24), slider_setSkyR);
-        CreateSlider("Sky G", 0, 255, level_skyG, 1, 16, v2(10, 650), v2(200, 24), slider_setSkyG);
-        CreateSlider("Sky B", 0, 255, level_skyB, 1, 16, v2(10, 700), v2(200, 24), slider_setSkyB);
-        CreateSlider("Music", 0, MUSIC_COUNT, musicId, 1, 1, v2(10, 750), v2(200, 24), slider_setMusic);
+        CreateSlider("Fog R", 0, 255, level_fogR, 1, 16, v2(10, sy), v2(200, 24), slider_setFogR, SliderLabelInteger);
+        sy += szy + sp;
+        CreateSlider("Fog G", 0, 255, level_fogG, 1, 16, v2(10, sy), v2(200, 24), slider_setFogG, SliderLabelInteger);
+        sy += szy + sp;
+        CreateSlider("Fog B", 0, 255, level_fogB, 1, 16, v2(10, sy), v2(200, 24), slider_setFogB, SliderLabelInteger);
+        sy += szy + sp;
+        CreateSlider("Fog Start", -50, 200, level_fogStart, 1, 50, v2(10, sy), v2(200, 24), slider_setFogStart, NULLPTR);
+        sy += szy + sp;
+        CreateSlider("Fog End", 0, 300, level_fogEnd, 1, 50, v2(10, sy), v2(200, 24), slider_setFogEnd, NULLPTR);
+        sy += szy + sp;
+        CreateSlider("Floor Tex", 0, WALL_TEXTURE_COUNT - 1, level_floor_tex, 1, 16, v2(10, sy), v2(200, 24), slider_setFloorTex, SliderLabelInteger);
+        sy += szy + sp;
+        CreateSlider("Ceil Tex", 0, WALL_TEXTURE_COUNT, level_ceil_tex, 1, 16, v2(10, sy), v2(200, 24), slider_setCeilTex, SliderLabelInteger);
+        sy += szy + sp;
+        CreateSlider("Sky R", 0, 255, level_skyR, 1, 16, v2(10, sy), v2(200, 24), slider_setSkyR, SliderLabelInteger);
+        sy += szy + sp;
+        CreateSlider("Sky G", 0, 255, level_skyG, 1, 16, v2(10, sy), v2(200, 24), slider_setSkyG, SliderLabelInteger);
+        sy += szy + sp;
+        CreateSlider("Sky B", 0, 255, level_skyB, 1, 16, v2(10, sy), v2(200, 24), slider_setSkyB, SliderLabelInteger);
+        sy += szy + sp;
+        CreateSlider("Music", 0, MUSIC_COUNT, musicId, 1, 1, v2(10, sy), v2(200, 24), slider_setMusic, SliderLabelInteger);
     }
 }
 
@@ -697,24 +715,32 @@ void GEditorStateSet() {
         editorUiStack = CreateUiStack();
         EditorNodes = CreateList(); // will be freed immediately after this function, but we create it here to avoid nullptr free
 
-        UiStackPush(editorUiStack, CreateRadioButtonControl(v2(10, 10), v2(100, 24), "Add", SetEditorMode, TOP_LEFT, true, 0, 0));
-        UiStackPush(editorUiStack, CreateRadioButtonControl(v2(120, 10), v2(100, 24), "Move", SetEditorMode, TOP_LEFT, false, 0, 1));
-        UiStackPush(editorUiStack, CreateRadioButtonControl(v2(230, 10), v2(100, 24), "Delete", SetEditorMode, TOP_LEFT, false, 0, 2));
-        UiStackPush(editorUiStack, CreateRadioButtonControl(v2(340, 10), v2(100, 24), "Prop", SetEditorMode, TOP_LEFT, false, 0, 3));
-        UiStackPush(editorUiStack, CreateRadioButtonControl(v2(450, 10), v2(100, 24), "Level", SetEditorMode, TOP_LEFT, false, 0, 4));
+        int sx = 10;
+        int szy = 30;
+        int szx = 120;
+        int sp = 30;
+        UiStackPush(editorUiStack, CreateRadioButtonControl(v2(sx, 10), v2(szx, szy), "Add", SetEditorMode, TOP_LEFT, true, 0, 0));
+        sx += szx + sp;
+        UiStackPush(editorUiStack, CreateRadioButtonControl(v2(sx, 10), v2(szx, szy), "Move", SetEditorMode, TOP_LEFT, false, 0, 1));
+        sx += szx + sp;
+        UiStackPush(editorUiStack, CreateRadioButtonControl(v2(sx, 10), v2(szx, szy), "Delete", SetEditorMode, TOP_LEFT, false, 0, 2));
+        sx += szx + sp;
+        UiStackPush(editorUiStack, CreateRadioButtonControl(v2(sx, 10), v2(szx, szy), "Prop", SetEditorMode, TOP_LEFT, false, 0, 3));
+        sx += szx + sp;
+        UiStackPush(editorUiStack, CreateRadioButtonControl(v2(sx, 10), v2(szx, szy), "Level", SetEditorMode, TOP_LEFT, false, 0, 4));
 
-        CreateButton("+", v2(10, 50), v2(80, 24), BtnZoomIn, true);
-        CreateButton("-", v2(10, 78), v2(80, 24), BtnZoomOut, true);
-        CreateButton("0", v2(10, 106), v2(80, 24), BtnZoomReset, true);
+        CreateButton("Zoom In", v2(10, 50), v2(120, 24), BtnZoomIn, true);
+        CreateButton("Zoom Out", v2(10, 78), v2(120, 24), BtnZoomOut, true);
+        CreateButton("Zoom 100", v2(10, 106), v2(120, 24), BtnZoomReset, true);
 
-        CreateButton("PREV", v2(100, 50), v2(80, 24), BtnPrevNode, true);
-        CreateButton("NEXT", v2(100, 78), v2(80, 24), BtnNextNode, true);
+        CreateButton("PREV", v2(140, 50), v2(120, 24), BtnPrevNode, true);
+        CreateButton("NEXT", v2(140, 78), v2(120, 24), BtnNextNode, true);
 
-        UiStackPush(editorUiStack, CreateCheckboxControl(v2(10, 134), v2(80, 24), "Snap", ToggleSnapToGrid, TOP_LEFT, EditorSnapToGrid));
+        UiStackPush(editorUiStack, CreateCheckboxControl(v2(10, 140), v2(120, 30), "Snap", ToggleSnapToGrid, TOP_LEFT, EditorSnapToGrid));
 
-        CreateButton("Build", v2(10, 182), v2(80, 24), BtnCopyBytecode, true);
+        CreateButton("Build", v2(10, 182), v2(120, 24), BtnCopyBytecode, true);
 
-        EditorBaseControlCount = ListGetSize(editorUiStack->Controls) ;
+        EditorBaseControlCount = ListGetSize(editorUiStack->Controls);
 
         SetEditorMode(false, 0, 0);
 
