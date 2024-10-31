@@ -15,7 +15,7 @@
 
 _Noreturn void Error_Internal(char* error, const char* file, int line, const char* function) {
 
-#ifndef NDEBUG
+#if defined(NDEBUG) && !defined(WIN32)
     // emit sigtrap to allow debugger to catch the error
     raise(SIGTRAP);
 #endif
