@@ -65,6 +65,7 @@ void RenderDestroy() {
 void RenderLevel3D(Level *l, Camera *cam) {
     GL_Enable3D();
     //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+    //glLineWidth(2);
 
     mat4 *WORLD_VIEW_MATRIX = GetMatrix(cam);
     mat4 *IDENTITY = malloc(sizeof(mat4));
@@ -107,7 +108,9 @@ void RenderLevel3D(Level *l, Camera *cam) {
 }
 
 inline void UpdateViewportSize() {
-    float newScale = (float)ActualWindowSize().x / (float)DEF_WIDTH;
+    float newScaleX = (float)ActualWindowSize().x / (float)DEF_WIDTH;
+    float newScaleY = (float)ActualWindowSize().y / (float)DEF_HEIGHT;
+    float newScale = newScaleX < newScaleY ? newScaleX : newScaleY;
     GetState()->options.uiScale = newScale;
     GL_UpdateViewportSize();
 }
