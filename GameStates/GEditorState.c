@@ -185,11 +185,6 @@ void slider_setSkyB(double value) {
     level_skyB = (byte) value;
 }
 
-void slider_setWallUv(double value) {
-    EditorNode *node = ListGet(EditorNodes, EditorSelectedNode);
-    node->extra2 = value;
-}
-
 void slider_setActorParamA(double value) {
     EditorNode *node = ListGet(EditorNodes, EditorSelectedNode);
     node->extra2 = (node->extra2 & 0x00FFFFFF) | ((byte) value << 24);
@@ -213,8 +208,6 @@ void slider_setActorParamD(double value) {
 void GEditorStateUpdate(GlobalState* State) {
 #ifdef ENABLE_LEVEL_EDITOR
     if (IsKeyJustPressed(SDL_SCANCODE_F6)) {
-        Level *l = NodesToLevel();
-        ChangeLevel(l);
         GMainStateSet();
     }
 
@@ -476,11 +469,6 @@ void GEditorStateRender(GlobalState* State) {
                         FONT_VALIGN_MIDDLE, false);
     }
 
-//    double worldSpaceX = (WindowWidth() / 2 - EditorPanX) / EditorZoom;
-//    double worldSpaceY = (WindowHeight() / 2 - EditorPanY) / EditorZoom;
-//    sprintf(buf, "Position: (%.2f, %.2f)", worldSpaceX, worldSpaceY);
-//    DrawTextAligned(buf, 16, 0xFFFFFFFF, v2(560, 10), v2(200, 24), FONT_HALIGN_LEFT, FONT_VALIGN_MIDDLE, false);
-
     // Draw nodes
     int hoveredNode = -1;
     for (int i = 0; i < EditorNodes->size; i++) {
@@ -706,47 +694,7 @@ void SetEditorMode(bool _c, byte _g, byte id) {
     }
 }
 
-void GEditorStateSet() {
-    if (!EditorInitComplete) {
-        // center the view to 0,0
-        EditorPanX = WindowWidth() / 2;
-        EditorPanY = WindowHeight() / 2;
-
-        editorUiStack = CreateUiStack();
-        EditorNodes = CreateList(); // will be freed immediately after this function, but we create it here to avoid nullptr free
-
-        int sx = 10;
-        int szy = 30;
-        int szx = 120;
-        int sp = 30;
-        UiStackPush(editorUiStack, CreateRadioButtonControl(v2(sx, 10), v2(szx, szy), "Add", SetEditorMode, TOP_LEFT, true, 0, 0));
-        sx += szx + sp;
-        UiStackPush(editorUiStack, CreateRadioButtonControl(v2(sx, 10), v2(szx, szy), "Move", SetEditorMode, TOP_LEFT, false, 0, 1));
-        sx += szx + sp;
-        UiStackPush(editorUiStack, CreateRadioButtonControl(v2(sx, 10), v2(szx, szy), "Delete", SetEditorMode, TOP_LEFT, false, 0, 2));
-        sx += szx + sp;
-        UiStackPush(editorUiStack, CreateRadioButtonControl(v2(sx, 10), v2(szx, szy), "Prop", SetEditorMode, TOP_LEFT, false, 0, 3));
-        sx += szx + sp;
-        UiStackPush(editorUiStack, CreateRadioButtonControl(v2(sx, 10), v2(szx, szy), "Level", SetEditorMode, TOP_LEFT, false, 0, 4));
-
-        CreateButton("Zoom In", v2(10, 50), v2(120, 24), BtnZoomIn, true);
-        CreateButton("Zoom Out", v2(10, 78), v2(120, 24), BtnZoomOut, true);
-        CreateButton("Zoom 100", v2(10, 106), v2(120, 24), BtnZoomReset, true);
-
-        CreateButton("PREV", v2(140, 50), v2(120, 24), BtnPrevNode, true);
-        CreateButton("NEXT", v2(140, 78), v2(120, 24), BtnNextNode, true);
-
-        UiStackPush(editorUiStack, CreateCheckboxControl(v2(10, 140), v2(120, 30), "Snap", ToggleSnapToGrid, TOP_LEFT, EditorSnapToGrid));
-
-        CreateButton("Build", v2(10, 182), v2(120, 24), BtnCopyBytecode, true);
-
-        EditorBaseControlCount = ListGetSize(editorUiStack->Controls);
-
-        SetEditorMode(false, 0, 0);
-
-        EditorInitComplete = true;
-    }
-
+void BtnLoad() {
     // clear all editor nodes
     ListFreeWithData(EditorNodes);
     EditorNodes = CreateList();
@@ -807,6 +755,58 @@ void GEditorStateSet() {
         wallNodeB->index = i;
         wallNodeB->position = w->b;
         ListAdd(EditorNodes, wallNodeB);
+    }
+}
+
+void BtnTest() {
+    Level *l = NodesToLevel();
+    ChangeLevel(l);
+    GMainStateSet();
+}
+
+void GEditorStateSet() {
+    if (!EditorInitComplete) {
+        // center the view to 0,0
+        EditorPanX = WindowWidth() / 2;
+        EditorPanY = WindowHeight() / 2;
+
+        editorUiStack = CreateUiStack();
+        EditorNodes = CreateList(); // will be freed immediately after this function, but we create it here to avoid nullptr free
+
+        int sx = 10;
+        int szy = 30;
+        int szx = 120;
+        int sp = 30;
+        UiStackPush(editorUiStack, CreateRadioButtonControl(v2(sx, 10), v2(szx, szy), "Add", SetEditorMode, TOP_LEFT, true, 0, 0));
+        sx += szx + sp;
+        UiStackPush(editorUiStack, CreateRadioButtonControl(v2(sx, 10), v2(szx, szy), "Move", SetEditorMode, TOP_LEFT, false, 0, 1));
+        sx += szx + sp;
+        UiStackPush(editorUiStack, CreateRadioButtonControl(v2(sx, 10), v2(szx, szy), "Delete", SetEditorMode, TOP_LEFT, false, 0, 2));
+        sx += szx + sp;
+        UiStackPush(editorUiStack, CreateRadioButtonControl(v2(sx, 10), v2(szx, szy), "Prop", SetEditorMode, TOP_LEFT, false, 0, 3));
+        sx += szx + sp;
+        UiStackPush(editorUiStack, CreateRadioButtonControl(v2(sx, 10), v2(szx, szy), "Level", SetEditorMode, TOP_LEFT, false, 0, 4));
+
+        CreateButton("Zoom In", v2(10, 50), v2(120, 24), BtnZoomIn, true);
+        CreateButton("Zoom Out", v2(10, 78), v2(120, 24), BtnZoomOut, true);
+        CreateButton("Zoom 100", v2(10, 106), v2(120, 24), BtnZoomReset, true);
+
+        CreateButton("PREV Node", v2(140, 50), v2(120, 24), BtnPrevNode, true);
+        CreateButton("NEXT Node", v2(140, 78), v2(120, 24), BtnNextNode, true);
+
+        UiStackPush(editorUiStack, CreateCheckboxControl(v2(10, 140), v2(120, 30), "Snap", ToggleSnapToGrid, TOP_LEFT, EditorSnapToGrid));
+
+        UiStackPush(editorUiStack, CreateButtonControl(v2(-60, 10), v2(120, 24), "Load", BtnLoad, TOP_RIGHT));
+        UiStackPush(editorUiStack, CreateButtonControl(v2(-60, 30), v2(120, 24), "Test", BtnTest, TOP_RIGHT));
+        UiStackPush(editorUiStack, CreateButtonControl(v2(-60, 50), v2(120, 24), "Save", BtnCopyBytecode, TOP_RIGHT));
+
+        EditorBaseControlCount = ListGetSize(editorUiStack->Controls);
+
+        SetEditorMode(false, 0, 0);
+
+        BtnLoad();
+
+        EditorInitComplete = true;
     }
 
     SetRenderCallback(GEditorStateRender);
