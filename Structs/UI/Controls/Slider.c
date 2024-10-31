@@ -125,7 +125,7 @@ void DrawSlider(Control *c, ControlState state, Vector2 position) {
     DrawOutlineRect(position, c->size, 1);
 
     SliderData *data = (SliderData *) c->ControlData;
-    double handlePos = remap(data->value, data->min, data->max, 0, c->size.x - 10);
+    double handlePos = remap(data->value, data->min, data->max, 0, c->size.x - 12);
 
     // draw handle
     switch (state) {
@@ -140,7 +140,9 @@ void DrawSlider(Control *c, ControlState state, Vector2 position) {
             break;
     }
     setColorUint(color);
-    draw_rect(position.x + handlePos, position.y, 10, c->size.y);
+    draw_rect(position.x + handlePos + 1, position.y + 1, 10, c->size.y - 2);
+    setColorUint(0xff000000);
+    DrawOutlineRect(v2(position.x + handlePos + 1, position.y + 1), v2(10, c->size.y - 2), 1);
 
     char *buf = data->getLabel(c);
     DrawTextAligned(buf, 16, 0xff000000, Vector2Add(position, v2s(2)), c->size, FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);

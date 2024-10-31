@@ -260,11 +260,11 @@ void GL_DrawRect(Vector2 pos, Vector2 size, uint color) {
 
 void GL_DrawRectOutline(Vector2 pos, Vector2 size, uint color, float thickness) {
 
-//    if (fabs(thickness - 1.0f) > 0.0001f) {
-//        glEnable(GL_LINE_SMOOTH);
-//    } else {
-//        glDisable(GL_LINE_SMOOTH);
-//    }
+    if (thickness < 1.0f) {
+        glEnable(GL_LINE_SMOOTH);
+    } else {
+        glDisable(GL_LINE_SMOOTH);
+    }
 
     glLineWidth(thickness);
 
@@ -457,11 +457,11 @@ inline void GL_DrawTextureRegionMod(Vector2 pos, Vector2 size, const unsigned ch
 
 void GL_DrawLine(Vector2 start, Vector2 end, uint color, float thickness) {
 
-//    if (fabs(thickness - 1.0f) > 0.0001f) {
-//        glEnable(GL_LINE_SMOOTH);
-//    } else {
-//        glDisable(GL_LINE_SMOOTH);
-//    }
+    if (thickness < 1.0f) {
+        glEnable(GL_LINE_SMOOTH);
+    } else {
+        glDisable(GL_LINE_SMOOTH);
+    }
 
     glUseProgram(ui_colored->program);
 
