@@ -19,7 +19,10 @@ typedef struct SliderData {
     double altStep; // Step when holding shift
 
     void (*callback)(double);
+    char* (*getLabel)(Control *slider);
 } SliderData;
+
+char *SliderLabelPercent(Control *slider);
 
 /**
  * Create a new Slider Control
@@ -35,7 +38,7 @@ typedef struct SliderData {
  * @param altStep The step value of the slider when holding shift
  * @return The new Slider Control
  */
-Control *CreateSliderControl(Vector2 position, Vector2 size, char *label, void (*callback)(double), ControlAnchor anchor, double min, double max, double value, double step, double altStep);
+Control *CreateSliderControl(Vector2 position, Vector2 size, char *label, void (*callback)(double), ControlAnchor anchor, double min, double max, double value, double step, double altStep, char *(*getLabel)(Control *slider));
 
 void DestroySlider(Control *c);
 

@@ -10,7 +10,25 @@
 #include <math.h>
 #include <stdio.h>
 
-Control *CreateSliderControl(Vector2 position, Vector2 size, char *label, void (*callback)(double), ControlAnchor anchor, double min, double max, double value, double step, double altStep) {
+char *DefaultSliderLabelCallback(Control *slider) {
+    SliderData *data = (SliderData *) slider->ControlData;
+    char *buf = malloc(64);
+    sprintf(buf, "%s: %.2f", data->label, data->value);
+    return buf;
+}
+
+char *SliderLabelPercent(Control *slider) {
+    SliderData *data = (SliderData *) slider->ControlData;
+    char *buf = malloc(64);
+    sprintf(buf, "%s: %.0f%%", data->label, data->value * 100);
+    return buf;
+}
+
+Control *CreateSliderControl(Vector2 position, Vector2 size, char *label, void (*callback)(double), ControlAnchor anchor, double min, double max, double value, double step, double altStep, char *(*getLabel)(Control *slider)) {
+    if (getLabel == NULL) {
+        getLabel = DefaultSliderLabelCallback;
+    }
+
     Control *slider = CreateEmptyControl();
     slider->type = SLIDER;
     slider->position = position;
@@ -26,6 +44,7 @@ Control *CreateSliderControl(Vector2 position, Vector2 size, char *label, void (
     data->value = value;
     data->step = step;
     data->altStep = altStep;
+    data->getLabel = getLabel;
 
     return slider;
 }
@@ -116,7 +135,7 @@ void DrawSlider(Control *c, ControlState state, Vector2 position) {
     setColorUint(color);
     draw_rect(position.x + handlePos, position.y, 10, c->size.y);
 
-    char buf[64];
-    sprintf(buf, "%s: %.2f", data->label, data->value);
+    char *buf = data->getLabel(c);
     DrawTextAligned(buf, 16, 0xFFFFFFFF, position, c->size, FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
+    free(buf);
 }

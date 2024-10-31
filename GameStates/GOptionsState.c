@@ -75,9 +75,9 @@ void GOptionsStateSet() {
 
     if (optionsStack == NULLPTR) {
         optionsStack = CreateUiStack();
-        UiStackPush(optionsStack, CreateSliderControl(v2(0, 40), v2(480, 40), "Master Volume", SldOptionsMasterVolume, TOP_CENTER, 0.0, 1.0, GetState()->options.masterVolume, 0.01, 0.1));
-        UiStackPush(optionsStack, CreateSliderControl(v2(0, 65), v2(480, 40), "Music Volume", SldOptionsMusicVolume, TOP_CENTER, 0.0, 1.0, GetState()->options.musicVolume, 0.01, 0.1));
-        UiStackPush(optionsStack, CreateSliderControl(v2(0, 90), v2(480, 40), "SFX Volume", SldOptionsSfxVolume, TOP_CENTER, 0.0, 1.0, GetState()->options.sfxVolume, 0.01, 0.1));
+        UiStackPush(optionsStack, CreateSliderControl(v2(0, 40), v2(480, 40), "Master Volume", SldOptionsMasterVolume, TOP_CENTER, 0.0, 1.0, GetState()->options.masterVolume, 0.01, 0.1, SliderLabelPercent));
+        UiStackPush(optionsStack, CreateSliderControl(v2(0, 65), v2(480, 40), "Music Volume", SldOptionsMusicVolume, TOP_CENTER, 0.0, 1.0, GetState()->options.musicVolume, 0.01, 0.1, SliderLabelPercent));
+        UiStackPush(optionsStack, CreateSliderControl(v2(0, 90), v2(480, 40), "SFX Volume", SldOptionsSfxVolume, TOP_CENTER, 0.0, 1.0, GetState()->options.sfxVolume, 0.01, 0.1, SliderLabelPercent));
         UiStackPush(optionsStack, CreateCheckboxControl(v2(0, 115), v2(480, 40), "Fullscreen", CbOptionsFullscreen, TOP_CENTER, GetState()->options.fullscreen));
         UiStackPush(optionsStack, CreateRadioButtonControl(v2(0, 140), v2(480, 40), "OpenGL", RbOptionsRenderer, TOP_CENTER, GetState()->options.renderer == RENDERER_OPENGL, 0, RENDERER_OPENGL));
         UiStackPush(optionsStack, CreateRadioButtonControl(v2(0, 165), v2(480, 40), "Vulkan //todo", RbOptionsRenderer, TOP_CENTER, GetState()->options.renderer == RENDERER_VULKAN, 0, RENDERER_VULKAN));
