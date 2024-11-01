@@ -146,3 +146,9 @@ int main(int argc, char *argv[]) {
     SDL_Quit();
     return 0;
 }
+
+// Exporting these symbols tells GPU drivers to use the dedicated GPU on hybrid systems
+#ifdef WIN32
+__declspec(dllexport) uint NvOptimusEnablement = 0x00000001;
+__declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
+#endif
