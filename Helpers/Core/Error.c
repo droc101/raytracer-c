@@ -15,14 +15,22 @@
 
 _Noreturn void Error_Internal(char* error, const char* file, int line, const char* function) {
 
-#if defined(NDEBUG) && !defined(WIN32)
+    char buf[256];
+    sprintf(buf, "Error: %s\n \n%s:%d (%s)", error, file, line, function);
+    printf("%s", buf);
+
+#ifndef NDEBUG
+
+    fflush(stdout);
+
+#ifdef WIN32
+    *(volatile int*)0 = 0; // die immediately
+#else
     // emit sigtrap to allow debugger to catch the error
     raise(SIGTRAP);
 #endif
 
-    char buf[256];
-    sprintf(buf, "Error: %s\n \n%s:%d (%s)", error, file, line, function);
-    printf("%s", buf);
+#endif
 
     char dbgInfoBuf[256];
     sprintf(dbgInfoBuf, "Engine Version: %s\nSDL Version: %d.%d.%d\nSDL_Mixer Version: %d.%d.%d\nZlib Version: %s", VERSION, SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_PATCHLEVEL, SDL_MIXER_MAJOR_VERSION, SDL_MIXER_MINOR_VERSION, SDL_MIXER_PATCHLEVEL, ZLIB_VERSION);

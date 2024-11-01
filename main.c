@@ -22,6 +22,8 @@ int main(int argc, char *argv[]) {
     printf("Version: %s\n", VERSION);
     printf("Initializing Engine\n");
 
+    SetSignalHandler(); // catch exceptions in release mode
+
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER) != 0) {
         printf("SDL_Init Error: %s\n", SDL_GetError());
         return 1;
@@ -58,10 +60,7 @@ int main(int argc, char *argv[]) {
     SDL_Surface *icon = ToSDLSurface((const unsigned char *) gztex_interface_icon, "1");
     SDL_SetWindowIcon(w, icon);
 
-    SetSignalHandler(); // catch exceptions in release mode
-
     InitCommonAssets();
-
 
     ChangeLevelByID(STARTING_LEVEL);
 
