@@ -804,8 +804,6 @@ void GEditorStateSet() {
 
         SetEditorMode(false, 0, 0);
 
-        BtnLoad();
-
         EditorInitComplete = true;
     }
 
