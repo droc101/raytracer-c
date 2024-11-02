@@ -171,6 +171,7 @@ typedef struct Actor {
 
 // pi 🥧
 #define PI 3.14159265358979323846
+#define PIf 3.14159265358979323846f
 
 #define PHYSICS_TARGET_MS (1000 / PHYSICS_TARGET_TPS)
 #define PHYSICS_TARGET_NS (1000000000 / PHYSICS_TARGET_TPS) // nanoseconds because precision

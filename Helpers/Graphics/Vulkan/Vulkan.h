@@ -28,8 +28,4 @@ bool InitVulkan(SDL_Window *window);
 void DrawFrame();
 void CleanupVulkan();
 
-VkInstance GetVulkanInstance();
-VkSurfaceKHR GetVulkanSurface();
-VkDevice GetVulkanDevice();
-
 #endif //GAME_VULKAN_H
