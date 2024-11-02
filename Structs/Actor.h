@@ -25,7 +25,8 @@ int GetActorTypeCount();
  * @param paramD Initial parameter D
  * @return Initialized Actor struct
  */
-Actor *CreateActor(Vector2 position, double rotation, int actorType, byte paramA, byte paramB, byte paramC, byte paramD);
+Actor *
+CreateActor(Vector2 position, double rotation, int actorType, byte paramA, byte paramB, byte paramC, byte paramD);
 
 /**
  * Destroy an Actor

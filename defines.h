@@ -20,12 +20,14 @@
 #define NULLPTR NULL
 
 // Utility functions are in Structs/Vector2.h
-typedef struct Vector2 {
+typedef struct Vector2
+{
     double x;
     double y;
 } Vector2;
 
-typedef struct Camera {
+typedef struct Camera
+{
     float x;
     float z;
     float y;
@@ -38,7 +40,8 @@ typedef struct Camera {
 } Camera;
 
 // Utility functions are in Structs/wall.h
-typedef struct Wall {
+typedef struct Wall
+{
     Vector2 a;
     Vector2 b;
     const byte *tex;
@@ -53,7 +56,8 @@ typedef struct Wall {
 } Wall;
 
 // Utility functions are in Structs/level.h
-typedef struct Level {
+typedef struct Level
+{
     List *actors;
     List *walls;
     Vector2 position;
@@ -70,14 +74,16 @@ typedef struct Level {
 } Level;
 
 // Utility functions are in Structs/ray.h
-typedef struct RayCastResult {
+typedef struct RayCastResult
+{
     Vector2 CollisionPoint;
     double Distance;
     bool Collided;
     Wall CollisionWall;
 } RayCastResult;
 
-typedef struct TextBox {
+typedef struct TextBox
+{
     char *text;
     int rows;
     int cols;
@@ -92,7 +98,8 @@ typedef struct TextBox {
     void (*Close)(void *tbox);
 } TextBox;
 
-typedef enum {
+typedef enum
+{
     EDITOR_STATE,
     LEVEL_SELECT_STATE,
     LOGO_SPLASH_STATE,
@@ -102,12 +109,14 @@ typedef enum {
     OPTIONS_STATE
 } CurrentState;
 
-typedef enum Renderer {
+typedef enum Renderer
+{
     RENDERER_OPENGL,
     RENDERER_VULKAN
 } Renderer;
 
-typedef struct Options {
+typedef struct Options
+{
     Renderer renderer;
     double musicVolume;
     double sfxVolume;
@@ -118,10 +127,11 @@ typedef struct Options {
 } __attribute__((packed)) Options; // This is packed because it is saved to disk
 
 // Global state of the game
-typedef struct GlobalState {
+typedef struct GlobalState
+{
     Level *level; // Current level
-    void (*UpdateGame)(struct GlobalState* State); // State update function
-    void (*RenderGame)(void* State); // State render function
+    void (*UpdateGame)(struct GlobalState *State); // State update function
+    void (*RenderGame)(void *State); // State render function
     SDL_TimerID FixedFramerateUpdate;
     CurrentState currentState;
     int hp; // Player health
@@ -149,7 +159,8 @@ typedef struct GlobalState {
 } GlobalState;
 
 // Actor (interactable/moving wall) struct
-typedef struct Actor {
+typedef struct Actor
+{
     Vector2 position;
     double rotation;
     Wall *actorWall; // (0,0) in this wall is the actor's position (also transformed by rotation)

@@ -21,14 +21,14 @@
  * @param function Function name
  * @warning Do not use this function directly, use the @c Error macro instead
  */
-_Noreturn void Error_Internal(char* error, const char* file, int line, const char* function);
+_Noreturn void Error_Internal(char *error, const char *file, int line, const char *function);
 
 /**
  * Friendly error handler
  * @param title Friendly title
  * @param description Friendly description
  */
-_Noreturn void FriendlyError(char* title, char* description);
+_Noreturn void FriendlyError(char *title, char *description);
 
 /**
  * Sets the signal handler to catch @c SIGSEGV and @c SIGFPE

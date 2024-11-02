@@ -28,15 +28,19 @@ const byte *actorTextures[ACTOR_TEXTURE_COUNT] = {
         gztex_actor_goal1,
 };
 
-void InitCommonAssets() {
+void InitCommonAssets()
+{
     SetTexParams(gztex_interface_menu_bg_tile, true, true);
     SetTexParams(gztex_interface_menu_bg_tile_red, true, true);
     SetTexParams(gztex_vfx_shadow, false, false);
 }
 
-int FindWallTextureIndex(const byte *tex) {
-    for (int i = 0; i < WALL_TEXTURE_COUNT; i++) {
-        if (wallTextures[i] == tex) {
+int FindWallTextureIndex(const byte *tex)
+{
+    for (int i = 0; i < WALL_TEXTURE_COUNT; i++)
+    {
+        if (wallTextures[i] == tex)
+        {
             return i;
         }
     }

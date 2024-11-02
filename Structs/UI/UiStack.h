@@ -8,20 +8,23 @@
 #include "../../defines.h"
 #include "../../Helpers/Graphics/Drawing.h"
 
-typedef enum {
+typedef enum
+{
     BUTTON,
     SLIDER,
     CHECKBOX,
     RADIO_BUTTON,
 } ControlType;
 
-typedef enum {
+typedef enum
+{
     NORMAL,
     HOVER,
     ACTIVE
 } ControlState;
 
-typedef enum {
+typedef enum
+{
     TOP_LEFT,
     TOP_CENTER,
     TOP_RIGHT,
@@ -33,7 +36,8 @@ typedef enum {
     BOTTOM_RIGHT
 } ControlAnchor;
 
-typedef struct Control {
+typedef struct Control
+{
     ControlType type;
     ControlAnchor anchor;
     Vector2 position;
@@ -44,7 +48,8 @@ typedef struct Control {
     void *ControlData;
 } Control;
 
-typedef struct UiStack {
+typedef struct UiStack
+{
     List *Controls;
 
     int ActiveControl;

@@ -19,6 +19,7 @@
 #define LEVEL_CMD_MUSIC 7 // Indicates that the next 4 bytes should be parsed as the music track ID
 
 uint ReadUint(byte *data, int *offset);
+
 uint ReadUintA(byte *data, int offset);
 
 /**
@@ -28,7 +29,8 @@ uint ReadUintA(byte *data, int offset);
  */
 Level *LoadLevel(byte *data);
 
-typedef struct LevelBytecode {
+typedef struct LevelBytecode
+{
     byte *data;
     int size;
 } LevelBytecode;
@@ -38,6 +40,6 @@ typedef struct LevelBytecode {
  * @param l Level struct
  * @return Bytecode struct
  */
-LevelBytecode* GenerateBytecode(Level *l);
+LevelBytecode *GenerateBytecode(Level *l);
 
 #endif //GAME_LEVELLOADER_H

@@ -54,7 +54,7 @@ void draw_rect(int x, int y, int w, int h);
  * @param filterMode Texture filtering mode
  * @return The @c SDL_Surface
  */
-SDL_Surface* ToSDLSurface(const unsigned char* imageData, char *filterMode);
+SDL_Surface *ToSDLSurface(const unsigned char *imageData, char *filterMode);
 
 /**
  * Set the color to draw with
@@ -67,7 +67,7 @@ void setColorUint(uint color);
  * @param color Color as uint, @c 0xAARRGGBB
  * @return Four byte array with the color components
  */
-byte* getColorUint(uint color);
+byte *getColorUint(uint color);
 
 /**
  * Mix two colors together
@@ -83,7 +83,7 @@ uint MixColors(uint color_a, uint color_b);
  * @param linear Whether to use linear filtering (blurring)
  * @param repeat Whether to repeat the texture
  */
-void SetTexParams(const unsigned char* imageData, bool linear, bool repeat);
+void SetTexParams(const unsigned char *imageData, bool linear, bool repeat);
 
 /**
  * Draw a line from start to end
@@ -107,7 +107,7 @@ void DrawOutlineRect(Vector2 pos, Vector2 size, float thickness);
  * @param size The size of the rectangle
  * @param imageData The texture data
  */
-void DrawTexture(Vector2 pos, Vector2 size, const unsigned char* imageData);
+void DrawTexture(Vector2 pos, Vector2 size, const unsigned char *imageData);
 
 /**
  * Draw a texture on a rectangle with a color
@@ -116,7 +116,7 @@ void DrawTexture(Vector2 pos, Vector2 size, const unsigned char* imageData);
  * @param imageData The texture data
  * @param color The color to draw with
  */
-void DrawTextureMod(Vector2 pos, Vector2 size, const unsigned char* imageData, uint color);
+void DrawTextureMod(Vector2 pos, Vector2 size, const unsigned char *imageData, uint color);
 
 /**
  * Draw a texture region on a rectangle
@@ -126,7 +126,8 @@ void DrawTextureMod(Vector2 pos, Vector2 size, const unsigned char* imageData, u
  * @param region_start The start of the region (in pixels)
  * @param region_end The end of the region (in pixels)
  */
-void DrawTextureRegion(Vector2 pos, Vector2 size, const unsigned char* imageData, Vector2 region_start, Vector2 region_end);
+void
+DrawTextureRegion(Vector2 pos, Vector2 size, const unsigned char *imageData, Vector2 region_start, Vector2 region_end);
 
 /**
  * Draw a texture region on a rectangle with a color
@@ -137,7 +138,8 @@ void DrawTextureRegion(Vector2 pos, Vector2 size, const unsigned char* imageData
  * @param region_end The end of the region (in pixels)
  * @param color The color to draw with
  */
-void DrawTextureRegionMod(Vector2 pos, Vector2 size, const unsigned char* imageData, Vector2 region_start, Vector2 region_end, uint color);
+void DrawTextureRegionMod(Vector2 pos, Vector2 size, const unsigned char *imageData, Vector2 region_start,
+                          Vector2 region_end, uint color);
 
 /**
  * Clear the screen with a color

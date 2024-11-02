@@ -8,7 +8,8 @@
 #include "../UiStack.h"
 #include "../../Vector2.h"
 
-typedef struct SliderData {
+typedef struct SliderData
+{
     char *label;
 
     double min;
@@ -19,7 +20,8 @@ typedef struct SliderData {
     double altStep; // Step when holding shift
 
     void (*callback)(double);
-    char* (*getLabel)(Control *slider);
+
+    char *(*getLabel)(Control *slider);
 } SliderData;
 
 char *SliderLabelPercent(Control *slider);
@@ -41,7 +43,10 @@ char *SliderLabelInteger(Control *slider);
  * @param getLabel The function to get the label of the slider
  * @return The new Slider Control
  */
-Control *CreateSliderControl(Vector2 position, Vector2 size, char *label, void (*callback)(double), ControlAnchor anchor, double min, double max, double value, double step, double altStep, char *(*getLabel)(Control *slider));
+Control *
+CreateSliderControl(Vector2 position, Vector2 size, char *label, void (*callback)(double), ControlAnchor anchor,
+                    double min, double max, double value, double step, double altStep,
+                    char *(*getLabel)(Control *slider));
 
 void DestroySlider(Control *c);
 

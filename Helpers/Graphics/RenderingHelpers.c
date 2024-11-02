@@ -10,9 +10,10 @@
 
 Renderer currentRenderer;
 
-mat4 *GetMatrix(Camera *cam) {
+mat4 *GetMatrix(Camera *cam)
+{
     vec3 cam_pos = {cam->x, cam->y, cam->z};
-    float aspect = (float)WindowWidth() / (float)WindowHeight();
+    float aspect = (float) WindowWidth() / (float) WindowHeight();
 
     mat4 IDENTITY = GLM_MAT4_IDENTITY_INIT;
     mat4 PERSPECTIVE = GLM_MAT4_ZERO_INIT;
@@ -23,8 +24,8 @@ mat4 *GetMatrix(Camera *cam) {
 
     // TODO: roll and pitch are messed up
 
-    glm_vec3_rotate(look_at, cam->roll, (vec3){0, 0, 1}); // Roll
-    glm_vec3_rotate(look_at, cam->pitch, (vec3){1, 0, 0}); // Pitch
+    glm_vec3_rotate(look_at, cam->roll, (vec3) {0, 0, 1}); // Roll
+    glm_vec3_rotate(look_at, cam->pitch, (vec3) {1, 0, 0}); // Pitch
 
     look_at[0] += cam_pos[0];
     look_at[1] += cam_pos[1];
@@ -42,17 +43,20 @@ mat4 *GetMatrix(Camera *cam) {
     return MODEL_VIEW_PROJECTION;
 }
 
-mat4 *ActorTransformMatrix(Actor *Actor) {
+mat4 *ActorTransformMatrix(Actor *Actor)
+{
     mat4 *MODEL = malloc(sizeof(mat4));
     glm_mat4_identity(*MODEL);
-    glm_translate(*MODEL, (vec3){Actor->position.x, Actor->yPosition, Actor->position.y});
-    glm_rotate(*MODEL, -Actor->rotation, (vec3){0, 1, 0});
+    glm_translate(*MODEL, (vec3) {Actor->position.x, Actor->yPosition, Actor->position.y});
+    glm_rotate(*MODEL, -Actor->rotation, (vec3) {0, 1, 0});
     return MODEL;
 }
 
-bool RenderPreInit() {
+bool RenderPreInit()
+{
     currentRenderer = GetState()->options.renderer;
-    switch (currentRenderer) {
+    switch (currentRenderer)
+    {
         case RENDERER_VULKAN:
             return true;
         case RENDERER_OPENGL:
@@ -62,8 +66,10 @@ bool RenderPreInit() {
     }
 }
 
-bool RenderInit() {
-    switch (currentRenderer) {
+bool RenderInit()
+{
+    switch (currentRenderer)
+    {
         case RENDERER_VULKAN:
             return false;
         case RENDERER_OPENGL:
@@ -75,8 +81,10 @@ bool RenderInit() {
     }
 }
 
-void RenderDestroy() {
-    switch (currentRenderer) {
+void RenderDestroy()
+{
+    switch (currentRenderer)
+    {
         case RENDERER_VULKAN:
 
             break;
@@ -86,8 +94,10 @@ void RenderDestroy() {
     }
 }
 
-void RenderLevel3D(Level *l, Camera *cam) {
-    switch (currentRenderer) {
+void RenderLevel3D(Level *l, Camera *cam)
+{
+    switch (currentRenderer)
+    {
         case RENDERER_VULKAN:
 
             break;
@@ -97,12 +107,14 @@ void RenderLevel3D(Level *l, Camera *cam) {
     }
 }
 
-inline void UpdateViewportSize() {
-    float newScaleX = (float)ActualWindowSize().x / (float)DEF_WIDTH;
-    float newScaleY = (float)ActualWindowSize().y / (float)DEF_HEIGHT;
+inline void UpdateViewportSize()
+{
+    float newScaleX = (float) ActualWindowSize().x / (float) DEF_WIDTH;
+    float newScaleY = (float) ActualWindowSize().y / (float) DEF_HEIGHT;
     float newScale = newScaleX < newScaleY ? newScaleX : newScaleY;
     GetState()->options.uiScale = newScale;
-    switch (currentRenderer) {
+    switch (currentRenderer)
+    {
         case RENDERER_VULKAN:
 
             break;
@@ -112,8 +124,10 @@ inline void UpdateViewportSize() {
     }
 }
 
-inline void DrawBatchedQuadsTextured(BatchedQuadArray *batch, const unsigned char *imageData, uint color) {
-    switch (currentRenderer) {
+inline void DrawBatchedQuadsTextured(BatchedQuadArray *batch, const unsigned char *imageData, uint color)
+{
+    switch (currentRenderer)
+    {
         case RENDERER_VULKAN:
 
             break;
@@ -123,8 +137,10 @@ inline void DrawBatchedQuadsTextured(BatchedQuadArray *batch, const unsigned cha
     }
 }
 
-inline void DrawBatchedQuadsColored(BatchedQuadArray *batch, uint color) {
-    switch (currentRenderer) {
+inline void DrawBatchedQuadsColored(BatchedQuadArray *batch, uint color)
+{
+    switch (currentRenderer)
+    {
         case RENDERER_VULKAN:
 
             break;
@@ -134,8 +150,10 @@ inline void DrawBatchedQuadsColored(BatchedQuadArray *batch, uint color) {
     }
 }
 
-inline float X_TO_NDC(float x) {
-    switch (currentRenderer) {
+inline float X_TO_NDC(float x)
+{
+    switch (currentRenderer)
+    {
         case RENDERER_VULKAN:
             return 0;
         case RENDERER_OPENGL:
@@ -145,8 +163,10 @@ inline float X_TO_NDC(float x) {
     }
 }
 
-inline float Y_TO_NDC(float y) {
-    switch (currentRenderer) {
+inline float Y_TO_NDC(float y)
+{
+    switch (currentRenderer)
+    {
         case RENDERER_VULKAN:
             return 0;
         case RENDERER_OPENGL:

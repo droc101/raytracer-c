@@ -9,7 +9,10 @@
 #include "../../../Helpers/Graphics/Drawing.h"
 #include "../../../Helpers/Graphics/Font.h"
 
-Control *CreateCheckboxControl(Vector2 position, Vector2 size, char *label, void (*callback)(bool), ControlAnchor anchor, bool checked) {
+Control *
+CreateCheckboxControl(Vector2 position, Vector2 size, char *label, void (*callback)(bool), ControlAnchor anchor,
+                      bool checked)
+{
     Control *checkbox = CreateEmptyControl();
     checkbox->type = CHECKBOX;
     checkbox->position = position;
@@ -25,30 +28,36 @@ Control *CreateCheckboxControl(Vector2 position, Vector2 size, char *label, void
     return checkbox;
 }
 
-void DestroyCheckbox(Control *c) {
+void DestroyCheckbox(Control *c)
+{
     CheckBoxData *data = (CheckBoxData *) c->ControlData;
     free(data);
 }
 
-void UpdateCheckbox(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlIndex) {
+void UpdateCheckbox(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlIndex)
+{
     CheckBoxData *data = (CheckBoxData *) c->ControlData;
 
-    if (HasActivation(stack, c)) {
+    if (HasActivation(stack, c))
+    {
         PlaySoundEffect(gzwav_sfx_click);
         data->checked = !data->checked;
 
         ConsumeMouseButton(SDL_BUTTON_LEFT);
         ConsumeKey(SDL_SCANCODE_SPACE);
 
-        if (data->callback != NULL) {
+        if (data->callback != NULL)
+        {
             data->callback(data->checked);
         }
     }
 }
 
-void DrawCheckbox(Control *c, ControlState state, Vector2 position) {
+void DrawCheckbox(Control *c, ControlState state, Vector2 position)
+{
     CheckBoxData *data = (CheckBoxData *) c->ControlData;
-    DrawTextAligned(data->label, 16, 0xFFFFFFFF, c->anchoredPosition, c->size, FONT_HALIGN_LEFT, FONT_VALIGN_MIDDLE, true);
+    DrawTextAligned(data->label, 16, 0xFFFFFFFF, c->anchoredPosition, c->size, FONT_HALIGN_LEFT, FONT_VALIGN_MIDDLE,
+                    true);
 
     setColorUint(0xFF000000);
 

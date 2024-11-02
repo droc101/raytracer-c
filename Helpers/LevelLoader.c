@@ -9,15 +9,19 @@
 #include "Core/DataReader.h"
 #include "../Helpers/CommonAssets.h"
 
-Level *LoadLevel(byte *data) {
+Level *LoadLevel(byte *data)
+{
     Level *l = CreateLevel();
     int i = 0;
     bool done = false;
-    while (!done) {
+    while (!done)
+    {
         byte opcode = data[i];
         i++;
-        switch (opcode) {
-            case LEVEL_CMD_WALL: {
+        switch (opcode)
+        {
+            case LEVEL_CMD_WALL:
+            {
                 double v1 = ReadDouble(data, &i);
                 double vt2 = ReadDouble(data, &i);
                 double v3 = ReadDouble(data, &i);
@@ -30,7 +34,8 @@ Level *LoadLevel(byte *data) {
                 ListAdd(l->walls, w);
                 break;
             }
-            case LEVEL_CMD_PLAYER: {
+            case LEVEL_CMD_PLAYER:
+            {
                 double x = ReadDouble(data, &i);
                 double y = ReadDouble(data, &i);
                 double r = ReadDouble(data, &i);
@@ -38,13 +43,15 @@ Level *LoadLevel(byte *data) {
                 l->rotation = r;
                 break;
             }
-            case LEVEL_CMD_COLORS: {
+            case LEVEL_CMD_COLORS:
+            {
                 uint sky = ReadUint(data, &i);
-                i += sizeof (uint); // skip the second color
+                i += sizeof(uint); // skip the second color
                 l->SkyColor = sky;
                 break;
             }
-            case LEVEL_CMD_ACTOR: {
+            case LEVEL_CMD_ACTOR:
+            {
                 double x = ReadDouble(data, &i);
                 double y = ReadDouble(data, &i);
                 double r = ReadDouble(data, &i);
@@ -57,11 +64,13 @@ Level *LoadLevel(byte *data) {
                 ListAdd(l->actors, a);
                 break;
             }
-            case LEVEL_CMD_FINISH: {
+            case LEVEL_CMD_FINISH:
+            {
                 done = true;
                 break;
             }
-            case LEVEL_CMD_FOG: {
+            case LEVEL_CMD_FOG:
+            {
                 uint color = ReadUint(data, &i);
                 double start = ReadDouble(data, &i);
                 double end = ReadDouble(data, &i);
@@ -70,14 +79,16 @@ Level *LoadLevel(byte *data) {
                 l->FogEnd = end;
                 break;
             }
-            case LEVEL_CMD_FLOOR_CEIL: {
+            case LEVEL_CMD_FLOOR_CEIL:
+            {
                 uint floor = ReadUint(data, &i);
                 uint ceil = ReadUint(data, &i);
                 l->FloorTexture = floor;
                 l->CeilingTexture = ceil;
                 break;
             }
-            case LEVEL_CMD_MUSIC: {
+            case LEVEL_CMD_MUSIC:
+            {
                 uint music = ReadUint(data, &i);
                 l->MusicID = music;
                 break;
@@ -91,10 +102,12 @@ Level *LoadLevel(byte *data) {
     return l;
 }
 
-LevelBytecode* GenerateBytecode(Level *l) {
+LevelBytecode *GenerateBytecode(Level *l)
+{
     byte *data = malloc(1048576);
     int i = 0;
-    for (int j = 0; j < l->walls->size; j++) {
+    for (int j = 0; j < l->walls->size; j++)
+    {
         Wall *w = ListGet(l->walls, j);
         data[i] = LEVEL_CMD_WALL;
         i++;
@@ -108,7 +121,8 @@ LevelBytecode* GenerateBytecode(Level *l) {
         WriteUint(data, &i, wall_texID);
         WriteFloat(data, &i, w->uvScale);
     }
-    for (int j = 0; j < l->actors->size; j++) {
+    for (int j = 0; j < l->actors->size; j++)
+    {
         Actor *a = ListGet(l->actors, j);
         data[i] = LEVEL_CMD_ACTOR;
         i++;

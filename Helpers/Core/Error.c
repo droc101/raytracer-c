@@ -14,7 +14,8 @@
 #include "../CommonAssets.h"
 #include "../../Structs/GlobalState.h"
 
-_Noreturn void Error_Internal(char* error, const char* file, int line, const char* function) {
+_Noreturn void Error_Internal(char *error, const char *file, int line, const char *function)
+{
 
     char buf[256];
     sprintf(buf, "Error: %s\n \n%s:%d (%s)", error, file, line, function);
@@ -34,7 +35,10 @@ _Noreturn void Error_Internal(char* error, const char* file, int line, const cha
 #endif
 
     char finalMb[768];
-    sprintf(finalMb, "Sorry, but the game has crashed.\n\n%s\n\nEngine Version: %s\nSDL Version: %d.%d.%d\nSDL_Mixer Version: %d.%d.%d\nZlib Version: %s", buf, VERSION, SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_PATCHLEVEL, SDL_MIXER_MAJOR_VERSION, SDL_MIXER_MINOR_VERSION, SDL_MIXER_PATCHLEVEL, ZLIB_VERSION);
+    sprintf(finalMb,
+            "Sorry, but the game has crashed.\n\n%s\n\nEngine Version: %s\nSDL Version: %d.%d.%d\nSDL_Mixer Version: %d.%d.%d\nZlib Version: %s",
+            buf, VERSION, SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_PATCHLEVEL, SDL_MIXER_MAJOR_VERSION,
+            SDL_MIXER_MINOR_VERSION, SDL_MIXER_PATCHLEVEL, ZLIB_VERSION);
 
     SDL_MessageBoxData mb;
     mb.message = finalMb;
@@ -57,9 +61,11 @@ _Noreturn void Error_Internal(char* error, const char* file, int line, const cha
     int buttonid;
     SDL_ShowMessageBox(&mb, &buttonid);
 
-    if (buttonid == 0) {
+    if (buttonid == 0)
+    {
         exit(1);
-    } else {
+    } else
+    {
         // restart
         SDL_Quit();
         char *args[] = {GetState()->executablePath, NULL};
@@ -68,20 +74,25 @@ _Noreturn void Error_Internal(char* error, const char* file, int line, const cha
     }
 }
 
-_Noreturn void FriendlyError(char* title, char* description) {
+_Noreturn void FriendlyError(char *title, char *description)
+{
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, title, description, NULL);
     exit(1);
 }
 
-void SignalHandler(int sig) {
-    if (sig == SIGSEGV) {
+void SignalHandler(int sig)
+{
+    if (sig == SIGSEGV)
+    {
         Error("Segmentation Fault");
-    } else if (sig == SIGFPE) {
+    } else if (sig == SIGFPE)
+    {
         Error("Floating Point Exception");
     }
 }
 
-void SetSignalHandler() {
+void SetSignalHandler()
+{
 #ifdef NDEBUG
     signal(SIGSEGV, SignalHandler);
     signal(SIGFPE, SignalHandler);

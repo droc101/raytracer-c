@@ -8,7 +8,8 @@
 #include "../UiStack.h"
 #include "../../Vector2.h"
 
-typedef struct ButtonData {
+typedef struct ButtonData
+{
     char *text;
 
     void (*callback)();

@@ -12,13 +12,15 @@
 #include "cglm/cglm.h"
 #include "glDebug.h"
 
-typedef struct GL_Shader {
+typedef struct GL_Shader
+{
     GLuint vsh;
     GLuint fsh;
     GLuint program;
 } GL_Shader;
 
-typedef struct GL_Buffer {
+typedef struct GL_Buffer
+{
     GLuint vao;
     GLuint vbo;
     GLuint ebo;
@@ -92,7 +94,7 @@ void GL_DestroyGL();
  * @param linear Whether to use linear filtering
  * @param repeat Whether to repeat the texture
  */
-void GL_SetTexParams(const unsigned char* imageData, bool linear, bool repeat);
+void GL_SetTexParams(const unsigned char *imageData, bool linear, bool repeat);
 
 /**
  * Draw a rectangle
@@ -119,7 +121,7 @@ void GL_DrawLine(Vector2 start, Vector2 end, uint color, float thickness);
  * @param size The size in pixels
  * @param imageData The texture data
  */
-void GL_DrawTexture(Vector2 pos, Vector2 size, const unsigned char* imageData);
+void GL_DrawTexture(Vector2 pos, Vector2 size, const unsigned char *imageData);
 
 /**
  * Draw a texture in 2D with a color mod
@@ -128,7 +130,7 @@ void GL_DrawTexture(Vector2 pos, Vector2 size, const unsigned char* imageData);
  * @param imageData The texture data
  * @param color The modulate color
  */
-void GL_DrawTextureMod(Vector2 pos, Vector2 size, const unsigned char* imageData, uint color);
+void GL_DrawTextureMod(Vector2 pos, Vector2 size, const unsigned char *imageData, uint color);
 
 /**
  * Draw a texture region in 2D
@@ -138,7 +140,8 @@ void GL_DrawTextureMod(Vector2 pos, Vector2 size, const unsigned char* imageData
  * @param region_start The start of the region in pixels
  * @param region_end The end of the region in pixels
  */
-void GL_DrawTextureRegion(Vector2 pos, Vector2 size, const unsigned char* imageData, Vector2 region_start, Vector2 region_end);
+void GL_DrawTextureRegion(Vector2 pos, Vector2 size, const unsigned char *imageData, Vector2 region_start,
+                          Vector2 region_end);
 
 /**
  * Draw a texture region in 2D with a color mod
@@ -149,7 +152,8 @@ void GL_DrawTextureRegion(Vector2 pos, Vector2 size, const unsigned char* imageD
  * @param region_end The end of the region in pixels
  * @param color The modulate color
  */
-void GL_DrawTextureRegionMod(Vector2 pos, Vector2 size, const unsigned char* imageData, Vector2 region_start, Vector2 region_end, uint color);
+void GL_DrawTextureRegionMod(Vector2 pos, Vector2 size, const unsigned char *imageData, Vector2 region_start,
+                             Vector2 region_end, uint color);
 
 /**
  * Set the clear color
@@ -176,7 +180,8 @@ void GL_DrawWall(Wall *w, mat4 *mvp, mat4 *mdl, Camera *cam, Level *l);
  * @param texture The texture to use
  * @param height The height of the floor
  */
-void GL_DrawFloor(Vector2 vp1, Vector2 vp2, mat4 *mvp, Level *l, const unsigned char *texture, float height, float shade);
+void
+GL_DrawFloor(Vector2 vp1, Vector2 vp2, mat4 *mvp, Level *l, const unsigned char *texture, float height, float shade);
 
 /**
  * Draw a shadow sprite

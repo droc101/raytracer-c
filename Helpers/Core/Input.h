@@ -18,11 +18,13 @@
  * @param code Key code
  */
 void HandleKeyDown(int code);
+
 /**
  * Handles key up event
  * @param code Key code
  */
 void HandleKeyUp(int code);
+
 /**
  * Handles mouse motion event
  * @param x X position
@@ -31,11 +33,13 @@ void HandleKeyUp(int code);
  * @param yrel Relative Y position
  */
 void HandleMouseMotion(int x, int y, int xrel, int yrel);
+
 /**
  * Handles mouse down event
  * @param button Button code
  */
 void HandleMouseDown(int button);
+
 /**
  * Handles mouse up event
  * @param button Button code
@@ -92,6 +96,7 @@ bool IsMouseButtonJustReleased(int button);
  * @return The current mouse position
  */
 Vector2 GetMousePos();
+
 /**
  * Gets the relative mouse movement
  * @return relative mouse movement
@@ -103,6 +108,7 @@ Vector2 GetMouseRel();
  * @param code The key code
  */
 void ConsumeKey(int code);
+
 /**
  * Consumes a mouse button press state, so no other input check can see it
  * @param button The button code
@@ -113,6 +119,7 @@ void ConsumeMouseButton(int button);
  * Consumes all key press states, so no other input check can see them
  */
 void ConsumeAllKeys();
+
 /**
  * Consumes all mouse button press states, so no other input check can see them
  */

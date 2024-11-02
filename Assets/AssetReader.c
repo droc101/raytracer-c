@@ -10,26 +10,32 @@
 #include "../Helpers/Core/DataReader.h"
 #include "Assets.h"
 
-uint AssetGetSize(const byte *asset) {
+uint AssetGetSize(const byte *asset)
+{
     return ReadUintA(asset, 4);
 }
 
-uint AssetGetType(const byte *asset) {
+uint AssetGetType(const byte *asset)
+{
     return ReadUintA(asset, 12);
 }
 
 byte *AssetCache[ASSET_COUNT];
 
-void InvalidateAssetCache() {
-    for (int i = 0; i < ASSET_COUNT; i++) {
-        if (AssetCache[i] != NULLPTR) {
+void InvalidateAssetCache()
+{
+    for (int i = 0; i < ASSET_COUNT; i++)
+    {
+        if (AssetCache[i] != NULLPTR)
+        {
             free(AssetCache[i]);
             AssetCache[i] = NULLPTR;
         }
     }
 }
 
-byte *DecompressAsset(const byte *asset) {
+byte *DecompressAsset(const byte *asset)
+{
     int offset = 0;
     // Read the first 4 bytes of the asset to get the size of the compressed data
     uint compressedSize = ReadUint(asset, &offset);
@@ -37,19 +43,21 @@ byte *DecompressAsset(const byte *asset) {
     uint assetId = ReadUint(asset, &offset); // Read the asset ID (4 bytes after the decompressed size)
     //uint type = ReadUint(asset, &offset); // Read the asset type (4 bytes after the asset ID)
 
-    if (assetId >= ASSET_COUNT) {
+    if (assetId >= ASSET_COUNT)
+    {
         printf("Asset ID %d is out of range\n", assetId);
         Error("Asset ID out of range");
     }
 
-    if (AssetCache[assetId] != NULLPTR) {
+    if (AssetCache[assetId] != NULLPTR)
+    {
         return AssetCache[assetId];
     }
 
     asset += 16; // skip header
 
     // Allocate memory for the decompressed data
-    byte *decompressedData = (byte *)malloc(decompressedSize);
+    byte *decompressedData = (byte *) malloc(decompressedSize);
 
     z_stream stream;
     memset(&stream, 0, sizeof(stream));
@@ -61,7 +69,8 @@ byte *DecompressAsset(const byte *asset) {
     stream.avail_out = decompressedSize;
 
     // Initialize the zlib stream
-    if (inflateInit2(&stream, MAX_WBITS | 16) != Z_OK) {
+    if (inflateInit2(&stream, MAX_WBITS | 16) != Z_OK)
+    {
         free(decompressedData);
         printf("Failed to initialize zlib stream: %s\n", stream.msg);
         Error("Failed to initialize zlib stream");
@@ -69,9 +78,11 @@ byte *DecompressAsset(const byte *asset) {
 
     // Decompress the data
     int ret;
-    do {
+    do
+    {
         ret = inflate(&stream, Z_NO_FLUSH);
-        if (ret != Z_OK && ret != Z_STREAM_END) {
+        if (ret != Z_OK && ret != Z_STREAM_END)
+        {
             free(decompressedData);
             printf("Failed to decompress zlib stream: %s\n", stream.msg);
             Error("Failed to decompress zlib stream");

@@ -9,6 +9,7 @@
 
 // Create a 2D vector with the given x and y values
 Vector2 v2(double x, double y);
+
 // Create a 2D vector with the same x and y values
 Vector2 v2s(double xy);
 

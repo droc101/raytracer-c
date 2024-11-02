@@ -16,7 +16,8 @@
 
 UiStack *menuStack;
 
-void StartGame() {
+void StartGame()
+{
 #ifdef USE_LEVEL_SELECT
     GLevelSelectStateSet();
 #else
@@ -24,18 +25,22 @@ void StartGame() {
 #endif
 }
 
-void QuitGame() {
+void QuitGame()
+{
     GetState()->requestExit = true;
 }
 
-void OpenOptions() {
+void OpenOptions()
+{
     GOptionsStateSet();
 }
 
-void GMenuStateUpdate(GlobalState * State) {
+void GMenuStateUpdate(GlobalState *State)
+{
 }
 
-void GMenuStateRender(GlobalState * State) {
+void GMenuStateRender(GlobalState *State)
+{
 
     // sorry for the confusing variable names
     Vector2 bg_tile_size = v2(320, 240); // size on screen
@@ -60,16 +65,20 @@ void GMenuStateRender(GlobalState * State) {
     // draw version and copyright info
     char buffer[256];
     sprintf(buffer, "Engine %s\n%s", VERSION, COPYRIGHT);
-    DrawTextAligned(buffer, 16, 0xFF000000, v2(WindowWidth() - 208, WindowHeight() - 208), v2(200, 200), FONT_HALIGN_RIGHT, FONT_VALIGN_BOTTOM, true);
-    DrawTextAligned(buffer, 16, 0xFFa0a0a0, v2(WindowWidth() - 210, WindowHeight() - 210), v2(200, 200), FONT_HALIGN_RIGHT, FONT_VALIGN_BOTTOM, true);
+    DrawTextAligned(buffer, 16, 0xFF000000, v2(WindowWidth() - 208, WindowHeight() - 208), v2(200, 200),
+                    FONT_HALIGN_RIGHT, FONT_VALIGN_BOTTOM, true);
+    DrawTextAligned(buffer, 16, 0xFFa0a0a0, v2(WindowWidth() - 210, WindowHeight() - 210), v2(200, 200),
+                    FONT_HALIGN_RIGHT, FONT_VALIGN_BOTTOM, true);
 
     ProcessUiStack(menuStack);
     DrawUiStack(menuStack);
 }
 
-void GMenuStateSet() {
+void GMenuStateSet()
+{
 
-    if (menuStack == NULLPTR) {
+    if (menuStack == NULLPTR)
+    {
         menuStack = CreateUiStack();
         UiStackPush(menuStack, CreateButtonControl(v2(0, 80), v2(480, 40), "Start", StartGame, MIDDLE_CENTER));
         UiStackPush(menuStack, CreateButtonControl(v2(0, 130), v2(480, 40), "Options", OpenOptions, MIDDLE_CENTER));

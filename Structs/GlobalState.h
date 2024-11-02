@@ -64,12 +64,15 @@ void UseAmmo(int amount);
  * @param FixedUpdateGame fixed-FPS update callback
  * @param currentState used for checking the state
  */
-void SetUpdateCallback(void (*UpdateGame)(GlobalState* State), uint (*FixedUpdateGame)(uint interval, GlobalState* State), CurrentState currentState);
+void
+SetUpdateCallback(void (*UpdateGame)(GlobalState *State), uint (*FixedUpdateGame)(uint interval, GlobalState *State),
+                  CurrentState currentState);
+
 /**
  * Set game state render callback
  * @param RenderGame render callback
  */
-void SetRenderCallback(void (*RenderGame)(GlobalState* State));
+void SetRenderCallback(void (*RenderGame)(GlobalState *State));
 
 /**
  * Change the current level

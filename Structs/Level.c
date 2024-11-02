@@ -15,8 +15,9 @@
 #include "../Helpers/CommonAssets.h"
 #include "../Helpers/Graphics/RenderingHelpers.h"
 
-Level *CreateLevel() {
-    Level *l = (Level*)malloc(sizeof(Level));
+Level *CreateLevel()
+{
+    Level *l = (Level *) malloc(sizeof(Level));
     l->actors = CreateList();
     l->walls = CreateList();
     l->position = v2s(0);
@@ -33,21 +34,26 @@ Level *CreateLevel() {
     return l;
 }
 
-void DestroyLevel(Level *l) {
-    for (int i = 0; i < l->walls->size; i++) {
+void DestroyLevel(Level *l)
+{
+    for (int i = 0; i < l->walls->size; i++)
+    {
         Wall *w = (Wall *) ListGet(l->walls, i);
         FreeWall(w);
     }
-    for (int i = 0; i < l->actors->size; i++) {
+    for (int i = 0; i < l->actors->size; i++)
+    {
         Actor *a = (Actor *) ListGet(l->actors, i);
         FreeActor(a);
     }
 
-    if (l->staticWalls != NULL) {
+    if (l->staticWalls != NULL)
+    {
         DestroySizedArray(l->staticWalls);
     }
 
-    if (l->staticActors != NULL) {
+    if (l->staticActors != NULL)
+    {
         DestroySizedArray(l->staticActors);
     }
 
@@ -56,24 +62,29 @@ void DestroyLevel(Level *l) {
     free(l);
 }
 
-void BakeWallArray(Level *l) {
+void BakeWallArray(Level *l)
+{
     l->staticWalls = ToSizedArray(l->walls);
 }
 
-void BakeActorArray(Level *l) {
+void BakeActorArray(Level *l)
+{
     l->staticActors = ToSizedArray(l->actors);
 }
 
-void AddActor(Actor* actor) {
+void AddActor(Actor *actor)
+{
     Level *l = GetState()->level;
     ListAdd(l->actors, actor);
     BakeActorArray(l);
 }
 
-void RemoveActor(Actor* actor) {
+void RemoveActor(Actor *actor)
+{
     Level *l = GetState()->level;
     int idx = ListFind(l->actors, actor);
-    if (idx == -1) {
+    if (idx == -1)
+    {
         return;
     }
     ListRemoveAt(l->actors, idx);
@@ -81,23 +92,26 @@ void RemoveActor(Actor* actor) {
     BakeActorArray(l);
 }
 
-void RenderLevelSky(Camera *cam) {
+void RenderLevelSky(Camera *cam)
+{
     Level *l = GetState()->level;
 
     double camRot = cam->yaw;
 
     Vector2 wndSize = v2(WindowWidth(), WindowHeight());
 
-    const int skyPos = (int)(camRot * 128 / PI) % 256;
+    const int skyPos = (int) (camRot * 128 / PI) % 256;
     const int height = wndSize.y / 2;
-    const int offset = (int)(wndSize.x * (1 - skyPos / 256.0));
+    const int offset = (int) (wndSize.x * (1 - skyPos / 256.0));
 
     DrawTextureRegionMod(v2(offset, 0), v2(wndSize.x * skyPos / 256, height), gztex_level_sky, v2(0, 0),
                          v2(skyPos, 128), l->SkyColor);
-    DrawTextureRegionMod(v2(0, 0), v2(offset, height), gztex_level_sky, v2(skyPos, 0), v2(256 - skyPos, 128), l->SkyColor);
+    DrawTextureRegionMod(v2(0, 0), v2(offset, height), gztex_level_sky, v2(skyPos, 0), v2(256 - skyPos, 128),
+                         l->SkyColor);
 }
 
-void RenderLevel(GlobalState *g) {
+void RenderLevel(GlobalState *g)
+{
     RenderLevelSky(g->cam);
     RenderLevel3D(g->level, g->cam);
 }
