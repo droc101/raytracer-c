@@ -33,11 +33,11 @@ _Noreturn void Error_Internal(char* error, const char* file, int line, const cha
 
 #endif
 
-    char dbgInfoBuf[256];
-    sprintf(dbgInfoBuf, "Engine Version: %s\nSDL Version: %d.%d.%d\nSDL_Mixer Version: %d.%d.%d\nZlib Version: %s", VERSION, SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_PATCHLEVEL, SDL_MIXER_MAJOR_VERSION, SDL_MIXER_MINOR_VERSION, SDL_MIXER_PATCHLEVEL, ZLIB_VERSION);
+    char finalMb[768];
+    sprintf(finalMb, "Sorry, but the game has crashed.\n\n%s\n\nEngine Version: %s\nSDL Version: %d.%d.%d\nSDL_Mixer Version: %d.%d.%d\nZlib Version: %s", buf, VERSION, SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_PATCHLEVEL, SDL_MIXER_MAJOR_VERSION, SDL_MIXER_MINOR_VERSION, SDL_MIXER_PATCHLEVEL, ZLIB_VERSION);
 
     SDL_MessageBoxData mb;
-    mb.message = buf;
+    mb.message = finalMb;
     mb.title = "Error";
 
     SDL_MessageBoxButtonData buttons[2];

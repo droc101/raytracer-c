@@ -19,7 +19,7 @@
  * @param file File name
  * @param line Line number
  * @param function Function name
- * @warning Do not use this function directly, use the Error macro instead
+ * @warning Do not use this function directly, use the @c Error macro instead
  */
 _Noreturn void Error_Internal(char* error, const char* file, int line, const char* function);
 

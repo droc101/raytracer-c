@@ -149,7 +149,7 @@ typedef struct GlobalState {
 
     Options options;
 
-    char executablePath[260];
+    char executablePath[261];
 } GlobalState;
 
 // Actor (interactable/moving wall) struct
