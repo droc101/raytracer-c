@@ -82,7 +82,7 @@ _Noreturn void Error_Internal(char *error, const char *file, const int line, con
     colorScheme.colors[SDL_MESSAGEBOX_COLOR_TEXT] = text;
     colorScheme.colors[SDL_MESSAGEBOX_COLOR_BUTTON_BORDER] = buttonBorder;
     colorScheme.colors[SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND] = buttonBg;
-    colorScheme.colors[SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED] = buttonBorder;
+    colorScheme.colors[SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED] = text;
 
     mb.colorScheme = &colorScheme;
 
