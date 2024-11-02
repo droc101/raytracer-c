@@ -27,6 +27,6 @@
  * @param box The text box to render
  * @param page Page number to render
  */
-void TextBoxRender(TextBox *box, int page);
+void TextBoxRender(const TextBox *box, const int page);
 
 #endif //GAME_TEXTBOX_H

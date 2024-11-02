@@ -27,7 +27,7 @@ Camera *CreateCamera()
  * @param camera The camera to look with
  * @param target The target to look at
  */
-void CameraLookAt(Camera *camera, Vector2 target)
+void CameraLookAt(Camera *camera, const Vector2 target)
 {
     camera->yaw = atan2(target.x - camera->x, target.y - camera->z);
     camera->pitch = 0;

@@ -13,8 +13,9 @@
 
 GlobalState state;
 
-void ChannelFinished(int channel)
-{ // callback for when a channel finishes playing (so we can free it)
+void ChannelFinished(const int channel)
+{
+    // callback for when a channel finishes playing (so we can free it)
     state.channels[channel] = NULLPTR;
 }
 
@@ -47,15 +48,15 @@ void InitState()
 
 void UpdateVolume()
 {
-    double sfxVol = state.options.sfxVolume;
-    double musicVol = state.options.musicVolume;
-    double masterVol = state.options.masterVolume;
+    const double sfxVol = state.options.sfxVolume;
+    const double musicVol = state.options.musicVolume;
+    const double masterVol = state.options.masterVolume;
     Mix_MasterVolume((int) (masterVol * MIX_MAX_VOLUME));
     Mix_Volume(-1, (int) (sfxVol * MIX_MAX_VOLUME));
     Mix_VolumeMusic((int) (musicVol * MIX_MAX_VOLUME));
 }
 
-void ShowTextBox(TextBox tb)
+void ShowTextBox(const TextBox tb)
 {
     state.textBox = tb;
     state.textBoxPage = 0;
@@ -67,7 +68,7 @@ GlobalState *GetState()
     return &state;
 }
 
-void TakeDamage(int damage)
+void TakeDamage(const int damage)
 {
     state.hp -= damage;
     if (state.hp < 0)
@@ -76,7 +77,7 @@ void TakeDamage(int damage)
     }
 }
 
-void Heal(int amount)
+void Heal(const int amount)
 {
     state.hp += amount;
     if (state.hp > state.maxHp)
@@ -85,7 +86,7 @@ void Heal(int amount)
     }
 }
 
-void AddAmmo(int amount)
+void AddAmmo(const int amount)
 {
     state.ammo += amount;
     if (state.ammo > state.maxAmmo)
@@ -94,7 +95,7 @@ void AddAmmo(int amount)
     }
 }
 
-void UseAmmo(int amount)
+void UseAmmo(const int amount)
 {
     state.ammo -= amount;
     if (state.ammo < 0)
@@ -134,7 +135,7 @@ void SetRenderCallback(void (*RenderGame)(GlobalState *State))
 }
 
 const byte *music[MUSIC_COUNT] = {
-        gzmpg_audio_field
+    gzmpg_audio_field
 };
 
 void ChangeLevel(Level *l)
@@ -165,7 +166,6 @@ void ChangeLevel(Level *l)
 
 void ChangeMusic(const byte *asset)
 {
-
     if (AssetGetType(asset) != ASSET_TYPE_MP3)
     {
         printf("ChangeMusic Error: Asset is not a music file.\n");
@@ -173,8 +173,8 @@ void ChangeMusic(const byte *asset)
     }
 
     StopMusic(); // stop the current music and free its data
-    byte *mp3 = DecompressAsset(asset);
-    uint mp3Size = AssetGetSize(asset);
+    const byte *mp3 = DecompressAsset(asset);
+    const uint mp3Size = AssetGetSize(asset);
     Mix_Music *mus = Mix_LoadMUS_RW(SDL_RWFromConstMem(mp3, mp3Size), 1);
     if (mus == NULLPTR)
     {
@@ -188,7 +188,8 @@ void ChangeMusic(const byte *asset)
 void StopMusic()
 {
     if (state.music != NULLPTR)
-    { // stop and free the current music
+    {
+        // stop and free the current music
         Mix_HaltMusic();
         Mix_FreeMusic(state.music);
         state.music = NULLPTR; // set to NULL, so we don't free it again if this function fails
@@ -203,8 +204,8 @@ void PlaySoundEffect(const byte *asset)
         return;
     }
 
-    byte *wav = DecompressAsset(asset);
-    uint wavSize = AssetGetSize(asset);
+    const byte *wav = DecompressAsset(asset);
+    const uint wavSize = AssetGetSize(asset);
     Mix_Chunk *chunk = Mix_LoadWAV_RW(SDL_RWFromConstMem(wav, wavSize), 1);
     if (chunk == NULLPTR)
     {
@@ -245,7 +246,7 @@ void DestroyGlobalState()
     }
 }
 
-void ChangeLevelByID(int id)
+void ChangeLevelByID(const int id)
 {
     GetState()->levelID = id;
     GetState()->blueCoins = 0;

@@ -19,7 +19,6 @@
 
 int main(int argc, char *argv[])
 {
-
     printf("Build time: %s at %s\n", __DATE__, __TIME__);
     printf("Version: %s\n", VERSION);
     printf("Initializing Engine\n");
@@ -38,7 +37,7 @@ int main(int argc, char *argv[])
 
     InitState();
 
-    int argvZeroLen = strlen(argv[0]);
+    const int argvZeroLen = strlen(argv[0]);
 
     if (argvZeroLen > 260)
     {
@@ -166,7 +165,6 @@ int main(int argc, char *argv[])
         }
 
         FrameGraphUpdate(GetTimeNs() - frameStart);
-
     }
     printf("Mainloop exited, cleaning up engine...\n");
     DestroyGlobalState();

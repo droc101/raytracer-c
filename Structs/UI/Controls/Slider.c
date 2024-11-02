@@ -10,33 +10,33 @@
 #include <math.h>
 #include <stdio.h>
 
-char *DefaultSliderLabelCallback(Control *slider)
+char *DefaultSliderLabelCallback(const Control *slider)
 {
-    SliderData *data = (SliderData *) slider->ControlData;
+    const SliderData *data = (SliderData *) slider->ControlData;
     char *buf = malloc(64);
     sprintf(buf, "%s: %.2f", data->label, data->value);
     return buf;
 }
 
-char *SliderLabelPercent(Control *slider)
+char *SliderLabelPercent(const Control *slider)
 {
-    SliderData *data = (SliderData *) slider->ControlData;
+    const SliderData *data = (SliderData *) slider->ControlData;
     char *buf = malloc(64);
     sprintf(buf, "%s: %.0f%%", data->label, data->value * 100);
     return buf;
 }
 
-char *SliderLabelInteger(Control *slider)
+char *SliderLabelInteger(const Control *slider)
 {
-    SliderData *data = (SliderData *) slider->ControlData;
+    const SliderData *data = (SliderData *) slider->ControlData;
     char *buf = malloc(64);
     sprintf(buf, "%s: %.0f", data->label, data->value);
     return buf;
 }
 
 Control *
-CreateSliderControl(Vector2 position, Vector2 size, char *label, void (*callback)(double), ControlAnchor anchor,
-                    double min, double max, double value, double step, double altStep,
+CreateSliderControl(const Vector2 position, const Vector2 size, char *label, void (*callback)(double), const ControlAnchor anchor,
+                    const double min, const double max, const double value, const double step, const double altStep,
                     char *(*getLabel)(Control *slider))
 {
     if (getLabel == NULL)
@@ -64,13 +64,13 @@ CreateSliderControl(Vector2 position, Vector2 size, char *label, void (*callback
     return slider;
 }
 
-void DestroySlider(Control *c)
+void DestroySlider(const Control *c)
 {
     SliderData *data = (SliderData *) c->ControlData;
     free(data);
 }
 
-void UpdateSlider(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlIndex)
+void UpdateSlider(const UiStack *stack, const Control *c, Vector2 localMousePos, const uint ctlIndex)
 {
     SliderData *data = (SliderData *) c->ControlData;
 
@@ -109,11 +109,11 @@ void UpdateSlider(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlInd
         return;
     }
 
-    bool pressed = IsMouseButtonPressed(SDL_BUTTON_LEFT);
+    const bool pressed = IsMouseButtonPressed(SDL_BUTTON_LEFT);
 
     if (pressed)
     {
-        double newVal = remap(GetMousePos().x - c->anchoredPosition.x, 0.0, c->size.x, data->min, data->max);
+        const double newVal = remap(GetMousePos().x - c->anchoredPosition.x, 0.0, c->size.x, data->min, data->max);
         data->value = newVal;
 
         // snap to step
@@ -140,7 +140,7 @@ void UpdateSlider(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlInd
     }
 }
 
-void DrawSlider(Control *c, ControlState state, Vector2 position)
+void DrawSlider(Control *c, const ControlState state, const Vector2 position)
 {
     uint color = 0xff252525;
     setColorUint(color);
@@ -148,8 +148,8 @@ void DrawSlider(Control *c, ControlState state, Vector2 position)
     setColorUint(0xFFFFFFFF);
     DrawOutlineRect(position, c->size, 1);
 
-    SliderData *data = (SliderData *) c->ControlData;
-    double handlePos = remap(data->value, data->min, data->max, 0, c->size.x - 12);
+    const SliderData *data = (SliderData *) c->ControlData;
+    const double handlePos = remap(data->value, data->min, data->max, 0, c->size.x - 12);
 
     // draw handle
     switch (state)

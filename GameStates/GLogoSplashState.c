@@ -12,7 +12,6 @@
 
 uint GLogoSplashStateFixedUpdate(const uint interval, GlobalState *State)
 {
-
     if (State->physicsFrame == 20)
     {
         PlaySoundEffect(gzwav_sfx_coincling);
@@ -27,7 +26,7 @@ uint GLogoSplashStateFixedUpdate(const uint interval, GlobalState *State)
     return interval;
 }
 
-void GLogoSplashStateRender(GlobalState *State)
+void GLogoSplashStateRender(const GlobalState *State)
 {
     setColorUint(0x0);
     ClearColor(0xFF000000);
@@ -36,7 +35,7 @@ void GLogoSplashStateRender(GlobalState *State)
         return;
     }
 
-    SDL_Rect dest = {WindowWidth() / 2 - 150, WindowHeight() / 2 - 150, 300, 300};
+    const SDL_Rect dest = {WindowWidth() / 2 - 150, WindowHeight() / 2 - 150, 300, 300};
     DrawTexture(v2(dest.x, dest.y), v2(dest.w, dest.h), gztex_interface_studio);
 }
 
@@ -45,4 +44,3 @@ void GLogoSplashStateSet()
     SetRenderCallback(GLogoSplashStateRender);
     SetUpdateCallback(NULL, GLogoSplashStateFixedUpdate, LOGO_SPLASH_STATE); // Non-fixed is not needed for this state
 }
-

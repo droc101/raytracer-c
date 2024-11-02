@@ -16,7 +16,7 @@
  * @return The double read
  * @note Increments the offset by 8
  */
-double ReadDouble(byte *data, int *offset);
+double ReadDouble(const byte *data, int *offset);
 
 /**
  * Reads a double from the given data at the given offset, but doesn't increment the offset
@@ -24,7 +24,7 @@ double ReadDouble(byte *data, int *offset);
  * @param offset Offset to read from
  * @return The double read
  */
-double ReadDoubleA(byte *data, int offset);
+double ReadDoubleA(const byte *data, const int offset);
 
 /**
  * Reads a uint from the given data at the given offset
@@ -33,7 +33,7 @@ double ReadDoubleA(byte *data, int offset);
  * @return The uint read
  * @note Increments the offset by 4
  */
-uint ReadUint(byte *data, int *offset);
+uint ReadUint(const byte *data, int *offset);
 
 /**
  * Reads a uint from the given data at the given offset, but doesn't increment the offset
@@ -41,7 +41,7 @@ uint ReadUint(byte *data, int *offset);
  * @param offset The offset to read from
  * @return The uint read
  */
-uint ReadUintA(byte *data, int offset);
+uint ReadUintA(const byte *data, const int offset);
 
 /**
  * Reads a float from the given data at the given offset
@@ -50,7 +50,7 @@ uint ReadUintA(byte *data, int offset);
  * @return The float read
  * @note Increments the offset by 4
  */
-float ReadFloat(byte *data, int *offset);
+float ReadFloat(const byte *data, int *offset);
 
 /**
  * Reads a byte from the given data at the given offset

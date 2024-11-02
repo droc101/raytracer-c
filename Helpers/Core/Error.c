@@ -14,9 +14,8 @@
 #include "../CommonAssets.h"
 #include "../../Structs/GlobalState.h"
 
-_Noreturn void Error_Internal(char *error, const char *file, int line, const char *function)
+_Noreturn void Error_Internal(char *error, const char *file, const int line, const char *function)
 {
-
     char buf[256];
     sprintf(buf, "Error: %s\n \n%s:%d (%s)", error, file, line, function);
     printf("%s", buf);
@@ -74,13 +73,13 @@ _Noreturn void Error_Internal(char *error, const char *file, int line, const cha
     }
 }
 
-_Noreturn void FriendlyError(char *title, char *description)
+_Noreturn void FriendlyError(const char *title, const char *description)
 {
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, title, description, NULL);
     exit(1);
 }
 
-void SignalHandler(int sig)
+void SignalHandler(const int sig)
 {
     if (sig == SIGSEGV)
     {

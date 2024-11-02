@@ -9,7 +9,7 @@
 #include "../../GlobalState.h"
 #include "../../../Assets/Assets.h"
 
-Control *CreateButtonControl(Vector2 position, Vector2 size, char *text, void (*callback)(), ControlAnchor anchor)
+Control *CreateButtonControl(const Vector2 position, const Vector2 size, char *text, void (*callback)(), const ControlAnchor anchor)
 {
     Control *btn = CreateEmptyControl();
     btn->type = BUTTON;
@@ -26,7 +26,7 @@ Control *CreateButtonControl(Vector2 position, Vector2 size, char *text, void (*
     return btn;
 }
 
-void DestroyButton(Control *c)
+void DestroyButton(const Control *c)
 {
     ButtonData *data = (ButtonData *) c->ControlData;
     free(data);
@@ -34,7 +34,7 @@ void DestroyButton(Control *c)
 
 void UpdateButton(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlIndex)
 {
-    ButtonData *data = (ButtonData *) c->ControlData;
+    const ButtonData *data = (ButtonData *) c->ControlData;
     if (data->enabled && HasActivation(stack, c))
     {
         PlaySoundEffect(gzwav_sfx_click);
@@ -44,7 +44,7 @@ void UpdateButton(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlInd
     }
 }
 
-void DrawButton(Control *c, ControlState state, Vector2 position)
+void DrawButton(const Control *c, const ControlState state, const Vector2 position)
 {
     uint color = 0xff000000;
     switch (state)
@@ -60,7 +60,7 @@ void DrawButton(Control *c, ControlState state, Vector2 position)
             break;
     }
 
-    ButtonData *data = (ButtonData *) c->ControlData;
+    const ButtonData *data = (ButtonData *) c->ControlData;
 
     if (!data->enabled)
     {

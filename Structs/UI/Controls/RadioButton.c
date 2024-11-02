@@ -9,8 +9,8 @@
 #include "../../../Helpers/Graphics/Drawing.h"
 #include "../../../Helpers/Graphics/Font.h"
 
-Control *CreateRadioButtonControl(Vector2 position, Vector2 size, char *label, void (*callback)(bool, byte, byte),
-                                  ControlAnchor anchor, bool checked, byte groupId, byte id)
+Control *CreateRadioButtonControl(const Vector2 position, const Vector2 size, char *label, void (*callback)(bool, byte, byte),
+                                  const ControlAnchor anchor, const bool checked, const byte groupId, const byte id)
 {
     Control *radio = CreateEmptyControl();
     radio->type = RADIO_BUTTON;
@@ -29,7 +29,7 @@ Control *CreateRadioButtonControl(Vector2 position, Vector2 size, char *label, v
     return radio;
 }
 
-void DestroyRadioButton(Control *c)
+void DestroyRadioButton(const Control *c)
 {
     RadioButtonData *data = (RadioButtonData *) c->ControlData;
     free(data);
@@ -53,7 +53,7 @@ void UpdateRadioButton(UiStack *stack, Control *c, Vector2 localMousePos, uint c
         // Find all radio buttons with the same group id and uncheck them
         for (uint i = 0; i < ListGetSize(stack->Controls); i++)
         {
-            Control *control = ListGet(stack->Controls, i);
+            const Control *control = ListGet(stack->Controls, i);
             if (control->type == RADIO_BUTTON)
             {
                 RadioButtonData *radioData = (RadioButtonData *) control->ControlData;
@@ -74,18 +74,18 @@ void UpdateRadioButton(UiStack *stack, Control *c, Vector2 localMousePos, uint c
     }
 }
 
-void DrawRadioButton(Control *c, ControlState state, Vector2 position)
+void DrawRadioButton(const Control *c, ControlState state, const Vector2 position)
 {
-    RadioButtonData *data = (RadioButtonData *) c->ControlData;
+    const RadioButtonData *data = (RadioButtonData *) c->ControlData;
 
-    uint textColor = data->checked ? 0xFFFFFFFF : 0xFFc0c0c0;
+    const uint textColor = data->checked ? 0xFFFFFFFF : 0xFFc0c0c0;
 
     DrawTextAligned(data->label, 16, textColor, c->anchoredPosition, c->size, FONT_HALIGN_LEFT, FONT_VALIGN_MIDDLE,
                     true);
 
     setColorUint(0xFF0000ff);
 
-    Vector2 boxSize = v2s(32);
-    Vector2 boxPos = v2(position.x + c->size.x - boxSize.x - 2, position.y + c->size.y / 2 - boxSize.y / 2);
+    const Vector2 boxSize = v2s(32);
+    const Vector2 boxPos = v2(position.x + c->size.x - boxSize.x - 2, position.y + c->size.y / 2 - boxSize.y / 2);
     DrawTexture(boxPos, boxSize, data->checked ? gztex_interface_radio_checked : gztex_interface_radio_unchecked);
 }

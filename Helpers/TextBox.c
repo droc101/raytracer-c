@@ -11,15 +11,15 @@
 #define TEXT_BOX_FONT_WIDTH 18
 
 ulong textBoxThemes[3] = {
-        0x80000000FFFFFFFF,
-        0xA0FFFFFFFF000000,
-        0x80200000FFFFEEEE
+    0x80000000FFFFFFFF,
+    0xA0FFFFFFFF000000,
+    0x80200000FFFFEEEE
 };
 
-void TextBoxRender(TextBox *box, int page)
+void TextBoxRender(const TextBox *box, const int page)
 {
-    int startLine = box->rows * page;
-    int lineCount = StringLineCount(box->text);
+    const int startLine = box->rows * page;
+    const int lineCount = StringLineCount(box->text);
     int endLine = startLine + box->rows;
     if (endLine > lineCount)
     {
@@ -28,11 +28,11 @@ void TextBoxRender(TextBox *box, int page)
 
     Vector2 topLeft = {0, 0};
 
-    uint textColor = textBoxThemes[box->theme];
-    uint boxColor = textBoxThemes[box->theme] >> 32;
+    const uint textColor = textBoxThemes[box->theme];
+    const uint boxColor = textBoxThemes[box->theme] >> 32;
 
-    int width = (box->cols * TEXT_BOX_FONT_WIDTH) + (BOX_OUTER_PADDING * 2);
-    int height = (box->rows * TEXT_BOX_FONT_SIZE) + (BOX_OUTER_PADDING * 2);
+    const int width = (box->cols * TEXT_BOX_FONT_WIDTH) + (BOX_OUTER_PADDING * 2);
+    const int height = (box->rows * TEXT_BOX_FONT_SIZE) + (BOX_OUTER_PADDING * 2);
 
     if (box->h_align == TEXT_BOX_H_ALIGN_CENTER)
     {
@@ -68,7 +68,7 @@ void TextBoxRender(TextBox *box, int page)
     {
         char line[256];
         TextGetLine(box->text, i, line);
-        Vector2 pos = {topLeft.x + BOX_OUTER_PADDING, txtY};
+        const Vector2 pos = {topLeft.x + BOX_OUTER_PADDING, txtY};
         FontDrawString(pos, line, TEXT_BOX_FONT_SIZE, textColor, true);
         txtY += TEXT_BOX_FONT_SIZE;
     }

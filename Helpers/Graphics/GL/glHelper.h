@@ -43,7 +43,7 @@ bool GL_Init(SDL_Window *wnd);
  * @param vsh The vertex shader source
  * @return The shader struct
  */
-GL_Shader *GL_ConstructShader(char *fsh, char *vsh);
+GL_Shader *GL_ConstructShader(const char *fsh, const char *vsh);
 
 /**
  * Create a buffer object
@@ -169,7 +169,7 @@ void GL_ClearColor(uint color);
  * @param mdl The model -> world matrix
  * @note This expects 3D mode to be enabled
  */
-void GL_DrawWall(Wall *w, mat4 *mvp, mat4 *mdl, Camera *cam, Level *l);
+void GL_DrawWall(const Wall *w, const mat4 *mvp, const mat4 *mdl, const Camera *cam, const Level *l);
 
 /**
  * Draw the floor in 3D
@@ -181,7 +181,7 @@ void GL_DrawWall(Wall *w, mat4 *mvp, mat4 *mdl, Camera *cam, Level *l);
  * @param height The height of the floor
  */
 void
-GL_DrawFloor(Vector2 vp1, Vector2 vp2, mat4 *mvp, Level *l, const unsigned char *texture, float height, float shade);
+GL_DrawFloor(const Vector2 vp1, const Vector2 vp2, const mat4 *mvp, const Level *l, const unsigned char *texture, const float height, const float shade);
 
 /**
  * Draw a shadow sprite
@@ -191,7 +191,7 @@ GL_DrawFloor(Vector2 vp1, Vector2 vp2, mat4 *mvp, Level *l, const unsigned char 
  * @param mdl The model -> world matrix
  * @param l The level
  */
-void GL_DrawShadow(Vector2 vp1, Vector2 vp2, mat4 *mvp, mat4 *mdl, Level *l);
+void GL_DrawShadow(const Vector2 vp1, const Vector2 vp2, const mat4 *mvp, const mat4 *mdl, const Level *l);
 
 /**
  * Enable 3D mode
@@ -216,7 +216,7 @@ void GL_UpdateViewportSize();
  * @param imageData The texture to use
  * @param color The modulate color
  */
-void GL_DrawTexturedArrays(float *vertices, uint *indices, int quad_count, const unsigned char *imageData, uint color);
+void GL_DrawTexturedArrays(const float *vertices, const uint *indices, const int quad_count, const unsigned char *imageData, const uint color);
 
 /**
  * Draw arrays using the ui_colored shader
@@ -225,7 +225,7 @@ void GL_DrawTexturedArrays(float *vertices, uint *indices, int quad_count, const
  * @param quad_count The number of quads to draw
  * @param color The color to draw
  */
-void GL_DrawColoredArrays(float *vertices, uint *indices, int quad_count, uint color);
+void GL_DrawColoredArrays(const float *vertices, const uint *indices, int quad_count, uint color);
 
 /**
  * Convert screen X to NDC

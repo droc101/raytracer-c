@@ -11,21 +11,26 @@
 
 double framerates[FRAMEGRAPH_HISTORY_SIZE];
 
-void FG_PushIntoArray(double value) {
-    for (int i = 0; i < FRAMEGRAPH_HISTORY_SIZE - 1; i++) {
-        framerates[i] = framerates[i+1];
+void FG_PushIntoArray(const double value)
+{
+    for (int i = 0; i < FRAMEGRAPH_HISTORY_SIZE - 1; i++)
+    {
+        framerates[i] = framerates[i + 1];
     }
-    framerates[FRAMEGRAPH_HISTORY_SIZE-1] = value;
+    framerates[FRAMEGRAPH_HISTORY_SIZE - 1] = value;
 }
 
-void FrameGraphUpdate(ulong ns) {
-    if (GetState()->physicsFrame % FRAMEGRAPH_INTERVAL == 0) {
+void FrameGraphUpdate(ulong ns)
+{
+    if (GetState()->physicsFrame % FRAMEGRAPH_INTERVAL == 0)
+    {
         if (ns == 0) { ns = 1; }
         FG_PushIntoArray(1000000000.0 / ns);
     }
 }
 
-void FrameGraphDraw() {
+void FrameGraphDraw()
+{
 #ifdef FRAMEGRAPH_ENABLE
 #ifndef FRAMEGRAPH_FPS_ONLY
     int x = 10;

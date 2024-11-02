@@ -82,7 +82,7 @@ void AddActor(Actor *actor)
 void RemoveActor(Actor *actor)
 {
     Level *l = GetState()->level;
-    int idx = ListFind(l->actors, actor);
+    const int idx = ListFind(l->actors, actor);
     if (idx == -1)
     {
         return;
@@ -92,13 +92,13 @@ void RemoveActor(Actor *actor)
     BakeActorArray(l);
 }
 
-void RenderLevelSky(Camera *cam)
+void RenderLevelSky(const Camera *cam)
 {
-    Level *l = GetState()->level;
+    const Level *l = GetState()->level;
 
-    double camRot = cam->yaw;
+    const double camRot = cam->yaw;
 
-    Vector2 wndSize = v2(WindowWidth(), WindowHeight());
+    const Vector2 wndSize = v2(WindowWidth(), WindowHeight());
 
     const int skyPos = (int) (camRot * 128 / PI) % 256;
     const int height = wndSize.y / 2;
@@ -110,9 +110,8 @@ void RenderLevelSky(Camera *cam)
                          l->SkyColor);
 }
 
-void RenderLevel(GlobalState *g)
+void RenderLevel(const GlobalState *g)
 {
     RenderLevelSky(g->cam);
     RenderLevel3D(g->level, g->cam);
 }
-

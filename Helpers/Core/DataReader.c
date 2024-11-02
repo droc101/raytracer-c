@@ -4,7 +4,7 @@
 
 #include "DataReader.h"
 
-double ReadDouble(byte *data, int *offset)
+double ReadDouble(const byte *data, int *offset)
 {
     double d;
     memcpy(&d, data + *offset, sizeof(double));
@@ -21,7 +21,7 @@ double ReadDouble(byte *data, int *offset)
     return d;
 }
 
-double ReadDoubleA(byte *data, int offset)
+double ReadDoubleA(const byte *data, const int offset)
 {
     double d;
     memcpy(&d, data + offset, sizeof(double));
@@ -29,7 +29,7 @@ double ReadDoubleA(byte *data, int offset)
     // Reverse the byte order
     for (int i = 0; i < sizeof(double) / 2; i++)
     {
-        byte temp = ((byte *) &d)[i];
+        const byte temp = ((byte *) &d)[i];
         ((byte *) &d)[i] = ((byte *) &d)[sizeof(double) - i - 1];
         ((byte *) &d)[sizeof(double) - i - 1] = temp;
     }
@@ -37,7 +37,7 @@ double ReadDoubleA(byte *data, int offset)
     return d;
 }
 
-uint ReadUint(byte *data, int *offset)
+uint ReadUint(const byte *data, int *offset)
 {
     uint i;
     memcpy(&i, data + *offset, sizeof(uint));
@@ -52,7 +52,7 @@ uint ReadUint(byte *data, int *offset)
     return i;
 }
 
-uint ReadUintA(byte *data, int offset)
+uint ReadUintA(const byte *data, const int offset)
 {
     uint i;
     memcpy(&i, data + offset, sizeof(uint));
@@ -66,7 +66,7 @@ uint ReadUintA(byte *data, int offset)
     return i;
 }
 
-float ReadFloat(byte *data, int *offset)
+float ReadFloat(const byte *data, int *offset)
 {
     float f;
     memcpy(&f, data + *offset, sizeof(float));
@@ -75,7 +75,7 @@ float ReadFloat(byte *data, int *offset)
     // Reverse the byte order
     for (int i = 0; i < sizeof(float) / 2; i++)
     {
-        byte temp = ((byte *) &f)[i];
+        const byte temp = ((byte *) &f)[i];
         ((byte *) &f)[i] = ((byte *) &f)[sizeof(float) - i - 1];
         ((byte *) &f)[sizeof(float) - i - 1] = temp;
     }
@@ -85,15 +85,15 @@ float ReadFloat(byte *data, int *offset)
 
 byte ReadByte(const byte *data, int *offset)
 {
-    byte b = data[*offset];
+    const byte b = data[*offset];
     *offset += sizeof(byte);
     return b;
 }
 
-void ReadString(const byte *data, int *offset, char *str, int maxLen)
+void ReadString(const byte *data, int *offset, char *str, const int maxLen)
 {
     memset(str, 0, maxLen);
-    int len = ReadUint(data, offset);
+    const int len = ReadUint(data, offset);
     memcpy(str, data + *offset, len);
     *offset += len;
 }
@@ -110,7 +110,7 @@ void WriteDouble(byte *data, int *offset, double d)
     // Reverse the byte order
     for (int i = 0; i < sizeof(double) / 2; i++)
     {
-        byte temp = ((byte *) &d)[i];
+        const byte temp = ((byte *) &d)[i];
         ((byte *) &d)[i] = ((byte *) &d)[sizeof(double) - i - 1];
         ((byte *) &d)[sizeof(double) - i - 1] = temp;
     }
@@ -136,7 +136,7 @@ void WriteFloat(byte *data, int *offset, float f)
     // Reverse the byte order
     for (int i = 0; i < sizeof(float) / 2; i++)
     {
-        byte temp = ((byte *) &f)[i];
+        const byte temp = ((byte *) &f)[i];
         ((byte *) &f)[i] = ((byte *) &f)[sizeof(float) - i - 1];
         ((byte *) &f)[sizeof(float) - i - 1] = temp;
     }
@@ -145,7 +145,7 @@ void WriteFloat(byte *data, int *offset, float f)
     *offset += sizeof(float);
 }
 
-void WriteByte(byte *data, int *offset, byte b)
+void WriteByte(byte *data, int *offset, const byte b)
 {
     data[*offset] = b;
     *offset += sizeof(byte);

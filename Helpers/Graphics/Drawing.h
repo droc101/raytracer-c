@@ -54,7 +54,7 @@ void draw_rect(int x, int y, int w, int h);
  * @param filterMode Texture filtering mode
  * @return The @c SDL_Surface
  */
-SDL_Surface *ToSDLSurface(const unsigned char *imageData, char *filterMode);
+SDL_Surface *ToSDLSurface(const unsigned char *imageData, const char *filterMode);
 
 /**
  * Set the color to draw with

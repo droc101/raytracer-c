@@ -14,7 +14,7 @@
  * @param ignore Wall or actor to ignore
  * @return new position
  */
-Vector2 Move(Vector2 position, Vector2 moveVec, void *ignore);
+Vector2 Move(const Vector2 position, const Vector2 moveVec, const void *ignore);
 
 /**
  * Check if a point is inside a cylinder

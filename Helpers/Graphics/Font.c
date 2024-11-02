@@ -15,7 +15,7 @@
 
 const char fontChars[] = "abcdefghijklmnopqrstuvwxyz0123456789.:-,/\\|[]{}();'\"<>`~!@#$%^*_=+?";
 
-int findChar(char target)
+int findChar(const char target)
 {
     int i = 0;
     while (fontChars[i] != 0)
@@ -26,12 +26,12 @@ int findChar(char target)
         }
         i++;
     }
-    return -1;  // Character not found
+    return -1; // Character not found
 }
 
-Vector2 FontDrawString(Vector2 pos, char *str, uint size, uint color, bool small)
+Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, const uint color, const bool small)
 {
-    int str_len = strlen(str);
+    const int str_len = strlen(str);
     float *verts = malloc(sizeof(float[4][4]) * str_len);
     uint *indices = malloc(sizeof(uint[6]) * str_len);
     memset(verts, 0, sizeof(float[4][4]) * str_len);
@@ -40,7 +40,7 @@ Vector2 FontDrawString(Vector2 pos, char *str, uint size, uint color, bool small
     int x = pos.x;
     int y = pos.y;
     int i = 0;
-    int sizeX = small ? size * 0.75 : size;
+    const int sizeX = small ? size * 0.75 : size;
     while (str[i] != '\0')
     {
         if (str[i] == ' ')
@@ -54,29 +54,31 @@ Vector2 FontDrawString(Vector2 pos, char *str, uint size, uint color, bool small
             y += size;
         }
 
-        float uv_per_char = 1.0f / strlen(fontChars);
+        const float uv_per_char = 1.0f / strlen(fontChars);
         int index = findChar(tolower(str[i]));
         if (index == -1)
         {
             index = findChar('U');
         }
 
-        Vector2 ndc_pos = v2(X_TO_NDC(x), Y_TO_NDC(y));
-        Vector2 ndc_pos_end = v2(X_TO_NDC(x + sizeX), Y_TO_NDC(y + size));
-        float charUV = uv_per_char * index;
-        float charUVEnd = uv_per_char * (index + 1);
+        const Vector2 ndc_pos = v2(X_TO_NDC(x), Y_TO_NDC(y));
+        const Vector2 ndc_pos_end = v2(X_TO_NDC(x + sizeX), Y_TO_NDC(y + size));
+        const float charUV = uv_per_char * index;
+        const float charUVEnd = uv_per_char * (index + 1);
 
-        mat4 quad = {
-                {ndc_pos.x,     ndc_pos.y,     charUV,    0},
-                {ndc_pos.x,     ndc_pos_end.y, charUV,    1},
-                {ndc_pos_end.x, ndc_pos_end.y, charUVEnd, 1},
-                {ndc_pos_end.x, ndc_pos.y,     charUVEnd, 0}
+        const mat4 quad = {
+            {ndc_pos.x, ndc_pos.y, charUV, 0},
+            {ndc_pos.x, ndc_pos_end.y, charUV, 1},
+            {ndc_pos_end.x, ndc_pos_end.y, charUVEnd, 1},
+            {ndc_pos_end.x, ndc_pos.y, charUVEnd, 0}
         };
 
         memcpy(verts + i * 16, quad, sizeof(quad));
 
-        uint quad_indices[6] = {0, 1, 2,
-                                0, 2, 3};
+        uint quad_indices[6] = {
+            0, 1, 2,
+            0, 2, 3
+        };
         for (int j = 0; j < 6; j++)
         {
             quad_indices[j] += i * 4;
@@ -100,12 +102,12 @@ Vector2 FontDrawString(Vector2 pos, char *str, uint size, uint color, bool small
     return v2(x + sizeX, y + size); // Return the bottom right corner of the text
 }
 
-Vector2 MeasureText(char *str, uint size, bool small)
+Vector2 MeasureText(const char *str, const uint size, const bool small)
 {
     int textWidth = 0;
     int textHeight = size;
     int tempWidth = 0;
-    int sizeX = small ? size * 0.75 : size;
+    const int sizeX = small ? size * 0.75 : size;
     for (int j = 0; j < strlen(str); j++)
     {
         tempWidth += sizeX;
@@ -123,7 +125,7 @@ Vector2 MeasureText(char *str, uint size, bool small)
     return v2(textWidth, textHeight);
 }
 
-int StringLineCount(char *str)
+int StringLineCount(const char *str)
 {
     int count = 1;
     for (int i = 0; i < strlen(str); i++)
@@ -136,7 +138,7 @@ int StringLineCount(char *str)
     return count;
 }
 
-int MeasureLine(char *str, int line)
+int MeasureLine(const char *str, const int line)
 {
     int i = 0;
     int count = 0;
@@ -155,7 +157,7 @@ int MeasureLine(char *str, int line)
     return i;
 }
 
-void TextGetLine(char *str, int line, char *out)
+void TextGetLine(const char *str, const int line, char *out)
 {
     int start = MeasureLine(str, line);
 
@@ -165,7 +167,7 @@ void TextGetLine(char *str, int line, char *out)
         start++;
     }
 
-    int end = MeasureLine(str, line + 1);
+    const int end = MeasureLine(str, line + 1);
 
     // ensure start is less than end
     if (start > end)
@@ -178,10 +180,10 @@ void TextGetLine(char *str, int line, char *out)
     out[end - start] = '\0';
 }
 
-void DrawTextAligned(char *str, uint size, uint color, Vector2 rect_pos, Vector2 rect_size, byte h_align, byte v_align,
-                     bool small)
+void DrawTextAligned(char *str, const uint size, const uint color, const Vector2 rect_pos, const Vector2 rect_size, const byte h_align, const byte v_align,
+                     const bool small)
 {
-    int lines = StringLineCount(str);
+    const int lines = StringLineCount(str);
     Vector2 textSize;
     int x;
     int y = rect_pos.y;
@@ -211,5 +213,4 @@ void DrawTextAligned(char *str, uint size, uint color, Vector2 rect_pos, Vector2
         FontDrawString(v2(x, y), line, size, color, small);
         y += size;
     }
-
 }

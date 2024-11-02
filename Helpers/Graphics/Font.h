@@ -16,14 +16,14 @@
  * @param small Whether to use the small font or not
  * @return Bottom right position of the text
  */
-Vector2 FontDrawString(Vector2 pos, char *str, uint size, uint color, bool small);
+Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, const uint color, const bool small);
 
 /**
  * Count the number of lines in a string
  * @param str String to count lines of
  * @return Line count
  */
-int StringLineCount(char *str);
+int StringLineCount(const char *str);
 
 /**
  * Measure the size of a string of text
@@ -32,7 +32,7 @@ int StringLineCount(char *str);
  * @param small Whether to use the small font or not
  * @return Size of the text
  */
-Vector2 MeasureText(char *str, uint size, bool small);
+Vector2 MeasureText(const char *str, uint size, bool small);
 
 /**
  * Get a line of text from a string
@@ -40,7 +40,7 @@ Vector2 MeasureText(char *str, uint size, bool small);
  * @param line Line number to get
  * @param out GL_Buffer to store the line in
  */
-void TextGetLine(char *str, int line, char *out);
+void TextGetLine(const char *str, int line, char *out);
 
 /**
  * Draw a string of text to the screen with alignment

@@ -41,13 +41,12 @@ void GMenuStateUpdate(GlobalState *State)
 
 void GMenuStateRender(GlobalState *State)
 {
-
     // sorry for the confusing variable names
-    Vector2 bg_tile_size = v2(320, 240); // size on screen
-    Vector2 bg_tex_size = texture_size(gztex_interface_menu_bg_tile); // actual size of the texture
+    const Vector2 bg_tile_size = v2(320, 240); // size on screen
+    const Vector2 bg_tex_size = texture_size(gztex_interface_menu_bg_tile); // actual size of the texture
 
-    Vector2 tilesOnScreen = v2(WindowWidth() / bg_tile_size.x, WindowHeight() / bg_tile_size.y);
-    Vector2 tileRegion = v2(tilesOnScreen.x * bg_tex_size.x, tilesOnScreen.y * bg_tex_size.y);
+    const Vector2 tilesOnScreen = v2(WindowWidth() / bg_tile_size.x, WindowHeight() / bg_tile_size.y);
+    const Vector2 tileRegion = v2(tilesOnScreen.x * bg_tex_size.x, tilesOnScreen.y * bg_tex_size.y);
     DrawTextureRegion(v2(0, 0), v2(WindowWidth(), WindowHeight()), gztex_interface_menu_bg_tile, v2(0, 0), tileRegion);
 
     // draw the logo
@@ -76,7 +75,6 @@ void GMenuStateRender(GlobalState *State)
 
 void GMenuStateSet()
 {
-
     if (menuStack == NULLPTR)
     {
         menuStack = CreateUiStack();

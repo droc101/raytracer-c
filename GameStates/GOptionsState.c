@@ -23,37 +23,37 @@ void BtnOptionsBack()
     GMenuStateSet();
 }
 
-void SldOptionsMasterVolume(double value)
+void SldOptionsMasterVolume(const double value)
 {
     GetState()->options.masterVolume = value;
     UpdateVolume();
 }
 
-void SldOptionsMusicVolume(double value)
+void SldOptionsMusicVolume(const double value)
 {
     GetState()->options.musicVolume = value;
     UpdateVolume();
 }
 
-void SldOptionsSfxVolume(double value)
+void SldOptionsSfxVolume(const double value)
 {
     GetState()->options.sfxVolume = value;
     UpdateVolume();
 }
 
-void CbOptionsFullscreen(bool value)
+void CbOptionsFullscreen(const bool value)
 {
     GetState()->options.fullscreen = value;
     SDL_SetWindowFullscreen(GetWindow(), value ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
 }
 
-void RbOptionsRenderer(bool value, byte groupId, byte id)
+void RbOptionsRenderer(const bool value, const byte groupId, const byte id)
 {
     GetState()->options.renderer = id;
     // Renderer change will happen on next restart
 }
 
-void CbOptionsVsync(bool value)
+void CbOptionsVsync(const bool value)
 {
     GetState()->options.vsync = value;
     // VSync change will happen on next restart
@@ -61,17 +61,16 @@ void CbOptionsVsync(bool value)
 
 void GOptionsStateUpdate(GlobalState *State)
 {
-
 }
 
 void GOptionsStateRender(GlobalState *State)
 {
     // sorry for the confusing variable names
-    Vector2 bg_tile_size = v2(320, 240); // size on screen
-    Vector2 bg_tex_size = texture_size(gztex_interface_menu_bg_tile); // actual size of the texture
+    const Vector2 bg_tile_size = v2(320, 240); // size on screen
+    const Vector2 bg_tex_size = texture_size(gztex_interface_menu_bg_tile); // actual size of the texture
 
-    Vector2 tilesOnScreen = v2(WindowWidth() / bg_tile_size.x, WindowHeight() / bg_tile_size.y);
-    Vector2 tileRegion = v2(tilesOnScreen.x * bg_tex_size.x, tilesOnScreen.y * bg_tex_size.y);
+    const Vector2 tilesOnScreen = v2(WindowWidth() / bg_tile_size.x, WindowHeight() / bg_tile_size.y);
+    const Vector2 tileRegion = v2(tilesOnScreen.x * bg_tex_size.x, tilesOnScreen.y * bg_tex_size.y);
     DrawTextureRegion(v2(0, 0), v2(WindowWidth(), WindowHeight()), gztex_interface_menu_bg_tile, v2(0, 0), tileRegion);
 
     DrawTextAligned("Options", 32, 0xFFFFFFFF, v2s(0), v2(WindowWidth(), 100), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE,
@@ -83,7 +82,6 @@ void GOptionsStateRender(GlobalState *State)
 
 void GOptionsStateSet()
 {
-
     if (optionsStack == NULLPTR)
     {
         optionsStack = CreateUiStack();
@@ -115,4 +113,3 @@ void GOptionsStateSet()
     SetRenderCallback(GOptionsStateRender);
     SetUpdateCallback(GOptionsStateUpdate, NULL, OPTIONS_STATE); // Fixed update is not needed for this state
 }
-

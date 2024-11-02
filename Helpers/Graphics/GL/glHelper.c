@@ -46,8 +46,8 @@ bool GL_PreInit()
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
     SDL_GL_SetAttribute(
-            SDL_GL_CONTEXT_PROFILE_MASK,
-            SDL_GL_CONTEXT_PROFILE_CORE);
+        SDL_GL_CONTEXT_PROFILE_MASK,
+        SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
     memset(GL_AssetTextureMap, -1, sizeof(GL_AssetTextureMap));
@@ -58,7 +58,6 @@ bool GL_PreInit()
 
 bool GL_Init(SDL_Window *wnd)
 {
-
     printf("Initializing OpenGL\n");
 
     ctx = SDL_GL_CreateContext(wnd);
@@ -122,7 +121,7 @@ bool GL_Init(SDL_Window *wnd)
     return true;
 }
 
-GL_Shader *GL_ConstructShader(char *fsh, char *vsh)
+GL_Shader *GL_ConstructShader(const char *fsh, const char *vsh)
 {
     GLint status;
     char err_buf[512];
@@ -200,12 +199,12 @@ inline void GL_ClearScreen()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void GL_ClearColor(uint color)
+void GL_ClearColor(const uint color)
 {
-    float r = ((color >> 16) & 0xFF) / 255.0f;
-    float g = ((color >> 8) & 0xFF) / 255.0f;
-    float b = (color & 0xFF) / 255.0f;
-    float a = ((color >> 24) & 0xFF) / 255.0f;
+    const float r = ((color >> 16) & 0xFF) / 255.0f;
+    const float g = ((color >> 8) & 0xFF) / 255.0f;
+    const float b = (color & 0xFF) / 255.0f;
+    const float a = ((color >> 24) & 0xFF) / 255.0f;
 
     glClearColor(r, g, b, a);
 
@@ -236,41 +235,41 @@ void GL_DestroyGL()
     SDL_GL_DeleteContext(ctx);
 }
 
-inline float GL_X_TO_NDC(float x)
+inline float GL_X_TO_NDC(const float x)
 {
     return (x / WindowWidth()) * 2.0f - 1.0f;
 }
 
-inline float GL_Y_TO_NDC(float y)
+inline float GL_Y_TO_NDC(const float y)
 {
     return 1.0f - (y / WindowHeight()) * 2.0f;
 }
 
-void GL_DrawRect(Vector2 pos, Vector2 size, uint color)
+void GL_DrawRect(const Vector2 pos, const Vector2 size, const uint color)
 {
     glUseProgram(ui_colored->program);
 
-    float a = ((color >> 24) & 0xFF) / 255.0f;
-    float r = ((color >> 16) & 0xFF) / 255.0f;
-    float g = ((color >> 8) & 0xFF) / 255.0f;
-    float b = (color & 0xFF) / 255.0f;
+    const float a = ((color >> 24) & 0xFF) / 255.0f;
+    const float r = ((color >> 16) & 0xFF) / 255.0f;
+    const float g = ((color >> 8) & 0xFF) / 255.0f;
+    const float b = (color & 0xFF) / 255.0f;
 
     glUniform4f(glGetUniformLocation(ui_colored->program, "col"), r, g, b, a);
 
-    Vector2 NDC_pos = v2(GL_X_TO_NDC(pos.x), GL_Y_TO_NDC(pos.y));
-    Vector2 NDC_pos_end = v2(GL_X_TO_NDC(pos.x + size.x), GL_Y_TO_NDC(pos.y + size.y));
+    const Vector2 NDC_pos = v2(GL_X_TO_NDC(pos.x), GL_Y_TO_NDC(pos.y));
+    const Vector2 NDC_pos_end = v2(GL_X_TO_NDC(pos.x + size.x), GL_Y_TO_NDC(pos.y + size.y));
 
 
-    float vertices[4][2] = {
-            {NDC_pos.x,     NDC_pos.y},
-            {NDC_pos_end.x, NDC_pos.y},
-            {NDC_pos_end.x, NDC_pos_end.y},
-            {NDC_pos.x,     NDC_pos_end.y}
+    const float vertices[4][2] = {
+        {NDC_pos.x, NDC_pos.y},
+        {NDC_pos_end.x, NDC_pos.y},
+        {NDC_pos_end.x, NDC_pos_end.y},
+        {NDC_pos.x, NDC_pos_end.y}
     };
 
-    unsigned int indices[] = {
-            0, 1, 2,
-            0, 2, 3
+    const uint indices[] = {
+        0, 1, 2,
+        0, 2, 3
     };
 
     glBindVertexArray(ui_buffer->vao);
@@ -281,16 +280,15 @@ void GL_DrawRect(Vector2 pos, Vector2 size, uint color)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ui_buffer->ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    GLint pos_attr_loc = glGetAttribLocation(ui_colored->program, "VERTEX");
+    const GLint pos_attr_loc = glGetAttribLocation(ui_colored->program, "VERTEX");
     glVertexAttribPointer(pos_attr_loc, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void *) 0);
     glEnableVertexAttribArray(pos_attr_loc);
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 }
 
-void GL_DrawRectOutline(Vector2 pos, Vector2 size, uint color, float thickness)
+void GL_DrawRectOutline(const Vector2 pos, const Vector2 size, const uint color, const float thickness)
 {
-
     if (thickness < 1.0f)
     {
         glEnable(GL_LINE_SMOOTH);
@@ -303,26 +301,26 @@ void GL_DrawRectOutline(Vector2 pos, Vector2 size, uint color, float thickness)
 
     glUseProgram(ui_colored->program);
 
-    float a = ((color >> 24) & 0xFF) / 255.0f;
-    float r = ((color >> 16) & 0xFF) / 255.0f;
-    float g = ((color >> 8) & 0xFF) / 255.0f;
-    float b = (color & 0xFF) / 255.0f;
+    const float a = ((color >> 24) & 0xFF) / 255.0f;
+    const float r = ((color >> 16) & 0xFF) / 255.0f;
+    const float g = ((color >> 8) & 0xFF) / 255.0f;
+    const float b = (color & 0xFF) / 255.0f;
 
     glUniform4f(glGetUniformLocation(ui_colored->program, "col"), r, g, b, a);
 
-    Vector2 NDC_pos = v2(GL_X_TO_NDC(pos.x), GL_Y_TO_NDC(pos.y));
-    Vector2 NDC_pos_end = v2(GL_X_TO_NDC(pos.x + size.x), GL_Y_TO_NDC(pos.y + size.y));
+    const Vector2 NDC_pos = v2(GL_X_TO_NDC(pos.x), GL_Y_TO_NDC(pos.y));
+    const Vector2 NDC_pos_end = v2(GL_X_TO_NDC(pos.x + size.x), GL_Y_TO_NDC(pos.y + size.y));
 
 
-    float vertices[4][2] = {
-            {NDC_pos.x,     NDC_pos.y},
-            {NDC_pos_end.x, NDC_pos.y},
-            {NDC_pos_end.x, NDC_pos_end.y},
-            {NDC_pos.x,     NDC_pos_end.y}
+    const float vertices[4][2] = {
+        {NDC_pos.x, NDC_pos.y},
+        {NDC_pos_end.x, NDC_pos.y},
+        {NDC_pos_end.x, NDC_pos_end.y},
+        {NDC_pos.x, NDC_pos_end.y}
     };
 
-    unsigned int indices[] = {
-            0, 1, 2, 3
+    const uint indices[] = {
+        0, 1, 2, 3
     };
 
     glBindVertexArray(ui_buffer->vao);
@@ -333,7 +331,7 @@ void GL_DrawRectOutline(Vector2 pos, Vector2 size, uint color, float thickness)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ui_buffer->ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    GLint pos_attr_loc = glGetAttribLocation(ui_colored->program, "VERTEX");
+    const GLint pos_attr_loc = glGetAttribLocation(ui_colored->program, "VERTEX");
     glVertexAttribPointer(pos_attr_loc, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void *) 0);
     glEnableVertexAttribArray(pos_attr_loc);
 
@@ -351,9 +349,9 @@ GLuint GL_LoadTextureFromAsset(const unsigned char *imageData)
     byte *Decompressed = DecompressAsset(imageData);
 
     //uint size = ReadUintA(Decompressed, 0);
-    uint width = ReadUintA(Decompressed, 4);
-    uint height = ReadUintA(Decompressed, 8);
-    uint id = ReadUintA(Decompressed, 12);
+    const uint width = ReadUintA(Decompressed, 4);
+    const uint height = ReadUintA(Decompressed, 8);
+    const uint id = ReadUintA(Decompressed, 12);
 
     if (id >= ASSET_COUNT)
     {
@@ -371,7 +369,7 @@ GLuint GL_LoadTextureFromAsset(const unsigned char *imageData)
 
     const byte *pixelData = Decompressed + (sizeof(uint) * 4);
 
-    int slot = GL_RegisterTexture(pixelData, width, height);
+    const int slot = GL_RegisterTexture(pixelData, width, height);
 
     //printf("Registered asset %d to slot %d\n", id, slot);
 
@@ -380,10 +378,9 @@ GLuint GL_LoadTextureFromAsset(const unsigned char *imageData)
     return slot;
 }
 
-int GL_RegisterTexture(const unsigned char *pixelData, int width, int height)
+int GL_RegisterTexture(const unsigned char *pixelData, const int width, const int height)
 {
-
-    int slot = GL_NextFreeSlot;
+    const int slot = GL_NextFreeSlot;
 
     glGenTextures(1, &GL_Textures[slot]);
     glActiveTexture(GL_TEXTURE0 + slot);
@@ -407,15 +404,15 @@ int GL_RegisterTexture(const unsigned char *pixelData, int width, int height)
     return slot;
 }
 
-void GL_SetTexParams(const unsigned char *imageData, bool linear, bool repeat)
+void GL_SetTexParams(const unsigned char *imageData, const bool linear, const bool repeat)
 {
     GL_LoadTextureFromAsset(imageData); // make sure the texture is loaded
 
     byte *Decompressed = DecompressAsset(imageData);
 
-    uint id = ReadUintA(Decompressed, 12);
+    const uint id = ReadUintA(Decompressed, 12);
 
-    GLuint tex = GL_Textures[GL_AssetTextureMap[id]];
+    const GLuint tex = GL_Textures[GL_AssetTextureMap[id]];
 
     glBindTexture(GL_TEXTURE_2D, tex);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, repeat ? GL_REPEAT : GL_CLAMP_TO_EDGE);
@@ -426,17 +423,17 @@ void GL_SetTexParams(const unsigned char *imageData, bool linear, bool repeat)
 }
 
 void
-GL_DrawTexture_Internal(Vector2 pos, Vector2 size, const unsigned char *imageData, uint color, Vector2 region_start,
-                        Vector2 region_end)
+GL_DrawTexture_Internal(const Vector2 pos, const Vector2 size, const unsigned char *imageData, const uint color, const Vector2 region_start,
+                        const Vector2 region_end)
 {
     glUseProgram(ui_textured->program);
 
-    GLuint tex = GL_LoadTextureFromAsset(imageData);
+    const GLuint tex = GL_LoadTextureFromAsset(imageData);
 
-    float a = ((color >> 24) & 0xFF) / 255.0f;
-    float r = ((color >> 16) & 0xFF) / 255.0f;
-    float g = ((color >> 8) & 0xFF) / 255.0f;
-    float b = (color & 0xFF) / 255.0f;
+    const float a = ((color >> 24) & 0xFF) / 255.0f;
+    const float r = ((color >> 16) & 0xFF) / 255.0f;
+    const float g = ((color >> 8) & 0xFF) / 255.0f;
+    const float b = (color & 0xFF) / 255.0f;
 
     glUniform4f(glGetUniformLocation(ui_textured->program, "col"), r, g, b, a);
 
@@ -445,20 +442,20 @@ GL_DrawTexture_Internal(Vector2 pos, Vector2 size, const unsigned char *imageDat
 
     glUniform1i(glGetUniformLocation(ui_textured->program, "alb"), tex);
 
-    Vector2 NDC_pos = v2(GL_X_TO_NDC(pos.x), GL_Y_TO_NDC(pos.y));
-    Vector2 NDC_pos_end = v2(GL_X_TO_NDC(pos.x + size.x), GL_Y_TO_NDC(pos.y + size.y));
+    const Vector2 NDC_pos = v2(GL_X_TO_NDC(pos.x), GL_Y_TO_NDC(pos.y));
+    const Vector2 NDC_pos_end = v2(GL_X_TO_NDC(pos.x + size.x), GL_Y_TO_NDC(pos.y + size.y));
 
 
-    float vertices[4][4] = {
-            {NDC_pos.x,     NDC_pos.y,     0.0f, 0.0f},
-            {NDC_pos_end.x, NDC_pos.y,     1.0f, 0.0f},
-            {NDC_pos_end.x, NDC_pos_end.y, 1.0f, 1.0f},
-            {NDC_pos.x,     NDC_pos_end.y, 0.0f, 1.0f}
+    const float vertices[4][4] = {
+        {NDC_pos.x, NDC_pos.y, 0.0f, 0.0f},
+        {NDC_pos_end.x, NDC_pos.y, 1.0f, 0.0f},
+        {NDC_pos_end.x, NDC_pos_end.y, 1.0f, 1.0f},
+        {NDC_pos.x, NDC_pos_end.y, 0.0f, 1.0f}
     };
 
-    unsigned int indices[] = {
-            0, 1, 2,
-            0, 2, 3
+    const uint indices[] = {
+        0, 1, 2,
+        0, 2, 3
     };
 
     glBindVertexArray(ui_buffer->vao);
@@ -469,42 +466,41 @@ GL_DrawTexture_Internal(Vector2 pos, Vector2 size, const unsigned char *imageDat
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ui_buffer->ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    GLint pos_attr_loc = glGetAttribLocation(ui_textured->program, "VERTEX");
+    const GLint pos_attr_loc = glGetAttribLocation(ui_textured->program, "VERTEX");
     glVertexAttribPointer(pos_attr_loc, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void *) 0);
     glEnableVertexAttribArray(pos_attr_loc);
 
-    GLint tex_attr_loc = glGetAttribLocation(ui_textured->program, "VERTEX_UV");
+    const GLint tex_attr_loc = glGetAttribLocation(ui_textured->program, "VERTEX_UV");
     glVertexAttribPointer(tex_attr_loc, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void *) (2 * sizeof(GLfloat)));
     glEnableVertexAttribArray(tex_attr_loc);
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 }
 
-inline void GL_DrawTexture(Vector2 pos, Vector2 size, const unsigned char *imageData)
+inline void GL_DrawTexture(const Vector2 pos, const Vector2 size, const unsigned char *imageData)
 {
     GL_DrawTexture_Internal(pos, size, imageData, 0xFFFFFFFF, v2(-1, 0), v2s(0));
 }
 
-inline void GL_DrawTextureMod(Vector2 pos, Vector2 size, const unsigned char *imageData, uint color)
+inline void GL_DrawTextureMod(const Vector2 pos, const Vector2 size, const unsigned char *imageData, const uint color)
 {
     GL_DrawTexture_Internal(pos, size, imageData, color, v2(-1, 0), v2s(0));
 }
 
-inline void GL_DrawTextureRegion(Vector2 pos, Vector2 size, const unsigned char *imageData, Vector2 region_start,
-                                 Vector2 region_end)
+inline void GL_DrawTextureRegion(const Vector2 pos, const Vector2 size, const unsigned char *imageData, const Vector2 region_start,
+                                 const Vector2 region_end)
 {
     GL_DrawTexture_Internal(pos, size, imageData, 0xFFFFFFFF, region_start, region_end);
 }
 
-inline void GL_DrawTextureRegionMod(Vector2 pos, Vector2 size, const unsigned char *imageData, Vector2 region_start,
-                                    Vector2 region_end, uint color)
+inline void GL_DrawTextureRegionMod(const Vector2 pos, const Vector2 size, const unsigned char *imageData, const Vector2 region_start,
+                                    const Vector2 region_end, const uint color)
 {
     GL_DrawTexture_Internal(pos, size, imageData, color, region_start, region_end);
 }
 
-void GL_DrawLine(Vector2 start, Vector2 end, uint color, float thickness)
+void GL_DrawLine(const Vector2 start, const Vector2 end, const uint color, const float thickness)
 {
-
     if (thickness < 1.0f)
     {
         glEnable(GL_LINE_SMOOTH);
@@ -515,24 +511,24 @@ void GL_DrawLine(Vector2 start, Vector2 end, uint color, float thickness)
 
     glUseProgram(ui_colored->program);
 
-    float a = ((color >> 24) & 0xFF) / 255.0f;
-    float r = ((color >> 16) & 0xFF) / 255.0f;
-    float g = ((color >> 8) & 0xFF) / 255.0f;
-    float b = (color & 0xFF) / 255.0f;
+    const float a = ((color >> 24) & 0xFF) / 255.0f;
+    const float r = ((color >> 16) & 0xFF) / 255.0f;
+    const float g = ((color >> 8) & 0xFF) / 255.0f;
+    const float b = (color & 0xFF) / 255.0f;
 
     glUniform4f(glGetUniformLocation(ui_colored->program, "col"), r, g, b, a);
 
-    Vector2 NDC_start = v2(GL_X_TO_NDC(start.x), GL_Y_TO_NDC(start.y));
-    Vector2 NDC_end = v2(GL_X_TO_NDC(end.x), GL_Y_TO_NDC(end.y));
+    const Vector2 NDC_start = v2(GL_X_TO_NDC(start.x), GL_Y_TO_NDC(start.y));
+    const Vector2 NDC_end = v2(GL_X_TO_NDC(end.x), GL_Y_TO_NDC(end.y));
 
     // Calculate the 2 corner vertices of each point for a thick line
-    float vertices[2][2] = {
-            {NDC_start.x, NDC_start.y},
-            {NDC_end.x,   NDC_end.y}
+    const float vertices[2][2] = {
+        {NDC_start.x, NDC_start.y},
+        {NDC_end.x, NDC_end.y}
     };
 
-    unsigned int indices[] = {
-            0, 1
+    const uint indices[] = {
+        0, 1
     };
 
     glBindVertexArray(ui_buffer->vao);
@@ -543,7 +539,7 @@ void GL_DrawLine(Vector2 start, Vector2 end, uint color, float thickness)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ui_buffer->ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    GLint pos_attr_loc = glGetAttribLocation(ui_colored->program, "VERTEX");
+    const GLint pos_attr_loc = glGetAttribLocation(ui_colored->program, "VERTEX");
     glVertexAttribPointer(pos_attr_loc, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void *) 0);
     glEnableVertexAttribArray(pos_attr_loc);
 
@@ -551,11 +547,11 @@ void GL_DrawLine(Vector2 start, Vector2 end, uint color, float thickness)
     glDrawElements(GL_LINES, 2, GL_UNSIGNED_INT, NULL);
 }
 
-void GL_DrawWall(Wall *w, mat4 *mvp, mat4 *mdl, Camera *cam, Level *l)
+void GL_DrawWall(const Wall *w, const mat4 *mvp, const mat4 *mdl, const Camera *cam, const Level *l)
 {
     glUseProgram(wall_generic->program);
 
-    GLuint tex = GL_LoadTextureFromAsset(w->tex);
+    const GLuint tex = GL_LoadTextureFromAsset(w->tex);
 
     glUniform1i(glGetUniformLocation(wall_generic->program, "alb"), tex);
 
@@ -567,33 +563,34 @@ void GL_DrawWall(Wall *w, mat4 *mvp, mat4 *mdl, Camera *cam, Level *l)
     glUniform1f(glGetUniformLocation(wall_generic->program, "camera_yaw"), cam->yaw);
     glUniform1f(glGetUniformLocation(wall_generic->program, "wall_angle"), w->Angle);
 
-    uint color = l->FogColor;
-    float r = ((color >> 16) & 0xFF) / 255.0f;
-    float g = ((color >> 8) & 0xFF) / 255.0f;
-    float b = (color & 0xFF) / 255.0f;
+    const uint color = l->FogColor;
+    const float r = ((color >> 16) & 0xFF) / 255.0f;
+    const float g = ((color >> 8) & 0xFF) / 255.0f;
+    const float b = (color & 0xFF) / 255.0f;
 
     glUniform3f(glGetUniformLocation(wall_generic->program, "fog_color"), r, g, b);
 
     glUniform1f(glGetUniformLocation(wall_generic->program, "fog_start"), l->FogStart);
     glUniform1f(glGetUniformLocation(wall_generic->program, "fog_end"), l->FogEnd);
 
-    float vertices[4][5] = { // X Y Z U V
-            {w->a.x, 0.5f * w->height,  w->a.y, 0.0f,      0.0f},
-            {w->b.x, 0.5f * w->height,  w->b.y, w->Length, 0.0f},
-            {w->b.x, -0.5f * w->height, w->b.y, w->Length, 1.0f},
-            {w->a.x, -0.5f * w->height, w->a.y, 0.0f,      1.0f}
+    float vertices[4][5] = {
+        // X Y Z U V
+        {w->a.x, 0.5f * w->height, w->a.y, 0.0f, 0.0f},
+        {w->b.x, 0.5f * w->height, w->b.y, w->Length, 0.0f},
+        {w->b.x, -0.5f * w->height, w->b.y, w->Length, 1.0f},
+        {w->a.x, -0.5f * w->height, w->a.y, 0.0f, 1.0f}
     };
 
-    float uvo = w->uvOffset;
-    float uvs = w->uvScale;
+    const float uvo = w->uvOffset;
+    const float uvs = w->uvScale;
     for (int i = 0; i < 4; i++)
     {
         vertices[i][3] = (vertices[i][3] * uvs) + uvo;
     }
 
-    unsigned int indices[] = {
-            0, 1, 2,
-            0, 2, 3
+    const uint indices[] = {
+        0, 1, 2,
+        0, 2, 3
     };
 
     glBindVertexArray(wall_buffer->vao);
@@ -604,11 +601,11 @@ void GL_DrawWall(Wall *w, mat4 *mvp, mat4 *mdl, Camera *cam, Level *l)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, wall_buffer->ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    GLint pos_attr_loc = glGetAttribLocation(wall_generic->program, "VERTEX");
+    const GLint pos_attr_loc = glGetAttribLocation(wall_generic->program, "VERTEX");
     glVertexAttribPointer(pos_attr_loc, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void *) 0);
     glEnableVertexAttribArray(pos_attr_loc);
 
-    GLint tex_attr_loc = glGetAttribLocation(wall_generic->program, "VERTEX_UV");
+    const GLint tex_attr_loc = glGetAttribLocation(wall_generic->program, "VERTEX_UV");
     glVertexAttribPointer(tex_attr_loc, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void *) (3 * sizeof(GLfloat)));
     glEnableVertexAttribArray(tex_attr_loc);
 
@@ -616,21 +613,21 @@ void GL_DrawWall(Wall *w, mat4 *mvp, mat4 *mdl, Camera *cam, Level *l)
 }
 
 void
-GL_DrawFloor(Vector2 vp1, Vector2 vp2, mat4 *mvp, Level *l, const unsigned char *texture, float height, float shade)
+GL_DrawFloor(const Vector2 vp1, const Vector2 vp2, const mat4 *mvp, const Level *l, const unsigned char *texture, const float height, const float shade)
 {
     glUseProgram(floor_generic->program);
 
-    GLuint tex = GL_LoadTextureFromAsset(texture);
+    const GLuint tex = GL_LoadTextureFromAsset(texture);
 
     glUniform1i(glGetUniformLocation(floor_generic->program, "alb"), tex);
 
     glUniformMatrix4fv(glGetUniformLocation(floor_generic->program, "WORLD_VIEW_MATRIX"), 1, GL_FALSE,
                        mvp[0][0]); // world -> screen
 
-    uint color = l->FogColor;
-    float r = ((color >> 16) & 0xFF) / 255.0f;
-    float g = ((color >> 8) & 0xFF) / 255.0f;
-    float b = (color & 0xFF) / 255.0f;
+    const uint color = l->FogColor;
+    const float r = ((color >> 16) & 0xFF) / 255.0f;
+    const float g = ((color >> 8) & 0xFF) / 255.0f;
+    const float b = (color & 0xFF) / 255.0f;
 
     glUniform3f(glGetUniformLocation(floor_generic->program, "fog_color"), r, g, b);
 
@@ -640,16 +637,17 @@ GL_DrawFloor(Vector2 vp1, Vector2 vp2, mat4 *mvp, Level *l, const unsigned char 
     glUniform1f(glGetUniformLocation(floor_generic->program, "height"), height);
     glUniform1f(glGetUniformLocation(floor_generic->program, "shade"), shade);
 
-    float vertices[4][2] = { // X Y Z U V
-            {vp1.x, vp1.y},
-            {vp2.x, vp1.y},
-            {vp2.x, vp2.y},
-            {vp1.x, vp2.y}
+    const float vertices[4][2] = {
+        // X Y Z U V
+        {vp1.x, vp1.y},
+        {vp2.x, vp1.y},
+        {vp2.x, vp2.y},
+        {vp1.x, vp2.y}
     };
 
-    unsigned int indices[] = {
-            0, 1, 2,
-            0, 2, 3
+    const uint indices[] = {
+        0, 1, 2,
+        0, 2, 3
     };
 
     glBindVertexArray(wall_buffer->vao);
@@ -660,18 +658,18 @@ GL_DrawFloor(Vector2 vp1, Vector2 vp2, mat4 *mvp, Level *l, const unsigned char 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, wall_buffer->ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    GLint pos_attr_loc = glGetAttribLocation(floor_generic->program, "VERTEX");
+    const GLint pos_attr_loc = glGetAttribLocation(floor_generic->program, "VERTEX");
     glVertexAttribPointer(pos_attr_loc, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void *) 0);
     glEnableVertexAttribArray(pos_attr_loc);
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 }
 
-void GL_DrawShadow(Vector2 vp1, Vector2 vp2, mat4 *mvp, mat4 *mdl, Level *l)
+void GL_DrawShadow(const Vector2 vp1, const Vector2 vp2, const mat4 *mvp, const mat4 *mdl, const Level *l)
 {
     glUseProgram(shadow->program);
 
-    GLuint tex = GL_LoadTextureFromAsset(gztex_vfx_shadow);
+    const GLuint tex = GL_LoadTextureFromAsset(gztex_vfx_shadow);
 
     glUniform1i(glGetUniformLocation(shadow->program, "alb"), tex);
 
@@ -680,26 +678,27 @@ void GL_DrawShadow(Vector2 vp1, Vector2 vp2, mat4 *mvp, mat4 *mdl, Level *l)
     glUniformMatrix4fv(glGetUniformLocation(shadow->program, "MODEL_WORLD_MATRIX"), 1, GL_FALSE,
                        mdl[0][0]); // model -> world
 
-    uint color = l->FogColor;
-    float r = ((color >> 16) & 0xFF) / 255.0f;
-    float g = ((color >> 8) & 0xFF) / 255.0f;
-    float b = (color & 0xFF) / 255.0f;
+    const uint color = l->FogColor;
+    const float r = ((color >> 16) & 0xFF) / 255.0f;
+    const float g = ((color >> 8) & 0xFF) / 255.0f;
+    const float b = (color & 0xFF) / 255.0f;
 
     glUniform3f(glGetUniformLocation(shadow->program, "fog_color"), r, g, b);
 
     glUniform1f(glGetUniformLocation(shadow->program, "fog_start"), l->FogStart);
     glUniform1f(glGetUniformLocation(shadow->program, "fog_end"), l->FogEnd);
 
-    float vertices[4][2] = { // X Y Z U V
-            {vp1.x, vp1.y},
-            {vp2.x, vp1.y},
-            {vp2.x, vp2.y},
-            {vp1.x, vp2.y}
+    const float vertices[4][2] = {
+        // X Y Z U V
+        {vp1.x, vp1.y},
+        {vp2.x, vp1.y},
+        {vp2.x, vp2.y},
+        {vp1.x, vp2.y}
     };
 
-    unsigned int indices[] = {
-            0, 1, 2,
-            0, 2, 3
+    const uint indices[] = {
+        0, 1, 2,
+        0, 2, 3
     };
 
     glBindVertexArray(wall_buffer->vao);
@@ -710,7 +709,7 @@ void GL_DrawShadow(Vector2 vp1, Vector2 vp2, mat4 *mvp, mat4 *mdl, Level *l)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, wall_buffer->ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    GLint pos_attr_loc = glGetAttribLocation(shadow->program, "VERTEX");
+    const GLint pos_attr_loc = glGetAttribLocation(shadow->program, "VERTEX");
     glVertexAttribPointer(pos_attr_loc, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void *) 0);
     glEnableVertexAttribArray(pos_attr_loc);
 
@@ -733,18 +732,18 @@ inline void GL_Disable3D()
 
 inline void GL_UpdateViewportSize()
 {
-    Vector2 actualWinSize = ActualWindowSize();
+    const Vector2 actualWinSize = ActualWindowSize();
     glViewport(0, 0, actualWinSize.x, actualWinSize.y);
 }
 
-void GL_DrawColoredArrays(float *vertices, uint *indices, int quad_count, uint color)
+void GL_DrawColoredArrays(const float *vertices, const uint *indices, const int quad_count, const uint color)
 {
     glUseProgram(ui_colored->program);
 
-    float a = ((color >> 24) & 0xFF) / 255.0f;
-    float r = ((color >> 16) & 0xFF) / 255.0f;
-    float g = ((color >> 8) & 0xFF) / 255.0f;
-    float b = (color & 0xFF) / 255.0f;
+    const float a = ((color >> 24) & 0xFF) / 255.0f;
+    const float r = ((color >> 16) & 0xFF) / 255.0f;
+    const float g = ((color >> 8) & 0xFF) / 255.0f;
+    const float b = (color & 0xFF) / 255.0f;
 
     glUniform4f(glGetUniformLocation(ui_textured->program, "col"), r, g, b, a);
 
@@ -756,23 +755,23 @@ void GL_DrawColoredArrays(float *vertices, uint *indices, int quad_count, uint c
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ui_buffer->ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, quad_count * 6 * sizeof(uint), indices, GL_STATIC_DRAW);
 
-    GLint pos_attr_loc = glGetAttribLocation(ui_colored->program, "VERTEX");
+    const GLint pos_attr_loc = glGetAttribLocation(ui_colored->program, "VERTEX");
     glVertexAttribPointer(pos_attr_loc, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void *) 0);
     glEnableVertexAttribArray(pos_attr_loc);
 
     glDrawElements(GL_TRIANGLES, quad_count * 6, GL_UNSIGNED_INT, NULL);
 }
 
-void GL_DrawTexturedArrays(float *vertices, uint *indices, int quad_count, const unsigned char *imageData, uint color)
+void GL_DrawTexturedArrays(const float *vertices, const uint *indices, const int quad_count, const unsigned char *imageData, const uint color)
 {
     glUseProgram(ui_textured->program);
 
-    GLuint tex = GL_LoadTextureFromAsset(imageData);
+    const GLuint tex = GL_LoadTextureFromAsset(imageData);
 
-    float a = ((color >> 24) & 0xFF) / 255.0f;
-    float r = ((color >> 16) & 0xFF) / 255.0f;
-    float g = ((color >> 8) & 0xFF) / 255.0f;
-    float b = (color & 0xFF) / 255.0f;
+    const float a = ((color >> 24) & 0xFF) / 255.0f;
+    const float r = ((color >> 16) & 0xFF) / 255.0f;
+    const float g = ((color >> 8) & 0xFF) / 255.0f;
+    const float b = (color & 0xFF) / 255.0f;
 
     glUniform4f(glGetUniformLocation(ui_textured->program, "col"), r, g, b, a);
 
@@ -788,11 +787,11 @@ void GL_DrawTexturedArrays(float *vertices, uint *indices, int quad_count, const
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ui_buffer->ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, quad_count * 6 * sizeof(uint), indices, GL_STATIC_DRAW);
 
-    GLint pos_attr_loc = glGetAttribLocation(ui_textured->program, "VERTEX");
+    const GLint pos_attr_loc = glGetAttribLocation(ui_textured->program, "VERTEX");
     glVertexAttribPointer(pos_attr_loc, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void *) 0);
     glEnableVertexAttribArray(pos_attr_loc);
 
-    GLint tex_attr_loc = glGetAttribLocation(ui_textured->program, "VERTEX_UV");
+    const GLint tex_attr_loc = glGetAttribLocation(ui_textured->program, "VERTEX_UV");
     glVertexAttribPointer(tex_attr_loc, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void *) (2 * sizeof(GLfloat)));
     glEnableVertexAttribArray(tex_attr_loc);
 
@@ -809,8 +808,8 @@ void GL_RenderLevel(Level *l, Camera *cam)
     mat4 *IDENTITY = malloc(sizeof(mat4));
     glm_mat4_identity(*IDENTITY);
 
-    Vector2 floor_start = v2(l->position.x - 100, l->position.y - 100);
-    Vector2 floor_end = v2(l->position.x + 100, l->position.y + 100);
+    const Vector2 floor_start = v2(l->position.x - 100, l->position.y - 100);
+    const Vector2 floor_end = v2(l->position.x + 100, l->position.y + 100);
 
     GL_DrawFloor(floor_start, floor_end, WORLD_VIEW_MATRIX, l, wallTextures[l->FloorTexture], -0.5, 1.0);
     if (l->CeilingTexture != 0)
@@ -833,8 +832,8 @@ void GL_RenderLevel(Level *l, Camera *cam)
         if (actor->showShadow)
         {
             // remove the rotation and y position from the actor matrix so the shadow draws correctly
-            glm_rotate(*actor_xfm, actor->rotation, (vec3) {0, 1, 0});
-            glm_translate(*actor_xfm, (vec3) {0, -actor->yPosition, 0});
+            glm_rotate(*actor_xfm, actor->rotation, (vec3){0, 1, 0});
+            glm_translate(*actor_xfm, (vec3){0, -actor->yPosition, 0});
 
             GL_DrawShadow(v2s(-0.5 * actor->shadowSize), v2s(0.5 * actor->shadowSize), WORLD_VIEW_MATRIX, actor_xfm, l);
         }

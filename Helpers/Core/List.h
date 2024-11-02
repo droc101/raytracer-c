@@ -73,7 +73,7 @@ void ListInsertAfter(List *list, Node *prevNode, void *data);
  * @param index Index to get
  * @return Data at index (not node)
  */
-void *ListGet(List *list, int index);
+void *ListGet(const List *list, const int index);
 
 /**
  * Free the list structure
@@ -94,7 +94,7 @@ void ListFreeWithData(List *list);
  * @param list List to get size of
  * @return Number of items in the list
  */
-int ListGetSize(List *list);
+int ListGetSize(const List *list);
 
 /**
  * Find an item in the list
@@ -102,7 +102,7 @@ int ListGetSize(List *list);
  * @param data Data to search for
  * @return Index of the item in the list, -1 if not found
  */
-int ListFind(List *list, void *data);
+int ListFind(const List *list, const void *data);
 
 /**
  * Clear all items from the list

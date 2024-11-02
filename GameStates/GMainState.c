@@ -51,7 +51,7 @@ void GMainStateUpdate(GlobalState *State)
 
     if (IsKeyJustPressed(SDL_SCANCODE_T))
     {
-        TextBox tb = DEFINE_TEXT("TEXT BOX", 2, 20, 0, 60, TEXT_BOX_H_ALIGN_CENTER, TEXT_BOX_V_ALIGN_TOP,
+        const TextBox tb = DEFINE_TEXT("TEXT BOX", 2, 20, 0, 60, TEXT_BOX_H_ALIGN_CENTER, TEXT_BOX_V_ALIGN_TOP,
                                  TEXT_BOX_THEME_BLACK);
         ShowTextBox(tb);
     }
@@ -153,7 +153,7 @@ uint GMainStateFixedUpdate(const uint interval, GlobalState *State)
 
 void GMainStateRender(GlobalState *State)
 {
-    Level *l = State->level;
+    const Level *l = State->level;
 
     RenderLevel(State);
 
@@ -188,4 +188,3 @@ void GMainStateSet()
     SetRenderCallback(GMainStateRender);
     SetUpdateCallback(GMainStateUpdate, GMainStateFixedUpdate, MAIN_STATE);
 }
-

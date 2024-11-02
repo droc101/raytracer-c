@@ -24,9 +24,9 @@ typedef struct SliderData
     char *(*getLabel)(Control *slider);
 } SliderData;
 
-char *SliderLabelPercent(Control *slider);
+char *SliderLabelPercent(const Control *slider);
 
-char *SliderLabelInteger(Control *slider);
+char *SliderLabelInteger(const Control *slider);
 
 /**
  * Create a new Slider Control
@@ -48,9 +48,9 @@ CreateSliderControl(Vector2 position, Vector2 size, char *label, void (*callback
                     double min, double max, double value, double step, double altStep,
                     char *(*getLabel)(Control *slider));
 
-void DestroySlider(Control *c);
+void DestroySlider(const Control *c);
 
-void UpdateSlider(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlIndex);
+void UpdateSlider(const UiStack *stack, const Control *c, Vector2 localMousePos, const uint ctlIndex);
 
 void DrawSlider(Control *c, ControlState state, Vector2 position);
 

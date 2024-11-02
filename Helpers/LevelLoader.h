@@ -18,9 +18,9 @@
 #define LEVEL_CMD_FLOOR_CEIL 6 // Indicates that the next 8 bytes should be parsed as the floor and ceiling textures
 #define LEVEL_CMD_MUSIC 7 // Indicates that the next 4 bytes should be parsed as the music track ID
 
-uint ReadUint(byte *data, int *offset);
+uint ReadUint(const byte *data, int *offset);
 
-uint ReadUintA(byte *data, int offset);
+uint ReadUintA(const byte *data, int offset);
 
 /**
  * Load a level from level bytecode
@@ -40,6 +40,6 @@ typedef struct LevelBytecode
  * @param l Level struct
  * @return Bytecode struct
  */
-LevelBytecode *GenerateBytecode(Level *l);
+LevelBytecode *GenerateBytecode(const Level *l);
 
 #endif //GAME_LEVELLOADER_H

@@ -76,7 +76,7 @@ void ListRemove(List *list, Node *node)
     free(node);
 }
 
-void ListRemoveAt(List *list, int index)
+void ListRemoveAt(List *list, const int index)
 {
     Node *current = list->head;
     int i = 0;
@@ -113,9 +113,9 @@ void ListInsertAfter(List *list, Node *prevNode, void *data)
     list->size++;
 }
 
-void *ListGet(List *list, int index)
+void *ListGet(const List *list, const int index)
 {
-    Node *current = list->head;
+    const Node *current = list->head;
     int i = 0;
     while (current != NULLPTR && i < index)
     {
@@ -154,14 +154,14 @@ void ListFreeWithData(List *list)
     free(list);
 }
 
-int ListGetSize(List *list)
+inline int ListGetSize(const List *list)
 {
     return list->size;
 }
 
-int ListFind(List *list, void *data)
+int ListFind(const List *list, const void *data)
 {
-    Node *current = list->head;
+    const Node *current = list->head;
     int i = 0;
     while (current != NULLPTR)
     {
@@ -208,4 +208,3 @@ void ListClear(List *list)
     list->tail = NULLPTR;
     list->size = 0;
 }
-

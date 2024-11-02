@@ -5,7 +5,6 @@
 #ifndef GAME_INPUT_H
 #define GAME_INPUT_H
 
-#include "SDL.h"
 #include "../../defines.h"
 
 #define INP_RELEASED 0
@@ -59,12 +58,14 @@ void UpdateInputStates();
  * @return Whether the key is pressed
  */
 bool IsKeyPressed(int code);
+
 /**
  * Checks if a key is just pressed
  * @param code Key code
  * @return Whether the key is just pressed
  */
 bool IsKeyJustPressed(int code);
+
 /**
  * Checks if a key is just released
  * @param code Key code
@@ -78,12 +79,14 @@ bool IsKeyJustReleased(int code);
  * @return Whether the button is pressed
  */
 bool IsMouseButtonPressed(int button);
+
 /**
  * Checks if a mouse button is just pressed
  * @param button Button code
  * @return Whether the button is just pressed
  */
 bool IsMouseButtonJustPressed(int button);
+
 /**
  * Checks if a mouse button is just released
  * @param button Button code

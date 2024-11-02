@@ -53,12 +53,12 @@ void RemoveActor(Actor *actor);
  * Render the level sky
  * @param cam The camera to render from
  */
-void RenderLevelSky(Camera *cam);
+void RenderLevelSky(const Camera *cam);
 
 /**
  * Render the full level
  * @param g The global state
  */
-void RenderLevel(GlobalState *g);
+void RenderLevel(const GlobalState *g);
 
 #endif //GAME_LEVEL_H

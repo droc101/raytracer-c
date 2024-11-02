@@ -38,9 +38,9 @@ byte *DecompressAsset(const byte *asset)
 {
     int offset = 0;
     // Read the first 4 bytes of the asset to get the size of the compressed data
-    uint compressedSize = ReadUint(asset, &offset);
-    uint decompressedSize = ReadUint(asset, &offset); // Read the decompressed size (4 bytes after the compressed size
-    uint assetId = ReadUint(asset, &offset); // Read the asset ID (4 bytes after the decompressed size)
+    const uint compressedSize = ReadUint(asset, &offset);
+    const uint decompressedSize = ReadUint(asset, &offset); // Read the decompressed size (4 bytes after the compressed size
+    const uint assetId = ReadUint(asset, &offset); // Read the asset ID (4 bytes after the decompressed size)
     //uint type = ReadUint(asset, &offset); // Read the asset type (4 bytes after the asset ID)
 
     if (assetId >= ASSET_COUNT)
@@ -59,8 +59,7 @@ byte *DecompressAsset(const byte *asset)
     // Allocate memory for the decompressed data
     byte *decompressedData = (byte *) malloc(decompressedSize);
 
-    z_stream stream;
-    memset(&stream, 0, sizeof(stream));
+    z_stream stream = {0};
 
     // Initialize the zlib stream
     stream.next_in = (Bytef *) (asset);

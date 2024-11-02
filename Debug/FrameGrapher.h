@@ -32,6 +32,7 @@
 #define FRAMEGRAPH_FPS_ONLY
 
 void FrameGraphUpdate(ulong ns);
+
 void FrameGraphDraw();
 
 #endif //GAME_FRAMEGRAPHER_H

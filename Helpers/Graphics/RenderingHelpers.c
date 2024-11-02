@@ -10,10 +10,10 @@
 
 Renderer currentRenderer;
 
-mat4 *GetMatrix(Camera *cam)
+mat4 *GetMatrix(const Camera *cam)
 {
     vec3 cam_pos = {cam->x, cam->y, cam->z};
-    float aspect = (float) WindowWidth() / (float) WindowHeight();
+    const float aspect = (float) WindowWidth() / (float) WindowHeight();
 
     mat4 IDENTITY = GLM_MAT4_IDENTITY_INIT;
     mat4 PERSPECTIVE = GLM_MAT4_ZERO_INIT;
@@ -24,8 +24,8 @@ mat4 *GetMatrix(Camera *cam)
 
     // TODO: roll and pitch are messed up
 
-    glm_vec3_rotate(look_at, cam->roll, (vec3) {0, 0, 1}); // Roll
-    glm_vec3_rotate(look_at, cam->pitch, (vec3) {1, 0, 0}); // Pitch
+    glm_vec3_rotate(look_at, cam->roll, (vec3){0, 0, 1}); // Roll
+    glm_vec3_rotate(look_at, cam->pitch, (vec3){1, 0, 0}); // Pitch
 
     look_at[0] += cam_pos[0];
     look_at[1] += cam_pos[1];
@@ -43,12 +43,12 @@ mat4 *GetMatrix(Camera *cam)
     return MODEL_VIEW_PROJECTION;
 }
 
-mat4 *ActorTransformMatrix(Actor *Actor)
+mat4 *ActorTransformMatrix(const Actor *Actor)
 {
     mat4 *MODEL = malloc(sizeof(mat4));
     glm_mat4_identity(*MODEL);
-    glm_translate(*MODEL, (vec3) {Actor->position.x, Actor->yPosition, Actor->position.y});
-    glm_rotate(*MODEL, -Actor->rotation, (vec3) {0, 1, 0});
+    glm_translate(*MODEL, (vec3){Actor->position.x, Actor->yPosition, Actor->position.y});
+    glm_rotate(*MODEL, -Actor->rotation, (vec3){0, 1, 0});
     return MODEL;
 }
 
@@ -109,9 +109,9 @@ void RenderLevel3D(Level *l, Camera *cam)
 
 inline void UpdateViewportSize()
 {
-    float newScaleX = (float) ActualWindowSize().x / (float) DEF_WIDTH;
-    float newScaleY = (float) ActualWindowSize().y / (float) DEF_HEIGHT;
-    float newScale = newScaleX < newScaleY ? newScaleX : newScaleY;
+    const float newScaleX = (float) ActualWindowSize().x / (float) DEF_WIDTH;
+    const float newScaleY = (float) ActualWindowSize().y / (float) DEF_HEIGHT;
+    const float newScale = newScaleX < newScaleY ? newScaleX : newScaleY;
     GetState()->options.uiScale = newScale;
     switch (currentRenderer)
     {
@@ -124,7 +124,7 @@ inline void UpdateViewportSize()
     }
 }
 
-inline void DrawBatchedQuadsTextured(BatchedQuadArray *batch, const unsigned char *imageData, uint color)
+inline void DrawBatchedQuadsTextured(const BatchedQuadArray *batch, const unsigned char *imageData, const uint color)
 {
     switch (currentRenderer)
     {
@@ -137,7 +137,7 @@ inline void DrawBatchedQuadsTextured(BatchedQuadArray *batch, const unsigned cha
     }
 }
 
-inline void DrawBatchedQuadsColored(BatchedQuadArray *batch, uint color)
+inline void DrawBatchedQuadsColored(const BatchedQuadArray *batch, const uint color)
 {
     switch (currentRenderer)
     {
@@ -150,7 +150,7 @@ inline void DrawBatchedQuadsColored(BatchedQuadArray *batch, uint color)
     }
 }
 
-inline float X_TO_NDC(float x)
+inline float X_TO_NDC(const float x)
 {
     switch (currentRenderer)
     {
@@ -163,7 +163,7 @@ inline float X_TO_NDC(float x)
     }
 }
 
-inline float Y_TO_NDC(float y)
+inline float Y_TO_NDC(const float y)
 {
     switch (currentRenderer)
     {

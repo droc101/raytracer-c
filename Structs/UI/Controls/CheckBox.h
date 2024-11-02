@@ -31,10 +31,10 @@ Control *
 CreateCheckboxControl(Vector2 position, Vector2 size, char *label, void (*callback)(bool), ControlAnchor anchor,
                       bool checked);
 
-void DestroyCheckbox(Control *c);
+void DestroyCheckbox(const Control *c);
 
 void UpdateCheckbox(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlIndex);
 
-void DrawCheckbox(Control *c, ControlState state, Vector2 position);
+void DrawCheckbox(const Control *c, ControlState state, Vector2 position);
 
 #endif //GAME_CHECKBOX_H

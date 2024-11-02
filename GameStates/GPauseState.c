@@ -16,8 +16,8 @@
 #include <stdio.h>
 
 char pauseOptions[2][32] = {
-        "Resume",
-        "Exit Level"
+    "Resume",
+    "Exit Level"
 };
 
 int pauseSelected = 0;

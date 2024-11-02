@@ -19,7 +19,7 @@ void DefaultOptions(Options *options)
 char *GetOptionsPath()
 {
     char *folderPath = SDL_GetPrefPath(APPDATA_ORG_NAME, APPDATA_APP_NAME);
-    char *fileName = "options.bin";
+    const char *fileName = "options.bin";
     char *filePath = malloc(strlen(folderPath) + strlen(fileName) + 1);
     strcpy(filePath, folderPath);
     strcat(filePath, fileName);
@@ -39,9 +39,8 @@ void LoadOptions(Options *options)
         DefaultOptions(options);
     } else
     {
-        int fileLen = 0;
         fseek(file, 0, SEEK_END);
-        fileLen = ftell(file);
+        const int fileLen = ftell(file);
 
         // if the file is the wrong size, just use the default options
         if (fileLen != sizeof(Options))
@@ -63,7 +62,7 @@ void LoadOptions(Options *options)
     free(filePath);
 }
 
-void SaveOptions(Options *options)
+void SaveOptions(const Options *options)
 {
     char *filePath = GetOptionsPath();
 

@@ -28,7 +28,7 @@ _Noreturn void Error_Internal(char *error, const char *file, int line, const cha
  * @param title Friendly title
  * @param description Friendly description
  */
-_Noreturn void FriendlyError(char *title, char *description);
+_Noreturn void FriendlyError(const char *title, const char *description);
 
 /**
  * Sets the signal handler to catch @c SIGSEGV and @c SIGFPE

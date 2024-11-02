@@ -28,10 +28,10 @@ typedef struct ButtonData
  */
 Control *CreateButtonControl(Vector2 position, Vector2 size, char *text, void (*callback)(), ControlAnchor anchor);
 
-void DestroyButton(Control *c);
+void DestroyButton(const Control *c);
 
 void UpdateButton(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlIndex);
 
-void DrawButton(Control *c, ControlState state, Vector2 position);
+void DrawButton(const Control *c, ControlState state, Vector2 position);
 
 #endif //GAME_BUTTON_H

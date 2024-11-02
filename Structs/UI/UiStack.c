@@ -12,24 +12,24 @@
 #include "Controls/RadioButton.h"
 
 void (*ControlDestroyFuncs[4])(Control *) = {
-        DestroyButton, // BUTTON
-        DestroySlider, // SLIDER
-        DestroyCheckbox, // CHECKBOX
-        DestroyRadioButton, // RADIO_BUTTON
+    DestroyButton, // BUTTON
+    DestroySlider, // SLIDER
+    DestroyCheckbox, // CHECKBOX
+    DestroyRadioButton, // RADIO_BUTTON
 };
 
 void (*ControlDrawFuncs[4])(Control *, ControlState state, Vector2 position) = {
-        DrawButton, // BUTTON
-        DrawSlider, // SLIDER
-        DrawCheckbox, // CHECKBOX
-        DrawRadioButton, // RADIO_BUTTON
+    DrawButton, // BUTTON
+    DrawSlider, // SLIDER
+    DrawCheckbox, // CHECKBOX
+    DrawRadioButton, // RADIO_BUTTON
 };
 
 void (*ControlUpdateFuncs[4])(UiStack *stack, Control *, Vector2 localMousePos, uint ctlIndex) = {
-        UpdateButton, // BUTTON
-        UpdateSlider, // SLIDER
-        UpdateCheckbox, // CHECKBOX
-        UpdateRadioButton, // RADIO_BUTTON
+    UpdateButton, // BUTTON
+    UpdateSlider, // SLIDER
+    UpdateCheckbox, // CHECKBOX
+    UpdateRadioButton, // RADIO_BUTTON
 };
 
 UiStack *CreateUiStack()
@@ -55,7 +55,7 @@ void DestroyUiStack(UiStack *stack)
 
 bool ProcessUiStack(UiStack *stack)
 {
-    Vector2 mousePos = GetMousePos();
+    const Vector2 mousePos = GetMousePos();
 
     if (stack->focusedControl != -1)
     {
@@ -83,9 +83,9 @@ bool ProcessUiStack(UiStack *stack)
     // iterate through the controls in reverse order so that the last control is on top and gets priority
     for (int i = stack->Controls->size - 1; i >= 0; i--)
     {
-        Control *c = (Control *) ListGet(stack->Controls, i);
+        const Control *c = (Control *) ListGet(stack->Controls, i);
 
-        Vector2 localMousePos = v2(mousePos.x - c->anchoredPosition.x, mousePos.y - c->anchoredPosition.y);
+        const Vector2 localMousePos = v2(mousePos.x - c->anchoredPosition.x, mousePos.y - c->anchoredPosition.y);
         if (localMousePos.x >= 0 && localMousePos.x <= c->size.x && localMousePos.y >= 0 &&
             localMousePos.y <= c->size.y)
         {
@@ -128,7 +128,7 @@ bool ProcessUiStack(UiStack *stack)
     return stack->ActiveControl != -1;
 }
 
-void DrawUiStack(UiStack *stack)
+void DrawUiStack(const UiStack *stack)
 {
     for (int i = 0; i < stack->Controls->size; i++)
     {
@@ -146,10 +146,10 @@ void DrawUiStack(UiStack *stack)
     }
 }
 
-Vector2 CalculateControlPosition(Control *control)
+Vector2 CalculateControlPosition(const Control *control)
 {
     Vector2 pos = control->position;
-    ControlAnchor anchor = control->anchor;
+    const ControlAnchor anchor = control->anchor;
 
     switch (anchor)
     {
@@ -194,29 +194,28 @@ Control *CreateEmptyControl()
     return c;
 }
 
-void UiStackPush(UiStack *stack, Control *control)
+void UiStackPush(const UiStack *stack, Control *control)
 {
     ListAdd(stack->Controls, control);
 }
 
-void UiStackRemove(UiStack *stack, Control *control)
+void UiStackRemove(const UiStack *stack, Control *control)
 {
     ControlDestroyFuncs[control->type](control);
 
     ListRemoveAt(stack->Controls, ListFind(stack->Controls, control));
 }
 
-bool IsMouseInRect(Vector2 pos, Vector2 size)
+bool IsMouseInRect(const Vector2 pos, const Vector2 size)
 {
-    Vector2 mousePos = GetMousePos();
+    const Vector2 mousePos = GetMousePos();
     return mousePos.x >= pos.x && mousePos.x <= pos.x + size.x && mousePos.y >= pos.y && mousePos.y <= pos.y + size.y;
 }
 
-bool HasMouseActivation(UiStack *stack, Control *Control)
+bool HasMouseActivation(UiStack *stack, const Control *Control)
 {
     return IsMouseInRect(Control->anchoredPosition, Control->size) &&
            IsMouseButtonJustReleased(SDL_BUTTON_LEFT);
-
 }
 
 bool HasKeyboardActivation(UiStack *stack, Control *Control)
@@ -226,7 +225,7 @@ bool HasKeyboardActivation(UiStack *stack, Control *Control)
 
 bool HasActivation(UiStack *stack, Control *Control)
 {
-    int index = ListFind(stack->Controls, Control);
+    const int index = ListFind(stack->Controls, Control);
     bool focus = false;
     if (index == stack->ActiveControl)
     {

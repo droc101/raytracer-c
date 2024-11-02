@@ -82,14 +82,14 @@ bool ProcessUiStack(UiStack *stack);
  * @warning Call @c ProcessUiStack before calling this
  * @param stack The UiStack to draw
  */
-void DrawUiStack(UiStack *stack);
+void DrawUiStack(const UiStack *stack);
 
 /**
  * Calculate the position of a control based on its anchor
  * @param control The control to calculate the position for
  * @return The anchored position of the control
  */
-Vector2 CalculateControlPosition(Control *control);
+Vector2 CalculateControlPosition(const Control *control);
 
 /**
  * Create an empty control.
@@ -103,9 +103,9 @@ Control *CreateEmptyControl();
  * @param stack The UiStack to add the control to
  * @param control The control to add
  */
-void UiStackPush(UiStack *stack, Control *control);
+void UiStackPush(const UiStack *stack, Control *control);
 
-void UiStackRemove(UiStack *stack, Control *control);
+void UiStackRemove(const UiStack *stack, Control *control);
 
 /**
  * Check if the mouse is in a rectangle
@@ -113,7 +113,7 @@ void UiStackRemove(UiStack *stack, Control *control);
  * @param size The size of the rectangle
  * @return Whether the mouse is in the rectangle
  */
-bool IsMouseInRect(Vector2 pos, Vector2 size);
+bool IsMouseInRect(const Vector2 pos, const Vector2 size);
 
 /**
  * Check if a control is activated (keyboard or mouse)

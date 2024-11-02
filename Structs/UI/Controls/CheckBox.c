@@ -10,8 +10,8 @@
 #include "../../../Helpers/Graphics/Font.h"
 
 Control *
-CreateCheckboxControl(Vector2 position, Vector2 size, char *label, void (*callback)(bool), ControlAnchor anchor,
-                      bool checked)
+CreateCheckboxControl(const Vector2 position, const Vector2 size, char *label, void (*callback)(bool), const ControlAnchor anchor,
+                      const bool checked)
 {
     Control *checkbox = CreateEmptyControl();
     checkbox->type = CHECKBOX;
@@ -28,7 +28,7 @@ CreateCheckboxControl(Vector2 position, Vector2 size, char *label, void (*callba
     return checkbox;
 }
 
-void DestroyCheckbox(Control *c)
+void DestroyCheckbox(const Control *c)
 {
     CheckBoxData *data = (CheckBoxData *) c->ControlData;
     free(data);
@@ -53,15 +53,15 @@ void UpdateCheckbox(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlI
     }
 }
 
-void DrawCheckbox(Control *c, ControlState state, Vector2 position)
+void DrawCheckbox(const Control *c, ControlState state, const Vector2 position)
 {
-    CheckBoxData *data = (CheckBoxData *) c->ControlData;
+    const CheckBoxData *data = (CheckBoxData *) c->ControlData;
     DrawTextAligned(data->label, 16, 0xFFFFFFFF, c->anchoredPosition, c->size, FONT_HALIGN_LEFT, FONT_VALIGN_MIDDLE,
                     true);
 
     setColorUint(0xFF000000);
 
-    Vector2 boxSize = v2s(32);
-    Vector2 boxPos = v2(position.x + c->size.x - boxSize.x - 2, position.y + c->size.y / 2 - boxSize.y / 2);
+    const Vector2 boxSize = v2s(32);
+    const Vector2 boxPos = v2(position.x + c->size.x - boxSize.x - 2, position.y + c->size.y / 2 - boxSize.y / 2);
     DrawTexture(boxPos, boxSize, data->checked ? gztex_interface_checkbox_checked : gztex_interface_checkbox_unchecked);
 }
