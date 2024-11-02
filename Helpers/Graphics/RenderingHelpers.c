@@ -7,8 +7,30 @@
 #include "../../Structs/Vector2.h"
 #include "../CommonAssets.h"
 #include "../../Structs/GlobalState.h"
+#ifdef WIN32
+#include <dwmapi.h>
+#include <SDL_syswm.h>
+
+#define DWMWA_USE_IMMERSIVE_DARK_MODE 20
+#endif
 
 Renderer currentRenderer;
+
+void DwmDarkMode(SDL_Window *window)
+{
+#ifdef WIN32
+    SDL_SysWMinfo info;
+    SDL_VERSION(&info.version);
+    SDL_GetWindowWMInfo(window, &info);
+    const HWND hWnd = info.info.win.window;
+    const BOOL enable = true;
+    const HRESULT res = DwmSetWindowAttribute(hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &enable, sizeof(BOOL));
+    if (res != S_OK)
+    {
+        printf("Failed to enable dark mode: %lx\n", res);
+    }
+#endif
+}
 
 mat4 *GetMatrix(const Camera *cam)
 {
@@ -73,7 +95,7 @@ bool RenderInit()
         case RENDERER_VULKAN:
             return false;
         case RENDERER_OPENGL:
-            const bool gli = GL_Init(GetWindow());
+            const bool gli = GL_Init(GetGameWindow());
             GL_Disable3D(); // just to make sure we are in the correct state
             return gli;
         default:

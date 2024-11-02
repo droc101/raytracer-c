@@ -68,6 +68,7 @@ int main(int argc, char *argv[])
         printf("SDL_CreateWindow Error: %s\n", SDL_GetError());
         Error("Failed to create window.");
     }
+    DwmDarkMode(w);
     SDL_SetWindowFullscreen(w, GetState()->options.fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
     SetWindow(w);
     UpdateViewportSize();
@@ -139,7 +140,7 @@ int main(int argc, char *argv[])
         // warp the mouse to the center of the screen if we are in the main game state
         if (g->currentState == MAIN_STATE)
         {
-            SDL_WarpMouseInWindow(GetWindow(), WindowWidth() / 2, WindowHeight() / 2);
+            SDL_WarpMouseInWindow(GetGameWindow(), WindowWidth() / 2, WindowHeight() / 2);
         }
 #endif
 
@@ -167,7 +168,7 @@ int main(int argc, char *argv[])
     }
     printf("Mainloop exited, cleaning up engine...\n");
     DestroyGlobalState();
-    SDL_DestroyWindow(GetWindow());
+    SDL_DestroyWindow(GetGameWindow());
     SDL_FreeSurface(icon);
     InvalidateAssetCache(); // Free all assets
     RenderDestroy();

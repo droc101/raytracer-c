@@ -22,7 +22,7 @@ void SetWindow(SDL_Window *w)
     window = w;
 }
 
-inline SDL_Window *GetWindow()
+inline SDL_Window *GetGameWindow()
 {
     return window;
 }

@@ -218,7 +218,7 @@ inline void GL_ClearDepthOnly()
 
 inline void GL_Swap()
 {
-    SDL_GL_SwapWindow(GetWindow());
+    SDL_GL_SwapWindow(GetGameWindow());
 }
 
 void GL_DestroyGL()

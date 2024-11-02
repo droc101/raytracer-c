@@ -18,7 +18,7 @@ void SetWindow(SDL_Window *w);
  * Get the main window
  * @return the window
  */
-SDL_Window *GetWindow();
+SDL_Window *GetGameWindow();
 
 /**
  * Get the width of the window

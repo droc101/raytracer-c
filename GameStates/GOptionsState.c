@@ -44,7 +44,7 @@ void SldOptionsSfxVolume(const double value)
 void CbOptionsFullscreen(const bool value)
 {
     GetState()->options.fullscreen = value;
-    SDL_SetWindowFullscreen(GetWindow(), value ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+    SDL_SetWindowFullscreen(GetGameWindow(), value ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
 }
 
 void RbOptionsRenderer(const bool value, const byte groupId, const byte id)
