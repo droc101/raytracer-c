@@ -11,21 +11,31 @@ void ActorUpdate(Actor *this) {}
 void ActorDestroy(Actor *this) {}
 
 #include "../Actor/TestActor.h"
+#include "../Actor/Coin.h"
+#include "../Actor/Goal.h"
 
 void(*ActorInitFuncs[])(Actor *) = {
         ActorInit,
-        TestActorInit
+        TestActorInit,
+        CoinInit,
+        GoalInit
 };
 void(*ActorUpdateFuncs[])(Actor *) = {
         ActorUpdate,
-        TestActorUpdate
+        TestActorUpdate,
+        CoinUpdate,
+        GoalUpdate
 };
 void(*ActorDestroyFuncs[])(Actor *) = {
         ActorDestroy,
-        TestActorDestroy
+        TestActorDestroy,
+        CoinDestroy,
+        GoalDestroy
 };
 
 int ActorHealths[] = {
+        1,
+        1,
         1,
         1
 };
@@ -44,6 +54,9 @@ Actor *CreateActor(Vector2 position, double rotation, int actorType, byte paramA
     actor->paramB = paramB;
     actor->paramC = paramC;
     actor->paramD = paramD;
+    actor->yPosition = 0.0f;
+    actor->showShadow = true;
+    actor->shadowSize = 1.0f;
     actor->Init = (void (*)(void *)) ActorInitFuncs[actorType];
     actor->Update = (void (*)(void *)) ActorUpdateFuncs[actorType];
     actor->Destroy = (void (*)(void *)) ActorDestroyFuncs[actorType];
@@ -57,19 +70,22 @@ void FreeActor(Actor *actor) {
     free(actor);
 }
 
-Wall GetTransformedWall(Actor *actor) {
-    Wall wall;
-    memcpy(&wall, actor->actorWall, sizeof(Wall)); // duplicate the wall struct without modifying the original
+bool GetTransformedWall(Actor *actor, Wall *wall) {
+    if (actor->actorWall == NULLPTR) {
+        return false;
+    }
+
+    memcpy(wall, actor->actorWall, sizeof(Wall)); // duplicate the wall struct without modifying the original
 
     // Rotate the wall
-    wall.a = Vector2Rotate(wall.a, actor->rotation);
-    wall.b = Vector2Rotate(wall.b, actor->rotation);
+    wall->a = Vector2Rotate(wall->a, actor->rotation);
+    wall->b = Vector2Rotate(wall->b, actor->rotation);
     // Translate the wall
-    wall.a = Vector2Add(wall.a, actor->position);
-    wall.b = Vector2Add(wall.b, actor->position);
+    wall->a = Vector2Add(wall->a, actor->position);
+    wall->b = Vector2Add(wall->b, actor->position);
 
-    WallBake(&wall);
+    WallBake(wall);
 
-    return wall;
+    return true;
 }
 

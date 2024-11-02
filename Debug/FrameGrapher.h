@@ -5,6 +5,8 @@
 #ifndef GAME_FRAMEGRAPHER_H
 #define GAME_FRAMEGRAPHER_H
 
+#include "../defines.h"
+
 // How many frames to store in the graph
 #define FRAMEGRAPH_HISTORY_SIZE 120
 
@@ -22,11 +24,14 @@
 // How much to scale the graph by (60fps target and 2x scale makes it a nice square)
 #define FRAMEGRAPH_V_SCALE 2
 
-// Enable or disable the frame graph (just the rendering)
-//#define FRAMEGRAPH_ENABLE
+// Enable or disable the physicsFrame graph (just the rendering)
+#define FRAMEGRAPH_ENABLE
 
+// Disable to draw the graph
+// Drawing the graph has a significant performance impact
+#define FRAMEGRAPH_FPS_ONLY
 
-void FrameGraphUpdate(unsigned long ns);
+void FrameGraphUpdate(ulong ns);
 void FrameGraphDraw();
 
 #endif //GAME_FRAMEGRAPHER_H

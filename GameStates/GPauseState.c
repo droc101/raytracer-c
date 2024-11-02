@@ -3,14 +3,14 @@
 //
 
 #include "GPauseState.h"
-#include "../Helpers/Input.h"
+#include "../Helpers/Core/Input.h"
 #include "../Structs/Ray.h"
-#include "../Helpers/Drawing.h"
-#include "../Helpers/Font.h"
+#include "../Helpers/Graphics/Drawing.h"
+#include "../Helpers/Graphics/Font.h"
 #include "../Structs/GlobalState.h"
 #include "GMainState.h"
 #include "GMenuState.h"
-#include "../Helpers/MathEx.h"
+#include "../Helpers/Core/MathEx.h"
 #include "../Helpers/LevelEntries.h"
 #include "GLevelSelectState.h"
 #include <stdio.h>
@@ -22,7 +22,7 @@ char pauseOptions[2][32] = {
 
 int pauseSelected = 0;
 
-void GPauseStateUpdate() {
+void GPauseStateUpdate(GlobalState * State) {
     if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE)) {
         PlaySoundEffect(gzwav_sfx_popdown);
         GMainStateSet();
@@ -55,39 +55,34 @@ void GPauseStateUpdate() {
     }
 }
 
-void GPauseStateRender() {
-    GlobalState *state = GetState();
-    Level *l = state->level;
+void GPauseStateRender(GlobalState* State) {
+    RenderLevel(State);
 
-    RenderLevel(l->position, l->rotation, state->FakeHeight);
-
-    SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_BLEND);
     setColorUint(0x80000000);
     draw_rect(0, 0, WindowWidth(), WindowHeight());
-    SDL_SetRenderDrawBlendMode(GetRenderer(), SDL_BLENDMODE_NONE);
 
     DrawTextAligned("Game Paused", 32, 0xFFFFFFFF, v2s(0), v2(WindowWidth(), 250), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, false);
 
-    char *levelID = gLevelEntries[GetState()->levelID].displayName;
-    int cNum = gLevelEntries[GetState()->levelID].courseNum;
+    char *levelID = gLevelEntries[State->levelID].displayName;
+    int cNum = gLevelEntries[State->levelID].courseNum;
 
     if (cNum != -1) {
         char buf[64];
         sprintf(buf, "Level %d", cNum);
-        DrawTextAligned(buf, 16, 0xFF000000, v2(4,  164), v2(WindowWidth(), 40), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
-        DrawTextAligned(buf, 16, 0xFFFFFFFF, v2(0,  160), v2(WindowWidth(), 40), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
+        DrawTextAligned(buf, 16, 0xFF000000, v2(4, 164), v2(WindowWidth(), 40), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
+        DrawTextAligned(buf, 16, 0xFFFFFFFF, v2(0, 160), v2(WindowWidth(), 40), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
     }
 
-    DrawTextAligned(levelID, 32, 0xFF000000, v2(4,  204), v2(WindowWidth(), 40), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
-    DrawTextAligned(levelID, 32, 0xFFFFFFFF, v2(0,  200), v2(WindowWidth(), 40), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
+    DrawTextAligned(levelID, 32, 0xFF000000, v2(4, 204), v2(WindowWidth(), 40), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
+    DrawTextAligned(levelID, 32, 0xFFFFFFFF, v2(0, 200), v2(WindowWidth(), 40), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
 
     for (int i = 0; i < 2; i++) {
         if (i == pauseSelected) {
-            DrawTextAligned(pauseOptions[i], 24, 0xFF000000, v2(2,  322 + (30 * (i + 1))), v2(WindowWidth(), 30), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
-            DrawTextAligned(pauseOptions[i], 24, 0xFFFFFFFF, v2(0,  320 + (30 * (i + 1))), v2(WindowWidth(), 30), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
+            DrawTextAligned(pauseOptions[i], 24, 0xFF000000, v2(2, 322 + (30 * (i + 1))), v2(WindowWidth(), 30), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
+            DrawTextAligned(pauseOptions[i], 24, 0xFFFFFFFF, v2(0, 320 + (30 * (i + 1))), v2(WindowWidth(), 30), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
         } else {
-            DrawTextAligned(pauseOptions[i], 24, 0xFF000000, v2(2,  322 + (30 * (i + 1))), v2(WindowWidth(), 30), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
-            DrawTextAligned(pauseOptions[i], 24, 0x80a0a0a0, v2(0,  320 + (30 * (i + 1))), v2(WindowWidth(), 30), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
+            DrawTextAligned(pauseOptions[i], 24, 0xFF000000, v2(2, 322 + (30 * (i + 1))), v2(WindowWidth(), 30), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
+            DrawTextAligned(pauseOptions[i], 24, 0x80a0a0a0, v2(0, 320 + (30 * (i + 1))), v2(WindowWidth(), 30), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
         }
     }
 }
@@ -95,6 +90,6 @@ void GPauseStateRender() {
 void GPauseStateSet() {
     PlaySoundEffect(gzwav_sfx_popup);
     SetRenderCallback(GPauseStateRender);
-    SetUpdateCallback(GPauseStateUpdate);
+    SetUpdateCallback(GPauseStateUpdate, NULL, PAUSE_STATE); // Fixed update is not needed for this state
     pauseSelected = 0;
 }

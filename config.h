@@ -23,9 +23,9 @@
 
 #pragma region Movement
 
-#define MOVE_SPEED 0.125 // Player movement speed
-#define SLOW_MOVE_SPEED 0.025 // Player movement speed when shift is held
-#define MOUSE_SENSITIVITY 100 // higher is less sensitive
+#define MOVE_SPEED 0.1 // Player movement speed
+#define SLOW_MOVE_SPEED 0.01 // Player movement speed when shift is held
+#define MOUSE_SENSITIVITY 200 // higher is less sensitive
 
 //#define KEYBOARD_ROTATION // Uncomment to enable keyboard rotation and disable mouse rotation
 #define ROT_SPEED 0.04 // Keyboard rotation speed
@@ -34,7 +34,7 @@
 
 #pragma region Debug
 
-// See /Debug/FrameGrapher.h for frame grapher settings
+// See /Debug/FrameGrapher.h for physicsFrame grapher settings
 
 // Press F6 while in game to open the level editor
 #define ENABLE_LEVEL_EDITOR
@@ -51,6 +51,10 @@
 #pragma endregion
 
 // Program information
+#define VERSION "0.0.1-dev"
+#define COPYRIGHT "2024 Droc101 Development"
+#define GAME_TITLE "Game." // Used for window title
+
 #define STR(x) #x
 #define TO_STR(x) STR(x)
 #define VERSION_MAJOR 0
@@ -58,8 +62,8 @@
 #define VERSION_PATCH 1
 #define VERSION TO_STR(VERSION_MAJOR) "." TO_STR(VERSION_MINOR) "." TO_STR(VERSION_PATCH)
 
-#define COPYRIGHT "2024 Droc101 Development"
-#define GAME_TITLE "Game." // Used for window title
+#define APPDATA_ORG_NAME "Droc101 Development"
+#define APPDATA_APP_NAME "Game"
 
 // The level ID to load when pause exiting
 #define PAUSE_EXIT_LEVEL 2
@@ -71,7 +75,13 @@
 // (sound effects that can play at the same time)
 #define SFX_CHANNEL_COUNT 16
 
-// Target frame rate (the game is tied to this, so be careful! :D)
-#define TARGET_FPS 60
+// Target physics updates per second (be careful with this)
+#define PHYSICS_TARGET_TPS 60
+
+#define FOV 90 // Field of view
+#define NEAR_Z 0.01
+#define FAR_Z 1000
+
+#define MSAA_SAMPLES 4 // usually 2, 4, or 8
 
 #endif //GAME_CONFIG_H

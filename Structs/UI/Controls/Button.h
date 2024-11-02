@@ -1,0 +1,36 @@
+//
+// Created by droc101 on 10/7/2024.
+//
+
+#ifndef GAME_BUTTON_H
+#define GAME_BUTTON_H
+
+#include "../UiStack.h"
+#include "../../Vector2.h"
+
+typedef struct ButtonData {
+    char *text;
+
+    void (*callback)();
+
+    bool enabled;
+} ButtonData;
+
+/**
+ * Create a new Button Control
+ * @param position The position of the button
+ * @param size The size of the button
+ * @param text The text of the button
+ * @param callback The callback function to call when the button is clicked
+ * @param anchor The anchor of the button
+ * @return The new Button Control
+ */
+Control *CreateButtonControl(Vector2 position, Vector2 size, char *text, void (*callback)(), ControlAnchor anchor);
+
+void DestroyButton(Control *c);
+
+void UpdateButton(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlIndex);
+
+void DrawButton(Control *c, ControlState state, Vector2 position);
+
+#endif //GAME_BUTTON_H

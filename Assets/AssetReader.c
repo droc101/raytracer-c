@@ -6,8 +6,8 @@
 #include <zlib.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "../Helpers/Error.h"
-#include "../Helpers/DataReader.h"
+#include "../Helpers/Core/Error.h"
+#include "../Helpers/Core/DataReader.h"
 #include "Assets.h"
 
 uint AssetGetSize(const byte *asset) {

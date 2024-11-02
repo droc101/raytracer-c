@@ -4,9 +4,10 @@
 
 #include <stdio.h>
 #include "LevelLoader.h"
-#include "Error.h"
+#include "Core/Error.h"
 #include "../Structs/Actor.h"
-#include "DataReader.h"
+#include "Core/DataReader.h"
+#include "../Helpers/CommonAssets.h"
 
 Level *LoadLevel(byte *data) {
     Level *l = CreateLevel();
@@ -17,15 +18,15 @@ Level *LoadLevel(byte *data) {
         i++;
         switch (opcode) {
             case LEVEL_CMD_WALL: {
-                double vec1 = ReadDouble(data, &i);
-                double vec2 = ReadDouble(data, &i);
-                double vec3 = ReadDouble(data, &i);
-                double vec4 = ReadDouble(data, &i);
+                double v1 = ReadDouble(data, &i);
+                double vt2 = ReadDouble(data, &i);
+                double v3 = ReadDouble(data, &i);
+                double v4 = ReadDouble(data, &i);
                 uint tid = ReadUint(data, &i);
                 float uvScale = ReadFloat(data, &i);
-                Vector2 va = v2(vec1, vec2);
-                Vector2 vb = v2(vec3, vec4);
-                Wall *w = CreateWall(va, vb, tid, uvScale);
+                Vector2 va = v2(v1, vt2);
+                Vector2 vb = v2(v3, v4);
+                Wall *w = CreateWall(va, vb, wallTextures[tid], uvScale, 0.0);
                 ListAdd(l->walls, w);
                 break;
             }
@@ -39,9 +40,8 @@ Level *LoadLevel(byte *data) {
             }
             case LEVEL_CMD_COLORS: {
                 uint sky = ReadUint(data, &i);
-                uint floor = ReadUint(data, &i);
+                i += sizeof (uint); // skip the second color
                 l->SkyColor = sky;
-                l->FloorColor = floor;
                 break;
             }
             case LEVEL_CMD_ACTOR: {
@@ -70,6 +70,18 @@ Level *LoadLevel(byte *data) {
                 l->FogEnd = end;
                 break;
             }
+            case LEVEL_CMD_FLOOR_CEIL: {
+                uint floor = ReadUint(data, &i);
+                uint ceil = ReadUint(data, &i);
+                l->FloorTexture = floor;
+                l->CeilingTexture = ceil;
+                break;
+            }
+            case LEVEL_CMD_MUSIC: {
+                uint music = ReadUint(data, &i);
+                l->MusicID = music;
+                break;
+            }
             default:
                 printf("Unknown level opcode %u at offset %u", opcode, i);
                 fflush(stdout);
@@ -86,11 +98,14 @@ LevelBytecode* GenerateBytecode(Level *l) {
         Wall *w = ListGet(l->walls, j);
         data[i] = LEVEL_CMD_WALL;
         i++;
+
+        int wall_texID = FindWallTextureIndex(w->tex);
+
         WriteDouble(data, &i, w->a.x);
         WriteDouble(data, &i, w->a.y);
         WriteDouble(data, &i, w->b.x);
         WriteDouble(data, &i, w->b.y);
-        WriteUint(data, &i, w->texId);
+        WriteUint(data, &i, wall_texID);
         WriteFloat(data, &i, w->uvScale);
     }
     for (int j = 0; j < l->actors->size; j++) {
@@ -114,12 +129,19 @@ LevelBytecode* GenerateBytecode(Level *l) {
     data[i] = LEVEL_CMD_COLORS;
     i++;
     WriteUint(data, &i, l->SkyColor);
-    WriteUint(data, &i, l->FloorColor);
+    WriteUint(data, &i, 0);
     data[i] = LEVEL_CMD_FOG;
     i++;
     WriteUint(data, &i, l->FogColor);
     WriteDouble(data, &i, l->FogStart);
     WriteDouble(data, &i, l->FogEnd);
+    data[i] = LEVEL_CMD_FLOOR_CEIL;
+    i++;
+    WriteUint(data, &i, l->FloorTexture);
+    WriteUint(data, &i, l->CeilingTexture);
+    data[i] = LEVEL_CMD_MUSIC;
+    i++;
+    WriteUint(data, &i, l->MusicID);
     data[i] = LEVEL_CMD_FINISH;
     i++;
 

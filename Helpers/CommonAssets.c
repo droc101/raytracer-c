@@ -4,20 +4,41 @@
 
 #include "CommonAssets.h"
 #include "../Assets/Assets.h"
-#include "../Helpers/Drawing.h"
+#include "Graphics/Drawing.h"
 
-SDL_Texture *menu_bg_tex;
-SDL_Texture *menu_logo_tex;
-SDL_Texture *skyTex;
-SDL_Texture *menu_bg_tex_red;
-SDL_Texture *fontTexture;
-SDL_Texture *smallFontTexture;
+const byte *wallTextures[WALL_TEXTURE_COUNT] = {
+        gztex_level_bricks,
+        gztex_level_cross,
+        gztex_level_wall2,
+        gztex_level_uvtest,
+        gztex_level_floor
+};
+
+const byte *actorTextures[ACTOR_TEXTURE_COUNT] = {
+        gztex_actor_iq,
+        gztex_actor_BLOB2,
+        gztex_actor_demon,
+        gztex_actor_monster1,
+        gztex_actor_monster2,
+        gztex_actor_monster3,
+        gztex_actor_key,
+        gztex_actor_coin,
+        gztex_actor_bluecoin,
+        gztex_actor_goal0,
+        gztex_actor_goal1,
+};
 
 void InitCommonAssets() {
-    menu_bg_tex = ToSDLTexture(gztex_interface_menu_bg_tile, FILTER_LINEAR);
-    menu_logo_tex = ToSDLTexture(gztex_interface_menu_logo, FILTER_LINEAR);
-    skyTex = ToSDLTexture(gztex_level_sky, FILTER_LINEAR);
-    menu_bg_tex_red = ToSDLTexture(gztex_interface_menu_bg_tile_red, FILTER_LINEAR);
-    fontTexture = ToSDLTexture((const unsigned char *) gztex_interface_font, FILTER_LINEAR);
-    smallFontTexture = ToSDLTexture((const unsigned char *) gztex_interface_small_fonts, FILTER_NEAREST);
+    SetTexParams(gztex_interface_menu_bg_tile, true, true);
+    SetTexParams(gztex_interface_menu_bg_tile_red, true, true);
+    SetTexParams(gztex_vfx_shadow, false, false);
+}
+
+int FindWallTextureIndex(const byte *tex) {
+    for (int i = 0; i < WALL_TEXTURE_COUNT; i++) {
+        if (wallTextures[i] == tex) {
+            return i;
+        }
+    }
+    return -1;
 }

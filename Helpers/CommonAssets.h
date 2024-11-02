@@ -6,14 +6,24 @@
 #define GAME_COMMONASSETS_H
 
 #include <SDL.h>
+#include "../defines.h"
 
-extern SDL_Texture *menu_bg_tex;
-extern SDL_Texture *menu_logo_tex;
-extern SDL_Texture *skyTex;
-extern SDL_Texture *menu_bg_tex_red;
-extern SDL_Texture *fontTexture;
-extern SDL_Texture *smallFontTexture;
+#define WALL_TEXTURE_COUNT 5
+#define ACTOR_TEXTURE_COUNT 11
 
+extern const byte *wallTextures[WALL_TEXTURE_COUNT];
+extern const byte *actorTextures[ACTOR_TEXTURE_COUNT];
+
+/**
+ * Initialize common assets
+ */
 void InitCommonAssets();
+
+/**
+ * Find the index of a wall texture
+ * @param tex The texture to find
+ * @return The index of the texture
+ */
+int FindWallTextureIndex(const byte *tex);
 
 #endif //GAME_COMMONASSETS_H
