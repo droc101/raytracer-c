@@ -9,12 +9,8 @@
 #include <SDL.h>
 #include <SDL_mixer.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include "config.h"
-
-// "boolean"
-#define bool _Bool
-#define true 1
-#define false 0
 
 #define byte uint8_t // unsigned 8-bit integer
 #define ushort uint16_t // unsigned 16-bit integer

@@ -58,7 +58,7 @@ Vector2 FontDrawString(Vector2 pos, char* str, uint size, uint color, bool small
         float charUV = uv_per_char * index;
         float charUVEnd = uv_per_char * (index + 1);
 
-        float quad[4][4] = {
+        mat4 quad = {
                 {ndc_pos.x, ndc_pos.y, charUV, 0},
                 {ndc_pos.x, ndc_pos_end.y, charUV, 1},
                 {ndc_pos_end.x, ndc_pos_end.y, charUVEnd, 1},

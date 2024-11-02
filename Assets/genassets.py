@@ -2,6 +2,8 @@ import os
 import sys
 from PIL import Image
 import gzip
+import subprocess
+import tempfile
 
 aid = 0
 
@@ -153,7 +155,98 @@ def file_to_bytes(path, type):
     header.extend(int_to_bytes(len(data)))  # Compressed length
     header.extend(int_to_bytes(decompressed_len))  # Decompressed length
     header.extend(int_to_bytes(aid))  # Asset ID
-    header.extend(int_to_bytes(type))  # Asset Type (3 = bin)
+    header.extend(int_to_bytes(type))  # Asset Type
+
+    header.extend(data)
+
+    header[19] = 1
+    header[20] = 2
+    header[21] = 3
+    header[22] = 4
+
+    aid += 1
+
+    return header
+
+def glsl_to_spv(glsl_path):
+    tmpf = tempfile.mktemp(suffix=".spv")
+    # check if windows or linux
+    glslc = "glslc"
+    if os.name == 'nt':
+        glslc = "C:\\VulkanSDK\\1.3.283.0\\Bin\\glslc.exe"
+    args = [glslc, glsl_path, "-o", tmpf]
+
+    try:
+        subprocess.check_output(args)
+    except subprocess.CalledProcessError as e:
+        print(e.output)
+        sys.exit(1)
+
+    with open(tmpf, "rb") as f:
+        data = f.read()
+
+    os.remove(tmpf)
+
+    return data
+
+def frag_to_bytes(path):
+    global aid
+
+    data = list(glsl_to_spv(path))
+
+    data += int_to_bytes(len(data))  # array size (excluding header)
+    data += int_to_bytes(0)  # unused
+    data += int_to_bytes(0)  # unused
+    data += int_to_bytes(aid)  # Padding
+    for i in range(0, len(data)):
+        if data[i] < 0 or data[i] > 255:
+            print("Error: FRAG-SPV data out of range")
+            sys.exit(1)
+
+    decompressed_len = len(data)
+
+    data = gzip.compress(bytes(data))
+
+    header = bytearray()
+    header.extend(int_to_bytes(len(data)))  # Compressed length
+    header.extend(int_to_bytes(decompressed_len))  # Decompressed length
+    header.extend(int_to_bytes(aid))  # Asset ID
+    header.extend(int_to_bytes(5))  # Asset Type (5 = fragment)
+
+    header.extend(data)
+
+    header[19] = 1
+    header[20] = 2
+    header[21] = 3
+    header[22] = 4
+
+    aid += 1
+
+    return header
+
+def vert_to_bytes(path):
+    global aid
+
+    data = list(glsl_to_spv(path))
+
+    data += int_to_bytes(len(data))  # array size (excluding header)
+    data += int_to_bytes(0)  # unused
+    data += int_to_bytes(0)  # unused
+    data += int_to_bytes(aid)  # Padding
+    for i in range(0, len(data)):
+        if data[i] < 0 or data[i] > 255:
+            print("Error: FRAG-SPV data out of range")
+            sys.exit(1)
+
+    decompressed_len = len(data)
+
+    data = gzip.compress(bytes(data))
+
+    header = bytearray()
+    header.extend(int_to_bytes(len(data)))  # Compressed length
+    header.extend(int_to_bytes(decompressed_len))  # Decompressed length
+    header.extend(int_to_bytes(aid))  # Asset ID
+    header.extend(int_to_bytes(6))  # Asset Type (6 = vertex)
 
     header.extend(data)
 
@@ -242,6 +335,20 @@ def recursive_search(path):
                 print("Converting " + path_from_assets + file)
                 data = file_to_bytes(path + file, 4)
                 name = "gzshd_" + foldername + "_" + file.split(".")[0]
+                assets_c += bytes_to_c_array(data, name)
+                assets_h += c_header_array(name, len(data))
+            elif file.endswith(".frag"):
+                count += 1
+                print("Converting " + path_from_assets + file)
+                data = frag_to_bytes(path + file)
+                name = "gzfrag_" + foldername + "_" + file.split(".")[0]
+                assets_c += bytes_to_c_array(data, name)
+                assets_h += c_header_array(name, len(data))
+            elif file.endswith(".vert"):
+                count += 1
+                print("Converting " + path_from_assets + file)
+                data = vert_to_bytes(path + file)
+                name = "gzvert_" + foldername + "_" + file.split(".")[0]
                 assets_c += bytes_to_c_array(data, name)
                 assets_h += c_header_array(name, len(data))
             else:

@@ -236,4 +236,13 @@ float GL_X_TO_NDC(float x);
  */
 float GL_Y_TO_NDC(float y);
 
+/**
+ * OpenGL code to render the 3D portion of a level
+ * @param l The level to render
+ * @param cam The camera to render with
+ * @note - This does not render the sky
+ * @note - This destroys the contents of the depth buffer
+ */
+void GL_RenderLevel(Level *l, Camera *cam);
+
 #endif //GAME_GLHELPER_H
