@@ -2,7 +2,7 @@
 
 ![](Assets/actor/BLOB2.png)
 
-Old-School first-person raycaster game written in C using [SDL2](https://www.libsdl.org/) for rendering and audio, and [zlib](https://www.zlib.net/) for asset compression.
+Old-School first-person raycaster game written in C using [SDL2](https://www.libsdl.org/) for input and audio, GL/Vulkan for rendering, and [zlib](https://www.zlib.net/) for asset compression.
 Runs on Windows and Linux.
 
 ### Setup
@@ -33,3 +33,4 @@ On Windows, you'll need to copy `lib/SDL2/x86_64-w64-mingw32/bin/SDL2.dll`, `lib
 ### Tested on
 - Windows 11 (but should work on 10)
 - Arch Linux
+- Debian
