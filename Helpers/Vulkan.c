@@ -38,6 +38,11 @@ typedef struct {
     mat4 proj;
 } UniformBufferObject;
 
+typedef struct {
+    VkSurfaceFormatKHR chosenFormat;
+    bool found;
+} SwapSurfaceFormatCheck;
+
 const List(Vertex) vertices = {
     4,
     (Vertex[]){
@@ -103,27 +108,6 @@ VkDescriptorPool descriptorPool;
 VkDescriptorSet descriptorSets[MAX_FRAMES_IN_FLIGHT];
 
 /**
- * Provides information about the physical device's support for the swap chain.
- * @param pDevice The physical device to query for
- * @return A @c SwapChainSupportDetails struct
- */
-static SwapChainSupportDetails QuerySwapChainSupport(const VkPhysicalDevice pDevice) {
-    SwapChainSupportDetails details = {0, NULL, 0, NULL};
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(pDevice, surface, &details.capabilities);
-    vkGetPhysicalDeviceSurfaceFormatsKHR(pDevice, surface, &details.formatCount, NULL);
-    if (details.formatCount != 0) {
-        details.formats = malloc(sizeof(VkSurfaceFormatKHR*) * details.formatCount);
-        vkGetPhysicalDeviceSurfaceFormatsKHR(pDevice, surface, &details.formatCount, details.formats);
-    }
-    vkGetPhysicalDeviceSurfacePresentModesKHR(pDevice, surface, &details.presentModeCount, NULL);
-    if (details.presentModeCount != 0) {
-        details.presentMode = malloc(sizeof(VkPresentModeKHR*) * details.presentModeCount);
-        vkGetPhysicalDeviceSurfacePresentModesKHR(pDevice, surface, &details.presentModeCount, details.presentMode);
-    }
-    return details;
-}
-
-/**
  * This function will create the Vulkan instance, set up for SDL.
  * @param window The window to initialize Vulkan for.
  * @see instance
@@ -174,6 +158,27 @@ static bool CreateSurface(SDL_Window *window) {
         return false;
     }
     return true;
+}
+
+/**
+ * Provides information about the physical device's support for the swap chain.
+ * @param pDevice The physical device to query for
+ * @return A @c SwapChainSupportDetails struct
+ */
+static SwapChainSupportDetails QuerySwapChainSupport(const VkPhysicalDevice pDevice) {
+    SwapChainSupportDetails details = {0, NULL, 0, NULL};
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(pDevice, surface, &details.capabilities);
+    vkGetPhysicalDeviceSurfaceFormatsKHR(pDevice, surface, &details.formatCount, NULL);
+    if (details.formatCount != 0) {
+        details.formats = malloc(sizeof(VkSurfaceFormatKHR*) * details.formatCount);
+        vkGetPhysicalDeviceSurfaceFormatsKHR(pDevice, surface, &details.formatCount, details.formats);
+    }
+    vkGetPhysicalDeviceSurfacePresentModesKHR(pDevice, surface, &details.presentModeCount, NULL);
+    if (details.presentModeCount != 0) {
+        details.presentMode = malloc(sizeof(VkPresentModeKHR*) * details.presentModeCount);
+        vkGetPhysicalDeviceSurfacePresentModesKHR(pDevice, surface, &details.presentModeCount, details.presentMode);
+    }
+    return details;
 }
 
 /**
@@ -308,14 +313,15 @@ static bool CreateLogicalDevice() {
  * If found, the function will pick R8G8B8A8_SRGB, otherwise it will simply use the first format found.
  * @return A @c VkSurfaceFormatKHR struct that contains the format.
  */
-static VkSurfaceFormatKHR GetSwapSurfaceFormat() {
+static SwapSurfaceFormatCheck GetSwapSurfaceFormat() {
     for (uint32_t i = 0; i < swapChainSupport.formatCount; i++) {
         const VkSurfaceFormatKHR format = swapChainSupport.formats[i];
         if (format.format == VK_FORMAT_R8G8B8A8_SRGB && format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
-            return format;
+            return (SwapSurfaceFormatCheck){format, true};
         }
     }
-    return swapChainSupport.formats[0];
+    VulkanError("Unable to find suitable Vulkan swap chain color format!");
+    return (SwapSurfaceFormatCheck){{}, false};
 }
 
 /**
@@ -333,7 +339,8 @@ static VkPresentModeKHR GetSwapPresentMode() {
 }
 
 static bool CreateSwapChain(SDL_Window *window) {
-    const VkSurfaceFormatKHR surfaceFormat = GetSwapSurfaceFormat();
+    const SwapSurfaceFormatCheck surfaceFormat = GetSwapSurfaceFormat();
+    if (!surfaceFormat.found) return false;
     const VkPresentModeKHR presentMode = GetSwapPresentMode();
     VkExtent2D extent = swapChainSupport.capabilities.currentExtent;
     if (extent.width == UINT32_MAX || extent.height == UINT32_MAX) {
@@ -354,8 +361,8 @@ static bool CreateSwapChain(SDL_Window *window) {
         0,
         surface,
         imageCount,
-        surfaceFormat.format,
-        surfaceFormat.colorSpace,
+        surfaceFormat.chosenFormat.format,
+        surfaceFormat.chosenFormat.colorSpace,
         extent,
         1,
         VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
@@ -384,7 +391,7 @@ static bool CreateSwapChain(SDL_Window *window) {
     swapChainImages = malloc(sizeof(VkImage*) * imageCount);
     swapChainCount = imageCount;
     vkGetSwapchainImagesKHR(device, swapChain, &imageCount, swapChainImages);
-    swapChainImageFormat = surfaceFormat.format;
+    swapChainImageFormat = surfaceFormat.chosenFormat.format;
     swapChainExtent = extent;
     return true;
 }
@@ -479,7 +486,7 @@ static bool CreateDescriptorSetLayout() {
         VK_SHADER_STAGE_VERTEX_BIT,
         NULL
     };
-    VkDescriptorSetLayoutCreateInfo layoutInfo = {
+    const VkDescriptorSetLayoutCreateInfo layoutInfo = {
         VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
         NULL,
         0,
@@ -871,7 +878,7 @@ static bool CreateDescriptorPool() {
         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
         MAX_FRAMES_IN_FLIGHT
     };
-    VkDescriptorPoolCreateInfo poolCreateInfo = {
+    const VkDescriptorPoolCreateInfo poolCreateInfo = {
         VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
         NULL,
         0,
