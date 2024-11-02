@@ -11,14 +11,14 @@
 #include "Controls/CheckBox.h"
 #include "Controls/RadioButton.h"
 
-void (*ControlDestroyFuncs[4])(Control *) = {
+void (*ControlDestroyFuncs[4])(const Control *) = {
     DestroyButton, // BUTTON
     DestroySlider, // SLIDER
     DestroyCheckbox, // CHECKBOX
     DestroyRadioButton, // RADIO_BUTTON
 };
 
-void (*ControlDrawFuncs[4])(Control *, ControlState state, Vector2 position) = {
+void (*ControlDrawFuncs[4])(const Control *, ControlState state, Vector2 position) = {
     DrawButton, // BUTTON
     DrawSlider, // SLIDER
     DrawCheckbox, // CHECKBOX

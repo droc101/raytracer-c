@@ -135,7 +135,7 @@ Level *NodesToLevel()
 }
 
 void CreateSlider(char *label, const double min, const double max, const double value, const double step, const double altStep, const Vector2 position,
-                  const Vector2 size, void (*callback)(double value), char *(*getLabel)(Control *slider))
+                  const Vector2 size, void (*callback)(const double value), char *(*getLabel)(const Control *slider))
 {
     Control *slider = CreateSliderControl(position, size, label, callback, TOP_LEFT, min, max, value, step, altStep,
                                           getLabel);

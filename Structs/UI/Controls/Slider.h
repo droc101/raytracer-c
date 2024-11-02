@@ -19,9 +19,9 @@ typedef struct SliderData
     double step;
     double altStep; // Step when holding shift
 
-    void (*callback)(double);
+    void (*callback)(const double);
 
-    char *(*getLabel)(Control *slider);
+    char *(*getLabel)(const Control *slider);
 } SliderData;
 
 char *SliderLabelPercent(const Control *slider);
@@ -46,12 +46,12 @@ char *SliderLabelInteger(const Control *slider);
 Control *
 CreateSliderControl(Vector2 position, Vector2 size, char *label, void (*callback)(double), ControlAnchor anchor,
                     double min, double max, double value, double step, double altStep,
-                    char *(*getLabel)(Control *slider));
+                    char *(*getLabel)(const Control *slider));
 
 void DestroySlider(const Control *c);
 
-void UpdateSlider(const UiStack *stack, const Control *c, Vector2 localMousePos, const uint ctlIndex);
+void UpdateSlider(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlIndex);
 
-void DrawSlider(Control *c, ControlState state, Vector2 position);
+void DrawSlider(const Control *c, ControlState state, Vector2 position);
 
 #endif //GAME_SLIDER_H

@@ -26,7 +26,7 @@ uint GLogoSplashStateFixedUpdate(const uint interval, GlobalState *State)
     return interval;
 }
 
-void GLogoSplashStateRender(const GlobalState *State)
+void GLogoSplashStateRender(GlobalState *State)
 {
     setColorUint(0x0);
     ClearColor(0xFF000000);

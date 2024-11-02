@@ -37,7 +37,7 @@ char *SliderLabelInteger(const Control *slider)
 Control *
 CreateSliderControl(const Vector2 position, const Vector2 size, char *label, void (*callback)(double), const ControlAnchor anchor,
                     const double min, const double max, const double value, const double step, const double altStep,
-                    char *(*getLabel)(Control *slider))
+                    char *(*getLabel)(const Control *slider))
 {
     if (getLabel == NULL)
     {
@@ -70,7 +70,7 @@ void DestroySlider(const Control *c)
     free(data);
 }
 
-void UpdateSlider(const UiStack *stack, const Control *c, Vector2 localMousePos, const uint ctlIndex)
+void UpdateSlider(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlIndex)
 {
     SliderData *data = (SliderData *) c->ControlData;
 
@@ -140,7 +140,7 @@ void UpdateSlider(const UiStack *stack, const Control *c, Vector2 localMousePos,
     }
 }
 
-void DrawSlider(Control *c, const ControlState state, const Vector2 position)
+void DrawSlider(const Control *c, const ControlState state, const Vector2 position)
 {
     uint color = 0xff252525;
     setColorUint(color);
