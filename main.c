@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER) != 0)
     {
         printf("SDL_Init Error: %s\n", SDL_GetError());
-        return 1;
+        Error("Failed to initialize SDL");
     }
 
     InitState();
@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
     if (Mix_OpenAudio(22050, AUDIO_S16, 2, 2048) < 0)
     {
         printf("Mix_OpenAudio Error: %s\n", Mix_GetError());
-        return 1;
+        Error("Failed to initialize audio system.");
     }
 
     const Uint32 rendererFlags = currentRenderer == RENDERER_OPENGL ? SDL_WINDOW_OPENGL : SDL_WINDOW_VULKAN;
@@ -66,8 +66,7 @@ int main(int argc, char *argv[])
     if (w == NULL)
     {
         printf("SDL_CreateWindow Error: %s\n", SDL_GetError());
-        SDL_Quit();
-        return 1;
+        Error("Failed to create window.");
     }
     SDL_SetWindowFullscreen(w, GetState()->options.fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
     SetWindow(w);
