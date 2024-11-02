@@ -167,7 +167,7 @@ void StopMusic() {
     }
 }
 
-void PlaySoundEffect(byte *asset) {
+void PlaySoundEffect(const byte *asset) {
     if (AssetGetType(asset) != ASSET_TYPE_WAV) {
         printf("PlaySoundEffect Error: Asset is not a sound effect file.\n");
         return;

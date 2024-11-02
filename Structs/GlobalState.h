@@ -93,7 +93,7 @@ void StopMusic();
  * @param asset Sound effect to play
  * @warning If there are no free channels, the sound effect will not play, and you will not be notified
  */
-void PlaySoundEffect(byte *asset);
+void PlaySoundEffect(const byte *asset);
 
 /**
  * Destroy the global state
