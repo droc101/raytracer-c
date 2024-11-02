@@ -17,21 +17,13 @@
 _Noreturn void Error_Internal(char *error, const char *file, const int line, const char *function)
 {
     char buf[256];
-    sprintf(buf, "Error: %s\n \n%s:%d (%s)", error, file, line, function);
-    printf("%s", buf);
-
 #ifndef NDEBUG
-
-    fflush(stdout);
-
-#ifdef WIN32
-    *(volatile int*)0 = 0; // die immediately
+    sprintf(buf, "%s\n \n%s:%d (%s)", error, file, line, function);
 #else
-    // emit sigtrap to allow debugger to catch the error
-    raise(SIGTRAP);
+    sprintf(buf, "%s", error);
 #endif
 
-#endif
+    printf("%s", buf);
 
     char finalMb[768];
     sprintf(finalMb,
@@ -43,16 +35,27 @@ _Noreturn void Error_Internal(char *error, const char *file, const int line, con
     mb.message = finalMb;
     mb.title = "Error";
 
-    SDL_MessageBoxButtonData buttons[2];
+#ifdef NDEBUG
+    const int btnc = 2;
+#else
+    const int btnc = 3;
+#endif
+
+    SDL_MessageBoxButtonData buttons[btnc];
     buttons[0].buttonid = 0;
     buttons[0].text = "Exit";
     buttons[0].flags = SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
     buttons[1].buttonid = 1;
     buttons[1].text = "Restart";
     buttons[1].flags = 0;
+#ifndef NDEBUG
+    buttons[2].buttonid = 2;
+    buttons[2].text = "Debug";
+    buttons[2].flags = 0;
+#endif
 
     mb.buttons = buttons;
-    mb.numbuttons = 2;
+    mb.numbuttons = btnc;
 
     mb.window = GetWindow();
     mb.flags = SDL_MESSAGEBOX_ERROR;
@@ -63,14 +66,25 @@ _Noreturn void Error_Internal(char *error, const char *file, const int line, con
     if (buttonid == 0)
     {
         exit(1);
-    } else
+    } else if (buttonid == 1)
     {
         // restart
         SDL_Quit();
         char *args[] = {GetState()->executablePath, NULL};
         execv(GetState()->executablePath, args);
         exit(1);
+    } else if (buttonid == 2)
+    {
+        fflush(stdout);
+
+#ifdef WIN32
+        *(volatile int*)0 = 0; // die immediately
+#else
+        // emit sigtrap to allow debugger to catch the error
+        raise(SIGTRAP);
+#endif
     }
+    exit(1);
 }
 
 _Noreturn void FriendlyError(const char *title, const char *description)
