@@ -57,6 +57,35 @@ _Noreturn void Error_Internal(char *error, const char *file, const int line, con
     mb.buttons = buttons;
     mb.numbuttons = btnc;
 
+    SDL_MessageBoxColor bg;
+    bg.r = 25;
+    bg.g = 25;
+    bg.b = 25;
+
+    SDL_MessageBoxColor text;
+    text.r = 255;
+    text.g = 255;
+    text.b = 255;
+
+    SDL_MessageBoxColor buttonBorder;
+    buttonBorder.r = 40;
+    buttonBorder.g = 40;
+    buttonBorder.b = 40;
+
+    SDL_MessageBoxColor buttonBg;
+    buttonBg.r = 35;
+    buttonBg.g = 35;
+    buttonBg.b = 35;
+
+    SDL_MessageBoxColorScheme colorScheme;
+    colorScheme.colors[SDL_MESSAGEBOX_COLOR_BACKGROUND] = bg;
+    colorScheme.colors[SDL_MESSAGEBOX_COLOR_TEXT] = text;
+    colorScheme.colors[SDL_MESSAGEBOX_COLOR_BUTTON_BORDER] = buttonBorder;
+    colorScheme.colors[SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND] = buttonBg;
+    colorScheme.colors[SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED] = buttonBorder;
+
+    mb.colorScheme = &colorScheme;
+
     mb.window = GetWindow();
     mb.flags = SDL_MESSAGEBOX_ERROR;
 

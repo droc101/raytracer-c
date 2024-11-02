@@ -25,6 +25,16 @@ int main(int argc, char *argv[])
 
     SetSignalHandler(); // catch exceptions in release mode
 
+    const int argvZeroLen = strlen(argv[0]);
+
+    if (argvZeroLen > 260)
+    {
+        Error("Executable path too long. Please rethink your file structure.");
+    }
+    memset(GetState()->executablePath, 0, 261); // we do not mess around with user data in c.
+    strncpy(GetState()->executablePath, argv[0], 260);
+    printf("Executable path: %s\n", GetState()->executablePath);
+
 #ifdef __LINUX__
     setenv("SDL_VIDEODRIVER", "wayland", 1);
 #endif
@@ -36,16 +46,6 @@ int main(int argc, char *argv[])
     }
 
     InitState();
-
-    const int argvZeroLen = strlen(argv[0]);
-
-    if (argvZeroLen > 260)
-    {
-        Error("Executable path too long. Please rethink your file structure.");
-    }
-    memset(GetState()->executablePath, 0, 261); // we do not mess around with user data in c.
-    strncpy(GetState()->executablePath, argv[0], 260);\
-    printf("Executable path: %s\n", GetState()->executablePath);
 
     if (!RenderPreInit())
     {
