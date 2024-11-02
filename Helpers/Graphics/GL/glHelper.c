@@ -31,8 +31,14 @@ GL_Buffer *wall_buffer;
 GLuint GL_Textures[MAX_TEXTURES];
 int GL_NextFreeSlot = 0;
 int GL_AssetTextureMap[ASSET_COUNT];
+char GL_LastError[512];
 
-void GL_PreInit() {
+void GL_Error(const char *error) {
+    printf("OpenGL Error: %s\n", error);
+    strcpy(GL_LastError, error);
+}
+
+bool GL_PreInit() {
     SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
     SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, MSAA_SAMPLES);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
@@ -44,13 +50,15 @@ void GL_PreInit() {
 
     memset(GL_AssetTextureMap, -1, sizeof(GL_AssetTextureMap));
     memset(GL_Textures, 0, sizeof(GL_Textures));
+
+    return true;
 }
 
-void GL_Init() {
+bool GL_Init(SDL_Window *wnd) {
 
     printf("Initializing OpenGL\n");
 
-    ctx = SDL_GL_CreateContext(GetWindow());
+    ctx = SDL_GL_CreateContext(wnd);
 
     SDL_GL_SetSwapInterval(GetState()->options.vsync ? 1 : 0);
 
@@ -59,7 +67,8 @@ void GL_Init() {
     err = glewInit();
     if (err != GLEW_OK) {
         SDL_GL_DeleteContext(ctx);
-        Error("Failed to start OpenGL. Your GPU or drivers may not support OpenGL 4.6.");
+        GL_Error("Failed to start OpenGL. Your GPU or drivers may not support OpenGL 4.6.");
+        return false;
     }
 
     char *hud_textured_fsh = (char *) DecompressAsset(gzshd_GL_hud_textured_f);
@@ -105,6 +114,8 @@ void GL_Init() {
     printf("OpenGL Renderer: %s\n", renderer);
     printf("OpenGL Version: %s\n", version);
     printf("GLSL: %s\n", shading_language);
+
+    return true;
 }
 
 GL_Shader *GL_ConstructShader(char *fsh, char *vsh) {

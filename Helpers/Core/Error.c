@@ -12,6 +12,7 @@
 #include <signal.h>
 #include "zlib.h"
 #include "../CommonAssets.h"
+#include "../../Structs/GlobalState.h"
 
 _Noreturn void Error_Internal(char* error, const char* file, int line, const char* function) {
 
@@ -32,11 +33,39 @@ _Noreturn void Error_Internal(char* error, const char* file, int line, const cha
 
 #endif
 
-    char dbgInfoBuf[256];
-    sprintf(dbgInfoBuf, "Engine Version: %s\nSDL Version: %d.%d.%d\nSDL_Mixer Version: %d.%d.%d\nZlib Version: %s", VERSION, SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_PATCHLEVEL, SDL_MIXER_MAJOR_VERSION, SDL_MIXER_MINOR_VERSION, SDL_MIXER_PATCHLEVEL, ZLIB_VERSION);
+    char finalMb[768];
+    sprintf(finalMb, "Sorry, but the game has crashed.\n\n%s\n\nEngine Version: %s\nSDL Version: %d.%d.%d\nSDL_Mixer Version: %d.%d.%d\nZlib Version: %s", buf, VERSION, SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_PATCHLEVEL, SDL_MIXER_MAJOR_VERSION, SDL_MIXER_MINOR_VERSION, SDL_MIXER_PATCHLEVEL, ZLIB_VERSION);
 
-    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error", buf, NULL);
-    exit(1);
+    SDL_MessageBoxData mb;
+    mb.message = finalMb;
+    mb.title = "Error";
+
+    SDL_MessageBoxButtonData buttons[2];
+    buttons[0].buttonid = 0;
+    buttons[0].text = "Exit";
+    buttons[0].flags = SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
+    buttons[1].buttonid = 1;
+    buttons[1].text = "Restart";
+    buttons[1].flags = 0;
+
+    mb.buttons = buttons;
+    mb.numbuttons = 2;
+
+    mb.window = GetWindow();
+    mb.flags = SDL_MESSAGEBOX_ERROR;
+
+    int buttonid;
+    SDL_ShowMessageBox(&mb, &buttonid);
+
+    if (buttonid == 0) {
+        exit(1);
+    } else {
+        // restart
+        SDL_Quit();
+        char *args[] = {GetState()->executablePath, NULL};
+        execv(GetState()->executablePath, args);
+        exit(1);
+    }
 }
 
 _Noreturn void FriendlyError(char* title, char* description) {

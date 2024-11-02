@@ -35,12 +35,12 @@ mat4 *ActorTransformMatrix(Actor *Actor);
  * Perform any pre-initialization for the rendering system
  * This is called before the window is created.
  */
-void RenderPreInit();
+bool RenderPreInit();
 
 /**
  * Initialize the rendering system
  */
-void RenderInit();
+bool RenderInit();
 
 /**
  * Destroy the rendering system

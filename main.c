@@ -15,7 +15,7 @@
 #include "Helpers/Core/Error.h"
 #include "Helpers/CommonAssets.h"
 #include "Helpers/Graphics/RenderingHelpers.h"
-#include "Helpers/Vulkan.h"
+#include <string.h>
 
 int main(int argc, char *argv[]) {
 
@@ -35,9 +35,21 @@ int main(int argc, char *argv[]) {
     }
 
     InitState();
+
+    int argvZeroLen = strlen(argv[0]);
+
+    if (argvZeroLen > 260) {
+        Error("Executable path too long. Please rethink your file structure.");
+    }
+    memset(GetState()->executablePath, 0, 261); // we do not mess around with user data in c.
+    strncpy(GetState()->executablePath, argv[0], 260);\
+    printf("Executable path: %s\n", GetState()->executablePath);
+
     // TODO: You now have GetState()->options.renderer to determine the renderer. Use this.
 
-    RenderPreInit();
+    if (!RenderPreInit()) {
+        Error("Failed to initialize rendering system.");
+    }
 
     Mix_AllocateChannels(SFX_CHANNEL_COUNT);
 
@@ -46,7 +58,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    Uint32 rendererFlags = GetState()->options.renderer == RENDERER_OPENGL ? SDL_WINDOW_OPENGL : SDL_WINDOW_VULKAN;
+    const Uint32 rendererFlags = GetState()->options.renderer == RENDERER_OPENGL ? SDL_WINDOW_OPENGL : SDL_WINDOW_VULKAN;
     SDL_Window *w = SDL_CreateWindow(GAME_TITLE,SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,DEF_WIDTH, DEF_HEIGHT, rendererFlags | SDL_WINDOW_RESIZABLE);
     if (w == NULL) {
         printf("SDL_CreateWindow Error: %s\n", SDL_GetError());
@@ -57,12 +69,14 @@ int main(int argc, char *argv[]) {
     SetWindow(w);
     UpdateViewportSize();
 
-    RenderInit();
+    if (!RenderInit()) {
+        Error("Failed to initialize rendering system.");
+    }
 
     SDL_SetWindowMinimumSize(w, MIN_WIDTH, MIN_HEIGHT);
     SDL_SetWindowMaximumSize(w, MAX_WIDTH, MAX_HEIGHT);
 
-    SDL_Surface *icon = ToSDLSurface((const unsigned char *) gztex_interface_icon, "1");
+    SDL_Surface *icon = ToSDLSurface(gztex_interface_icon, "1");
     SDL_SetWindowIcon(w, icon);
 
     InitCommonAssets();
