@@ -4,11 +4,12 @@
 
 #include "RenderingHelpers.h"
 #include "GL/glHelper.h"
-#include "../../Structs/Wall.h"
 #include "../../Structs/Vector2.h"
 #include "../CommonAssets.h"
 #include "../../Structs/GlobalState.h"
 #include "Vulkan/Vulkan.h"
+
+Renderer currentRenderer;
 
 mat4* GetMatrix(Camera *cam) {
     vec3 cam_pos = {cam->x, cam->y, cam->z};
@@ -51,7 +52,8 @@ mat4* ActorTransformMatrix(Actor *Actor) {
 }
 
 bool RenderPreInit() {
-    switch (GetState()->options.renderer) {
+    currentRenderer = GetState()->options.renderer;
+    switch (currentRenderer) {
         case RENDERER_VULKAN:
             return true;
         case RENDERER_OPENGL:
@@ -62,7 +64,7 @@ bool RenderPreInit() {
 }
 
 bool RenderInit() {
-    switch (GetState()->options.renderer) {
+    switch (currentRenderer) {
         case RENDERER_VULKAN:
             return InitVulkan(GetWindow());
         case RENDERER_OPENGL:
@@ -75,7 +77,7 @@ bool RenderInit() {
 }
 
 void RenderDestroy() {
-    switch (GetState()->options.renderer) {
+    switch (currentRenderer) {
         case RENDERER_VULKAN:
             CleanupVulkan();
             break;
@@ -86,7 +88,7 @@ void RenderDestroy() {
 }
 
 void RenderLevel3D(Level *l, Camera *cam) {
-    switch (GetState()->options.renderer) {
+    switch (currentRenderer) {
         case RENDERER_VULKAN:
             DrawFrame();
             break;
@@ -101,7 +103,7 @@ inline void UpdateViewportSize() {
     float newScaleY = (float)ActualWindowSize().y / (float)DEF_HEIGHT;
     float newScale = newScaleX < newScaleY ? newScaleX : newScaleY;
     GetState()->options.uiScale = newScale;
-    switch (GetState()->options.renderer) {
+    switch (currentRenderer) {
         case RENDERER_VULKAN:
             // TODO: Implement this. Guide can be found at https://docs.vulkan.org/tutorial/latest/03_Drawing_a_triangle/04_Swap_chain_recreation.html 
             break;
@@ -112,7 +114,7 @@ inline void UpdateViewportSize() {
 }
 
 inline void DrawBatchedQuadsTextured(BatchedQuadArray *batch, const unsigned char *imageData, uint color) {
-    switch (GetState()->options.renderer) {
+    switch (currentRenderer) {
         case RENDERER_VULKAN:
             
             break;
@@ -123,7 +125,7 @@ inline void DrawBatchedQuadsTextured(BatchedQuadArray *batch, const unsigned cha
 }
 
 inline void DrawBatchedQuadsColored(BatchedQuadArray *batch, uint color) {
-    switch (GetState()->options.renderer) {
+    switch (currentRenderer) {
         case RENDERER_VULKAN:
             
             break;
@@ -134,7 +136,7 @@ inline void DrawBatchedQuadsColored(BatchedQuadArray *batch, uint color) {
 }
 
 inline float X_TO_NDC(float x) {
-    switch (GetState()->options.renderer) {
+    switch (currentRenderer) {
         case RENDERER_VULKAN:
             return 0;
         case RENDERER_OPENGL:
@@ -145,7 +147,7 @@ inline float X_TO_NDC(float x) {
 }
 
 inline float Y_TO_NDC(float y) {
-    switch (GetState()->options.renderer) {
+    switch (currentRenderer) {
         case RENDERER_VULKAN:
             return 0;
         case RENDERER_OPENGL:

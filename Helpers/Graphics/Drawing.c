@@ -6,6 +6,7 @@
 #include "../../defines.h"
 #include "SDL.h"
 #include "Drawing.h"
+#include "RenderingHelpers.h"
 #include "../Core/Error.h"
 #include "../../Assets/AssetReader.h"
 #include "../LevelLoader.h" // for ReadUInt
@@ -104,7 +105,7 @@ uint MixColors(uint color_a, uint color_b) {
 // Rendering subsystem abstractions
 
 void SetTexParams(const unsigned char* imageData, bool linear, bool repeat) {
-    switch (GetState()->options.renderer) {
+    switch (currentRenderer) {
         case RENDERER_VULKAN:
             
             break;
@@ -115,7 +116,7 @@ void SetTexParams(const unsigned char* imageData, bool linear, bool repeat) {
 }
 
 inline void DrawLine(Vector2 start, Vector2 end, float thickness) {
-    switch (GetState()->options.renderer) {
+    switch (currentRenderer) {
         case RENDERER_VULKAN:
             
             break;
@@ -126,7 +127,7 @@ inline void DrawLine(Vector2 start, Vector2 end, float thickness) {
 }
 
 inline void DrawOutlineRect(Vector2 pos, Vector2 size, float thickness) {
-    switch (GetState()->options.renderer) {
+    switch (currentRenderer) {
         case RENDERER_VULKAN:
             
             break;
@@ -137,7 +138,7 @@ inline void DrawOutlineRect(Vector2 pos, Vector2 size, float thickness) {
 }
 
 inline void DrawTexture(Vector2 pos, Vector2 size, const unsigned char* imageData) {
-    switch (GetState()->options.renderer) {
+    switch (currentRenderer) {
         case RENDERER_VULKAN:
             
             break;
@@ -148,7 +149,7 @@ inline void DrawTexture(Vector2 pos, Vector2 size, const unsigned char* imageDat
 
 }
 inline void DrawTextureMod(Vector2 pos, Vector2 size, const unsigned char* imageData, uint color) {
-    switch (GetState()->options.renderer) {
+    switch (currentRenderer) {
         case RENDERER_VULKAN:
             
             break;
@@ -159,7 +160,7 @@ inline void DrawTextureMod(Vector2 pos, Vector2 size, const unsigned char* image
 }
 
 inline void DrawTextureRegion(Vector2 pos, Vector2 size, const unsigned char* imageData, Vector2 region_start, Vector2 region_end) {
-    switch (GetState()->options.renderer) {
+    switch (currentRenderer) {
         case RENDERER_VULKAN:
             
             break;
@@ -170,7 +171,7 @@ inline void DrawTextureRegion(Vector2 pos, Vector2 size, const unsigned char* im
 }
 
 inline void DrawTextureRegionMod(Vector2 pos, Vector2 size, const unsigned char* imageData, Vector2 region_start, Vector2 region_end, uint color) {
-    switch (GetState()->options.renderer) {
+    switch (currentRenderer) {
         case RENDERER_VULKAN:
             
             break;
@@ -181,7 +182,7 @@ inline void DrawTextureRegionMod(Vector2 pos, Vector2 size, const unsigned char*
 }
 
 inline void ClearColor(uint color) {
-    switch (GetState()->options.renderer) {
+    switch (currentRenderer) {
         case RENDERER_VULKAN:
             
             break;
@@ -192,7 +193,7 @@ inline void ClearColor(uint color) {
 }
 
 inline void ClearScreen() {
-    switch (GetState()->options.renderer) {
+    switch (currentRenderer) {
         case RENDERER_VULKAN:
             
             break;
@@ -204,7 +205,7 @@ inline void ClearScreen() {
 }
 
 inline void ClearDepthOnly() {
-    switch (GetState()->options.renderer) {
+    switch (currentRenderer) {
         case RENDERER_VULKAN:
             
             break;
@@ -215,7 +216,7 @@ inline void ClearDepthOnly() {
 }
 
 inline void Swap() {
-    switch (GetState()->options.renderer) {
+    switch (currentRenderer) {
         case RENDERER_VULKAN:
             
             break;
@@ -226,7 +227,7 @@ inline void Swap() {
 }
 
 inline void draw_rect(int x, int y, int w, int h) {
-    switch (GetState()->options.renderer) {
+    switch (currentRenderer) {
         case RENDERER_VULKAN:
             
             break;

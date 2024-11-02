@@ -17,6 +17,8 @@ typedef struct BatchedQuadArray {
     int quad_count; // Number of quads in the array
 } BatchedQuadArray;
 
+extern Renderer currentRenderer;
+
 /**
  * Get the transformation matrix for a camera
  * @param cam The camera
