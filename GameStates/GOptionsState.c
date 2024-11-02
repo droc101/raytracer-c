@@ -76,6 +76,9 @@ void GOptionsStateRender(GlobalState *State)
     DrawTextAligned("Options", 32, 0xFFFFFFFF, v2s(0), v2(WindowWidth(), 100), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE,
                     false);
 
+    DrawTextAligned("Changing renderer requires a restart", 16, 0xFFa0a0a0, v2(0, 425), v2(WindowWidth(), 40),
+                    FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
+
     ProcessUiStack(optionsStack);
     DrawUiStack(optionsStack);
 }
