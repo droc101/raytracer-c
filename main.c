@@ -15,6 +15,7 @@
 #include "Helpers/Core/Error.h"
 #include "Helpers/CommonAssets.h"
 #include "Helpers/Graphics/RenderingHelpers.h"
+#include <string.h>
 
 int main(int argc, char *argv[]) {
 
@@ -30,6 +31,13 @@ int main(int argc, char *argv[]) {
     }
 
     InitState();
+
+    int argvZeroLen = strlen(argv[0]);
+
+    if (argvZeroLen > 260) {
+        Error("Executable path too long. Please rethink your file structure.");
+    }
+    strncpy(GetState()->executablePath, argv[0], 260);
     // TODO: You now have GetState()->options.renderer to determine the renderer. Use this.
 
     if (!RenderPreInit()) {

@@ -148,6 +148,8 @@ typedef struct GlobalState {
     Camera *cam;
 
     Options options;
+
+    char executablePath[260];
 } GlobalState;
 
 // Actor (interactable/moving wall) struct
