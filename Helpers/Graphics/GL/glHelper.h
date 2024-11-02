@@ -28,12 +28,12 @@ typedef struct GL_Buffer {
 /**
  * Set SDL_GL flags (this must be done before the SDL window is created)
  */
-void GL_PreInit();
+bool GL_PreInit();
 
 /**
  * Initialize OpenGL
  */
-void GL_Init();
+bool GL_Init(SDL_Window *wnd);
 
 /**
  * Create a shader program

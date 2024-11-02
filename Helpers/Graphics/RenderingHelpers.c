@@ -49,13 +49,14 @@ mat4 *ActorTransformMatrix(Actor *Actor) {
     return MODEL;
 }
 
-void RenderPreInit() {
-    GL_PreInit();
+bool RenderPreInit() {
+    return GL_PreInit();
 }
 
-void RenderInit() {
-    GL_Init();
+bool RenderInit() {
+    bool gli = GL_Init(GetWindow());
     GL_Disable3D(); // just to make sure we are in the correct state
+    return gli;
 }
 
 void RenderDestroy() {

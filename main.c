@@ -32,7 +32,9 @@ int main(int argc, char *argv[]) {
     InitState();
     // TODO: You now have GetState()->options.renderer to determine the renderer. Use this.
 
-    RenderPreInit();
+    if (!RenderPreInit()) {
+        Error("Failed to initialize rendering system.");
+    }
 
     Mix_AllocateChannels(SFX_CHANNEL_COUNT);
 
@@ -52,7 +54,9 @@ int main(int argc, char *argv[]) {
     SetWindow(w);
     UpdateViewportSize();
 
-    RenderInit();
+    if (!RenderInit()) {
+        Error("Failed to initialize rendering system.");
+    }
 
     SDL_SetWindowMinimumSize(w, MIN_WIDTH, MIN_HEIGHT);
     SDL_SetWindowMaximumSize(w, MAX_WIDTH, MAX_HEIGHT);
