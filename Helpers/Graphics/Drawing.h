@@ -169,4 +169,15 @@ void Swap();
  */
 Vector2 texture_size(const unsigned char *imageData);
 
+/**
+ * Draw a ninepatch image to the screen
+ * @param pos The position to draw at
+ * @param size The size of the output
+ * @param output_margins_px The 9patch margins of the output
+ * @param texture_margins_px The 9patch margins of the texture
+ * @param imageData The texture data
+ * @warning This is nine draw calls.
+ */
+void draw_ninepatch(const Vector2 pos, const Vector2 size, const int output_margins_px, const int texture_margins_px, const byte *imageData);
+
 #endif //GAME_DRAWING_H

@@ -33,6 +33,16 @@ void InitCommonAssets()
     SetTexParams(gztex_interface_menu_bg_tile, true, true);
     SetTexParams(gztex_interface_menu_bg_tile_red, true, true);
     SetTexParams(gztex_vfx_shadow, false, false);
+    SetTexParams(gztex_interface_button, true, false);
+    SetTexParams(gztex_interface_button_hover, true, false);
+    SetTexParams(gztex_interface_button_press, true, false);
+    SetTexParams(gztex_interface_slider, true, false);
+    SetTexParams(gztex_interface_checkbox_checked, true, false);
+    SetTexParams(gztex_interface_checkbox_unchecked, true, false);
+    SetTexParams(gztex_interface_radio_checked, true, false);
+    SetTexParams(gztex_interface_radio_unchecked, true, false);
+    SetTexParams(gztex_interface_slider_thumb, true, false);
+    SetTexParams(gztex_interface_focus_rect, true, false);
 }
 
 int FindWallTextureIndex(const byte *tex)

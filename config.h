@@ -34,6 +34,9 @@
 
 #pragma region Debug
 
+// Skip the splash screen
+#define DEBUG_NOSPLASH
+
 // See /Debug/FrameGrapher.h for physicsFrame grapher settings
 
 // Press F6 while in game to open the level editor

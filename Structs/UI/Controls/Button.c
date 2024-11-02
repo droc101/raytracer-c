@@ -46,31 +46,20 @@ void UpdateButton(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlInd
 
 void DrawButton(const Control *c, const ControlState state, const Vector2 position)
 {
-    uint color = 0xff000000;
     switch (state)
     {
         case NORMAL:
-            color = 0xFFc2e3ff;
+            draw_ninepatch(c->anchoredPosition, c->size, 8, 8, gztex_interface_button);
             break;
         case HOVER:
-            color = 0xFFa1d4ff;
+            draw_ninepatch(c->anchoredPosition, c->size, 8, 8, gztex_interface_button_hover);
             break;
         case ACTIVE:
-            color = 0xFF8ac9ff;
+            draw_ninepatch(c->anchoredPosition, c->size, 8, 8, gztex_interface_button_press);
             break;
     }
 
     const ButtonData *data = (ButtonData *) c->ControlData;
-
-    if (!data->enabled)
-    {
-        color = 0xFF808080;
-    }
-
-    setColorUint(color);
-    draw_rect(position.x, position.y, c->size.x, c->size.y);
-    setColorUint(0xFF000000);
-    DrawOutlineRect(position, c->size, 1);
 
     DrawTextAligned(data->text, 16, 0xFF000000, position, c->size, FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
 }

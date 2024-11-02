@@ -12,6 +12,19 @@
 
 uint GLogoSplashStateFixedUpdate(const uint interval, GlobalState *State)
 {
+
+#ifdef DEBUG_NOSPLASH
+    if (State->physicsFrame == 1)
+    {
+        GMenuStateSet();
+    }
+    if (State->physicsFrame > 0)
+    {
+        State->physicsFrame++;
+        return interval;
+    }
+#endif
+
     if (State->physicsFrame == 20)
     {
         PlaySoundEffect(gzwav_sfx_coincling);

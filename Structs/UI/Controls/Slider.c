@@ -10,6 +10,8 @@
 #include <math.h>
 #include <stdio.h>
 
+#include "../../../Assets/Assets.h"
+
 char *DefaultSliderLabelCallback(const Control *slider)
 {
     const SliderData *data = (SliderData *) slider->ControlData;
@@ -143,13 +145,15 @@ void UpdateSlider(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlInd
 void DrawSlider(const Control *c, const ControlState state, const Vector2 position)
 {
     uint color = 0xff252525;
-    setColorUint(color);
-    draw_rect(position.x, position.y, c->size.x, c->size.y);
-    setColorUint(0xFFFFFFFF);
-    DrawOutlineRect(position, c->size, 1);
+    // setColorUint(color);
+    // draw_rect(position.x, position.y, c->size.x, c->size.y);
+    // setColorUint(0xFFFFFFFF);
+    // DrawOutlineRect(position, c->size, 1);
+
+    draw_ninepatch(c->anchoredPosition, c->size, 8, 8, gztex_interface_slider);
 
     const SliderData *data = (SliderData *) c->ControlData;
-    const double handlePos = remap(data->value, data->min, data->max, 0, c->size.x - 12);
+    const double handlePos = remap(data->value, data->min, data->max, 0, c->size.x - 18);
 
     // draw handle
     switch (state)
@@ -164,10 +168,7 @@ void DrawSlider(const Control *c, const ControlState state, const Vector2 positi
             color = 0xFF8ac9ff;
             break;
     }
-    setColorUint(color);
-    draw_rect(position.x + handlePos + 1, position.y + 1, 10, c->size.y - 2);
-    setColorUint(0xff000000);
-    DrawOutlineRect(v2(position.x + handlePos + 1, position.y + 1), v2(10, c->size.y - 2), 1);
+    DrawTexture(v2(position.x + handlePos + 4, position.y + 1), v2(10, c->size.y - 2), gztex_interface_slider_thumb);
 
     char *buf = data->getLabel(c);
     DrawTextAligned(buf, 16, 0xff000000, Vector2Add(position, v2s(2)), c->size, FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE,

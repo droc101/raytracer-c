@@ -282,3 +282,19 @@ Vector2 texture_size(const unsigned char *imageData)
 
     return v2(width, height);
 }
+
+void draw_ninepatch(const Vector2 pos, const Vector2 size, const int output_margins_px, const int texture_margins_px, const byte *imageData)
+{
+    const Vector2 ts = texture_size(imageData);
+    DrawTextureRegion(pos, v2s(output_margins_px), imageData, v2s(0), v2s(texture_margins_px)); // top left
+    DrawTextureRegion(v2(pos.x, pos.y+output_margins_px), v2(output_margins_px, size.y - (texture_margins_px*2)), imageData, v2(0, texture_margins_px), v2(texture_margins_px, ts.y - (texture_margins_px*2))); // middle left
+    DrawTextureRegion(v2(pos.x, pos.y+size.y-output_margins_px), v2s(output_margins_px), imageData, v2(0, ts.y - texture_margins_px), v2s(texture_margins_px)); // bottom left
+
+    DrawTextureRegion(v2(pos.x + output_margins_px, pos.y), v2(size.x - (texture_margins_px*2), output_margins_px), imageData, v2(texture_margins_px, 0), v2(ts.x - (texture_margins_px*2), texture_margins_px)); // top middle
+    DrawTextureRegion(v2(pos.x + output_margins_px, pos.y + output_margins_px), v2(size.x - (texture_margins_px*2), size.y - (texture_margins_px*2)), imageData, v2(texture_margins_px, texture_margins_px), v2(ts.x - (texture_margins_px*2), ts.y - (texture_margins_px*2))); // middle middle
+    DrawTextureRegion(v2(pos.x + output_margins_px, pos.y + (size.y-output_margins_px)), v2(size.x - (texture_margins_px*2), output_margins_px), imageData, v2(texture_margins_px, ts.y - texture_margins_px), v2(ts.x - (texture_margins_px*2), texture_margins_px)); // bottom middle
+
+    DrawTextureRegion(v2(pos.x + (size.x - output_margins_px), pos.y), v2s(output_margins_px), imageData, v2(ts.x - texture_margins_px, 0), v2s(texture_margins_px)); // top right
+    DrawTextureRegion(v2(pos.x + (size.x - output_margins_px), pos.y + output_margins_px), v2(output_margins_px, size.y - (texture_margins_px*2)), imageData, v2(ts.x - texture_margins_px, texture_margins_px), v2(texture_margins_px, ts.y - (texture_margins_px*2))); // middle right
+    DrawTextureRegion(v2(pos.x + (size.x - output_margins_px), pos.y + (size.y-output_margins_px)), v2s(output_margins_px), imageData, v2(ts.x - texture_margins_px, ts.y - texture_margins_px), v2s(texture_margins_px)); // bottom right
+}

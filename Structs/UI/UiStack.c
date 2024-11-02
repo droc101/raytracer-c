@@ -5,6 +5,7 @@
 #include "UiStack.h"
 #include "../../Helpers/Core/Input.h"
 #include "../Vector2.h"
+#include "../../Assets/Assets.h"
 
 #include "Controls/Button.h"
 #include "Controls/Slider.h"
@@ -140,8 +141,7 @@ void DrawUiStack(const UiStack *stack)
         if (i == stack->focusedControl)
         {
             setColorUint(0xFFFFFFFF);
-            DrawOutlineRect(v2(c->anchoredPosition.x - 2, c->anchoredPosition.y - 2), v2(c->size.x + 4, c->size.y + 4),
-                            3);
+            draw_ninepatch(v2(c->anchoredPosition.x - 4, c->anchoredPosition.y - 4), v2(c->size.x + 8, c->size.y + 8), 16, 16, gztex_interface_focus_rect);
         }
     }
 }
