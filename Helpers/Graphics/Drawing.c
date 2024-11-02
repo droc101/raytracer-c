@@ -104,52 +104,136 @@ uint MixColors(uint color_a, uint color_b) {
 // Rendering subsystem abstractions
 
 void SetTexParams(const unsigned char* imageData, bool linear, bool repeat) {
-    GL_SetTexParams(imageData, linear, repeat);
+    switch (GetState()->options.renderer) {
+        case RENDERER_VULKAN:
+            
+            break;
+        case RENDERER_OPENGL:
+            GL_SetTexParams(imageData, linear, repeat);
+            break;
+    }
 }
 
 inline void DrawLine(Vector2 start, Vector2 end, float thickness) {
-    GL_DrawLine(start, end, drawColor, thickness * GetState()->options.uiScale);
+    switch (GetState()->options.renderer) {
+        case RENDERER_VULKAN:
+            
+            break;
+        case RENDERER_OPENGL:
+            GL_DrawLine(start, end, drawColor, thickness * GetState()->options.uiScale);
+            break;
+    }
 }
 
 inline void DrawOutlineRect(Vector2 pos, Vector2 size, float thickness) {
-    GL_DrawRectOutline(pos, size, drawColor, thickness * GetState()->options.uiScale);
+    switch (GetState()->options.renderer) {
+        case RENDERER_VULKAN:
+            
+            break;
+        case RENDERER_OPENGL:
+            GL_DrawRectOutline(pos, size, drawColor, thickness * GetState()->options.uiScale);
+            break;
+    }
 }
 
 inline void DrawTexture(Vector2 pos, Vector2 size, const unsigned char* imageData) {
-    GL_DrawTexture(pos, size, imageData);
+    switch (GetState()->options.renderer) {
+        case RENDERER_VULKAN:
+            
+            break;
+        case RENDERER_OPENGL:
+            GL_DrawTexture(pos, size, imageData);
+            break;
+    }
 
 }
 inline void DrawTextureMod(Vector2 pos, Vector2 size, const unsigned char* imageData, uint color) {
-    GL_DrawTextureMod(pos, size, imageData, color);
+    switch (GetState()->options.renderer) {
+        case RENDERER_VULKAN:
+            
+            break;
+        case RENDERER_OPENGL:
+            GL_DrawTextureMod(pos, size, imageData, color);
+            break;
+    }
 }
 
 inline void DrawTextureRegion(Vector2 pos, Vector2 size, const unsigned char* imageData, Vector2 region_start, Vector2 region_end) {
-    GL_DrawTextureRegion(pos, size, imageData, region_start, region_end);
+    switch (GetState()->options.renderer) {
+        case RENDERER_VULKAN:
+            
+            break;
+        case RENDERER_OPENGL:
+            GL_DrawTextureRegion(pos, size, imageData, region_start, region_end);
+            break;
+    }
 }
 
 inline void DrawTextureRegionMod(Vector2 pos, Vector2 size, const unsigned char* imageData, Vector2 region_start, Vector2 region_end, uint color) {
-    GL_DrawTextureRegionMod(pos, size, imageData, region_start, region_end, color);
+    switch (GetState()->options.renderer) {
+        case RENDERER_VULKAN:
+            
+            break;
+        case RENDERER_OPENGL:
+            GL_DrawTextureRegionMod(pos, size, imageData, region_start, region_end, color);
+            break;
+    }
 }
 
 inline void ClearColor(uint color) {
-    GL_ClearColor(color);
+    switch (GetState()->options.renderer) {
+        case RENDERER_VULKAN:
+            
+            break;
+        case RENDERER_OPENGL:
+            GL_ClearColor(color);
+            break;
+    }
 }
 
 inline void ClearScreen() {
-    GL_ClearScreen();
+    switch (GetState()->options.renderer) {
+        case RENDERER_VULKAN:
+            
+            break;
+        case RENDERER_OPENGL:
+            GL_ClearScreen();
+            break;
+    }
 
 }
 
 inline void ClearDepthOnly() {
-    GL_ClearDepthOnly();
+    switch (GetState()->options.renderer) {
+        case RENDERER_VULKAN:
+            
+            break;
+        case RENDERER_OPENGL:
+            GL_ClearDepthOnly();
+            break;
+    }
 }
 
 inline void Swap() {
-    GL_Swap();
+    switch (GetState()->options.renderer) {
+        case RENDERER_VULKAN:
+            
+            break;
+        case RENDERER_OPENGL:
+            GL_Swap();
+            break;
+    }
 }
 
 inline void draw_rect(int x, int y, int w, int h) {
-    GL_DrawRect(v2(x, y), v2(w, h), drawColor);
+    switch (GetState()->options.renderer) {
+        case RENDERER_VULKAN:
+            
+            break;
+        case RENDERER_OPENGL:
+            GL_DrawRect(v2(x, y), v2(w, h), drawColor);
+            break;
+    }
 }
 
 Vector2 texture_size(const unsigned char *imageData) {

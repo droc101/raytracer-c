@@ -42,5 +42,7 @@ byte *DecompressAsset(const byte *asset);
 #define ASSET_TYPE_WAV 2
 #define ASSET_TYPE_LEVEL 3
 #define ASSET_TYPE_GLSL 4
+#define ASSET_TYPE_SPIRV_FRAG 5
+#define ASSET_TYPE_SPIRV_VERT 6
 
 #endif //GAME_ASSETREADER_H

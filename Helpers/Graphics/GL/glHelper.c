@@ -2,13 +2,15 @@
 // Created by droc101 on 9/30/2024.
 //
 
-#include "glHelper.h"
 #include <stdio.h>
-#include "../../../Assets/AssetReader.h"
+#include "glHelper.h"
+#include "cglm/cglm.h"
+#include "../RenderingHelpers.h"
+#include "../../LevelLoader.h"
+#include "../../CommonAssets.h"
 #include "../../../Assets/Assets.h"
 #include "../../../Structs/Vector2.h"
-#include "../../LevelLoader.h"
-#include "cglm/cglm.h"
+#include "../../../Assets/AssetReader.h"
 #include "../../../Structs/GlobalState.h"
 
 SDL_GLContext ctx;
@@ -743,4 +745,49 @@ void GL_DrawTexturedArrays(float *vertices, uint *indices, int quad_count, const
     glEnableVertexAttribArray(tex_attr_loc);
 
     glDrawElements(GL_TRIANGLES, quad_count * 6, GL_UNSIGNED_INT, NULL);
+}
+
+void GL_RenderLevel(Level *l, Camera *cam) {
+    GL_Enable3D();
+    //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+    //glLineWidth(2);
+
+    mat4 *WORLD_VIEW_MATRIX = GetMatrix(cam);
+    mat4 *IDENTITY = malloc(sizeof(mat4));
+    glm_mat4_identity(*IDENTITY);
+
+    Vector2 floor_start = v2(l->position.x - 100, l->position.y - 100);
+    Vector2 floor_end = v2(l->position.x + 100, l->position.y + 100);
+
+    GL_DrawFloor(floor_start, floor_end, WORLD_VIEW_MATRIX, l, wallTextures[l->FloorTexture], -0.5, 1.0);
+    if (l->CeilingTexture != 0) {
+        GL_DrawFloor(floor_start, floor_end, WORLD_VIEW_MATRIX, l, wallTextures[l->CeilingTexture - 1], 0.5, 0.8);
+    }
+
+    for (int i = 0; i < l->staticWalls->size; i++) {
+        GL_DrawWall(SizedArrayGet(l->staticWalls, i), WORLD_VIEW_MATRIX, IDENTITY, cam, l);
+    }
+
+    for (int i = 0; i < l->staticActors->size; i++) {
+        Actor *actor = SizedArrayGet(l->staticActors, i);
+        WallBake(actor->actorWall);
+        mat4 *actor_xfm = ActorTransformMatrix(actor);
+        GL_DrawWall(actor->actorWall, WORLD_VIEW_MATRIX, actor_xfm, cam, l);
+
+        if (actor->showShadow) {
+            // remove the rotation and y position from the actor matrix so the shadow draws correctly
+            glm_rotate(*actor_xfm, actor->rotation, (vec3){0, 1, 0});
+            glm_translate(*actor_xfm, (vec3){0, -actor->yPosition, 0});
+
+            GL_DrawShadow(v2s(-0.5 * actor->shadowSize), v2s(0.5 * actor->shadowSize), WORLD_VIEW_MATRIX, actor_xfm, l);
+        }
+
+        free(actor_xfm);
+    }
+
+    free(WORLD_VIEW_MATRIX);
+    free(IDENTITY);
+
+    //glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+    GL_Disable3D();
 }

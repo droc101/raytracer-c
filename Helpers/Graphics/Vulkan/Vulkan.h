@@ -5,7 +5,7 @@
 #ifndef GAME_VULKAN_H
 #define GAME_VULKAN_H
 
-#include "../defines.h"
+#include "../../../defines.h"
 #include <SDL_vulkan.h>
 #include <vulkan/vulkan.h>
 

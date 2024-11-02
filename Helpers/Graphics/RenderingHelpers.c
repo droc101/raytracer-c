@@ -8,8 +8,9 @@
 #include "../../Structs/Vector2.h"
 #include "../CommonAssets.h"
 #include "../../Structs/GlobalState.h"
+#include "Vulkan/Vulkan.h"
 
-mat4 *GetMatrix(Camera *cam) {
+mat4* GetMatrix(Camera *cam) {
     vec3 cam_pos = {cam->x, cam->y, cam->z};
     float aspect = (float)WindowWidth() / (float)WindowHeight();
 
@@ -41,7 +42,7 @@ mat4 *GetMatrix(Camera *cam) {
     return MODEL_VIEW_PROJECTION;
 }
 
-mat4 *ActorTransformMatrix(Actor *Actor) {
+mat4* ActorTransformMatrix(Actor *Actor) {
     mat4 *MODEL = malloc(sizeof(mat4));
     glm_mat4_identity(*MODEL);
     glm_translate(*MODEL, (vec3){Actor->position.x, Actor->yPosition, Actor->position.y});
@@ -50,62 +51,49 @@ mat4 *ActorTransformMatrix(Actor *Actor) {
 }
 
 bool RenderPreInit() {
-    return GL_PreInit();
+    switch (GetState()->options.renderer) {
+        case RENDERER_VULKAN:
+            return true;
+        case RENDERER_OPENGL:
+            return GL_PreInit();
+        default:
+            return false;
+    }
 }
 
 bool RenderInit() {
-    bool gli = GL_Init(GetWindow());
-    GL_Disable3D(); // just to make sure we are in the correct state
-    return gli;
+    switch (GetState()->options.renderer) {
+        case RENDERER_VULKAN:
+            return InitVulkan(GetWindow());
+        case RENDERER_OPENGL:
+            const bool gli = GL_Init(GetWindow());
+            GL_Disable3D(); // just to make sure we are in the correct state
+            return gli;
+        default:
+            return false;
+    }
 }
 
 void RenderDestroy() {
-    GL_DestroyGL();
+    switch (GetState()->options.renderer) {
+        case RENDERER_VULKAN:
+            CleanupVulkan();
+            break;
+        case RENDERER_OPENGL:
+            GL_DestroyGL();
+            break;
+    }
 }
 
 void RenderLevel3D(Level *l, Camera *cam) {
-    GL_Enable3D();
-    //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
-    //glLineWidth(2);
-
-    mat4 *WORLD_VIEW_MATRIX = GetMatrix(cam);
-    mat4 *IDENTITY = malloc(sizeof(mat4));
-    glm_mat4_identity(*IDENTITY);
-
-    Vector2 floor_start = v2(l->position.x - 100, l->position.y - 100);
-    Vector2 floor_end = v2(l->position.x + 100, l->position.y + 100);
-
-    GL_DrawFloor(floor_start, floor_end, WORLD_VIEW_MATRIX, l, wallTextures[l->FloorTexture], -0.5, 1.0);
-    if (l->CeilingTexture != 0) {
-        GL_DrawFloor(floor_start, floor_end, WORLD_VIEW_MATRIX, l, wallTextures[l->CeilingTexture - 1], 0.5, 0.8);
+    switch (GetState()->options.renderer) {
+        case RENDERER_VULKAN:
+            DrawFrame();
+            break;
+        case RENDERER_OPENGL:
+            GL_RenderLevel(l, cam);
+            break;
     }
-
-    for (int i = 0; i < l->staticWalls->size; i++) {
-        GL_DrawWall(SizedArrayGet(l->staticWalls, i), WORLD_VIEW_MATRIX, IDENTITY, cam, l);
-    }
-
-    for (int i = 0; i < l->staticActors->size; i++) {
-        Actor *actor = SizedArrayGet(l->staticActors, i);
-        WallBake(actor->actorWall);
-        mat4 *actor_xfm = ActorTransformMatrix(actor);
-        GL_DrawWall(actor->actorWall, WORLD_VIEW_MATRIX, actor_xfm, cam, l);
-
-        if (actor->showShadow) {
-            // remove the rotation and y position from the actor matrix so the shadow draws correctly
-            glm_rotate(*actor_xfm, actor->rotation, (vec3) {0, 1, 0});
-            glm_translate(*actor_xfm, (vec3) {0, -actor->yPosition, 0});
-
-            GL_DrawShadow(v2s(-0.5 * actor->shadowSize), v2s(0.5 * actor->shadowSize), WORLD_VIEW_MATRIX, actor_xfm, l);
-        }
-
-        free(actor_xfm);
-    }
-
-    free(WORLD_VIEW_MATRIX);
-    free(IDENTITY);
-
-    //glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
-    GL_Disable3D();
 }
 
 inline void UpdateViewportSize() {
@@ -113,21 +101,56 @@ inline void UpdateViewportSize() {
     float newScaleY = (float)ActualWindowSize().y / (float)DEF_HEIGHT;
     float newScale = newScaleX < newScaleY ? newScaleX : newScaleY;
     GetState()->options.uiScale = newScale;
-    GL_UpdateViewportSize();
+    switch (GetState()->options.renderer) {
+        case RENDERER_VULKAN:
+            // TODO: Implement this. Guide can be found at https://docs.vulkan.org/tutorial/latest/03_Drawing_a_triangle/04_Swap_chain_recreation.html 
+            break;
+        case RENDERER_OPENGL:
+            GL_UpdateViewportSize();
+            break;
+    }
 }
 
 inline void DrawBatchedQuadsTextured(BatchedQuadArray *batch, const unsigned char *imageData, uint color) {
-    GL_DrawTexturedArrays(batch->verts, batch->indices, batch->quad_count, imageData, color);
+    switch (GetState()->options.renderer) {
+        case RENDERER_VULKAN:
+            
+            break;
+        case RENDERER_OPENGL:
+            GL_DrawTexturedArrays(batch->verts, batch->indices, batch->quad_count, imageData, color);
+            break;
+    }
 }
 
 inline void DrawBatchedQuadsColored(BatchedQuadArray *batch, uint color) {
-    GL_DrawColoredArrays(batch->verts, batch->indices, batch->quad_count, color);
+    switch (GetState()->options.renderer) {
+        case RENDERER_VULKAN:
+            
+            break;
+        case RENDERER_OPENGL:
+            GL_DrawColoredArrays(batch->verts, batch->indices, batch->quad_count, color);
+            break;
+    }
 }
 
 inline float X_TO_NDC(float x) {
-    return GL_X_TO_NDC(x);
+    switch (GetState()->options.renderer) {
+        case RENDERER_VULKAN:
+            return 0;
+        case RENDERER_OPENGL:
+            return GL_X_TO_NDC(x);
+        default:
+            return 0;
+    }
 }
 
 inline float Y_TO_NDC(float y) {
-    return GL_Y_TO_NDC(y);
+    switch (GetState()->options.renderer) {
+        case RENDERER_VULKAN:
+            return 0;
+        case RENDERER_OPENGL:
+            return GL_Y_TO_NDC(y);
+        default:
+            return 0;
+    }
 }

@@ -115,8 +115,8 @@ add_executable(
         Structs/UI/Controls/CheckBox.h
         Structs/UI/Controls/RadioButton.c
         Structs/UI/Controls/RadioButton.h
-        Helpers/Vulkan.c
-        Helpers/Vulkan.h
+        Helpers/Graphics/Vulkan/Vulkan.c
+        Helpers/Graphics/Vulkan/Vulkan.h
 )
 
 set(SDL2_PATH "${CMAKE_SOURCE_DIR}/lib/SDL2/x86_64-w64-mingw32")
@@ -154,9 +154,9 @@ elseif (WIN32) # Thank you Windows, I hate you.
 endif ()
 
 if (UNIX)
-    target_link_libraries(game -lGL -lGLU ${SDL2_LIBRARY} ${ZLIB_LIBRARIES} ${SDL2_MIXER_LIBRARY} m SDL2 SDL2_mixer z ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES}) # extra l* flags are needed on Linux
+    target_link_libraries(game -lGL -lGLU ${SDL2_LIBRARY} ${ZLIB_LIBRARIES} ${SDL2_MIXER_LIBRARY} ${Vulkan_LIBRARIES} m SDL2 SDL2_mixer z ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES}) # extra l* flags are needed on Linux
 elseif (WIN32)
-    target_link_libraries(game PRIVATE ${SDL2_LIBRARY} ${ZLIB_LIBRARIES} ${SDL2_MIXER_LIBRARY} ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} opengl32) # Don't pass extra l* flags on Windows (it isn't happy with them)
+    target_link_libraries(game PRIVATE ${SDL2_LIBRARY} ${ZLIB_LIBRARIES} ${SDL2_MIXER_LIBRARY} ${Vulkan_LIBRARIES} ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} opengl32) # Don't pass extra l* flags on Windows (it isn't happy with them)
 endif ()
 
 add_custom_target( # Python script for generating assets code

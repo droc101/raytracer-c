@@ -95,25 +95,29 @@ int main(int argc, char *argv[]) {
         const ulong frameStart = GetTimeNs();
 
         while (SDL_PollEvent(&e) != 0) {
-            if (e.type == SDL_QUIT) {
-                quit = 1;
-            } else if (e.type == SDL_KEYUP) {
-                SDL_Scancode scancode = e.key.keysym.scancode;
-                HandleKeyUp(scancode);
-            } else if (e.type == SDL_KEYDOWN) {
-                SDL_Scancode scancode = e.key.keysym.scancode;
-                HandleKeyDown(scancode);
-            } else if (e.type == SDL_MOUSEMOTION) {
-                HandleMouseMotion(e.motion.x, e.motion.y, e.motion.xrel, e.motion.yrel);
-            } else if (e.type == SDL_MOUSEBUTTONDOWN) {
-                HandleMouseDown(e.button.button);
-            } else if (e.type == SDL_MOUSEBUTTONUP) {
-                HandleMouseUp(e.button.button);
-            } else if (e.type == SDL_WINDOWEVENT) {
-                if (e.window.event == SDL_WINDOWEVENT_RESIZED) {
-
-                    UpdateViewportSize();
-                }
+            switch (e.type) {
+                case SDL_QUIT:
+                    quit = 1;
+                    break;
+                case SDL_KEYUP:
+                    HandleKeyUp(e.key.keysym.scancode);
+                    break;
+                case SDL_KEYDOWN:
+                    HandleKeyDown(e.key.keysym.scancode);
+                    break;
+                case SDL_MOUSEMOTION:
+                    HandleMouseMotion(e.motion.x, e.motion.y, e.motion.xrel, e.motion.yrel);
+                    break;
+                case SDL_MOUSEBUTTONUP:
+                    HandleMouseUp(e.button.button);
+                    break;
+                case SDL_MOUSEBUTTONDOWN:
+                    HandleMouseDown(e.button.button);
+                    break;
+                case SDL_WINDOWEVENT:
+                    if (e.window.event == SDL_WINDOWEVENT_RESIZED) UpdateViewportSize();
+                    break;
+                default: break;
             }
         }
         ClearDepthOnly();

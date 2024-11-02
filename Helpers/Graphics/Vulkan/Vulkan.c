@@ -6,10 +6,9 @@
 #include <cglm/clipspace/persp_lh_no.h>
 #include <cglm/clipspace/view_lh.h>
 #include "Vulkan.h"
-#include "Error.h"
-#include "Timing.h"
-#include "../Assets/AssetReader.h"
-#include "../Assets/Assets.h"
+#include "../../Core/Timing.h"
+#include "../../../Assets/AssetReader.h"
+#include "../../../Assets/Assets.h"
 
 #define List(type) struct {uint64_t length;type* data;}
 
@@ -1103,6 +1102,7 @@ void DrawFrame() {
 
 /// A function used to destroy the Vulkan objects when they are no longer needed.
 void CleanupVulkan() {
+    vkDeviceWaitIdle(device);
     for (uint32_t i = 0; i < swapChainCount; i++) {
         vkDestroyFramebuffer(device, swapChainFramebuffers[i], NULL);
     }

@@ -51,7 +51,6 @@
 #pragma endregion
 
 // Program information
-#define VERSION "0.0.1-dev"
 #define COPYRIGHT "2024 Droc101 Development"
 #define GAME_TITLE "Game." // Used for window title
 
@@ -60,7 +59,8 @@
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 0
 #define VERSION_PATCH 1
-#define VERSION TO_STR(VERSION_MAJOR) "." TO_STR(VERSION_MINOR) "." TO_STR(VERSION_PATCH)
+#define VERSION_SUFFIX "-dev"
+#define VERSION TO_STR(VERSION_MAJOR) "." TO_STR(VERSION_MINOR) "." TO_STR(VERSION_PATCH) VERSION_SUFFIX
 
 #define APPDATA_ORG_NAME "Droc101 Development"
 #define APPDATA_APP_NAME "Game"
