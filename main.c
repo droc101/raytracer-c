@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
     printf("Version: %s\n", VERSION);
     printf("Initializing Engine\n");
 
-    SetSignalHandler(); // catch exceptions in release mode
+    ErrorHandlerInit();
 
     const int argvZeroLen = strlen(argv[0]);
 
@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
 
     if (!RenderPreInit())
     {
-        Error("Failed to initialize rendering system.");
+        RenderInitError();
     }
 
     Mix_AllocateChannels(SFX_CHANNEL_COUNT);
@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
 
     if (!RenderInit())
     {
-        Error("Failed to initialize rendering system.");
+        RenderInitError();
     }
 
     SDL_SetWindowMinimumSize(w, MIN_WIDTH, MIN_HEIGHT);

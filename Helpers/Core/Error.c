@@ -13,6 +13,17 @@
 #include "zlib.h"
 #include "../CommonAssets.h"
 #include "../../Structs/GlobalState.h"
+#include "../../Structs/Options.h"
+
+SDL_MessageBoxColorScheme mbColorScheme;
+
+_Noreturn void RestartProgram()
+{
+    SDL_Quit();
+    char *args[] = {GetState()->executablePath, NULL};
+    execv(GetState()->executablePath, args);
+    exit(1);
+}
 
 _Noreturn void Error_Internal(char *error, const char *file, const int line, const char *function)
 {
@@ -57,34 +68,7 @@ _Noreturn void Error_Internal(char *error, const char *file, const int line, con
     mb.buttons = buttons;
     mb.numbuttons = btnc;
 
-    SDL_MessageBoxColor bg;
-    bg.r = 25;
-    bg.g = 25;
-    bg.b = 25;
-
-    SDL_MessageBoxColor text;
-    text.r = 255;
-    text.g = 255;
-    text.b = 255;
-
-    SDL_MessageBoxColor buttonBorder;
-    buttonBorder.r = 40;
-    buttonBorder.g = 40;
-    buttonBorder.b = 40;
-
-    SDL_MessageBoxColor buttonBg;
-    buttonBg.r = 35;
-    buttonBg.g = 35;
-    buttonBg.b = 35;
-
-    SDL_MessageBoxColorScheme colorScheme;
-    colorScheme.colors[SDL_MESSAGEBOX_COLOR_BACKGROUND] = bg;
-    colorScheme.colors[SDL_MESSAGEBOX_COLOR_TEXT] = text;
-    colorScheme.colors[SDL_MESSAGEBOX_COLOR_BUTTON_BORDER] = buttonBorder;
-    colorScheme.colors[SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND] = buttonBg;
-    colorScheme.colors[SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED] = text;
-
-    mb.colorScheme = &colorScheme;
+    mb.colorScheme = &mbColorScheme;
 
     mb.window = GetWindow();
     mb.flags = SDL_MESSAGEBOX_ERROR;
@@ -98,10 +82,7 @@ _Noreturn void Error_Internal(char *error, const char *file, const int line, con
     } else if (buttonid == 1)
     {
         // restart
-        SDL_Quit();
-        char *args[] = {GetState()->executablePath, NULL};
-        execv(GetState()->executablePath, args);
-        exit(1);
+        RestartProgram();
     } else if (buttonid == 2)
     {
         fflush(stdout);
@@ -122,6 +103,45 @@ _Noreturn void FriendlyError(const char *title, const char *description)
     exit(1);
 }
 
+_Noreturn void RenderInitError()
+{
+    SDL_MessageBoxData mb;
+    mb.title = "Failed to initialize renderer";
+    if (GetState()->options.renderer == RENDERER_OPENGL)
+    {
+        mb.message = "Failed to start the OpenGL renderer.\nPlease make sure your graphics card and drivers support OpenGL 4.6.";
+    } else if (GetState()->options.renderer == RENDERER_VULKAN)
+    {
+        mb.message = "Failed to start the Vulkan renderer.\nPlease make sure your graphics card and drivers support Vulkan 1.3.";
+    }
+
+    mb.numbuttons = 2;
+    SDL_MessageBoxButtonData buttons[2];
+    buttons[0].buttonid = 0;
+    buttons[0].text = GetState()->options.renderer == RENDERER_OPENGL ? "Try Vulkan" : "Try OpenGL";
+    buttons[0].flags = SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
+    buttons[1].buttonid = 1;
+    buttons[1].text = "Exit";
+    buttons[1].flags = 0;
+
+    mb.colorScheme = &mbColorScheme;
+    mb.buttons = buttons;
+    mb.window = NULLPTR;
+    mb.flags = SDL_MESSAGEBOX_ERROR;
+
+    int buttonid;
+    SDL_ShowMessageBox(&mb, &buttonid);
+    if (buttonid == 0)
+    {
+        GetState()->options.renderer = GetState()->options.renderer == RENDERER_OPENGL ? RENDERER_VULKAN : RENDERER_OPENGL;
+        SaveOptions(&(GetState()->options));
+        RestartProgram();
+    } else
+    {
+        exit(1);
+    }
+}
+
 void SignalHandler(const int sig)
 {
     if (sig == SIGSEGV)
@@ -133,8 +153,34 @@ void SignalHandler(const int sig)
     }
 }
 
-void SetSignalHandler()
+void ErrorHandlerInit()
 {
+    SDL_MessageBoxColor bg;
+    bg.r = 25;
+    bg.g = 25;
+    bg.b = 25;
+
+    SDL_MessageBoxColor text;
+    text.r = 255;
+    text.g = 255;
+    text.b = 255;
+
+    SDL_MessageBoxColor buttonBorder;
+    buttonBorder.r = 40;
+    buttonBorder.g = 40;
+    buttonBorder.b = 40;
+
+    SDL_MessageBoxColor buttonBg;
+    buttonBg.r = 35;
+    buttonBg.g = 35;
+    buttonBg.b = 35;
+
+    mbColorScheme.colors[SDL_MESSAGEBOX_COLOR_BACKGROUND] = bg;
+    mbColorScheme.colors[SDL_MESSAGEBOX_COLOR_TEXT] = text;
+    mbColorScheme.colors[SDL_MESSAGEBOX_COLOR_BUTTON_BORDER] = buttonBorder;
+    mbColorScheme.colors[SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND] = buttonBg;
+    mbColorScheme.colors[SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED] = text;
+
 #ifdef NDEBUG
     signal(SIGSEGV, SignalHandler);
     signal(SIGFPE, SignalHandler);

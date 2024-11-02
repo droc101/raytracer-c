@@ -31,9 +31,14 @@ _Noreturn void Error_Internal(char *error, const char *file, int line, const cha
 _Noreturn void FriendlyError(const char *title, const char *description);
 
 /**
+ * Shows an error messsage saying that vk/gl failed to initialize and offers to switch to the other or exit
+ */
+_Noreturn void RenderInitError();
+
+/**
  * Sets the signal handler to catch @c SIGSEGV and @c SIGFPE
  * @note This intentionally only functions in release mode
  */
-void SetSignalHandler();
+void ErrorHandlerInit();
 
 #endif //GAME_ERROR_H
