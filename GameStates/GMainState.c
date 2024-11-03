@@ -63,7 +63,7 @@ void GMainStateUpdate(GlobalState *State)
         State->level->rotation += ROT_SPEED;
     }
 #else
-    State->level->rotation += GetMouseRel().x * (State->options.mouseSpeed / 100.0);
+    State->level->rotation += GetMouseRel().x * (State->options.mouseSpeed / 120.0);
 #endif
 }
 
