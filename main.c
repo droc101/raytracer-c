@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
 
     Mix_AllocateChannels(SFX_CHANNEL_COUNT);
 
-    if (Mix_OpenAudio(22050, AUDIO_S16, 2, 2048) < 0)
+    if (Mix_OpenAudio(48000, AUDIO_S16, 2, 2048) < 0)
     {
         printf("Mix_OpenAudio Error: %s\n", Mix_GetError());
         Error("Failed to initialize audio system.");
@@ -140,7 +140,8 @@ int main(int argc, char *argv[])
         // warp the mouse to the center of the screen if we are in the main game state
         if (g->currentState == MAIN_STATE)
         {
-            SDL_WarpMouseInWindow(GetGameWindow(), WindowWidth() / 2, WindowHeight() / 2);
+            const Vector2 realWndSize = ActualWindowSize();
+            SDL_WarpMouseInWindow(GetGameWindow(), realWndSize.x / 2, realWndSize.y / 2);
         }
 #endif
 
