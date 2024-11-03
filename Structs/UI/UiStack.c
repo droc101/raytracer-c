@@ -6,6 +6,7 @@
 #include "../../Helpers/Core/Input.h"
 #include "../Vector2.h"
 #include "../../Assets/Assets.h"
+#include "../../Helpers/Core/MathEx.h"
 
 #include "Controls/Button.h"
 #include "Controls/Slider.h"
@@ -71,8 +72,7 @@ bool ProcessUiStack(UiStack *stack)
                                     stack->ActiveControl);
     }
 
-    stack->ActiveControl = -1;
-    stack->ActiveControlState = NORMAL;
+
 
     for (int i = stack->Controls->size - 1; i >= 0; i--)
     {
@@ -80,6 +80,16 @@ bool ProcessUiStack(UiStack *stack)
 
         c->anchoredPosition = CalculateControlPosition(c);
     }
+
+    if (IsMouseButtonPressed(SDL_BUTTON_LEFT))
+    {
+        stack->focusedControl = stack->ActiveControl;
+        stack->ActiveControlState = ACTIVE;
+        return stack->ActiveControl != -1;
+    }
+
+    stack->ActiveControl = -1;
+    stack->ActiveControlState = NORMAL;
 
     // iterate through the controls in reverse order so that the last control is on top and gets priority
     for (int i = stack->Controls->size - 1; i >= 0; i--)
@@ -124,6 +134,8 @@ bool ProcessUiStack(UiStack *stack)
             stack->focusedControl = (stack->focusedControl - 1) % stack->Controls->size;
         }
     }
+
+
 
     // return whether the mouse is over a control
     return stack->ActiveControl != -1;
