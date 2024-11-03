@@ -62,6 +62,10 @@ void CbOptionsVsync(const bool value)
 
 void GOptionsStateUpdate(GlobalState *State)
 {
+    if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE))
+    {
+        BtnOptionsBack();
+    }
 }
 
 void SldOptionsMouseSensitivity(const double value)
