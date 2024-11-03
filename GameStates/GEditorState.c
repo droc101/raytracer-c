@@ -888,7 +888,7 @@ void GEditorStateSet()
         int sx = 10;
         const int szy = 30;
         const int szx = 120;
-        const int sp = 30;
+        const int sp = 0;
         UiStackPush(editorUiStack,
                     CreateRadioButtonControl(v2(sx, 10), v2(szx, szy), "Add", SetEditorMode, TOP_LEFT, true, 0, 0));
         sx += szx + sp;
