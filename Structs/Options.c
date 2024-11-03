@@ -18,6 +18,17 @@ void DefaultOptions(Options *options)
     options->mouseSpeed = 1;
 }
 
+ushort GetOptionsChecksum(Options *options)
+{
+    const byte *data = (byte *) options;
+    ushort checksum = 0;
+    for (int i = sizeof(ushort); i < (sizeof(Options) - sizeof(ushort)); i++)
+    {
+        checksum += data[i];
+    }
+    return checksum;
+}
+
 char *GetOptionsPath()
 {
     char *folderPath = SDL_GetPrefPath(APPDATA_ORG_NAME, APPDATA_APP_NAME);
@@ -58,14 +69,24 @@ void LoadOptions(Options *options)
 
         fseek(file, 0, SEEK_SET);
         fread(options, sizeof(Options), 1, file);
+
+        if (options->checksum != GetOptionsChecksum(options))
+        {
+            printf("Options file checksum invalid, using defaults\n");
+            DefaultOptions(options);
+        }
+
         fclose(file);
     }
 
     free(filePath);
 }
 
-void SaveOptions(const Options *options)
+void SaveOptions(Options *options)
 {
+
+    options->checksum = GetOptionsChecksum((Options *) options);
+
     char *filePath = GetOptionsPath();
 
     FILE *file = fopen(filePath, "wb");

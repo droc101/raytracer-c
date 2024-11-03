@@ -117,6 +117,7 @@ typedef enum Renderer
 
 typedef struct Options
 {
+    ushort checksum;
     Renderer renderer;
     double musicVolume;
     double sfxVolume;

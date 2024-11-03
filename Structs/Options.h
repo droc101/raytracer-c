@@ -17,6 +17,6 @@ void LoadOptions(Options *options);
  * Save options to disk
  * @param options The options to save
  */
-void SaveOptions(const Options *options);
+void SaveOptions(Options *options);
 
 #endif //GAME_OPTIONS_H
