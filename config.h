@@ -25,7 +25,7 @@
 
 #define MOVE_SPEED 0.1 // Player movement speed
 #define SLOW_MOVE_SPEED 0.01 // Player movement speed when shift is held
-#define MOUSE_SENSITIVITY 200 // higher is less sensitive
+#define MOUSE_SENSITIVITY 0.01 // higher is less sensitive
 
 //#define KEYBOARD_ROTATION // Uncomment to enable keyboard rotation and disable mouse rotation
 #define ROT_SPEED 0.04 // Keyboard rotation speed

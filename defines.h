@@ -122,6 +122,7 @@ typedef struct Options
     double sfxVolume;
     double masterVolume;
     double uiScale;
+    double mouseSpeed;
     bool fullscreen;
     bool vsync;
 } __attribute__((packed)) Options; // This is packed because it is saved to disk

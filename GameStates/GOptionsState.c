@@ -10,6 +10,7 @@
 #include "../Helpers/Graphics/Font.h"
 #include "../Structs/GlobalState.h"
 #include "GLevelSelectState.h"
+#include "../Helpers/Core/MathEx.h"
 #include "../Structs/UI/UiStack.h"
 #include "../Structs/UI/Controls/Button.h"
 #include "../Structs/UI/Controls/Slider.h"
@@ -63,6 +64,11 @@ void GOptionsStateUpdate(GlobalState *State)
 {
 }
 
+void SldOptionsMouseSensitivity(const double value)
+{
+    GetState()->options.mouseSpeed = value;
+}
+
 void GOptionsStateRender(GlobalState *State)
 {
     // sorry for the confusing variable names
@@ -76,7 +82,7 @@ void GOptionsStateRender(GlobalState *State)
     DrawTextAligned("Options", 32, 0xFFFFFFFF, v2s(0), v2(WindowWidth(), 100), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE,
                     false);
 
-    DrawTextAligned("Changing renderer requires a restart", 16, 0xFFa0a0a0, v2(0, 425), v2(WindowWidth(), 40),
+    DrawTextAligned("Changing renderer requires a restart", 16, 0xFFa0a0a0, v2(0, 480), v2(WindowWidth(), 40),
                     FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
 
     ProcessUiStack(optionsStack);
@@ -108,6 +114,9 @@ void GOptionsStateSet()
                                              GetState()->options.renderer == RENDERER_VULKAN, 0, RENDERER_VULKAN));
         UiStackPush(optionsStack, CreateCheckboxControl(v2(0, 190), v2(480, 40), "VSync", CbOptionsVsync, TOP_CENTER,
                                                         GetState()->options.vsync));
+        UiStackPush(optionsStack,
+                    CreateSliderControl(v2(0, 215), v2(480, 40), "Mouse Sensitivity", SldOptionsMouseSensitivity, TOP_CENTER, 0.01, 2.00,
+                                        GetState()->options.mouseSpeed, 0.01, 0.1, SliderLabelPercent));
 
         UiStackPush(optionsStack, CreateButtonControl(v2(0, -40), v2(480, 40), "Done", BtnOptionsBack, BOTTOM_CENTER));
     }

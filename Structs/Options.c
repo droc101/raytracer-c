@@ -4,6 +4,7 @@
 
 #include "Options.h"
 #include <stdio.h>
+#include "../Helpers/Core/MathEx.h"
 
 void DefaultOptions(Options *options)
 {
@@ -14,6 +15,7 @@ void DefaultOptions(Options *options)
     options->uiScale = 1;
     options->fullscreen = false;
     options->vsync = false;
+    options->mouseSpeed = 1;
 }
 
 char *GetOptionsPath()
