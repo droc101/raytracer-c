@@ -35,10 +35,6 @@ int main(int argc, char *argv[])
     strncpy(GetState()->executablePath, argv[0], 260);
     printf("Executable path: %s\n", GetState()->executablePath);
 
-#ifdef __LINUX__
-    setenv("SDL_VIDEODRIVER", "wayland", 1);
-#endif
-
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER) != 0)
     {
         printf("SDL_Init Error: %s\n", SDL_GetError());
