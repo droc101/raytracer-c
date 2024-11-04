@@ -17,7 +17,11 @@ typedef struct
 {
     uint32_t graphicsFamily;
     uint32_t presentFamily;
+    uint32_t nonUniquePresentFamily;
     uint32_t transferFamily;
+    uint32_t graphicsUniqueTransferFamily;
+    uint32_t presentUniqueTransferFamily;
+    uint32_t nonUniqueTransferFamily;
 } QueueFamilyIndices;
 
 typedef struct
@@ -71,7 +75,7 @@ VkInstance instance;
 VkSurfaceKHR surface;
 /// This stores the GPU.
 VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-QueueFamilyIndices queueFamilyIndices = {-1, -1, -1};
+QueueFamilyIndices *queueFamilyIndices;
 SwapChainSupportDetails swapChainSupport;
 /// This is used for interfacing with the physical device.
 VkDevice device;
@@ -193,10 +197,12 @@ static SwapChainSupportDetails QuerySwapChainSupport(const VkPhysicalDevice pDev
  */
 static bool PickPhysicalDevice()
 {
+    queueFamilyIndices = malloc(sizeof(QueueFamilyIndices));
     uint32_t deviceCount = 0;
     vkEnumeratePhysicalDevices(instance, &deviceCount, NULL);
     if (deviceCount == 0)
     {
+        *queueFamilyIndices = (QueueFamilyIndices){-1, -1, -1, -1, -1, -1, -1};
         VulkanLogError("Failed to find any GPUs with Vulkan support!");
         return false;
     }
@@ -205,6 +211,7 @@ static bool PickPhysicalDevice()
     bool match = false;
     for (uint32_t i = 0; i < deviceCount; i++)
     {
+        *queueFamilyIndices = (QueueFamilyIndices){-1, -1, -1, -1, -1, -1, -1};
         const VkPhysicalDevice pDevice = devices[i];
         VkPhysicalDeviceFeatures deviceFeatures;
         vkGetPhysicalDeviceFeatures(pDevice, &deviceFeatures);
@@ -217,18 +224,26 @@ static bool PickPhysicalDevice()
         {
             if (families[index].queueFlags & VK_QUEUE_GRAPHICS_BIT)
             {
-                queueFamilyIndices.graphicsFamily = index;
-            } else if (families[index].queueFlags & VK_QUEUE_TRANSFER_BIT)
-            {
-                queueFamilyIndices.transferFamily = index;
+                queueFamilyIndices->graphicsFamily = index;
             }
             VkBool32 presentSupport = VK_FALSE;
             vkGetPhysicalDeviceSurfaceSupportKHR(pDevice, index, surface, &presentSupport);
             if (presentSupport)
             {
-                queueFamilyIndices.presentFamily = index;
+                queueFamilyIndices->nonUniquePresentFamily = index;
+                if (!(families[index].queueFlags & VK_QUEUE_GRAPHICS_BIT)) queueFamilyIndices->presentFamily = index;
             }
-            if (queueFamilyIndices.graphicsFamily != -1 && queueFamilyIndices.presentFamily != -1 && queueFamilyIndices.
+            if (families[index].queueFlags & VK_QUEUE_TRANSFER_BIT)
+            {
+                queueFamilyIndices->nonUniqueTransferFamily = index;
+                if (!(families[index].queueFlags & VK_QUEUE_GRAPHICS_BIT))
+                {
+                    queueFamilyIndices->graphicsUniqueTransferFamily = index;
+                    if (!presentSupport) queueFamilyIndices->transferFamily = index;
+                }
+                if (!presentSupport) queueFamilyIndices->presentUniqueTransferFamily = index;
+            }
+            if (queueFamilyIndices->graphicsFamily != -1 && queueFamilyIndices->presentFamily != -1 && queueFamilyIndices->
                 transferFamily != -1)
             {
                 uint32_t extensionCount;
@@ -257,6 +272,42 @@ static bool PickPhysicalDevice()
                 break;
             }
         }
+        if (queueFamilyIndices->graphicsFamily == -1 || queueFamilyIndices->nonUniquePresentFamily == -1 || queueFamilyIndices->nonUniqueTransferFamily == -1)
+        {
+            printf("\033[31m{graphicsFamily: %d, presentFamily: %d, transferFamily: %d, graphicsUniqueTransferFamily: %d, presentUniqueTransferFamily: %d}\033[0m\n", queueFamilyIndices->graphicsFamily, queueFamilyIndices->presentFamily, queueFamilyIndices->transferFamily, queueFamilyIndices->graphicsUniqueTransferFamily, queueFamilyIndices->presentUniqueTransferFamily);
+            fflush(stdout);
+            continue;
+        }
+        if (queueFamilyIndices->presentFamily == -1) queueFamilyIndices->presentFamily = queueFamilyIndices->nonUniquePresentFamily;
+        if (queueFamilyIndices->transferFamily == -1)
+        {
+            if (queueFamilyIndices->graphicsUniqueTransferFamily != -1) queueFamilyIndices->transferFamily = queueFamilyIndices->graphicsUniqueTransferFamily;
+            else if (queueFamilyIndices->presentUniqueTransferFamily != -1) queueFamilyIndices->transferFamily = queueFamilyIndices->presentUniqueTransferFamily;
+            else queueFamilyIndices->transferFamily = queueFamilyIndices->nonUniqueTransferFamily;
+        }
+        uint32_t extensionCount;
+        vkEnumerateDeviceExtensionProperties(pDevice, NULL, &extensionCount, NULL);
+        if (extensionCount == 0) continue;
+        VkExtensionProperties availableExtensions[extensionCount];
+        vkEnumerateDeviceExtensionProperties(pDevice, NULL, &extensionCount, availableExtensions);
+        for (uint32_t j = 0; j < extensionCount; j++)
+        {
+            if (strcmp(availableExtensions[j].extensionName, VK_KHR_SWAPCHAIN_EXTENSION_NAME) != 0)
+            {
+                swapChainSupport = QuerySwapChainSupport(pDevice);
+                if (swapChainSupport.formatCount == 0 && swapChainSupport.presentModeCount == 0) continue;
+                VkPhysicalDeviceProperties deviceProperties;
+                vkGetPhysicalDeviceProperties(pDevice, &deviceProperties);
+                if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
+                {
+                    physicalDevice = devices[i];
+                    return true;
+                }
+                physicalDevice = devices[i];
+                match = true;
+                break;
+            }
+        }
     }
     if (!match) { VulkanLogError("Could not find a suitable GPU!"); }
     return match;
@@ -274,26 +325,31 @@ static bool CreateLogicalDevice()
         VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
         NULL,
         0,
-        queueFamilyIndices.graphicsFamily,
+        queueFamilyIndices->graphicsFamily,
         1,
         &queuePriority
     };
-    queueCreateInfo[queueCount++] = (VkDeviceQueueCreateInfo){
-        VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
-        NULL,
-        0,
-        queueFamilyIndices.transferFamily,
-        1,
-        &queuePriority
-    };
-    if (queueFamilyIndices.presentFamily != queueFamilyIndices.graphicsFamily && queueFamilyIndices.presentFamily !=
-        queueFamilyIndices.transferFamily)
+    // It is actually wrong, and I did double-check
+    // ReSharper disable twice CppDFANullDereference
+    if (queueFamilyIndices->presentFamily != queueFamilyIndices->graphicsFamily)
     {
         queueCreateInfo[queueCount++] = (VkDeviceQueueCreateInfo){
             VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
             NULL,
             0,
-            queueFamilyIndices.presentFamily,
+            queueFamilyIndices->presentFamily,
+            1,
+            &queuePriority
+        };
+    }
+    if (queueFamilyIndices->transferFamily != queueFamilyIndices->presentFamily && (
+        queueCount == 1 || (queueCount == 2 && queueFamilyIndices->transferFamily != queueFamilyIndices->graphicsFamily)))
+    {
+        queueCreateInfo[queueCount++] = (VkDeviceQueueCreateInfo){
+            VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+            NULL,
+            0,
+            queueFamilyIndices->transferFamily,
             1,
             &queuePriority
         };
@@ -317,9 +373,9 @@ static bool CreateLogicalDevice()
     createInfo.ppEnabledLayerNames = (const char *const[1]){"VK_LAYER_KHRONOS_validation"};
 #endif
     VulkanTest(vkCreateDevice(physicalDevice, &createInfo, NULL, &device), "Failed to create Vulkan device!");
-    vkGetDeviceQueue(device, queueFamilyIndices.graphicsFamily, 0, &graphicsQueue);
-    vkGetDeviceQueue(device, queueFamilyIndices.transferFamily, 0, &transferQueue);
-    vkGetDeviceQueue(device, queueFamilyIndices.presentFamily, 0, &presentQueue);
+    vkGetDeviceQueue(device, queueFamilyIndices->graphicsFamily, 0, &graphicsQueue);
+    vkGetDeviceQueue(device, queueFamilyIndices->transferFamily, 0, &transferQueue);
+    vkGetDeviceQueue(device, queueFamilyIndices->presentFamily, 0, &presentQueue);
     return true;
 }
 
@@ -390,6 +446,7 @@ static bool CreateSwapChain(SDL_Window *window)
     {
         imageCount = swapChainSupport.capabilities.maxImageCount;
     }
+    uint32_t* const pQueueFamilyIndices[3] = {(const uint32_t[3]){queueFamilyIndices->graphicsFamily}};
     VkSwapchainCreateInfoKHR createInfo = {
         VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
         NULL,
@@ -402,23 +459,24 @@ static bool CreateSwapChain(SDL_Window *window)
         1,
         VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
         VK_SHARING_MODE_CONCURRENT,
-        2,
-        (const uint32_t[]){
-            queueFamilyIndices.graphicsFamily,
-            queueFamilyIndices.transferFamily,
-            queueFamilyIndices.presentFamily
-        },
+        1,
+        *pQueueFamilyIndices,
         swapChainSupport.capabilities.currentTransform,
         VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
         presentMode,
         VK_TRUE,
         VK_NULL_HANDLE
     };
-    if (queueFamilyIndices.presentFamily != queueFamilyIndices.graphicsFamily && queueFamilyIndices.presentFamily !=
-        queueFamilyIndices.transferFamily)
+    if (queueFamilyIndices->presentFamily != queueFamilyIndices->graphicsFamily)
     {
-        createInfo.queueFamilyIndexCount++;
+        (*pQueueFamilyIndices)[createInfo.queueFamilyIndexCount++] = queueFamilyIndices->presentFamily;
     }
+    if (queueFamilyIndices->transferFamily != queueFamilyIndices->presentFamily && (
+        createInfo.queueFamilyIndexCount == 1 || (createInfo.queueFamilyIndexCount == 2 && queueFamilyIndices->transferFamily != queueFamilyIndices->graphicsFamily)))
+    {
+        (*pQueueFamilyIndices)[createInfo.queueFamilyIndexCount++] = queueFamilyIndices->transferFamily;
+    }
+    if (createInfo.queueFamilyIndexCount == 1) createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
     VulkanTest(vkCreateSwapchainKHR(device, &createInfo, NULL, &swapChain), "Failed to create Vulkan swap chain!");
     vkGetSwapchainImagesKHR(device, swapChain, &imageCount, NULL);
     swapChainImages = malloc(sizeof(VkImage *) * imageCount);
@@ -733,14 +791,14 @@ static bool CreateCommandPools()
         VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
         NULL,
         VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
-        queueFamilyIndices.graphicsFamily
+        queueFamilyIndices->graphicsFamily
     };
     VulkanTest(vkCreateCommandPool(device, &graphicsPoolInfo, NULL, &graphicsCommandPool), "Failed to create Vulkan graphics command pool!");
     const VkCommandPoolCreateInfo transferPoolInfo = {
         VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
         NULL,
         VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
-        queueFamilyIndices.transferFamily
+        queueFamilyIndices->transferFamily
     };
     VulkanTest(vkCreateCommandPool(device, &transferPoolInfo, NULL, &transferCommandPool), "Failed to create Vulkan transfer command pool!");
     return true;
@@ -750,6 +808,7 @@ static bool CreateBuffer(const VkDeviceSize size, const VkBufferUsageFlags usage
                          const VkMemoryPropertyFlags propertyFlags,
                          VkBuffer *buffer, VkDeviceMemory *bufferMemory)
 {
+    uint32_t* const pQueueFamilyIndices[3] = {(const uint32_t[3]){queueFamilyIndices->graphicsFamily}};
     VkBufferCreateInfo bufferInfo = {
         VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
         NULL,
@@ -757,18 +816,19 @@ static bool CreateBuffer(const VkDeviceSize size, const VkBufferUsageFlags usage
         size,
         usageFlags,
         VK_SHARING_MODE_CONCURRENT,
-        2,
-        (const uint32_t[]){
-            queueFamilyIndices.graphicsFamily,
-            queueFamilyIndices.transferFamily,
-            queueFamilyIndices.presentFamily
-        }
+        1,
+        *pQueueFamilyIndices
     };
-    if (queueFamilyIndices.presentFamily != queueFamilyIndices.graphicsFamily && queueFamilyIndices.presentFamily !=
-        queueFamilyIndices.transferFamily)
+    if (queueFamilyIndices->presentFamily != queueFamilyIndices->graphicsFamily)
     {
-        bufferInfo.queueFamilyIndexCount++;
+        (*pQueueFamilyIndices)[bufferInfo.queueFamilyIndexCount++] = queueFamilyIndices->presentFamily;
     }
+    if (queueFamilyIndices->transferFamily != queueFamilyIndices->presentFamily && (
+        bufferInfo.queueFamilyIndexCount == 1 || (bufferInfo.queueFamilyIndexCount == 2 && queueFamilyIndices->transferFamily != queueFamilyIndices->graphicsFamily)))
+    {
+        (*pQueueFamilyIndices)[bufferInfo.queueFamilyIndexCount++] = queueFamilyIndices->transferFamily;
+    }
+    if (bufferInfo.queueFamilyIndexCount == 1) bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     VulkanTest(vkCreateBuffer(device, &bufferInfo, NULL, buffer), "Failed to create Vulkan buffer!");
     VkMemoryRequirements memRequirements;
     vkGetBufferMemoryRequirements(device, *buffer, &memRequirements);
