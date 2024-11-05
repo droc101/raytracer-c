@@ -62,6 +62,12 @@ bool GL_Init(SDL_Window *wnd)
     LogInfo("Initializing OpenGL\n");
 
     ctx = SDL_GL_CreateContext(wnd);
+    if (ctx == NULL)
+    {
+        LogError("SDL_GL_CreateContext Error: %s\n", SDL_GetError());
+        GL_Error("Failed to create OpenGL context");
+        return false;
+    }
 
     SDL_GL_SetSwapInterval(GetState()->options.vsync ? 1 : 0);
 
