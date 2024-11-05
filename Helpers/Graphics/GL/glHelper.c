@@ -24,7 +24,7 @@ GL_Shader *shadow;
 GL_Buffer *ui_buffer;
 GL_Buffer *wall_buffer;
 
-#define MAX_TEXTURES 64
+#define MAX_TEXTURES 128
 
 #if MAX_TEXTURES < ASSET_COUNT
 #error MAX_TEXTURES must be greater than or equal to ASSET_COUNT
