@@ -68,6 +68,28 @@ void RenderLevel3D(Level *l, Camera *cam);
 void UpdateViewportSize();
 
 /**
+ * Handle minimizing the window
+ */
+void WindowObscured();
+
+/**
+ * Enable or disable low FPS mode
+ * @param val A boolean representing if low FPS mode should be enabled
+ */
+void SetLowFPS(bool val);
+
+/**
+ * Check if low FPS mode is enabled
+ * @return A boolean representing if low FPS is enabled
+ */
+bool IsLowFPSModeEnabled();
+
+/**
+ * Handle restoring the window from minimized state
+ */
+void WindowRestored();
+
+/**
  * Draw a `BatchedQuadArray` to the screen using the textured shader. This is faster than multiple draw calls, but harder to use.
  * @param batch The batch to draw
  * @param imageData The texture to use

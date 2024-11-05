@@ -3,14 +3,21 @@
 //
 
 #include "Vulkan.h"
+#include <SDL_vulkan.h>
 #include <cglm/cglm.h>
 #include <cglm/clipspace/persp_lh_no.h>
 #include <cglm/clipspace/view_lh.h>
+#include <vulkan/vulkan.h>
 #include "../../../Assets/AssetReader.h"
 #include "../../../Assets/Assets.h"
 #include "../../Core/Error.h"
 #include "../../Core/MathEx.h"
 
+#define VULKAN_VERSION VK_MAKE_VERSION(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH)
+#define MAX_FRAMES_IN_FLIGHT 2
+#define VulkanLogError(error) printf("\033[31m%s\033[0m\n", error); fflush(stdout)
+#define VulkanTest_Internal(function, error, returnValue) {VkResult result=function; if (result != VK_SUCCESS) { printf("\033[31m%s\033[0m Error code %d\n", error, result); fflush(stdout); return returnValue; }}
+#define VulkanTest(function, error) VulkanTest_Internal(function, error, false)
 #define List(type) struct {uint64_t length;type* data;}
 
 typedef struct
@@ -27,7 +34,7 @@ typedef struct
     VkSurfaceFormatKHR *formats;
     uint32_t presentModeCount;
     VkPresentModeKHR *presentMode;
-    VkSurfaceCapabilitiesKHR *capabilities;
+    VkSurfaceCapabilitiesKHR capabilities;
 } SwapChainSupportDetails;
 
 typedef struct
@@ -49,6 +56,9 @@ typedef struct
     bool found;
 } SwapSurfaceFormatCheck;
 
+SDL_Window *vk_window;
+bool minimized = false;
+
 const List(Vertex) vertices = {
     4,
     (Vertex[]){
@@ -58,12 +68,7 @@ const List(Vertex) vertices = {
         {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
     }
 };
-
 const List(uint16_t) indices = {6, (uint16_t[]){0, 1, 2, 2, 3, 0}};
-
-#define VulkanLogError(error) printf("\033[31m%s\033[0m\n", error); fflush(stdout);
-#define VulkanTest_Internal(function, error, returnValue) {VkResult result=function; if (result != VK_SUCCESS) { printf("\033[31m%s\033[0m Error code %d\n", error, result); fflush(stdout); return returnValue; }}
-#define VulkanTest(function, error) VulkanTest_Internal(function, error, false)
 
 /// A Vulkan instance is the connection between the game and the driver, through Vulkan.
 /// The creation of it requires configuring Vulkan for the app, allowing for better driver performance.
@@ -100,6 +105,7 @@ VkCommandBuffer commandBuffers[MAX_FRAMES_IN_FLIGHT];
 VkSemaphore imageAvailableSemaphores[MAX_FRAMES_IN_FLIGHT] = {NULL};
 VkSemaphore renderFinishedSemaphores[MAX_FRAMES_IN_FLIGHT] = {NULL};
 VkFence inFlightFences[MAX_FRAMES_IN_FLIGHT] = {NULL};
+bool framebufferResized = false;
 uint8_t currentFrame = 0;
 VkBuffer vertexBuffer = VK_NULL_HANDLE;
 VkDeviceMemory vertexBufferMemory = VK_NULL_HANDLE;
@@ -113,15 +119,14 @@ VkDescriptorSet descriptorSets[MAX_FRAMES_IN_FLIGHT];
 
 /**
  * This function will create the Vulkan instance, set up for SDL.
- * @param window The window to initialize Vulkan for.
  * @see instance
  */
-static bool CreateInstance(SDL_Window *window)
+static bool CreateInstance()
 {
     uint32_t extensionCount;
-    SDL_Vulkan_GetInstanceExtensions(window, &extensionCount, NULL);
+    SDL_Vulkan_GetInstanceExtensions(vk_window, &extensionCount, NULL);
     const char *extensionNames[extensionCount];
-    SDL_Vulkan_GetInstanceExtensions(window, &extensionCount, extensionNames);
+    SDL_Vulkan_GetInstanceExtensions(vk_window, &extensionCount, extensionNames);
     VkApplicationInfo applicationInfo = {
         VK_STRUCTURE_TYPE_APPLICATION_INFO,
         NULL,
@@ -141,7 +146,7 @@ static bool CreateInstance(SDL_Window *window)
         extensionCount,
         extensionNames
     };
-#ifdef VALIDATION_ENABLE
+#ifdef VK_VALIDATION_ENABLE
     createInfo.enabledLayerCount = 1;
     createInfo.ppEnabledLayerNames = (const char *const[1]){"VK_LAYER_KHRONOS_validation"};
 #endif
@@ -151,12 +156,11 @@ static bool CreateInstance(SDL_Window *window)
 
 /**
  * Creates the Vulkan surface
- * @param window The window the surface should be linked to
  * @see surface
  */
-static bool CreateSurface(SDL_Window *window)
+static bool CreateSurface()
 {
-    if (SDL_Vulkan_CreateSurface(window, instance, &surface) == SDL_FALSE)
+    if (SDL_Vulkan_CreateSurface(vk_window, instance, &surface) == SDL_FALSE)
     {
         VulkanLogError("Failed to create Vulkan window surface");
         return false;
@@ -169,10 +173,10 @@ static bool CreateSurface(SDL_Window *window)
  * @param pDevice The physical device to query for
  * @return A @c SwapChainSupportDetails struct
  */
-static SwapChainSupportDetails QuerySwapChainSupport(const VkPhysicalDevice pDevice)
+static void QuerySwapChainSupport(const VkPhysicalDevice pDevice)
 {
-    SwapChainSupportDetails details = {0, NULL, 0, NULL, malloc(sizeof(VkSurfaceCapabilitiesKHR))};
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(pDevice, surface, details.capabilities);
+    SwapChainSupportDetails details = {0, NULL, 0, NULL, {}};
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(pDevice, surface, &details.capabilities);
     vkGetPhysicalDeviceSurfaceFormatsKHR(pDevice, surface, &details.formatCount, NULL);
     if (details.formatCount != 0)
     {
@@ -185,7 +189,7 @@ static SwapChainSupportDetails QuerySwapChainSupport(const VkPhysicalDevice pDev
         details.presentMode = malloc(sizeof(*details.presentMode) * details.presentModeCount);
         vkGetPhysicalDeviceSurfacePresentModesKHR(pDevice, surface, &details.presentModeCount, details.presentMode);
     }
-    return details;
+    swapChainSupport = details;
 }
 
 /**
@@ -250,7 +254,7 @@ static bool PickPhysicalDevice()
         {
             if (strcmp(availableExtensions[j].extensionName, VK_KHR_SWAPCHAIN_EXTENSION_NAME) != 0)
             {
-                swapChainSupport = QuerySwapChainSupport(pDevice);
+                QuerySwapChainSupport(pDevice);
                 if (swapChainSupport.formatCount == 0 && swapChainSupport.presentModeCount == 0) continue;
                 VkPhysicalDeviceProperties deviceProperties;
                 vkGetPhysicalDeviceProperties(pDevice, &deviceProperties);
@@ -324,7 +328,7 @@ static bool CreateLogicalDevice()
         (const char *const[1]){VK_KHR_SWAPCHAIN_EXTENSION_NAME},
         &deviceFeatures
     };
-#ifdef VALIDATION_ENABLE
+#ifdef VK_VALIDATION_ENABLE
     createInfo.enabledLayerCount = 1;
     createInfo.ppEnabledLayerNames = (const char *const[1]){"VK_LAYER_KHRONOS_validation"};
 #endif
@@ -350,7 +354,7 @@ static SwapSurfaceFormatCheck GetSwapSurfaceFormat()
         {
             if (format.format == VK_FORMAT_B8G8R8A8_SRGB || fallback == -1)
             {
-                fallback = (int)i;
+                fallback = (int) i;
             } else if (format.format == VK_FORMAT_R8G8B8A8_SRGB)
             {
                 return (SwapSurfaceFormatCheck){format, true};
@@ -382,25 +386,27 @@ static VkPresentModeKHR GetSwapPresentMode()
     return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-static bool CreateSwapChain(SDL_Window *window)
+static bool CreateSwapChain()
 {
+    QuerySwapChainSupport(physicalDevice);
+    if (!swapChainSupport.capabilities.currentExtent.width || !swapChainSupport.capabilities.currentExtent.height) return false;
     const SwapSurfaceFormatCheck surfaceFormat = GetSwapSurfaceFormat();
     if (!surfaceFormat.found) return false;
     const VkPresentModeKHR presentMode = GetSwapPresentMode();
-    VkExtent2D extent = swapChainSupport.capabilities->currentExtent;
+    VkExtent2D extent = swapChainSupport.capabilities.currentExtent;
     if (extent.width == UINT32_MAX || extent.height == UINT32_MAX)
     {
         int width, height;
-        SDL_Vulkan_GetDrawableSize(window, &width, &height);
-        extent.width = clamp(width, swapChainSupport.capabilities->minImageExtent.width,
-                             swapChainSupport.capabilities->maxImageExtent.width);
-        extent.height = clamp(height, swapChainSupport.capabilities->minImageExtent.height,
-                              swapChainSupport.capabilities->maxImageExtent.height);
+        SDL_Vulkan_GetDrawableSize(vk_window, &width, &height);
+        extent.width = clamp(width, swapChainSupport.capabilities.minImageExtent.width,
+                             swapChainSupport.capabilities.maxImageExtent.width);
+        extent.height = clamp(height, swapChainSupport.capabilities.minImageExtent.height,
+                              swapChainSupport.capabilities.maxImageExtent.height);
     }
-    uint32_t imageCount = swapChainSupport.capabilities->minImageCount + 1;
-    if (swapChainSupport.capabilities->maxImageCount > 0 && imageCount > swapChainSupport.capabilities->maxImageCount)
+    uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
+    if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount)
     {
-        imageCount = swapChainSupport.capabilities->maxImageCount;
+        imageCount = swapChainSupport.capabilities.maxImageCount;
     }
     uint32_t* const pQueueFamilyIndices[3] = {(const uint32_t[3]){queueFamilyIndices->graphicsFamily}};
     VkSwapchainCreateInfoKHR createInfo = {
@@ -417,7 +423,7 @@ static bool CreateSwapChain(SDL_Window *window)
         VK_SHARING_MODE_CONCURRENT,
         1,
         *pQueueFamilyIndices,
-        swapChainSupport.capabilities->currentTransform,
+        swapChainSupport.capabilities.currentTransform,
         VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
         presentMode,
         VK_TRUE,
@@ -1052,8 +1058,9 @@ static void RecordCommandBuffer(const VkCommandBuffer buffer, const uint32_t ima
  * @see PickPhysicalDevice
  * @see CreateLogicalDevice
  */
-bool InitVulkan(SDL_Window *window)
+bool VK_Init(SDL_Window *window)
 {
+    vk_window = window;
     // ReSharper disable once CppDFAConstantConditions
     if (!CreateInstance(window) || !CreateSurface(window) || !PickPhysicalDevice() || !CreateLogicalDevice() || !
         CreateSwapChain(window) || !CreateImageViews() || !CreateRenderPass() || !CreateDescriptorSetLayout() || !
@@ -1061,10 +1068,60 @@ bool InitVulkan(SDL_Window *window)
         CreateIndexBuffer() || !CreateUniformBuffers() || !CreateDescriptorPool() || !CreateDescriptorSets() || !
         CreateCommandBuffers() || !CreateSyncObjects())
     {
-        CleanupVulkan();
+        VK_Cleanup();
         return false;
     }
     return true;
+}
+
+void CleanupSwapChain()
+{
+    for (uint32_t i = 0; i < swapChainCount; i++) vkDestroyFramebuffer(device, swapChainFramebuffers[i], NULL);
+    for (uint32_t i = 0; i < swapChainCount; i++) vkDestroyImageView(device, swapChainImageViews[i], NULL);
+    vkDestroySwapchainKHR(device, swapChain, NULL);
+}
+
+/// A function used to destroy the Vulkan objects when they are no longer needed.
+void VK_Cleanup()
+{
+    if (device)
+    {
+        vkDeviceWaitIdle(device);
+        CleanupSwapChain();
+        vkDestroyPipeline(device, graphicsPipeline, NULL);
+        vkDestroyPipelineLayout(device, pipelineLayout, NULL);
+        vkDestroyRenderPass(device, renderPass, NULL);
+        for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT && uniformBuffers[i] && uniformBuffersMemory[i]; i++)
+        {
+            vkDestroyBuffer(device, uniformBuffers[i], NULL);
+            vkFreeMemory(device, uniformBuffersMemory[i], NULL);
+        }
+        vkDestroyDescriptorPool(device, descriptorPool, NULL);
+        vkDestroyDescriptorSetLayout(device, descriptorSetLayout, NULL);
+        vkDestroyBuffer(device, indexBuffer, NULL);
+        vkFreeMemory(device, indexBufferMemory, NULL);
+        vkDestroyBuffer(device, vertexBuffer, NULL);
+        vkFreeMemory(device, vertexBufferMemory, NULL);
+        for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT && imageAvailableSemaphores[i] && renderFinishedSemaphores[i] && inFlightFences[i]; i++)
+        {
+            vkDestroySemaphore(device, imageAvailableSemaphores[i], NULL);
+            vkDestroySemaphore(device, renderFinishedSemaphores[i], NULL);
+            vkDestroyFence(device, inFlightFences[i], NULL);
+        }
+        vkDestroyCommandPool(device, graphicsCommandPool, NULL);
+        vkDestroyCommandPool(device, transferCommandPool, NULL);
+    }
+    vkDestroyDevice(device, NULL);
+    if (instance) vkDestroySurfaceKHR(instance, surface, NULL);
+    vkDestroyInstance(instance, NULL);
+}
+
+static bool RecreateSwapChain()
+{
+    vkDeviceWaitIdle(device);
+    CleanupSwapChain();
+
+    return CreateSwapChain() && CreateImageViews() && CreateFramebuffers();
 }
 
 static void UpdateUniformBuffer(const uint32_t currentFrame)
@@ -1074,21 +1131,32 @@ static void UpdateUniformBuffer(const uint32_t currentFrame)
         GLM_MAT4_IDENTITY_INIT,
         GLM_MAT4_IDENTITY_INIT
     };
-    glm_rotate(bufferObject.model, (float)SDL_GetTicks64() * PIf / 10000.0f, GLM_YUP);
+    glm_rotate(bufferObject.model, (float) SDL_GetTicks64() * PIf / 10000.0f, GLM_YUP);
     glm_lookat_lh((vec3){2.0f, 2.0f, 2.0f}, GLM_VEC3_ZERO, ((vec3){0.0f, -1.0f, 0.0f}), bufferObject.view);
-    glm_perspective_lh_no(PI / 4, (float)swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 10.0f, bufferObject.proj);
+    glm_perspective_lh_no(PI / 4, (float) swapChainExtent.width / (float) swapChainExtent.height, 0.1f, 10.0f,
+                          bufferObject.proj);
     memcpy(uniformBuffersMapped[currentFrame], &bufferObject, sizeof(bufferObject));
 }
 
-void DrawFrame()
+void VK_DrawFrame()
 {
+    if (minimized) return;
     vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
     uint32_t imageIndex;
-    vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE,
-                          &imageIndex);
-    UpdateUniformBuffer(currentFrame);
+    const VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
+    {
+        RecreateSwapChain();
+        return;
+    }
+    if (result != VK_SUCCESS)
+    {
+        VulkanLogError("Failed to acquire next Vulkan image index!");
+        return;
+    }
     vkResetFences(device, 1, &inFlightFences[currentFrame]);
     vkResetCommandBuffer(commandBuffers[currentFrame], 0);
+    UpdateUniformBuffer(currentFrame);
     RecordCommandBuffer(commandBuffers[currentFrame], imageIndex);
     const VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]};
     const VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
@@ -1120,45 +1188,12 @@ void DrawFrame()
     currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
-/// A function used to destroy the Vulkan objects when they are no longer needed.
-void CleanupVulkan()
+void VK_Minimize()
 {
-    if (device)
-    {
-        vkDeviceWaitIdle(device);
-        for (uint32_t i = 0; i < swapChainCount; i++)
-        {
-            vkDestroyFramebuffer(device, swapChainFramebuffers[i], NULL);
-        }
-        for (uint32_t i = 0; i < swapChainCount; i++)
-        {
-            vkDestroyImageView(device, swapChainImageViews[i], NULL);
-        }
-        vkDestroySwapchainKHR(device, swapChain, NULL);
-        vkDestroyPipeline(device, graphicsPipeline, NULL);
-        vkDestroyPipelineLayout(device, pipelineLayout, NULL);
-        vkDestroyRenderPass(device, renderPass, NULL);
-        for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT && uniformBuffers[i] && uniformBuffersMemory[i]; i++)
-        {
-            vkDestroyBuffer(device, uniformBuffers[i], NULL);
-            vkFreeMemory(device, uniformBuffersMemory[i], NULL);
-        }
-        vkDestroyDescriptorPool(device, descriptorPool, NULL);
-        vkDestroyDescriptorSetLayout(device, descriptorSetLayout, NULL);
-        vkDestroyBuffer(device, indexBuffer, NULL);
-        vkFreeMemory(device, indexBufferMemory, NULL);
-        vkDestroyBuffer(device, vertexBuffer, NULL);
-        vkFreeMemory(device, vertexBufferMemory, NULL);
-        for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT && imageAvailableSemaphores[i] && renderFinishedSemaphores[i] && inFlightFences[i]; i++)
-        {
-            vkDestroySemaphore(device, imageAvailableSemaphores[i], NULL);
-            vkDestroySemaphore(device, renderFinishedSemaphores[i], NULL);
-            vkDestroyFence(device, inFlightFences[i], NULL);
-        }
-        vkDestroyCommandPool(device, graphicsCommandPool, NULL);
-        vkDestroyCommandPool(device, transferCommandPool, NULL);
-    }
-    vkDestroyDevice(device, NULL);
-    if (instance) vkDestroySurfaceKHR(instance, surface, NULL);
-    vkDestroyInstance(instance, NULL);
+    minimized = true;
+}
+
+void VK_Restore()
+{
+    minimized = false;
 }

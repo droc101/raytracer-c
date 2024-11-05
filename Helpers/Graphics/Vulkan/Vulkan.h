@@ -5,11 +5,8 @@
 #ifndef GAME_VULKAN_H
 #define GAME_VULKAN_H
 
-#include <SDL_vulkan.h>
-#include <vulkan/vulkan.h>
 #include "../../../defines.h"
 
-#define VULKAN_VERSION VK_MAKE_VERSION(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH)
 #ifndef NDEBUG
 /**
  * Extra verification, mainly for debugging (slower)
@@ -18,12 +15,13 @@
  * @see https://docs.vulkan.org/guide/latest/validation_overview.html
  * @see https://vulkan.lunarg.com/doc/sdk/1.3.283.0/windows/khronos_validation_layer.html
  */
-#define VALIDATION_ENABLE
+#define VK_VALIDATION_ENABLE
 #endif
-#define MAX_FRAMES_IN_FLIGHT 2
 
-bool InitVulkan(SDL_Window *window);
-void DrawFrame();
-void CleanupVulkan();
+bool VK_Init(SDL_Window *window);
+void VK_DrawFrame();
+void VK_Cleanup();
+void VK_Minimize();
+void VK_Restore();
 
 #endif //GAME_VULKAN_H

@@ -17,7 +17,7 @@
 #include "Structs/GlobalState.h"
 #include "Structs/Level.h"
 
-#include "GameStates/GMainState.h"
+#include "GameStates/GPauseState.h"
 
 int main(int argc, char *argv[])
 {
@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
 
     // GLogoSplashStateSet();
     ChangeLevelByID(0);
-    GMainStateSet();
+    GPauseStateSet();
 
     InitTimers();
 
@@ -123,7 +123,27 @@ int main(int argc, char *argv[])
                     HandleMouseDown(e.button.button);
                     break;
                 case SDL_WINDOWEVENT:
-                    if (e.window.event == SDL_WINDOWEVENT_RESIZED) UpdateViewportSize();
+                    switch (e.window.event)
+                    {
+                        case SDL_WINDOWEVENT_RESIZED:
+                        case SDL_WINDOWEVENT_SIZE_CHANGED:
+                        case SDL_WINDOWEVENT_MAXIMIZED:
+                            UpdateViewportSize();
+                            break;
+                        case SDL_WINDOWEVENT_RESTORED:
+                            WindowRestored();
+                            break;
+                        case SDL_WINDOWEVENT_MINIMIZED:
+                            WindowObscured();
+                            break;
+                        case SDL_WINDOWEVENT_FOCUS_LOST:
+                            SetLowFPS(true);
+                            break;
+                        case SDL_WINDOWEVENT_FOCUS_GAINED:
+                            SetLowFPS(false);
+                            break;
+                        default: break;
+                    }
                     break;
                 default:
                     break;
@@ -166,6 +186,7 @@ int main(int argc, char *argv[])
         }
 
         FrameGraphUpdate(GetTimeNs() - frameStart);
+        if (IsLowFPSModeEnabled()) SDL_Delay(33);
     }
     printf("Mainloop exited, cleaning up engine...\n");
     DestroyGlobalState();

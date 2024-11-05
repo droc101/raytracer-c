@@ -16,6 +16,7 @@
 #endif
 
 Renderer currentRenderer;
+bool lowFPSMode;
 
 void DwmDarkMode(SDL_Window *window)
 {
@@ -94,7 +95,7 @@ bool RenderInit()
     switch (currentRenderer)
     {
         case RENDERER_VULKAN:
-            return InitVulkan(GetGameWindow());
+            return VK_Init(GetGameWindow());
         case RENDERER_OPENGL:
             const bool gli = GL_Init(GetGameWindow());
             GL_Disable3D(); // just to make sure we are in the correct state
@@ -109,7 +110,7 @@ void RenderDestroy()
     switch (currentRenderer)
     {
         case RENDERER_VULKAN:
-            CleanupVulkan();
+            VK_Cleanup();
             break;
         case RENDERER_OPENGL:
             GL_DestroyGL();
@@ -122,7 +123,7 @@ void RenderLevel3D(Level *l, Camera *cam)
     switch (currentRenderer)
     {
         case RENDERER_VULKAN:
-            DrawFrame();
+            VK_DrawFrame();
             break;
         case RENDERER_OPENGL:
             GL_RenderLevel(l, cam);
@@ -139,12 +140,52 @@ inline void UpdateViewportSize()
     switch (currentRenderer)
     {
         case RENDERER_VULKAN:
-            // TODO: Implement this. Guide can be found at https://docs.vulkan.org/tutorial/latest/03_Drawing_a_triangle/04_Swap_chain_recreation.html
+            int w, h;
+            SDL_GetWindowSize(GetGameWindow(), &w, &h);
+
             break;
         case RENDERER_OPENGL:
             GL_UpdateViewportSize();
             break;
     }
+}
+
+inline void WindowObscured()
+{
+    lowFPSMode = true;
+    switch (currentRenderer)
+    {
+        case RENDERER_VULKAN:
+            VK_Minimize();
+            break;
+        case RENDERER_OPENGL:
+
+            break;
+    }
+}
+
+inline void WindowRestored()
+{
+    lowFPSMode = false;
+    switch (currentRenderer)
+    {
+        case RENDERER_VULKAN:
+            VK_Restore();
+        break;
+        case RENDERER_OPENGL:
+
+            break;
+    }
+}
+
+inline void SetLowFPS(const bool val)
+{
+    lowFPSMode = val;
+}
+
+inline bool IsLowFPSModeEnabled()
+{
+    return lowFPSMode;
 }
 
 inline void DrawBatchedQuadsTextured(const BatchedQuadArray *batch, const unsigned char *imageData, const uint color)
