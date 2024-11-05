@@ -7,6 +7,7 @@ set(CMAKE_C_FLAGS "-Wno-discarded-qualifiers") # shut.
 
 set(CMAKE_C_FLAGS_DEBUG "-g -O0 -Wall")
 set(CMAKE_C_FLAGS_RELEASE "-g0 -O3 -s -DNDEBUG -Wl,--gc-sections -fdata-sections -ffunction-sections -Wall")
+set(CMAKE_C_FLAGS_RELWITHDEBINFO "-g -O3 -Wl,--gc-sections -fdata-sections -ffunction-sections -Wall")
 
 # Add --static flag when building on Windows to include libwinpthread-1.dll
 if (WIN32)
