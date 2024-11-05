@@ -106,6 +106,7 @@ _Noreturn void FriendlyError(const char *title, const char *description)
 
 _Noreturn void RenderInitError()
 {
+    LogError("Failed to initialize renderer");
     SDL_HideWindow(GetGameWindow());
     SDL_MessageBoxData mb;
     mb.title = "Failed to initialize renderer";
