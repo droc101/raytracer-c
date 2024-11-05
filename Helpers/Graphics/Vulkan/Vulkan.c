@@ -225,14 +225,18 @@ static bool PickPhysicalDevice()
             {
                 queueFamilyIndices->graphicsFamily = index;
                 if (presentSupport) queueFamilyIndices->presentFamily = index;
-            } else if (families[index].queueFlags & VK_QUEUE_TRANSFER_BIT)
+            } else
             {
-                queueFamilyIndices->transferFamily = index;
-            } else if (presentSupport)
-            {
-                queueFamilyIndices->uniquePresentFamily = index;
+                if (families[index].queueFlags & VK_QUEUE_TRANSFER_BIT)
+                {
+                    queueFamilyIndices->transferFamily = index;
+                }
+                if (presentSupport)
+                {
+                    queueFamilyIndices->uniquePresentFamily = index;
+                }
             }
-            if (queueFamilyIndices->graphicsFamily == -1 || queueFamilyIndices->uniquePresentFamily == -1) continue;
+            if (queueFamilyIndices->graphicsFamily == -1 || (queueFamilyIndices->presentFamily == -1 && queueFamilyIndices->uniquePresentFamily == -1)) continue;
             if (queueFamilyIndices->presentFamily == -1) queueFamilyIndices->presentFamily = queueFamilyIndices->uniquePresentFamily;
             if (queueFamilyIndices->transferFamily == -1) queueFamilyIndices->transferFamily = queueFamilyIndices->graphicsFamily;
             break;
