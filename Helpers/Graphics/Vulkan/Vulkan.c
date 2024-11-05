@@ -1138,7 +1138,7 @@ void CleanupVulkan()
         vkDestroyPipeline(device, graphicsPipeline, NULL);
         vkDestroyPipelineLayout(device, pipelineLayout, NULL);
         vkDestroyRenderPass(device, renderPass, NULL);
-        for (size_t i = 0; uniformBuffers[i] && uniformBuffersMemory[i] && i < MAX_FRAMES_IN_FLIGHT; i++)
+        for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT && uniformBuffers[i] && uniformBuffersMemory[i]; i++)
         {
             vkDestroyBuffer(device, uniformBuffers[i], NULL);
             vkFreeMemory(device, uniformBuffersMemory[i], NULL);
@@ -1149,7 +1149,7 @@ void CleanupVulkan()
         vkFreeMemory(device, indexBufferMemory, NULL);
         vkDestroyBuffer(device, vertexBuffer, NULL);
         vkFreeMemory(device, vertexBufferMemory, NULL);
-        for (uint32_t i = 0; imageAvailableSemaphores[i] && renderFinishedSemaphores[i] && inFlightFences[i] && i < MAX_FRAMES_IN_FLIGHT; i++)
+        for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT && imageAvailableSemaphores[i] && renderFinishedSemaphores[i] && inFlightFences[i]; i++)
         {
             vkDestroySemaphore(device, imageAvailableSemaphores[i], NULL);
             vkDestroySemaphore(device, renderFinishedSemaphores[i], NULL);
