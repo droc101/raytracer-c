@@ -564,12 +564,12 @@ static VkShaderModule CreateShaderModule(const uint32_t *code, const size_t size
 
 static bool CreateGraphicsPipeline()
 {
-    uint8_t *vertShaderCode = DecompressAsset(gzvert_shader_basic);
-    uint8_t *fragShaderCode = DecompressAsset(gzfrag_shader_basic);
+    uint8_t *vertShaderCode = DecompressAsset(gzvert_Vulkan_basic);
+    uint8_t *fragShaderCode = DecompressAsset(gzfrag_Vulkan_basic);
     VkShaderModule vertShaderModule = CreateShaderModule((uint32_t *) vertShaderCode,
-                                                         AssetGetSize(gzvert_shader_basic));
+                                                         AssetGetSize(gzvert_Vulkan_basic));
     VkShaderModule fragShaderModule = CreateShaderModule((uint32_t *) fragShaderCode,
-                                                         AssetGetSize(gzfrag_shader_basic));
+                                                         AssetGetSize(gzfrag_Vulkan_basic));
     if (!vertShaderModule || !fragShaderModule) return false;
     VkPipelineShaderStageCreateInfo vertShaderStageInfo = {
         VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,

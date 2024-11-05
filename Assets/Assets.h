@@ -67,8 +67,9 @@ extern const unsigned char gzshd_GL_shadow_f[];
 extern const unsigned char gzshd_GL_shadow_v[];
 extern const unsigned char gzshd_GL_wall_f[];
 extern const unsigned char gzshd_GL_wall_v[];
-extern const unsigned char gzfrag_shader_basic[];
-extern const unsigned char gzvert_shader_basic[];
+
+extern const unsigned char gzfrag_Vulkan_basic[];
+extern const unsigned char gzvert_Vulkan_basic[];
 
 extern const unsigned char gztex_vfx_shadow[];
 
