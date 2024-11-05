@@ -9,6 +9,7 @@
 #include "../../LevelLoader.h"
 #include "../../CommonAssets.h"
 #include "../../../Assets/AssetReader.h"
+#include "../../Core/DataReader.h"
 #include "../../../Structs/GlobalState.h"
 #include "../../Core/Logging.h"
 
