@@ -25,6 +25,10 @@ int main(int argc, char *argv[])
 
     ErrorHandlerInit();
 
+    if (argc < 1) { // this should *never* happen, but let's be safe
+        Error("No executable path argument provided.");
+    }
+
     const int argvZeroLen = strlen(argv[0]);
 
     if (argvZeroLen > 260)
