@@ -28,7 +28,7 @@ void DwmDarkMode(SDL_Window *window)
     const HRESULT res = DwmSetWindowAttribute(hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &enable, sizeof(BOOL));
     if (res != S_OK)
     {
-        LogWarn("Failed to enable dark mode: %lx\n", res);
+        LogWarning("Failed to enable dark mode: %lx\n", res);
     }
 #endif
 }

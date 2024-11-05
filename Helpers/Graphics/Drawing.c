@@ -12,6 +12,7 @@
 #include "../LevelLoader.h" // for ReadUInt
 #include "GL/glHelper.h"
 #include "../../Structs/GlobalState.h"
+#include "../Core/Logging.h"
 
 SDL_Window *window;
 
@@ -88,7 +89,7 @@ SDL_Surface *ToSDLSurface(const unsigned char *imageData, const char *filterMode
                                                     0x0000ff00, 0x000000ff, 0xff000000);
     if (surface == NULLPTR)
     {
-        printf("Failed to create surface: %s\n", SDL_GetError());
+        LogError("Failed to create surface: %s\n", SDL_GetError());
         Error("ToSDLTexture: Failed to create surface");
     }
 
