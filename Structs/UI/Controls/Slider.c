@@ -63,7 +63,7 @@ CreateSliderControl(const Vector2 position, const Vector2 size, char *label, voi
     data->altStep = altStep;
     data->getLabel = getLabel;
 
-    data->value = clampf(data->value, data->min, data->max);
+    data->value = clamp(data->value, data->min, data->max);
 
     return slider;
 }
@@ -148,7 +148,7 @@ void UpdateSlider(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlInd
         }
     }
 
-    data->value = clampf(data->value, data->min, data->max);
+    data->value = clamp(data->value, data->min, data->max);
 }
 
 void DrawSlider(const Control *c, const ControlState state, const Vector2 position)

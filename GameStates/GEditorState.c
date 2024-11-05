@@ -676,13 +676,13 @@ void CreateButton(char *text, const Vector2 position, const Vector2 size, void (
 void BtnZoomIn()
 {
     EditorZoom += 2.0;
-    EditorZoom = clampf(EditorZoom, 10.0, 60.0);
+    EditorZoom = clamp(EditorZoom, 10.0, 60.0);
 }
 
 void BtnZoomOut()
 {
     EditorZoom -= 2.0;
-    EditorZoom = clampf(EditorZoom, 10.0, 60.0);
+    EditorZoom = clamp(EditorZoom, 10.0, 60.0);
 }
 
 void BtnZoomReset()

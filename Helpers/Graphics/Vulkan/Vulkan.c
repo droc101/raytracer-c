@@ -2,14 +2,14 @@
 // Created by Noah on 7/5/2024.
 //
 
+#include "Vulkan.h"
 #include <cglm/cglm.h>
 #include <cglm/clipspace/persp_lh_no.h>
 #include <cglm/clipspace/view_lh.h>
-#include "Vulkan.h"
-#include "../../Core/Timing.h"
 #include "../../../Assets/AssetReader.h"
 #include "../../../Assets/Assets.h"
 #include "../../Core/Error.h"
+#include "../../Core/MathEx.h"
 
 #define List(type) struct {uint64_t length;type* data;}
 

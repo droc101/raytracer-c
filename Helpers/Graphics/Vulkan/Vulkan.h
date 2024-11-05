@@ -5,9 +5,9 @@
 #ifndef GAME_VULKAN_H
 #define GAME_VULKAN_H
 
-#include "../../../defines.h"
 #include <SDL_vulkan.h>
 #include <vulkan/vulkan.h>
+#include "../../../defines.h"
 
 #define VULKAN_VERSION VK_MAKE_VERSION(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH)
 #ifndef NDEBUG
@@ -21,8 +21,6 @@
 #define VALIDATION_ENABLE
 #endif
 #define MAX_FRAMES_IN_FLIGHT 2
-
-#define clamp(val, min, max)(val < min ? min : val > max ? max : val)
 
 bool InitVulkan(SDL_Window *window);
 void DrawFrame();

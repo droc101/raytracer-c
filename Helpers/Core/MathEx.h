@@ -52,12 +52,12 @@ float lerp(float a, float b, float f);
 
 /**
  * Clamp a number between a minimum and maximum value
- * @param x Number to clamp
+ * @param val Number to clamp
  * @param min Minimum value
  * @param max Maximum value
  * @return Clamped number
  */
-double clampf(double x, double min, double max);
+#define clamp(val, min, max)(val < min ? min : val > max ? max : val)
 
 #define degToRad(d) (d * 0.017453292519943295)
 #define radToDeg(r) (r * 57.29577951308232)
