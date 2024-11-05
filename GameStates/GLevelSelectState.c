@@ -17,6 +17,10 @@ int GLevelSelectState_SelectedLevel = 0;
 
 void GLevelSelectStateUpdate(GlobalState *State)
 {
+    if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE))
+    {
+        GMenuStateSet();
+    }
     if (IsKeyJustPressed(SDL_SCANCODE_DOWN))
     {
         GLevelSelectState_SelectedLevel--;
