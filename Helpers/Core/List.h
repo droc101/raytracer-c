@@ -118,6 +118,12 @@ void ListClear(List *list);
  */
 SizedArray *ToSizedArray(List *list);
 
+/**
+ * Get an element from a sized array
+ * @param array The @c SizedArray to get the element from
+ * @param index The index of the element to get
+ * @warning This does no safety checks, make sure the index is valid
+ */
 #define SizedArrayGet(array, index) ((array)->elements[(index)])
 
 /**

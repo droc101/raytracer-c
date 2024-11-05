@@ -31,8 +31,15 @@
 // Drawing the graph has a significant performance impact
 #define FRAMEGRAPH_FPS_ONLY
 
+/**
+ * Update the frame graph with the time it took to render the frame
+ * @param ns nanoseconds the frame took
+ */
 void FrameGraphUpdate(ulong ns);
 
+/**
+ * Draw the frame graph
+ */
 void FrameGraphDraw();
 
 #endif //GAME_FRAMEGRAPHER_H

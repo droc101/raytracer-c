@@ -105,6 +105,11 @@ Control *CreateEmptyControl();
  */
 void UiStackPush(const UiStack *stack, Control *control);
 
+/**
+ * Remove a control from the UiStack
+ * @param stack The UiStack to remove the control from
+ * @param control The control to remove
+ */
 void UiStackRemove(const UiStack *stack, Control *control);
 
 /**

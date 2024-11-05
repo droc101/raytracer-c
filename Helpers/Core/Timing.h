@@ -7,6 +7,9 @@
 
 #include "../../defines.h"
 
+/**
+ * Initialize the timers to count from the start of the program
+ */
 void InitTimers();
 
 /**

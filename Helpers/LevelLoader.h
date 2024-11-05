@@ -18,10 +18,6 @@
 #define LEVEL_CMD_FLOOR_CEIL 6 // Indicates that the next 8 bytes should be parsed as the floor and ceiling textures
 #define LEVEL_CMD_MUSIC 7 // Indicates that the next 4 bytes should be parsed as the music track ID
 
-uint ReadUint(const byte *data, int *offset);
-
-uint ReadUintA(const byte *data, int offset);
-
 /**
  * Load a level from level bytecode
  * @param data Level bytecode
