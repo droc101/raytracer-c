@@ -6,6 +6,7 @@
 #include "../Helpers/Graphics/Font.h"
 #include <stdarg.h>
 #include <stdio.h>
+#include "../Helpers/Core/Logging.h"
 
 int DPrintYPos = 10;
 
@@ -33,7 +34,7 @@ void DPrintF(const char *str, const uint color, const bool con, ...)
     DPrint(buffer, color);
     if (con)
     {
-        printf("%s\n", buffer);
+        LogInfo(buffer);
     }
 #endif
 }

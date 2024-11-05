@@ -10,6 +10,7 @@
 #include "../Helpers/LevelLoader.h"
 #include "Camera.h"
 #include "Options.h"
+#include "../Helpers/Core/Logging.h"
 
 GlobalState state;
 
@@ -168,7 +169,7 @@ void ChangeMusic(const byte *asset)
 {
     if (AssetGetType(asset) != ASSET_TYPE_MP3)
     {
-        printf("ChangeMusic Error: Asset is not a music file.\n");
+        LogWarning("ChangeMusic Error: Asset is not a music file.\n");
         return;
     }
 
@@ -200,7 +201,7 @@ void PlaySoundEffect(const byte *asset)
 {
     if (AssetGetType(asset) != ASSET_TYPE_WAV)
     {
-        printf("PlaySoundEffect Error: Asset is not a sound effect file.\n");
+        LogError("PlaySoundEffect Error: Asset is not a sound effect file.\n");
         return;
     }
 
@@ -209,7 +210,7 @@ void PlaySoundEffect(const byte *asset)
     Mix_Chunk *chunk = Mix_LoadWAV_RW(SDL_RWFromConstMem(wav, wavSize), 1);
     if (chunk == NULLPTR)
     {
-        printf("Mix_LoadWAV_RW Error: %s\n", Mix_GetError());
+        LogError("Mix_LoadWAV_RW Error: %s\n", Mix_GetError());
         return;
     }
     for (int i = 0; i < SFX_CHANNEL_COUNT; i++)
@@ -221,7 +222,7 @@ void PlaySoundEffect(const byte *asset)
             return;
         }
     }
-    printf("PlaySoundEffect Error: No available channels.\n");
+    LogError("PlaySoundEffect Error: No available channels.\n");
     Mix_FreeChunk(chunk);
 }
 

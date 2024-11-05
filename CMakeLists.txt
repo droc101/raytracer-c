@@ -116,6 +116,8 @@ add_executable(
         Structs/UI/Controls/CheckBox.h
         Structs/UI/Controls/RadioButton.c
         Structs/UI/Controls/RadioButton.h
+        Helpers/Core/Logging.c
+        Helpers/Core/Logging.h
 )
 
 set(SDL2_PATH "${CMAKE_SOURCE_DIR}/lib/SDL2/x86_64-w64-mingw32")

@@ -7,6 +7,7 @@
 #include "../../Structs/Vector2.h"
 #include "../CommonAssets.h"
 #include "../../Structs/GlobalState.h"
+#include "../Core/Logging.h"
 #ifdef WIN32
 #include <dwmapi.h>
 #include <SDL_syswm.h>
@@ -27,7 +28,7 @@ void DwmDarkMode(SDL_Window *window)
     const HRESULT res = DwmSetWindowAttribute(hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &enable, sizeof(BOOL));
     if (res != S_OK)
     {
-        printf("Failed to enable dark mode: %lx\n", res);
+        LogWarn("Failed to enable dark mode: %lx\n", res);
     }
 #endif
 }

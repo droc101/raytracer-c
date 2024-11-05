@@ -70,7 +70,6 @@ SDL_Surface *ToSDLSurface(const unsigned char *imageData, const char *filterMode
 {
     if (AssetGetType(imageData) != ASSET_TYPE_TEXTURE)
     {
-        printf("Asset is not a texture\n");
         Error("ToSDLSurface: Asset is not a texture");
     }
 

@@ -16,12 +16,13 @@
 #include "Helpers/CommonAssets.h"
 #include "Helpers/Graphics/RenderingHelpers.h"
 #include <string.h>
+#include "Helpers/Core/Logging.h"
 
 int main(int argc, char *argv[])
 {
-    printf("Build time: %s at %s\n", __DATE__, __TIME__);
-    printf("Version: %s\n", VERSION);
-    printf("Initializing Engine\n");
+    LogInfo("Build time: %s at %s\n", __DATE__, __TIME__);
+    LogInfo("Version: %s\n", VERSION);
+    LogInfo("Initializing Engine\n");
 
     ErrorHandlerInit();
 
@@ -37,11 +38,11 @@ int main(int argc, char *argv[])
     }
     memset(GetState()->executablePath, 0, 261); // we do not mess around with user data in c.
     strncpy(GetState()->executablePath, argv[0], 260);
-    printf("Executable path: %s\n", GetState()->executablePath);
+    LogInfo("Executable path: %s\n", GetState()->executablePath);
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER) != 0)
     {
-        printf("SDL_Init Error: %s\n", SDL_GetError());
+        LogError("SDL_Init Error: %s\n", SDL_GetError());
         Error("Failed to initialize SDL");
     }
 
@@ -56,7 +57,7 @@ int main(int argc, char *argv[])
 
     if (Mix_OpenAudio(48000, AUDIO_S16, 2, 2048) < 0)
     {
-        printf("Mix_OpenAudio Error: %s\n", Mix_GetError());
+        LogError("Mix_OpenAudio Error: %s\n", Mix_GetError());
         Error("Failed to initialize audio system.");
     }
 
@@ -65,7 +66,7 @@ int main(int argc, char *argv[])
                                      DEF_HEIGHT, rendererFlags | SDL_WINDOW_RESIZABLE);
     if (w == NULL)
     {
-        printf("SDL_CreateWindow Error: %s\n", SDL_GetError());
+        LogError("SDL_CreateWindow Error: %s\n", SDL_GetError());
         Error("Failed to create window.");
     }
     DwmDarkMode(w);
@@ -92,7 +93,7 @@ int main(int argc, char *argv[])
 
     InitTimers();
 
-    printf("Engine initialized, entering mainloop\n");
+    LogInfo("Engine initialized, entering mainloop\n");
 
     SDL_Event e;
     bool quit = false;
@@ -167,7 +168,7 @@ int main(int argc, char *argv[])
 
         FrameGraphUpdate(GetTimeNs() - frameStart);
     }
-    printf("Mainloop exited, cleaning up engine...\n");
+    LogInfo("Mainloop exited, cleaning up engine...\n");
     DestroyGlobalState();
     SDL_DestroyWindow(GetGameWindow());
     SDL_FreeSurface(icon);

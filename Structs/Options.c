@@ -5,6 +5,7 @@
 #include "Options.h"
 #include <stdio.h>
 #include "../Helpers/Core/MathEx.h"
+#include "../Helpers/Core/Logging.h"
 
 void DefaultOptions(Options *options)
 {
@@ -48,7 +49,7 @@ void LoadOptions(Options *options)
     FILE *file = fopen(filePath, "rb");
     if (file == NULL)
     {
-        printf("Options file not found, using default options\n");
+        LogWarning("Options file not found, using default options\n");
         DefaultOptions(options);
     } else
     {
@@ -58,21 +59,21 @@ void LoadOptions(Options *options)
         // if the file is the wrong size, just use the default options
         if (fileLen != sizeof(Options))
         {
-            printf("Options file is invalid, using defaults\n");
+            LogWarning("Options file is invalid, using defaults\n");
             DefaultOptions(options);
             fclose(file);
             free(filePath);
             return;
         }
 
-        printf("Valid options file found, loading options\n");
+        LogInfo("Valid options file found, loading options\n");
 
         fseek(file, 0, SEEK_SET);
         fread(options, sizeof(Options), 1, file);
 
         if (options->checksum != GetOptionsChecksum(options))
         {
-            printf("Options file checksum invalid, using defaults\n");
+            LogWarning("Options file checksum invalid, using defaults\n");
             DefaultOptions(options);
         }
 

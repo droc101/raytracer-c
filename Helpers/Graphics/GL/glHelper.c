@@ -10,6 +10,7 @@
 #include "../../CommonAssets.h"
 #include "../../../Assets/AssetReader.h"
 #include "../../../Structs/GlobalState.h"
+#include "../../Core/Logging.h"
 
 SDL_GLContext ctx;
 
@@ -35,7 +36,7 @@ char GL_LastError[512];
 
 void GL_Error(const char *error)
 {
-    printf("OpenGL Error: %s\n", error);
+    LogError("OpenGL Error: %s\n", error);
     strcpy(GL_LastError, error);
 }
 
@@ -58,7 +59,7 @@ bool GL_PreInit()
 
 bool GL_Init(SDL_Window *wnd)
 {
-    printf("Initializing OpenGL\n");
+    LogInfo("Initializing OpenGL\n");
 
     ctx = SDL_GL_CreateContext(wnd);
 
@@ -112,11 +113,11 @@ bool GL_Init(SDL_Window *wnd)
     char *version = (char *) glGetString(GL_VERSION);
     char *shading_language = (char *) glGetString(GL_SHADING_LANGUAGE_VERSION);
 
-    printf("OpenGL Initialized\n");
-    printf("OpenGL Vendor: %s\n", vendor);
-    printf("OpenGL Renderer: %s\n", renderer);
-    printf("OpenGL Version: %s\n", version);
-    printf("GLSL: %s\n", shading_language);
+    LogInfo("OpenGL Initialized\n");
+    LogInfo("OpenGL Vendor: %s\n", vendor);
+    LogInfo("OpenGL Renderer: %s\n", renderer);
+    LogInfo("OpenGL Version: %s\n", version);
+    LogInfo("GLSL: %s\n", shading_language);
 
     return true;
 }
@@ -342,7 +343,6 @@ GLuint GL_LoadTextureFromAsset(const unsigned char *imageData)
 {
     if (AssetGetType(imageData) != ASSET_TYPE_TEXTURE)
     {
-        printf("Asset is not a texture\n");
         Error("Asset is not a texture");
     }
 
