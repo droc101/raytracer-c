@@ -30,7 +30,7 @@ typedef struct
     VkSurfaceFormatKHR *formats;
     uint32_t presentModeCount;
     VkPresentModeKHR *presentMode;
-    VkSurfaceCapabilitiesKHR capabilities;
+    VkSurfaceCapabilitiesKHR *capabilities;
 } SwapChainSupportDetails;
 
 typedef struct
@@ -70,15 +70,15 @@ const List(uint16_t) indices = {6, (uint16_t[]){0, 1, 2, 2, 3, 0}};
 
 /// A Vulkan instance is the connection between the game and the driver, through Vulkan.
 /// The creation of it requires configuring Vulkan for the app, allowing for better driver performance.
-VkInstance instance;
+VkInstance instance = VK_NULL_HANDLE;
 /// The interface between Vulkan and SDL, allowing Vulkan to actually draw to the window.
 VkSurfaceKHR surface;
 /// This stores the GPU.
-VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+VkPhysicalDevice physicalDevice;
 QueueFamilyIndices *queueFamilyIndices;
 SwapChainSupportDetails swapChainSupport;
 /// This is used for interfacing with the physical device.
-VkDevice device;
+VkDevice device = NULL;
 /// Async GPU (I thought I escaped async/await 😭)
 VkQueue graphicsQueue;
 /// Async GPU (I thought I escaped async/await 😭)
@@ -86,32 +86,32 @@ VkQueue presentQueue;
 /// Async GPU (I thought I escaped async/await 😭)
 VkQueue transferQueue;
 /// Allows Vulkan to give a surface the rendered image.
-VkSwapchainKHR swapChain;
+VkSwapchainKHR swapChain = VK_NULL_HANDLE;
 VkImage *swapChainImages;
-uint32_t swapChainCount;
+uint32_t swapChainCount = 0;
 VkFormat swapChainImageFormat;
 VkExtent2D swapChainExtent;
 VkImageView *swapChainImageViews;
-VkRenderPass renderPass;
-VkDescriptorSetLayout descriptorSetLayout;
-VkPipelineLayout pipelineLayout;
-VkPipeline graphicsPipeline;
+VkRenderPass renderPass = VK_NULL_HANDLE;
+VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
+VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
+VkPipeline graphicsPipeline = VK_NULL_HANDLE;
 VkFramebuffer *swapChainFramebuffers;
-VkCommandPool graphicsCommandPool;
-VkCommandPool transferCommandPool;
-VkCommandBuffer *commandBuffers;
-VkSemaphore *imageAvailableSemaphores;
-VkSemaphore *renderFinishedSemaphores;
-VkFence *inFlightFences;
+VkCommandPool graphicsCommandPool = VK_NULL_HANDLE;
+VkCommandPool transferCommandPool = VK_NULL_HANDLE;
+VkCommandBuffer commandBuffers[MAX_FRAMES_IN_FLIGHT];
+VkSemaphore imageAvailableSemaphores[MAX_FRAMES_IN_FLIGHT] = {NULL};
+VkSemaphore renderFinishedSemaphores[MAX_FRAMES_IN_FLIGHT] = {NULL};
+VkFence inFlightFences[MAX_FRAMES_IN_FLIGHT] = {NULL};
 uint8_t currentFrame = 0;
-VkBuffer vertexBuffer;
-VkDeviceMemory vertexBufferMemory;
-VkBuffer indexBuffer;
-VkDeviceMemory indexBufferMemory;
-VkBuffer uniformBuffers[MAX_FRAMES_IN_FLIGHT];
-VkDeviceMemory uniformBuffersMemory[MAX_FRAMES_IN_FLIGHT];
+VkBuffer vertexBuffer = VK_NULL_HANDLE;
+VkDeviceMemory vertexBufferMemory = VK_NULL_HANDLE;
+VkBuffer indexBuffer = VK_NULL_HANDLE;
+VkDeviceMemory indexBufferMemory = VK_NULL_HANDLE;
+VkBuffer uniformBuffers[MAX_FRAMES_IN_FLIGHT] = {NULL};
+VkDeviceMemory uniformBuffersMemory[MAX_FRAMES_IN_FLIGHT] = {NULL};
 void *uniformBuffersMapped[MAX_FRAMES_IN_FLIGHT];
-VkDescriptorPool descriptorPool;
+VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
 VkDescriptorSet descriptorSets[MAX_FRAMES_IN_FLIGHT];
 
 /**
@@ -174,18 +174,18 @@ static bool CreateSurface(SDL_Window *window)
  */
 static SwapChainSupportDetails QuerySwapChainSupport(const VkPhysicalDevice pDevice)
 {
-    SwapChainSupportDetails details = {0, NULL, 0, NULL};
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(pDevice, surface, &details.capabilities);
+    SwapChainSupportDetails details = {0, NULL, 0, NULL, malloc(sizeof(VkSurfaceCapabilitiesKHR))};
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(pDevice, surface, details.capabilities);
     vkGetPhysicalDeviceSurfaceFormatsKHR(pDevice, surface, &details.formatCount, NULL);
     if (details.formatCount != 0)
     {
-        details.formats = malloc(sizeof(VkSurfaceFormatKHR *) * details.formatCount);
+        details.formats = malloc(sizeof(*details.formats) * details.formatCount);
         vkGetPhysicalDeviceSurfaceFormatsKHR(pDevice, surface, &details.formatCount, details.formats);
     }
     vkGetPhysicalDeviceSurfacePresentModesKHR(pDevice, surface, &details.presentModeCount, NULL);
     if (details.presentModeCount != 0)
     {
-        details.presentMode = malloc(sizeof(VkPresentModeKHR *) * details.presentModeCount);
+        details.presentMode = malloc(sizeof(*details.presentMode) * details.presentModeCount);
         vkGetPhysicalDeviceSurfacePresentModesKHR(pDevice, surface, &details.presentModeCount, details.presentMode);
     }
     return details;
@@ -197,7 +197,7 @@ static SwapChainSupportDetails QuerySwapChainSupport(const VkPhysicalDevice pDev
  */
 static bool PickPhysicalDevice()
 {
-    queueFamilyIndices = malloc(sizeof(QueueFamilyIndices));
+    queueFamilyIndices = malloc(sizeof(*queueFamilyIndices));
     uint32_t deviceCount = 0;
     vkEnumeratePhysicalDevices(instance, &deviceCount, NULL);
     if (deviceCount == 0)
@@ -243,41 +243,10 @@ static bool PickPhysicalDevice()
                 }
                 if (!presentSupport) queueFamilyIndices->presentUniqueTransferFamily = index;
             }
-            if (queueFamilyIndices->graphicsFamily != -1 && queueFamilyIndices->presentFamily != -1 && queueFamilyIndices->
-                transferFamily != -1)
-            {
-                uint32_t extensionCount;
-                vkEnumerateDeviceExtensionProperties(pDevice, NULL, &extensionCount, NULL);
-                if (extensionCount == 0) continue;
-                VkExtensionProperties availableExtensions[extensionCount];
-                vkEnumerateDeviceExtensionProperties(pDevice, NULL, &extensionCount, availableExtensions);
-                for (uint32_t j = 0; j < extensionCount; j++)
-                {
-                    if (strcmp(availableExtensions[j].extensionName, VK_KHR_SWAPCHAIN_EXTENSION_NAME) != 0)
-                    {
-                        swapChainSupport = QuerySwapChainSupport(pDevice);
-                        if (swapChainSupport.formatCount == 0 && swapChainSupport.presentModeCount == 0) continue;
-                        VkPhysicalDeviceProperties deviceProperties;
-                        vkGetPhysicalDeviceProperties(pDevice, &deviceProperties);
-                        if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
-                        {
-                            physicalDevice = devices[i];
-                            return true;
-                        }
-                        physicalDevice = devices[i];
-                        match = true;
-                        break;
-                    }
-                }
-                break;
-            }
+            if (queueFamilyIndices->graphicsFamily != -1 && queueFamilyIndices->presentFamily != -1 && queueFamilyIndices->transferFamily != -1) break;
         }
-        if (queueFamilyIndices->graphicsFamily == -1 || queueFamilyIndices->nonUniquePresentFamily == -1 || queueFamilyIndices->nonUniqueTransferFamily == -1)
-        {
-            printf("\033[31m{graphicsFamily: %d, presentFamily: %d, transferFamily: %d, graphicsUniqueTransferFamily: %d, presentUniqueTransferFamily: %d}\033[0m\n", queueFamilyIndices->graphicsFamily, queueFamilyIndices->presentFamily, queueFamilyIndices->transferFamily, queueFamilyIndices->graphicsUniqueTransferFamily, queueFamilyIndices->presentUniqueTransferFamily);
-            fflush(stdout);
-            continue;
-        }
+        if (queueFamilyIndices->graphicsFamily == -1 || queueFamilyIndices->nonUniquePresentFamily == -1 || queueFamilyIndices->nonUniqueTransferFamily == -1) continue;
+        
         if (queueFamilyIndices->presentFamily == -1) queueFamilyIndices->presentFamily = queueFamilyIndices->nonUniquePresentFamily;
         if (queueFamilyIndices->transferFamily == -1)
         {
@@ -431,20 +400,20 @@ static bool CreateSwapChain(SDL_Window *window)
     const SwapSurfaceFormatCheck surfaceFormat = GetSwapSurfaceFormat();
     if (!surfaceFormat.found) return false;
     const VkPresentModeKHR presentMode = GetSwapPresentMode();
-    VkExtent2D extent = swapChainSupport.capabilities.currentExtent;
+    VkExtent2D extent = swapChainSupport.capabilities->currentExtent;
     if (extent.width == UINT32_MAX || extent.height == UINT32_MAX)
     {
         int width, height;
         SDL_Vulkan_GetDrawableSize(window, &width, &height);
-        extent.width = clamp(width, swapChainSupport.capabilities.minImageExtent.width,
-                             swapChainSupport.capabilities.maxImageExtent.width);
-        extent.height = clamp(height, swapChainSupport.capabilities.minImageExtent.height,
-                              swapChainSupport.capabilities.maxImageExtent.height);
+        extent.width = clamp(width, swapChainSupport.capabilities->minImageExtent.width,
+                             swapChainSupport.capabilities->maxImageExtent.width);
+        extent.height = clamp(height, swapChainSupport.capabilities->minImageExtent.height,
+                              swapChainSupport.capabilities->maxImageExtent.height);
     }
-    uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
-    if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount)
+    uint32_t imageCount = swapChainSupport.capabilities->minImageCount + 1;
+    if (swapChainSupport.capabilities->maxImageCount > 0 && imageCount > swapChainSupport.capabilities->maxImageCount)
     {
-        imageCount = swapChainSupport.capabilities.maxImageCount;
+        imageCount = swapChainSupport.capabilities->maxImageCount;
     }
     uint32_t* const pQueueFamilyIndices[3] = {(const uint32_t[3]){queueFamilyIndices->graphicsFamily}};
     VkSwapchainCreateInfoKHR createInfo = {
@@ -461,7 +430,7 @@ static bool CreateSwapChain(SDL_Window *window)
         VK_SHARING_MODE_CONCURRENT,
         1,
         *pQueueFamilyIndices,
-        swapChainSupport.capabilities.currentTransform,
+        swapChainSupport.capabilities->currentTransform,
         VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
         presentMode,
         VK_TRUE,
@@ -479,7 +448,7 @@ static bool CreateSwapChain(SDL_Window *window)
     if (createInfo.queueFamilyIndexCount == 1) createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
     VulkanTest(vkCreateSwapchainKHR(device, &createInfo, NULL, &swapChain), "Failed to create Vulkan swap chain!");
     vkGetSwapchainImagesKHR(device, swapChain, &imageCount, NULL);
-    swapChainImages = malloc(sizeof(VkImage *) * imageCount);
+    swapChainImages = malloc(sizeof(*swapChainImages) * imageCount);
     swapChainCount = imageCount;
     vkGetSwapchainImagesKHR(device, swapChain, &imageCount, swapChainImages);
     swapChainImageFormat = surfaceFormat.chosenFormat.format;
@@ -489,7 +458,7 @@ static bool CreateSwapChain(SDL_Window *window)
 
 static bool CreateImageViews()
 {
-    swapChainImageViews = malloc(sizeof(VkImageView *) * swapChainCount);
+    swapChainImageViews = malloc(sizeof(*swapChainImageViews) * swapChainCount);
     for (uint32_t i = 0; i < swapChainCount; i++)
     {
         VkImageViewCreateInfo createInfo = {
@@ -765,7 +734,7 @@ static bool CreateGraphicsPipeline()
 
 static bool CreateFramebuffers()
 {
-    swapChainFramebuffers = malloc(sizeof(VkFramebuffer *) * swapChainCount);
+    swapChainFramebuffers = malloc(sizeof(*swapChainFramebuffers) * swapChainCount);
     for (uint32_t i = 0; i < swapChainCount; i++)
     {
         VkImageView attachments[] = {swapChainImageViews[i]};
@@ -1006,7 +975,6 @@ static bool CreateDescriptorSets()
 
 static bool CreateCommandBuffers()
 {
-    commandBuffers = malloc(sizeof(VkCommandBuffer *) * MAX_FRAMES_IN_FLIGHT);
     const VkCommandBufferAllocateInfo allocateInfo = {
         VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
         NULL,
@@ -1020,9 +988,6 @@ static bool CreateCommandBuffers()
 
 static bool CreateSyncObjects()
 {
-    imageAvailableSemaphores = malloc(sizeof(VkSemaphore *) * MAX_FRAMES_IN_FLIGHT);
-    renderFinishedSemaphores = malloc(sizeof(VkSemaphore *) * MAX_FRAMES_IN_FLIGHT);
-    inFlightFences = malloc(sizeof(VkFence *) * MAX_FRAMES_IN_FLIGHT);
     const VkSemaphoreCreateInfo semaphoreInfo = {
         VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
         NULL,
@@ -1171,39 +1136,42 @@ void DrawFrame()
 /// A function used to destroy the Vulkan objects when they are no longer needed.
 void CleanupVulkan()
 {
-    vkDeviceWaitIdle(device);
-    for (uint32_t i = 0; i < swapChainCount; i++)
+    if (device)
     {
-        vkDestroyFramebuffer(device, swapChainFramebuffers[i], NULL);
+        vkDeviceWaitIdle(device);
+        for (uint32_t i = 0; i < swapChainCount; i++)
+        {
+            vkDestroyFramebuffer(device, swapChainFramebuffers[i], NULL);
+        }
+        for (uint32_t i = 0; i < swapChainCount; i++)
+        {
+            vkDestroyImageView(device, swapChainImageViews[i], NULL);
+        }
+        vkDestroySwapchainKHR(device, swapChain, NULL);
+        vkDestroyPipeline(device, graphicsPipeline, NULL);
+        vkDestroyPipelineLayout(device, pipelineLayout, NULL);
+        vkDestroyRenderPass(device, renderPass, NULL);
+        for (size_t i = 0; uniformBuffers[i] && uniformBuffersMemory[i] && i < MAX_FRAMES_IN_FLIGHT; i++)
+        {
+            vkDestroyBuffer(device, uniformBuffers[i], NULL);
+            vkFreeMemory(device, uniformBuffersMemory[i], NULL);
+        }
+        vkDestroyDescriptorPool(device, descriptorPool, NULL);
+        vkDestroyDescriptorSetLayout(device, descriptorSetLayout, NULL);
+        vkDestroyBuffer(device, indexBuffer, NULL);
+        vkFreeMemory(device, indexBufferMemory, NULL);
+        vkDestroyBuffer(device, vertexBuffer, NULL);
+        vkFreeMemory(device, vertexBufferMemory, NULL);
+        for (uint32_t i = 0; imageAvailableSemaphores[i] && renderFinishedSemaphores[i] && inFlightFences[i] && i < MAX_FRAMES_IN_FLIGHT; i++)
+        {
+            vkDestroySemaphore(device, imageAvailableSemaphores[i], NULL);
+            vkDestroySemaphore(device, renderFinishedSemaphores[i], NULL);
+            vkDestroyFence(device, inFlightFences[i], NULL);
+        }
+        vkDestroyCommandPool(device, graphicsCommandPool, NULL);
+        vkDestroyCommandPool(device, transferCommandPool, NULL);
     }
-    for (uint32_t i = 0; i < swapChainCount; i++)
-    {
-        vkDestroyImageView(device, swapChainImageViews[i], NULL);
-    }
-    vkDestroySwapchainKHR(device, swapChain, NULL);
-    vkDestroyPipeline(device, graphicsPipeline, NULL);
-    vkDestroyPipelineLayout(device, pipelineLayout, NULL);
-    vkDestroyRenderPass(device, renderPass, NULL);
-    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-    {
-        vkDestroyBuffer(device, uniformBuffers[i], NULL);
-        vkFreeMemory(device, uniformBuffersMemory[i], NULL);
-    }
-    vkDestroyDescriptorPool(device, descriptorPool, NULL);
-    vkDestroyDescriptorSetLayout(device, descriptorSetLayout, NULL);
-    vkDestroyBuffer(device, indexBuffer, NULL);
-    vkFreeMemory(device, indexBufferMemory, NULL);
-    vkDestroyBuffer(device, vertexBuffer, NULL);
-    vkFreeMemory(device, vertexBufferMemory, NULL);
-    for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-    {
-        vkDestroySemaphore(device, imageAvailableSemaphores[i], NULL);
-        vkDestroySemaphore(device, renderFinishedSemaphores[i], NULL);
-        vkDestroyFence(device, inFlightFences[i], NULL);
-    }
-    vkDestroyCommandPool(device, graphicsCommandPool, NULL);
-    vkDestroyCommandPool(device, transferCommandPool, NULL);
     vkDestroyDevice(device, NULL);
-    vkDestroySurfaceKHR(instance, surface, NULL);
+    if (instance) vkDestroySurfaceKHR(instance, surface, NULL);
     vkDestroyInstance(instance, NULL);
 }
