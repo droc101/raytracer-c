@@ -17,11 +17,8 @@ typedef struct
 {
     uint32_t graphicsFamily;
     uint32_t presentFamily;
-    uint32_t nonUniquePresentFamily;
+    uint32_t uniquePresentFamily;
     uint32_t transferFamily;
-    uint32_t graphicsUniqueTransferFamily;
-    uint32_t presentUniqueTransferFamily;
-    uint32_t nonUniqueTransferFamily;
 } QueueFamilyIndices;
 
 typedef struct
@@ -202,7 +199,7 @@ static bool PickPhysicalDevice()
     vkEnumeratePhysicalDevices(instance, &deviceCount, NULL);
     if (deviceCount == 0)
     {
-        *queueFamilyIndices = (QueueFamilyIndices){-1, -1, -1, -1, -1, -1, -1};
+        *queueFamilyIndices = (QueueFamilyIndices){-1, -1, -1, -1};
         VulkanLogError("Failed to find any GPUs with Vulkan support!");
         return false;
     }
@@ -211,7 +208,7 @@ static bool PickPhysicalDevice()
     bool match = false;
     for (uint32_t i = 0; i < deviceCount; i++)
     {
-        *queueFamilyIndices = (QueueFamilyIndices){-1, -1, -1, -1, -1, -1, -1};
+        *queueFamilyIndices = (QueueFamilyIndices){-1, -1, -1, -1};
         const VkPhysicalDevice pDevice = devices[i];
         VkPhysicalDeviceFeatures deviceFeatures;
         vkGetPhysicalDeviceFeatures(pDevice, &deviceFeatures);
@@ -222,37 +219,23 @@ static bool PickPhysicalDevice()
         vkGetPhysicalDeviceQueueFamilyProperties(pDevice, &familyCount, families);
         for (uint32_t index = 0; index < familyCount; index++)
         {
+            VkBool32 presentSupport = VK_FALSE;
+            vkGetPhysicalDeviceSurfaceSupportKHR(pDevice, index, surface, &presentSupport);
             if (families[index].queueFlags & VK_QUEUE_GRAPHICS_BIT)
             {
                 queueFamilyIndices->graphicsFamily = index;
-            }
-            VkBool32 presentSupport = VK_FALSE;
-            vkGetPhysicalDeviceSurfaceSupportKHR(pDevice, index, surface, &presentSupport);
-            if (presentSupport)
+                if (presentSupport) queueFamilyIndices->presentFamily = index;
+            } else if (families[index].queueFlags & VK_QUEUE_TRANSFER_BIT)
             {
-                queueFamilyIndices->nonUniquePresentFamily = index;
-                if (!(families[index].queueFlags & VK_QUEUE_GRAPHICS_BIT)) queueFamilyIndices->presentFamily = index;
-            }
-            if (families[index].queueFlags & VK_QUEUE_TRANSFER_BIT)
+                queueFamilyIndices->transferFamily = index;
+            } else if (presentSupport)
             {
-                queueFamilyIndices->nonUniqueTransferFamily = index;
-                if (!(families[index].queueFlags & VK_QUEUE_GRAPHICS_BIT))
-                {
-                    queueFamilyIndices->graphicsUniqueTransferFamily = index;
-                    if (!presentSupport) queueFamilyIndices->transferFamily = index;
-                }
-                if (!presentSupport) queueFamilyIndices->presentUniqueTransferFamily = index;
+                queueFamilyIndices->uniquePresentFamily = index;
             }
-            if (queueFamilyIndices->graphicsFamily != -1 && queueFamilyIndices->presentFamily != -1 && queueFamilyIndices->transferFamily != -1) break;
-        }
-        if (queueFamilyIndices->graphicsFamily == -1 || queueFamilyIndices->nonUniquePresentFamily == -1 || queueFamilyIndices->nonUniqueTransferFamily == -1) continue;
-        
-        if (queueFamilyIndices->presentFamily == -1) queueFamilyIndices->presentFamily = queueFamilyIndices->nonUniquePresentFamily;
-        if (queueFamilyIndices->transferFamily == -1)
-        {
-            if (queueFamilyIndices->graphicsUniqueTransferFamily != -1) queueFamilyIndices->transferFamily = queueFamilyIndices->graphicsUniqueTransferFamily;
-            else if (queueFamilyIndices->presentUniqueTransferFamily != -1) queueFamilyIndices->transferFamily = queueFamilyIndices->presentUniqueTransferFamily;
-            else queueFamilyIndices->transferFamily = queueFamilyIndices->nonUniqueTransferFamily;
+            if (queueFamilyIndices->graphicsFamily == -1 || queueFamilyIndices->uniquePresentFamily == -1) continue;
+            if (queueFamilyIndices->presentFamily == -1) queueFamilyIndices->presentFamily = queueFamilyIndices->uniquePresentFamily;
+            if (queueFamilyIndices->transferFamily == -1) queueFamilyIndices->transferFamily = queueFamilyIndices->graphicsFamily;
+            break;
         }
         uint32_t extensionCount;
         vkEnumerateDeviceExtensionProperties(pDevice, NULL, &extensionCount, NULL);
