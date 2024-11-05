@@ -8,10 +8,11 @@
 #include "../Assets/Assets.h"
 #include "../defines.h"
 
-typedef struct LevelEntry {
-    char * internalName;
-    unsigned char* levelData;
-    char * displayName;
+typedef struct LevelEntry
+{
+    char *internalName;
+    unsigned char *levelData;
+    char *displayName;
     bool canPauseExit;
     int courseNum;
 } LevelEntry;

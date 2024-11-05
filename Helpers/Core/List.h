@@ -6,26 +6,29 @@
 #define GAME_LIST_H
 
 // List item
-typedef struct Node {
+typedef struct Node
+{
     void *data;
     struct Node *prev;
     struct Node *next;
 } Node;
 
 // Doubly linked list
-typedef struct List {
+typedef struct List
+{
     Node *head;
     Node *tail;
     int size;
 } List;
 
-typedef struct SizedArray {
+typedef struct SizedArray
+{
     void **elements;
     int size;
 } SizedArray;
 
 // Internal functions
-Node* createNode(void *data);
+Node *createNode(void *data);
 
 // Public functions
 
@@ -33,21 +36,21 @@ Node* createNode(void *data);
  * Create a new list
  * @return brand new list just for you
  */
-List* CreateList();
+List *CreateList();
 
 /**
  * Append an item to the list
  * @param list List to append to
  * @param data Data to append
  */
-void ListAdd(List* list, void *data);
+void ListAdd(List *list, void *data);
 
 /**
  * Remove a node from the list
  * @param list List to remove from
  * @param node List node (NOT DATA) to remove
  */
-void ListRemove(List* list, Node* node);
+void ListRemove(List *list, Node *node);
 
 /**
  * Remove an item from the list by index
@@ -62,7 +65,7 @@ void ListRemoveAt(List *list, int index);
  * @param prevNode Node to insert after
  * @param data Data to insert
  */
-void ListInsertAfter(List* list, Node* prevNode, void *data);
+void ListInsertAfter(List *list, Node *prevNode, void *data);
 
 /**
  * Get an item from the list by index
@@ -70,28 +73,28 @@ void ListInsertAfter(List* list, Node* prevNode, void *data);
  * @param index Index to get
  * @return Data at index (not node)
  */
-void *ListGet(List* list, int index);
+void *ListGet(const List *list, const int index);
 
 /**
  * Free the list structure
  * @param list List to free
  * @warning This does not free the data in the list
  */
-void ListFree(List* list);
+void ListFree(List *list);
 
 /**
  * Free the list structure and the data in the list
  * @param list List to free
  * @warning If the data is a struct, any pointers in the struct will not be freed, just the struct itself
  */
-void ListFreeWithData(List* list);
+void ListFreeWithData(List *list);
 
 /**
  * Get the size of the list
  * @param list List to get size of
  * @return Number of items in the list
  */
-int ListGetSize(List* list);
+int ListGetSize(const List *list);
 
 /**
  * Find an item in the list
@@ -99,7 +102,7 @@ int ListGetSize(List* list);
  * @param data Data to search for
  * @return Index of the item in the list, -1 if not found
  */
-int ListFind(List *list, void *data);
+int ListFind(const List *list, const void *data);
 
 /**
  * Clear all items from the list
@@ -113,7 +116,7 @@ void ListClear(List *list);
  * @param list List to convert
  * @return Sized array
  */
-SizedArray* ToSizedArray(List *list);
+SizedArray *ToSizedArray(List *list);
 
 #define SizedArrayGet(array, index) ((array)->elements[(index)])
 

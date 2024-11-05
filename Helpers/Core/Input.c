@@ -15,42 +15,54 @@ byte mouseButtons[4];
 
 int mouseX, mouseY, mouseXrel, mouseYrel;
 
-void HandleMouseMotion(int x, int y, int xrel, int yrel) {
+void HandleMouseMotion(int x, int y, int xrel, int yrel)
+{
     mouseX = x;
     mouseY = y;
     mouseXrel = xrel;
     mouseYrel = yrel;
 }
 
-void HandleMouseDown(int button) {
+void HandleMouseDown(int button)
+{
     mouseButtons[button] = INP_JUST_PRESSED;
 }
 
-void HandleMouseUp(int button) {
+void HandleMouseUp(int button)
+{
     mouseButtons[button] = INP_JUST_RELEASED;
 }
 
-void HandleKeyDown(int code) {
+void HandleKeyDown(int code)
+{
     keys[code] = INP_JUST_PRESSED;
 }
 
-void HandleKeyUp(int code) {
+void HandleKeyUp(int code)
+{
     keys[code] = INP_JUST_RELEASED;
 }
 
-void UpdateInputStates() {
-    for (int i = 0; i < SDL_NUM_SCANCODES; i++) {
-        if (keys[i] == INP_JUST_RELEASED) {
+void UpdateInputStates()
+{
+    for (int i = 0; i < SDL_NUM_SCANCODES; i++)
+    {
+        if (keys[i] == INP_JUST_RELEASED)
+        {
             keys[i] = INP_RELEASED;
-        } else if (keys[i] == INP_JUST_PRESSED) {
+        } else if (keys[i] == INP_JUST_PRESSED)
+        {
             keys[i] = INP_PRESSED;
         }
     }
 
-    for (int i = 0; i < 4; i++) {
-        if (mouseButtons[i] == INP_JUST_RELEASED) {
+    for (int i = 0; i < 4; i++)
+    {
+        if (mouseButtons[i] == INP_JUST_RELEASED)
+        {
             mouseButtons[i] = INP_RELEASED;
-        } else if (mouseButtons[i] == INP_JUST_PRESSED) {
+        } else if (mouseButtons[i] == INP_JUST_PRESSED)
+        {
             mouseButtons[i] = INP_PRESSED;
         }
     }
@@ -59,54 +71,68 @@ void UpdateInputStates() {
     mouseYrel = 0;
 }
 
-bool IsKeyPressed(int code) {
+bool IsKeyPressed(int code)
+{
     return keys[code] == INP_PRESSED || keys[code] == INP_JUST_PRESSED;
 }
 
-bool IsKeyJustPressed(int code) {
+bool IsKeyJustPressed(int code)
+{
     return keys[code] == INP_JUST_PRESSED;
 }
 
-bool IsKeyJustReleased(int code) {
+bool IsKeyJustReleased(int code)
+{
     return keys[code] == INP_JUST_RELEASED;
 }
 
-bool IsMouseButtonPressed(int button) {
+bool IsMouseButtonPressed(int button)
+{
     return mouseButtons[button] == INP_PRESSED || mouseButtons[button] == INP_JUST_PRESSED;
 }
 
-bool IsMouseButtonJustPressed(int button) {
+bool IsMouseButtonJustPressed(int button)
+{
     return mouseButtons[button] == INP_JUST_PRESSED;
 }
 
-bool IsMouseButtonJustReleased(int button) {
+bool IsMouseButtonJustReleased(int button)
+{
     return mouseButtons[button] == INP_JUST_RELEASED;
 }
 
-Vector2 GetMousePos() {
+Vector2 GetMousePos()
+{
     return Vector2Scale(v2(mouseX, mouseY), 1.0 / GetState()->options.uiScale);
 }
 
-Vector2 GetMouseRel() {
+Vector2 GetMouseRel()
+{
     return v2(mouseXrel, mouseYrel);
 }
 
-void ConsumeKey(int code) {
+void ConsumeKey(int code)
+{
     keys[code] = INP_RELEASED;
 }
 
-void ConsumeMouseButton(int button) {
+void ConsumeMouseButton(int button)
+{
     mouseButtons[button] = INP_RELEASED;
 }
 
-void ConsumeAllKeys() {
-    for (int i = 0; i < SDL_NUM_SCANCODES; i++) {
+void ConsumeAllKeys()
+{
+    for (int i = 0; i < SDL_NUM_SCANCODES; i++)
+    {
         keys[i] = INP_RELEASED;
     }
 }
 
-void ConsumeAllMouseButtons() {
-    for (int i = 0; i < 4; i++) {
+void ConsumeAllMouseButtons()
+{
+    for (int i = 0; i < 4; i++)
+    {
         mouseButtons[i] = INP_RELEASED;
     }
 }

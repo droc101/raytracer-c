@@ -9,7 +9,8 @@
  * Create a camera with default values
  * @return A pointer to the camera
  */
-Camera *CreateCamera() {
+Camera *CreateCamera()
+{
     Camera *camera = malloc(sizeof(Camera));
     camera->x = 0;
     camera->y = 0;
@@ -26,7 +27,8 @@ Camera *CreateCamera() {
  * @param camera The camera to look with
  * @param target The target to look at
  */
-void CameraLookAt(Camera *camera, Vector2 target) {
+void CameraLookAt(Camera *camera, const Vector2 target)
+{
     camera->yaw = atan2(target.x - camera->x, target.y - camera->z);
     camera->pitch = 0;
 }

@@ -6,45 +6,57 @@
 #include "Wall.h"
 
 // Empty template functions
-void ActorInit(Actor *this) {}
-void ActorUpdate(Actor *this) {}
-void ActorDestroy(Actor *this) {}
+void ActorInit(Actor *this)
+{
+}
+
+void ActorUpdate(Actor *this)
+{
+}
+
+void ActorDestroy(Actor *this)
+{
+}
 
 #include "../Actor/TestActor.h"
 #include "../Actor/Coin.h"
 #include "../Actor/Goal.h"
 
-void(*ActorInitFuncs[])(Actor *) = {
-        ActorInit,
-        TestActorInit,
-        CoinInit,
-        GoalInit
+void (*ActorInitFuncs[])(Actor *) = {
+    ActorInit,
+    TestActorInit,
+    CoinInit,
+    GoalInit
 };
-void(*ActorUpdateFuncs[])(Actor *) = {
-        ActorUpdate,
-        TestActorUpdate,
-        CoinUpdate,
-        GoalUpdate
+
+void (*ActorUpdateFuncs[])(Actor *) = {
+    ActorUpdate,
+    TestActorUpdate,
+    CoinUpdate,
+    GoalUpdate
 };
-void(*ActorDestroyFuncs[])(Actor *) = {
-        ActorDestroy,
-        TestActorDestroy,
-        CoinDestroy,
-        GoalDestroy
+
+void (*ActorDestroyFuncs[])(Actor *) = {
+    ActorDestroy,
+    TestActorDestroy,
+    CoinDestroy,
+    GoalDestroy
 };
 
 int ActorHealths[] = {
-        1,
-        1,
-        1,
-        1
+    1,
+    1,
+    1,
+    1
 };
 
-int GetActorTypeCount() {
+int GetActorTypeCount()
+{
     return sizeof(ActorInitFuncs) / sizeof(void *);
 }
 
-Actor *CreateActor(Vector2 position, double rotation, int actorType, byte paramA, byte paramB, byte paramC, byte paramD) {
+Actor *CreateActor(const Vector2 position, const double rotation, const int actorType, const byte paramA, const byte paramB, const byte paramC, const byte paramD)
+{
     Actor *actor = malloc(sizeof(Actor));
     actor->position = position;
     actor->rotation = rotation;
@@ -65,13 +77,16 @@ Actor *CreateActor(Vector2 position, double rotation, int actorType, byte paramA
     return actor;
 }
 
-void FreeActor(Actor *actor) {
+void FreeActor(Actor *actor)
+{
     actor->Destroy(actor);
     free(actor);
 }
 
-bool GetTransformedWall(Actor *actor, Wall *wall) {
-    if (actor->actorWall == NULLPTR) {
+bool GetTransformedWall(const Actor *actor, Wall *wall)
+{
+    if (actor->actorWall == NULLPTR)
+    {
         return false;
     }
 
@@ -88,4 +103,3 @@ bool GetTransformedWall(Actor *actor, Wall *wall) {
 
     return true;
 }
-

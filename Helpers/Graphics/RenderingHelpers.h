@@ -11,8 +11,12 @@
 #include "Drawing.h"
 #include "GL/glHelper.h"
 
-typedef struct BatchedQuadArray {
-    float *verts; // float[quad_count][4] with X,Y,U,V for textured quads, float[quad_count][2] with X,Y for untextured quads
+void DwmDarkMode(SDL_Window *window);
+
+typedef struct BatchedQuadArray
+{
+    float *verts;
+    // float[quad_count][4] with X,Y,U,V for textured quads, float[quad_count][2] with X,Y for untextured quads
     uint *indices; // uint[6*quad_count] with indices
     int quad_count; // Number of quads in the array
 } BatchedQuadArray;
@@ -24,14 +28,14 @@ extern Renderer currentRenderer;
  * @param cam The camera
  * @return A mat4 MODEL_VIEW_PROJECTION matrix of the camera (World space to screen space)
  */
-mat4 *GetMatrix(Camera *cam);
+mat4 *GetMatrix(const Camera *cam);
 
 /**
  * Get the transformation matrix for an actor
  * @param Actor The actor
  * @return A mat4 MODEL matrix of the actor (Model space to world space)
  */
-mat4 *ActorTransformMatrix(Actor *Actor);
+mat4 *ActorTransformMatrix(const Actor *Actor);
 
 /**
  * Perform any pre-initialization for the rendering system
@@ -69,14 +73,14 @@ void UpdateViewportSize();
  * @param imageData The texture to use
  * @param color The color to use
  */
-void DrawBatchedQuadsTextured(BatchedQuadArray *batch, const unsigned char *imageData, uint color);
+void DrawBatchedQuadsTextured(const BatchedQuadArray *batch, const unsigned char *imageData, uint color);
 
 /**
  * Draw a `BatchedQuadArray` to the screen using the solid color shader. This is faster than multiple draw calls, but harder to use.
  * @param batch The batch to draw
  * @param color The color to use
  */
-void DrawBatchedQuadsColored(BatchedQuadArray *batch, uint color);
+void DrawBatchedQuadsColored(const BatchedQuadArray *batch, uint color);
 
 /**
  * Convert screen X to NDC

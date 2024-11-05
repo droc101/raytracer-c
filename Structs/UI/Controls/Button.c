@@ -9,7 +9,8 @@
 #include "../../GlobalState.h"
 #include "../../../Assets/Assets.h"
 
-Control *CreateButtonControl(Vector2 position, Vector2 size, char *text, void (*callback)(), ControlAnchor anchor) {
+Control *CreateButtonControl(const Vector2 position, const Vector2 size, char *text, void (*callback)(), const ControlAnchor anchor)
+{
     Control *btn = CreateEmptyControl();
     btn->type = BUTTON;
     btn->position = position;
@@ -25,14 +26,17 @@ Control *CreateButtonControl(Vector2 position, Vector2 size, char *text, void (*
     return btn;
 }
 
-void DestroyButton(Control *c) {
+void DestroyButton(const Control *c)
+{
     ButtonData *data = (ButtonData *) c->ControlData;
     free(data);
 }
 
-void UpdateButton(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlIndex) {
-    ButtonData *data = (ButtonData *) c->ControlData;
-    if (data->enabled && HasActivation(stack, c)) {
+void UpdateButton(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlIndex)
+{
+    const ButtonData *data = (ButtonData *) c->ControlData;
+    if (data->enabled && HasActivation(stack, c))
+    {
         PlaySoundEffect(gzwav_sfx_click);
         ConsumeMouseButton(SDL_BUTTON_LEFT);
         ConsumeKey(SDL_SCANCODE_SPACE);
@@ -40,30 +44,22 @@ void UpdateButton(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlInd
     }
 }
 
-void DrawButton(Control *c, ControlState state, Vector2 position) {
-    uint color = 0xff000000;
-    switch (state) {
+void DrawButton(const Control *c, const ControlState state, const Vector2 position)
+{
+    switch (state)
+    {
         case NORMAL:
-            color = 0xFFc2e3ff;
+            draw_ninepatch(c->anchoredPosition, c->size, 8, 8, gztex_interface_button);
             break;
         case HOVER:
-            color = 0xFFa1d4ff;
+            draw_ninepatch(c->anchoredPosition, c->size, 8, 8, gztex_interface_button_hover);
             break;
         case ACTIVE:
-            color = 0xFF8ac9ff;
+            draw_ninepatch(c->anchoredPosition, c->size, 8, 8, gztex_interface_button_press);
             break;
     }
 
-    ButtonData *data = (ButtonData *) c->ControlData;
-
-    if (!data->enabled) {
-        color = 0xFF808080;
-    }
-
-    setColorUint(color);
-    draw_rect(position.x, position.y, c->size.x, c->size.y);
-    setColorUint(0xFF000000);
-    DrawOutlineRect(position, c->size, 1);
+    const ButtonData *data = (ButtonData *) c->ControlData;
 
     DrawTextAligned(data->text, 16, 0xFF000000, position, c->size, FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
 }

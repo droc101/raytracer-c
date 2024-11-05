@@ -9,18 +9,21 @@
 
 int DPrintYPos = 10;
 
-void ResetDPrintYPos() {
+void ResetDPrintYPos()
+{
     DPrintYPos = 10;
 }
 
-void DPrint(char *str, uint color) {
+void DPrint(char *str, const uint color)
+{
 #ifdef ENABLE_DEBUG_PRINT
-    FontDrawString((Vector2) {12, DPrintYPos + 2}, str, 16, 0xFF000000, true);
-    DPrintYPos += (FontDrawString((Vector2) {10, DPrintYPos}, str, 16, color, true).y - DPrintYPos) + 8;
+    FontDrawString((Vector2){12, DPrintYPos + 2}, str, 16, 0xFF000000, true);
+    DPrintYPos += (FontDrawString((Vector2){10, DPrintYPos}, str, 16, color, true).y - DPrintYPos) + 8;
 #endif
 }
 
-void DPrintF(char *str, uint color, bool con, ...) {
+void DPrintF(const char *str, const uint color, const bool con, ...)
+{
 #ifdef ENABLE_DEBUG_PRINT
     char buffer[256];
     va_list args;
@@ -28,9 +31,9 @@ void DPrintF(char *str, uint color, bool con, ...) {
     vsprintf(buffer, str, args);
     va_end(args);
     DPrint(buffer, color);
-    if (con) {
+    if (con)
+    {
         printf("%s\n", buffer);
     }
 #endif
 }
-

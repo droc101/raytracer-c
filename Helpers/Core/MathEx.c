@@ -4,34 +4,38 @@
 
 #include <math.h>
 
-double min(double a, double b) // Get the minimum of two numbers
+double min(const double a, const double b) // Get the minimum of two numbers
 {
     return a < b ? a : b;
 }
 
-double max(double a, double b) // Get the maximum of two numbers
+double max(const double a, const double b) // Get the maximum of two numbers
 {
     return a > b ? a : b;
 }
 
-double wrap(double x, double min, double max) { // BUG: Sometimes returns a value outside the range, needs more testing
-    if (min > max) {
+double wrap(const double x, const double min, const double max)
+{
+    // BUG: Sometimes returns a value outside the range, needs more testing
+    if (min > max)
+    {
         return wrap(x, max, min);
     }
     return (x >= 0 ? min : max) + fmod(x, max - min);
 }
 
 // Map a value from one range to another
-double remap(double in, double in_min, double in_max, double out_min, double out_max) {
+double remap(const double in, const double in_min, const double in_max, const double out_min, const double out_max)
+{
     return (in - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
-float lerp(float a, float b, float f)
+float lerp(const float a, const float b, const float f)
 {
     return a * (1.0 - f) + (b * f);
 }
 
-double clampf(double x, double min, double max) {
+double clampf(const double x, const double min, const double max)
+{
     return x < min ? min : x > max ? max : x;
 }
-

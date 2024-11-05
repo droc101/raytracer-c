@@ -8,7 +8,8 @@
 #include "../UiStack.h"
 #include "../../Vector2.h"
 
-typedef struct RadioButtonData {
+typedef struct RadioButtonData
+{
     char *label;
     byte groupId;
     byte id;
@@ -30,12 +31,13 @@ typedef struct RadioButtonData {
  * @param id The id of the RadioButton. This is passed to the callback function when the RadioButton is checked.
  * @return The new RadioButton Control
  */
-Control *CreateRadioButtonControl(Vector2 position, Vector2 size, char *label, void (*callback)(bool, byte, byte), ControlAnchor anchor, bool checked, byte groupId, byte id);
+Control *CreateRadioButtonControl(Vector2 position, Vector2 size, char *label, void (*callback)(bool, byte, byte),
+                                  ControlAnchor anchor, bool checked, byte groupId, byte id);
 
-void DestroyRadioButton(Control *c);
+void DestroyRadioButton(const Control *c);
 
 void UpdateRadioButton(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlIndex);
 
-void DrawRadioButton(Control *c, ControlState state, Vector2 position);
+void DrawRadioButton(const Control *c, ControlState state, Vector2 position);
 
 #endif //GAME_RADIOBUTTON_H

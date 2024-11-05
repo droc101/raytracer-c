@@ -8,7 +8,8 @@
 #include "../UiStack.h"
 #include "../../Vector2.h"
 
-typedef struct SliderData {
+typedef struct SliderData
+{
     char *label;
 
     double min;
@@ -18,13 +19,14 @@ typedef struct SliderData {
     double step;
     double altStep; // Step when holding shift
 
-    void (*callback)(double);
-    char* (*getLabel)(Control *slider);
+    void (*callback)(const double);
+
+    char *(*getLabel)(const Control *slider);
 } SliderData;
 
-char *SliderLabelPercent(Control *slider);
+char *SliderLabelPercent(const Control *slider);
 
-char *SliderLabelInteger(Control *slider);
+char *SliderLabelInteger(const Control *slider);
 
 /**
  * Create a new Slider Control
@@ -41,12 +43,15 @@ char *SliderLabelInteger(Control *slider);
  * @param getLabel The function to get the label of the slider
  * @return The new Slider Control
  */
-Control *CreateSliderControl(Vector2 position, Vector2 size, char *label, void (*callback)(double), ControlAnchor anchor, double min, double max, double value, double step, double altStep, char *(*getLabel)(Control *slider));
+Control *
+CreateSliderControl(Vector2 position, Vector2 size, char *label, void (*callback)(double), ControlAnchor anchor,
+                    double min, double max, double value, double step, double altStep,
+                    char *(*getLabel)(const Control *slider));
 
-void DestroySlider(Control *c);
+void DestroySlider(const Control *c);
 
 void UpdateSlider(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlIndex);
 
-void DrawSlider(Control *c, ControlState state, Vector2 position);
+void DrawSlider(const Control *c, ControlState state, Vector2 position);
 
 #endif //GAME_SLIDER_H

@@ -4,8 +4,10 @@
 
 #include "Options.h"
 #include <stdio.h>
+#include "../Helpers/Core/MathEx.h"
 
-void DefaultOptions(Options *options) {
+void DefaultOptions(Options *options)
+{
     options->renderer = 0;
     options->musicVolume = 1.0;
     options->sfxVolume = 1.0;
@@ -13,11 +15,24 @@ void DefaultOptions(Options *options) {
     options->uiScale = 1;
     options->fullscreen = false;
     options->vsync = false;
+    options->mouseSpeed = 1;
 }
 
-char *GetOptionsPath() {
+ushort GetOptionsChecksum(Options *options)
+{
+    const byte *data = (byte *) options;
+    ushort checksum = 0;
+    for (int i = sizeof(ushort); i < (sizeof(Options) - sizeof(ushort)); i++)
+    {
+        checksum += data[i];
+    }
+    return checksum;
+}
+
+char *GetOptionsPath()
+{
     char *folderPath = SDL_GetPrefPath(APPDATA_ORG_NAME, APPDATA_APP_NAME);
-    char *fileName = "options.bin";
+    const char *fileName = "options.bin";
     char *filePath = malloc(strlen(folderPath) + strlen(fileName) + 1);
     strcpy(filePath, folderPath);
     strcat(filePath, fileName);
@@ -26,20 +41,23 @@ char *GetOptionsPath() {
     return filePath;
 }
 
-void LoadOptions(Options *options) {
+void LoadOptions(Options *options)
+{
     char *filePath = GetOptionsPath();
 
     FILE *file = fopen(filePath, "rb");
-    if (file == NULL) {
+    if (file == NULL)
+    {
         printf("Options file not found, using default options\n");
         DefaultOptions(options);
-    } else {
-        int fileLen = 0;
+    } else
+    {
         fseek(file, 0, SEEK_END);
-        fileLen = ftell(file);
+        const int fileLen = ftell(file);
 
         // if the file is the wrong size, just use the default options
-        if (fileLen != sizeof(Options)) {
+        if (fileLen != sizeof(Options))
+        {
             printf("Options file is invalid, using defaults\n");
             DefaultOptions(options);
             fclose(file);
@@ -51,13 +69,24 @@ void LoadOptions(Options *options) {
 
         fseek(file, 0, SEEK_SET);
         fread(options, sizeof(Options), 1, file);
+
+        if (options->checksum != GetOptionsChecksum(options))
+        {
+            printf("Options file checksum invalid, using defaults\n");
+            DefaultOptions(options);
+        }
+
         fclose(file);
     }
 
     free(filePath);
 }
 
-void SaveOptions(Options *options) {
+void SaveOptions(Options *options)
+{
+
+    options->checksum = GetOptionsChecksum((Options *) options);
+
     char *filePath = GetOptionsPath();
 
     FILE *file = fopen(filePath, "wb");

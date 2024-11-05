@@ -13,11 +13,14 @@
 
 GlobalState state;
 
-void ChannelFinished(int channel) { // callback for when a channel finishes playing (so we can free it)
+void ChannelFinished(const int channel)
+{
+    // callback for when a channel finishes playing (so we can free it)
     state.channels[channel] = NULLPTR;
 }
 
-void InitState() {
+void InitState()
+{
     state.hp = 100;
     state.maxHp = 100;
     state.ammo = 100;
@@ -28,7 +31,8 @@ void InitState() {
     state.level = CreateLevel(); // empty level so we don't segfault
     state.requestExit = false;
     state.music = NULLPTR;
-    for (int i = 0; i < SFX_CHANNEL_COUNT; i++) {
+    for (int i = 0; i < SFX_CHANNEL_COUNT; i++)
+    {
         state.channels[i] = NULLPTR;
     }
     state.CameraY = 0;
@@ -42,116 +46,138 @@ void InitState() {
     Mix_ChannelFinished(ChannelFinished);
 }
 
-void UpdateVolume() {
-    double sfxVol = state.options.sfxVolume;
-    double musicVol = state.options.musicVolume;
-    double masterVol = state.options.masterVolume;
+void UpdateVolume()
+{
+    const double sfxVol = state.options.sfxVolume;
+    const double musicVol = state.options.musicVolume;
+    const double masterVol = state.options.masterVolume;
     Mix_MasterVolume((int) (masterVol * MIX_MAX_VOLUME));
     Mix_Volume(-1, (int) (sfxVol * MIX_MAX_VOLUME));
     Mix_VolumeMusic((int) (musicVol * MIX_MAX_VOLUME));
 }
 
-void ShowTextBox(TextBox tb) {
+void ShowTextBox(const TextBox tb)
+{
     state.textBox = tb;
     state.textBoxPage = 0;
     state.textBoxActive = true;
 }
 
-GlobalState *GetState() {
+GlobalState *GetState()
+{
     return &state;
 }
 
-void TakeDamage(int damage) {
+void TakeDamage(const int damage)
+{
     state.hp -= damage;
-    if (state.hp < 0) {
+    if (state.hp < 0)
+    {
         state.hp = 0;
     }
 }
 
-void Heal(int amount) {
+void Heal(const int amount)
+{
     state.hp += amount;
-    if (state.hp > state.maxHp) {
+    if (state.hp > state.maxHp)
+    {
         state.hp = state.maxHp;
     }
 }
 
-void AddAmmo(int amount) {
+void AddAmmo(const int amount)
+{
     state.ammo += amount;
-    if (state.ammo > state.maxAmmo) {
+    if (state.ammo > state.maxAmmo)
+    {
         state.ammo = state.maxAmmo;
     }
 }
 
-void UseAmmo(int amount) {
+void UseAmmo(const int amount)
+{
     state.ammo -= amount;
-    if (state.ammo < 0) {
+    if (state.ammo < 0)
+    {
         state.ammo = 0;
     }
 }
 
-uint DefaultFixedUpdate(const uint interval, GlobalState* param)
+uint DefaultFixedUpdate(const uint interval, GlobalState *param)
 {
     param->physicsFrame++;
     return interval;
 }
 
-void SetUpdateCallback(void (* const UpdateGame)(GlobalState* State), uint (* const FixedUpdateGame)(uint interval, GlobalState* State), const CurrentState currentState) {
+void SetUpdateCallback(void (*const UpdateGame)(GlobalState *State),
+                       uint (*const FixedUpdateGame)(uint interval, GlobalState *State),
+                       const CurrentState currentState)
+{
     state.physicsFrame = 0;
     state.UpdateGame = UpdateGame;
     state.currentState = currentState;
     SDL_RemoveTimer(state.FixedFramerateUpdate);
     if (FixedUpdateGame) // yummy null
     {
-        state.FixedFramerateUpdate = SDL_AddTimer(PHYSICS_TARGET_MS, (SDL_TimerCallback)FixedUpdateGame, GetState());
-    }
-    else
+        state.FixedFramerateUpdate = SDL_AddTimer(PHYSICS_TARGET_MS, (SDL_TimerCallback) FixedUpdateGame, GetState());
+    } else
     {
         // ReSharper disable once CppRedundantCastExpression
-        state.FixedFramerateUpdate = SDL_AddTimer(PHYSICS_TARGET_MS, (SDL_TimerCallback)DefaultFixedUpdate, GetState());
+        state.FixedFramerateUpdate = SDL_AddTimer(PHYSICS_TARGET_MS, (SDL_TimerCallback) DefaultFixedUpdate,
+                                                  GetState());
     }
 }
 
-void SetRenderCallback(void (*RenderGame)(GlobalState* State)) {
+void SetRenderCallback(void (*RenderGame)(GlobalState *State))
+{
     state.RenderGame = (void (*)(void *)) RenderGame;
 }
 
 const byte *music[MUSIC_COUNT] = {
-        gzmpg_audio_field
+    gzmpg_audio_field
 };
 
-void ChangeLevel(Level *l) {
+void ChangeLevel(Level *l)
+{
     DestroyLevel(state.level);
     state.level = l;
-    if (l->MusicID != 0) {
+    if (l->MusicID != 0)
+    {
         ChangeMusic(music[l->MusicID - 1]);
-    } else {
+    } else
+    {
         StopMusic();
     }
 
-    for (int i = 0; i < l->walls->size; i++) {
+    for (int i = 0; i < l->walls->size; i++)
+    {
         Wall *w = (Wall *) ListGet(l->walls, i);
         WallBake(w);
     }
 
-    if (l->staticWalls != NULLPTR) {
+    if (l->staticWalls != NULLPTR)
+    {
         DestroySizedArray(l->staticWalls);
     }
     BakeWallArray(l);
     BakeActorArray(l);
 }
 
-void ChangeMusic(const byte *asset) {
-
-    if (AssetGetType(asset) != ASSET_TYPE_MP3) {
+void ChangeMusic(const byte *asset)
+{
+    if (AssetGetType(asset) != ASSET_TYPE_MP3)
+    {
         printf("ChangeMusic Error: Asset is not a music file.\n");
         return;
     }
 
     StopMusic(); // stop the current music and free its data
-    byte *mp3 = DecompressAsset(asset);
-    uint mp3Size = AssetGetSize(asset);
+    const byte *mp3 = DecompressAsset(asset);
+    const uint mp3Size = AssetGetSize(asset);
     Mix_Music *mus = Mix_LoadMUS_RW(SDL_RWFromConstMem(mp3, mp3Size), 1);
-    if (mus == NULLPTR) {
+    if (mus == NULLPTR)
+    {
         printf("Mix_LoadMUS_RW Error: %s\n", Mix_GetError());
         return;
     }
@@ -159,29 +185,37 @@ void ChangeMusic(const byte *asset) {
     Mix_FadeInMusic(mus, -1, 500);
 }
 
-void StopMusic() {
-    if (state.music != NULLPTR) { // stop and free the current music
+void StopMusic()
+{
+    if (state.music != NULLPTR)
+    {
+        // stop and free the current music
         Mix_HaltMusic();
         Mix_FreeMusic(state.music);
         state.music = NULLPTR; // set to NULL, so we don't free it again if this function fails
     }
 }
 
-void PlaySoundEffect(byte *asset) {
-    if (AssetGetType(asset) != ASSET_TYPE_WAV) {
+void PlaySoundEffect(const byte *asset)
+{
+    if (AssetGetType(asset) != ASSET_TYPE_WAV)
+    {
         printf("PlaySoundEffect Error: Asset is not a sound effect file.\n");
         return;
     }
 
-    byte *wav = DecompressAsset(asset);
-    uint wavSize = AssetGetSize(asset);
+    const byte *wav = DecompressAsset(asset);
+    const uint wavSize = AssetGetSize(asset);
     Mix_Chunk *chunk = Mix_LoadWAV_RW(SDL_RWFromConstMem(wav, wavSize), 1);
-    if (chunk == NULLPTR) {
+    if (chunk == NULLPTR)
+    {
         printf("Mix_LoadWAV_RW Error: %s\n", Mix_GetError());
         return;
     }
-    for (int i = 0; i < SFX_CHANNEL_COUNT; i++) {
-        if (state.channels[i] == NULLPTR) {
+    for (int i = 0; i < SFX_CHANNEL_COUNT; i++)
+    {
+        if (state.channels[i] == NULLPTR)
+        {
             state.channels[i] = chunk;
             Mix_PlayChannel(i, chunk, 0);
             return;
@@ -191,24 +225,29 @@ void PlaySoundEffect(byte *asset) {
     Mix_FreeChunk(chunk);
 }
 
-void DestroyGlobalState() {
+void DestroyGlobalState()
+{
     SaveOptions(&state.options);
     SDL_RemoveTimer(state.FixedFramerateUpdate);
     DestroyLevel(state.level);
     free(state.cam);
-    if (state.music != NULLPTR) {
+    if (state.music != NULLPTR)
+    {
         Mix_HaltMusic();
         Mix_FreeMusic(state.music);
     }
     // free sound effects
-    for (int i = 0; i < SFX_CHANNEL_COUNT; i++) {
-        if (state.channels[i] != NULLPTR) {
+    for (int i = 0; i < SFX_CHANNEL_COUNT; i++)
+    {
+        if (state.channels[i] != NULLPTR)
+        {
             Mix_FreeChunk(state.channels[i]);
         }
     }
 }
 
-void ChangeLevelByID(int id) {
+void ChangeLevelByID(const int id)
+{
     GetState()->levelID = id;
     GetState()->blueCoins = 0;
     void *levelData = DecompressAsset(gLevelEntries[id].levelData);

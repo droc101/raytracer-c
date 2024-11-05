@@ -7,6 +7,7 @@ set(CMAKE_C_FLAGS "-Wno-discarded-qualifiers") # shut.
 
 set(CMAKE_C_FLAGS_DEBUG "-g -O0 -Wall")
 set(CMAKE_C_FLAGS_RELEASE "-g0 -O3 -s -DNDEBUG -Wl,--gc-sections -fdata-sections -ffunction-sections -Wall")
+set(CMAKE_C_FLAGS_RELWITHDEBINFO "-g -O3 -Wl,--gc-sections -fdata-sections -ffunction-sections -Wall")
 
 # Add --static flag when building on Windows to include libwinpthread-1.dll
 if (WIN32)
@@ -156,7 +157,7 @@ endif ()
 if (UNIX)
     target_link_libraries(game -lGL -lGLU ${SDL2_LIBRARY} ${ZLIB_LIBRARIES} ${SDL2_MIXER_LIBRARY} ${Vulkan_LIBRARIES} m SDL2 SDL2_mixer z ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES}) # extra l* flags are needed on Linux
 elseif (WIN32)
-    target_link_libraries(game PRIVATE ${SDL2_LIBRARY} ${ZLIB_LIBRARIES} ${SDL2_MIXER_LIBRARY} ${Vulkan_LIBRARIES} ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} opengl32) # Don't pass extra l* flags on Windows (it isn't happy with them)
+    target_link_libraries(game PRIVATE ${SDL2_LIBRARY} ${ZLIB_LIBRARIES} ${SDL2_MIXER_LIBRARY} ${Vulkan_LIBRARIES} ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} opengl32 dwmapi) # Don't pass extra l* flags on Windows (it isn't happy with them)
 endif ()
 
 add_custom_target( # Python script for generating assets code

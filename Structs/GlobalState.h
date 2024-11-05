@@ -64,12 +64,15 @@ void UseAmmo(int amount);
  * @param FixedUpdateGame fixed-FPS update callback
  * @param currentState used for checking the state
  */
-void SetUpdateCallback(void (*UpdateGame)(GlobalState* State), uint (*FixedUpdateGame)(uint interval, GlobalState* State), CurrentState currentState);
+void
+SetUpdateCallback(void (*UpdateGame)(GlobalState *State), uint (*FixedUpdateGame)(uint interval, GlobalState *State),
+                  CurrentState currentState);
+
 /**
  * Set game state render callback
  * @param RenderGame render callback
  */
-void SetRenderCallback(void (*RenderGame)(GlobalState* State));
+void SetRenderCallback(void (*RenderGame)(GlobalState *State));
 
 /**
  * Change the current level
@@ -93,7 +96,7 @@ void StopMusic();
  * @param asset Sound effect to play
  * @warning If there are no free channels, the sound effect will not play, and you will not be notified
  */
-void PlaySoundEffect(byte *asset);
+void PlaySoundEffect(const byte *asset);
 
 /**
  * Destroy the global state

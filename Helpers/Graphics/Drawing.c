@@ -17,40 +17,47 @@ SDL_Window *window;
 
 uint drawColor = 0xFFFFFFFF;
 
-void SetWindow(SDL_Window *w) {
+void SetWindow(SDL_Window *w)
+{
     window = w;
 }
 
-inline SDL_Window *GetWindow() {
+inline SDL_Window *GetGameWindow()
+{
     return window;
 }
 
-inline int WindowWidth() {
+inline int WindowWidth()
+{
     int w, h;
     SDL_GetWindowSize(window, &w, &h);
     w /= GetState()->options.uiScale;
     return w;
 }
 
-inline int WindowHeight() {
+inline int WindowHeight()
+{
     int w, h;
     SDL_GetWindowSize(window, &w, &h);
     h /= GetState()->options.uiScale;
     return h;
 }
 
-inline Vector2 ActualWindowSize() {
+inline Vector2 ActualWindowSize()
+{
     int w, h;
     SDL_GetWindowSize(window, &w, &h);
     return v2(w, h);
 }
 
 // Set the SDL color from an ARGB uint32
-inline void setColorUint(uint color) {
+inline void setColorUint(const uint color)
+{
     drawColor = color;
 }
 
-byte* getColorUint(uint color) {
+byte *getColorUint(const uint color)
+{
     byte *buf = malloc(4);
     buf[0] = (color >> 16) & 0xFF;
     buf[1] = (color >> 8) & 0xFF;
@@ -59,9 +66,10 @@ byte* getColorUint(uint color) {
     return buf;
 }
 
-SDL_Surface* ToSDLSurface(const unsigned char* imageData, char *filterMode) {
-
-    if (AssetGetType(imageData) != ASSET_TYPE_TEXTURE) {
+SDL_Surface *ToSDLSurface(const unsigned char *imageData, const char *filterMode)
+{
+    if (AssetGetType(imageData) != ASSET_TYPE_TEXTURE)
+    {
         printf("Asset is not a texture\n");
         Error("ToSDLSurface: Asset is not a texture");
     }
@@ -71,14 +79,16 @@ SDL_Surface* ToSDLSurface(const unsigned char* imageData, char *filterMode) {
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, filterMode);
 
     //uint size = ReadUintA(Decompressed, 0);
-    uint width = ReadUintA(Decompressed, 4);
-    uint height = ReadUintA(Decompressed, 8);
+    const uint width = ReadUintA(Decompressed, 4);
+    const uint height = ReadUintA(Decompressed, 8);
     //uint id = ReadUintA(Decompressed, 12);
 
-    const byte* pixelData = Decompressed + (sizeof(uint) * 4); // Skip the first 4 bytes
+    const byte *pixelData = Decompressed + (sizeof(uint) * 4); // Skip the first 4 bytes
 
-    SDL_Surface* surface = SDL_CreateRGBSurfaceFrom((void*)pixelData, width, height, 32, width * 4, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
-    if (!surface) {
+    SDL_Surface *surface = SDL_CreateRGBSurfaceFrom((void *) pixelData, width, height, 32, width * 4, 0x00ff0000,
+                                                    0x0000ff00, 0x000000ff, 0xff000000);
+    if (surface == NULLPTR)
+    {
         printf("Failed to create surface: %s\n", SDL_GetError());
         Error("ToSDLTexture: Failed to create surface");
     }
@@ -86,15 +96,16 @@ SDL_Surface* ToSDLSurface(const unsigned char* imageData, char *filterMode) {
     return surface;
 }
 
-uint MixColors(uint color_a, uint color_b) {
+uint MixColors(const uint color_a, const uint color_b)
+{
     // Mix color_a onto color_b, accounting for the alpha of color_a
     byte *a = getColorUint(color_a);
     byte *b = getColorUint(color_b);
 
-    uint r = (a[0] * a[3] + b[0] * (255 - a[3])) / 255;
-    uint g = (a[1] * a[3] + b[1] * (255 - a[3])) / 255;
-    uint bl = (a[2] * a[3] + b[2] * (255 - a[3])) / 255;
-    uint al = a[3] + b[3] * (255 - a[3]) / 255;
+    const uint r = (a[0] * a[3] + b[0] * (255 - a[3])) / 255;
+    const uint g = (a[1] * a[3] + b[1] * (255 - a[3])) / 255;
+    const uint bl = (a[2] * a[3] + b[2] * (255 - a[3])) / 255;
+    const uint al = a[3] + b[3] * (255 - a[3]) / 255;
 
     free(a);
     free(b);
@@ -104,10 +115,12 @@ uint MixColors(uint color_a, uint color_b) {
 
 // Rendering subsystem abstractions
 
-void SetTexParams(const unsigned char* imageData, bool linear, bool repeat) {
-    switch (currentRenderer) {
+void SetTexParams(const unsigned char *imageData, const bool linear, const bool repeat)
+{
+    switch (currentRenderer)
+    {
         case RENDERER_VULKAN:
-            
+
             break;
         case RENDERER_OPENGL:
             GL_SetTexParams(imageData, linear, repeat);
@@ -115,10 +128,12 @@ void SetTexParams(const unsigned char* imageData, bool linear, bool repeat) {
     }
 }
 
-inline void DrawLine(Vector2 start, Vector2 end, float thickness) {
-    switch (currentRenderer) {
+inline void DrawLine(const Vector2 start, const Vector2 end, const float thickness)
+{
+    switch (currentRenderer)
+    {
         case RENDERER_VULKAN:
-            
+
             break;
         case RENDERER_OPENGL:
             GL_DrawLine(start, end, drawColor, thickness * GetState()->options.uiScale);
@@ -126,10 +141,12 @@ inline void DrawLine(Vector2 start, Vector2 end, float thickness) {
     }
 }
 
-inline void DrawOutlineRect(Vector2 pos, Vector2 size, float thickness) {
-    switch (currentRenderer) {
+inline void DrawOutlineRect(const Vector2 pos, const Vector2 size, const float thickness)
+{
+    switch (currentRenderer)
+    {
         case RENDERER_VULKAN:
-            
+
             break;
         case RENDERER_OPENGL:
             GL_DrawRectOutline(pos, size, drawColor, thickness * GetState()->options.uiScale);
@@ -137,21 +154,25 @@ inline void DrawOutlineRect(Vector2 pos, Vector2 size, float thickness) {
     }
 }
 
-inline void DrawTexture(Vector2 pos, Vector2 size, const unsigned char* imageData) {
-    switch (currentRenderer) {
+inline void DrawTexture(const Vector2 pos, const Vector2 size, const unsigned char *imageData)
+{
+    switch (currentRenderer)
+    {
         case RENDERER_VULKAN:
-            
+
             break;
         case RENDERER_OPENGL:
             GL_DrawTexture(pos, size, imageData);
             break;
     }
-
 }
-inline void DrawTextureMod(Vector2 pos, Vector2 size, const unsigned char* imageData, uint color) {
-    switch (currentRenderer) {
+
+inline void DrawTextureMod(const Vector2 pos, const Vector2 size, const unsigned char *imageData, const uint color)
+{
+    switch (currentRenderer)
+    {
         case RENDERER_VULKAN:
-            
+
             break;
         case RENDERER_OPENGL:
             GL_DrawTextureMod(pos, size, imageData, color);
@@ -159,10 +180,13 @@ inline void DrawTextureMod(Vector2 pos, Vector2 size, const unsigned char* image
     }
 }
 
-inline void DrawTextureRegion(Vector2 pos, Vector2 size, const unsigned char* imageData, Vector2 region_start, Vector2 region_end) {
-    switch (currentRenderer) {
+inline void
+DrawTextureRegion(const Vector2 pos, const Vector2 size, const unsigned char *imageData, const Vector2 region_start, const Vector2 region_end)
+{
+    switch (currentRenderer)
+    {
         case RENDERER_VULKAN:
-            
+
             break;
         case RENDERER_OPENGL:
             GL_DrawTextureRegion(pos, size, imageData, region_start, region_end);
@@ -170,10 +194,13 @@ inline void DrawTextureRegion(Vector2 pos, Vector2 size, const unsigned char* im
     }
 }
 
-inline void DrawTextureRegionMod(Vector2 pos, Vector2 size, const unsigned char* imageData, Vector2 region_start, Vector2 region_end, uint color) {
-    switch (currentRenderer) {
+inline void DrawTextureRegionMod(const Vector2 pos, const Vector2 size, const unsigned char *imageData, const Vector2 region_start,
+                                 const Vector2 region_end, const uint color)
+{
+    switch (currentRenderer)
+    {
         case RENDERER_VULKAN:
-            
+
             break;
         case RENDERER_OPENGL:
             GL_DrawTextureRegionMod(pos, size, imageData, region_start, region_end, color);
@@ -181,10 +208,12 @@ inline void DrawTextureRegionMod(Vector2 pos, Vector2 size, const unsigned char*
     }
 }
 
-inline void ClearColor(uint color) {
-    switch (currentRenderer) {
+inline void ClearColor(const uint color)
+{
+    switch (currentRenderer)
+    {
         case RENDERER_VULKAN:
-            
+
             break;
         case RENDERER_OPENGL:
             GL_ClearColor(color);
@@ -192,22 +221,25 @@ inline void ClearColor(uint color) {
     }
 }
 
-inline void ClearScreen() {
-    switch (currentRenderer) {
+inline void ClearScreen()
+{
+    switch (currentRenderer)
+    {
         case RENDERER_VULKAN:
-            
+
             break;
         case RENDERER_OPENGL:
             GL_ClearScreen();
             break;
     }
-
 }
 
-inline void ClearDepthOnly() {
-    switch (currentRenderer) {
+inline void ClearDepthOnly()
+{
+    switch (currentRenderer)
+    {
         case RENDERER_VULKAN:
-            
+
             break;
         case RENDERER_OPENGL:
             GL_ClearDepthOnly();
@@ -215,10 +247,12 @@ inline void ClearDepthOnly() {
     }
 }
 
-inline void Swap() {
-    switch (currentRenderer) {
+inline void Swap()
+{
+    switch (currentRenderer)
+    {
         case RENDERER_VULKAN:
-            
+
             break;
         case RENDERER_OPENGL:
             GL_Swap();
@@ -226,10 +260,12 @@ inline void Swap() {
     }
 }
 
-inline void draw_rect(int x, int y, int w, int h) {
-    switch (currentRenderer) {
+inline void draw_rect(const int x, const int y, const int w, const int h)
+{
+    switch (currentRenderer)
+    {
         case RENDERER_VULKAN:
-            
+
             break;
         case RENDERER_OPENGL:
             GL_DrawRect(v2(x, y), v2(w, h), drawColor);
@@ -237,12 +273,28 @@ inline void draw_rect(int x, int y, int w, int h) {
     }
 }
 
-Vector2 texture_size(const unsigned char *imageData) {
+Vector2 texture_size(const unsigned char *imageData)
+{
     byte *Decompressed = DecompressAsset(imageData);
 
-    uint width = ReadUintA(Decompressed, 4);
-    uint height = ReadUintA(Decompressed, 8);
+    const uint width = ReadUintA(Decompressed, 4);
+    const uint height = ReadUintA(Decompressed, 8);
 
     return v2(width, height);
 }
 
+void draw_ninepatch(const Vector2 pos, const Vector2 size, const int output_margins_px, const int texture_margins_px, const byte *imageData)
+{
+    const Vector2 ts = texture_size(imageData);
+    DrawTextureRegion(pos, v2s(output_margins_px), imageData, v2s(0), v2s(texture_margins_px)); // top left
+    DrawTextureRegion(v2(pos.x, pos.y+output_margins_px), v2(output_margins_px, size.y - (texture_margins_px*2)), imageData, v2(0, texture_margins_px), v2(texture_margins_px, ts.y - (texture_margins_px*2))); // middle left
+    DrawTextureRegion(v2(pos.x, pos.y+size.y-output_margins_px), v2s(output_margins_px), imageData, v2(0, ts.y - texture_margins_px), v2s(texture_margins_px)); // bottom left
+
+    DrawTextureRegion(v2(pos.x + output_margins_px, pos.y), v2(size.x - (texture_margins_px*2), output_margins_px), imageData, v2(texture_margins_px, 0), v2(ts.x - (texture_margins_px*2), texture_margins_px)); // top middle
+    DrawTextureRegion(v2(pos.x + output_margins_px, pos.y + output_margins_px), v2(size.x - (texture_margins_px*2), size.y - (texture_margins_px*2)), imageData, v2(texture_margins_px, texture_margins_px), v2(ts.x - (texture_margins_px*2), ts.y - (texture_margins_px*2))); // middle middle
+    DrawTextureRegion(v2(pos.x + output_margins_px, pos.y + (size.y-output_margins_px)), v2(size.x - (texture_margins_px*2), output_margins_px), imageData, v2(texture_margins_px, ts.y - texture_margins_px), v2(ts.x - (texture_margins_px*2), texture_margins_px)); // bottom middle
+
+    DrawTextureRegion(v2(pos.x + (size.x - output_margins_px), pos.y), v2s(output_margins_px), imageData, v2(ts.x - texture_margins_px, 0), v2s(texture_margins_px)); // top right
+    DrawTextureRegion(v2(pos.x + (size.x - output_margins_px), pos.y + output_margins_px), v2(output_margins_px, size.y - (texture_margins_px*2)), imageData, v2(ts.x - texture_margins_px, texture_margins_px), v2(texture_margins_px, ts.y - (texture_margins_px*2))); // middle right
+    DrawTextureRegion(v2(pos.x + (size.x - output_margins_px), pos.y + (size.y-output_margins_px)), v2s(output_margins_px), imageData, v2(ts.x - texture_margins_px, ts.y - texture_margins_px), v2s(texture_margins_px)); // bottom right
+}

@@ -8,12 +8,35 @@
 #include "../CommonAssets.h"
 #include "../../Structs/GlobalState.h"
 #include "Vulkan/Vulkan.h"
+#ifdef WIN32
+#include <dwmapi.h>
+#include <SDL_syswm.h>
+
+#define DWMWA_USE_IMMERSIVE_DARK_MODE 20
+#endif
 
 Renderer currentRenderer;
 
-mat4* GetMatrix(Camera *cam) {
+void DwmDarkMode(SDL_Window *window)
+{
+#ifdef WIN32
+    SDL_SysWMinfo info;
+    SDL_VERSION(&info.version);
+    SDL_GetWindowWMInfo(window, &info);
+    const HWND hWnd = info.info.win.window;
+    const BOOL enable = true;
+    const HRESULT res = DwmSetWindowAttribute(hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &enable, sizeof(BOOL));
+    if (res != S_OK)
+    {
+        printf("Failed to enable dark mode: %lx\n", res);
+    }
+#endif
+}
+
+mat4 *GetMatrix(const Camera *cam)
+{
     vec3 cam_pos = {cam->x, cam->y, cam->z};
-    float aspect = (float)WindowWidth() / (float)WindowHeight();
+    const float aspect = (float) WindowWidth() / (float) WindowHeight();
 
     mat4 IDENTITY = GLM_MAT4_IDENTITY_INIT;
     mat4 PERSPECTIVE = GLM_MAT4_ZERO_INIT;
@@ -43,7 +66,8 @@ mat4* GetMatrix(Camera *cam) {
     return MODEL_VIEW_PROJECTION;
 }
 
-mat4* ActorTransformMatrix(Actor *Actor) {
+mat4 *ActorTransformMatrix(const Actor *Actor)
+{
     mat4 *MODEL = malloc(sizeof(mat4));
     glm_mat4_identity(*MODEL);
     glm_translate(*MODEL, (vec3){Actor->position.x, Actor->yPosition, Actor->position.y});
@@ -51,9 +75,11 @@ mat4* ActorTransformMatrix(Actor *Actor) {
     return MODEL;
 }
 
-bool RenderPreInit() {
+bool RenderPreInit()
+{
     currentRenderer = GetState()->options.renderer;
-    switch (currentRenderer) {
+    switch (currentRenderer)
+    {
         case RENDERER_VULKAN:
             return true;
         case RENDERER_OPENGL:
@@ -63,12 +89,14 @@ bool RenderPreInit() {
     }
 }
 
-bool RenderInit() {
-    switch (currentRenderer) {
+bool RenderInit()
+{
+    switch (currentRenderer)
+    {
         case RENDERER_VULKAN:
-            return InitVulkan(GetWindow());
+            return InitVulkan(GetGameWindow());
         case RENDERER_OPENGL:
-            const bool gli = GL_Init(GetWindow());
+            const bool gli = GL_Init(GetGameWindow());
             GL_Disable3D(); // just to make sure we are in the correct state
             return gli;
         default:
@@ -76,8 +104,10 @@ bool RenderInit() {
     }
 }
 
-void RenderDestroy() {
-    switch (currentRenderer) {
+void RenderDestroy()
+{
+    switch (currentRenderer)
+    {
         case RENDERER_VULKAN:
             CleanupVulkan();
             break;
@@ -87,8 +117,10 @@ void RenderDestroy() {
     }
 }
 
-void RenderLevel3D(Level *l, Camera *cam) {
-    switch (currentRenderer) {
+void RenderLevel3D(Level *l, Camera *cam)
+{
+    switch (currentRenderer)
+    {
         case RENDERER_VULKAN:
             DrawFrame();
             break;
@@ -98,14 +130,16 @@ void RenderLevel3D(Level *l, Camera *cam) {
     }
 }
 
-inline void UpdateViewportSize() {
-    float newScaleX = (float)ActualWindowSize().x / (float)DEF_WIDTH;
-    float newScaleY = (float)ActualWindowSize().y / (float)DEF_HEIGHT;
-    float newScale = newScaleX < newScaleY ? newScaleX : newScaleY;
+inline void UpdateViewportSize()
+{
+    const float newScaleX = (float) ActualWindowSize().x / (float) DEF_WIDTH;
+    const float newScaleY = (float) ActualWindowSize().y / (float) DEF_HEIGHT;
+    const float newScale = newScaleX < newScaleY ? newScaleX : newScaleY;
     GetState()->options.uiScale = newScale;
-    switch (currentRenderer) {
+    switch (currentRenderer)
+    {
         case RENDERER_VULKAN:
-            // TODO: Implement this. Guide can be found at https://docs.vulkan.org/tutorial/latest/03_Drawing_a_triangle/04_Swap_chain_recreation.html 
+            // TODO: Implement this. Guide can be found at https://docs.vulkan.org/tutorial/latest/03_Drawing_a_triangle/04_Swap_chain_recreation.html
             break;
         case RENDERER_OPENGL:
             GL_UpdateViewportSize();
@@ -113,10 +147,12 @@ inline void UpdateViewportSize() {
     }
 }
 
-inline void DrawBatchedQuadsTextured(BatchedQuadArray *batch, const unsigned char *imageData, uint color) {
-    switch (currentRenderer) {
+inline void DrawBatchedQuadsTextured(const BatchedQuadArray *batch, const unsigned char *imageData, const uint color)
+{
+    switch (currentRenderer)
+    {
         case RENDERER_VULKAN:
-            
+
             break;
         case RENDERER_OPENGL:
             GL_DrawTexturedArrays(batch->verts, batch->indices, batch->quad_count, imageData, color);
@@ -124,10 +160,12 @@ inline void DrawBatchedQuadsTextured(BatchedQuadArray *batch, const unsigned cha
     }
 }
 
-inline void DrawBatchedQuadsColored(BatchedQuadArray *batch, uint color) {
-    switch (currentRenderer) {
+inline void DrawBatchedQuadsColored(const BatchedQuadArray *batch, const uint color)
+{
+    switch (currentRenderer)
+    {
         case RENDERER_VULKAN:
-            
+
             break;
         case RENDERER_OPENGL:
             GL_DrawColoredArrays(batch->verts, batch->indices, batch->quad_count, color);
@@ -135,8 +173,10 @@ inline void DrawBatchedQuadsColored(BatchedQuadArray *batch, uint color) {
     }
 }
 
-inline float X_TO_NDC(float x) {
-    switch (currentRenderer) {
+inline float X_TO_NDC(const float x)
+{
+    switch (currentRenderer)
+    {
         case RENDERER_VULKAN:
             return 0;
         case RENDERER_OPENGL:
@@ -146,8 +186,10 @@ inline float X_TO_NDC(float x) {
     }
 }
 
-inline float Y_TO_NDC(float y) {
-    switch (currentRenderer) {
+inline float Y_TO_NDC(const float y)
+{
+    switch (currentRenderer)
+    {
         case RENDERER_VULKAN:
             return 0;
         case RENDERER_OPENGL:

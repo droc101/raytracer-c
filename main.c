@@ -19,58 +19,61 @@
 
 #include "GameStates/GMainState.h"
 
-int main(int argc, char *argv[]) {
-
+int main(int argc, char *argv[])
+{
     printf("Build time: %s at %s\n", __DATE__, __TIME__);
     printf("Version: %s\n", VERSION);
     printf("Initializing Engine\n");
 
-    SetSignalHandler(); // catch exceptions in release mode
+    ErrorHandlerInit();
 
-#ifdef __LINUX__
-    setenv("SDL_VIDEODRIVER", "wayland", 1);
-#endif
+    const int argvZeroLen = strlen(argv[0]);
 
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER) != 0) {
+    if (argvZeroLen > 260)
+    {
+        Error("Executable path too long. Please rethink your file structure.");
+    }
+    memset(GetState()->executablePath, 0, 261); // we do not mess around with user data in c.
+    strncpy(GetState()->executablePath, argv[0], 260);
+    printf("Executable path: %s\n", GetState()->executablePath);
+
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER) != 0)
+    {
         printf("SDL_Init Error: %s\n", SDL_GetError());
-        return 1;
+        Error("Failed to initialize SDL");
     }
 
     InitState();
 
-    int argvZeroLen = strlen(argv[0]);
-
-    if (argvZeroLen > 260) {
-        Error("Executable path too long. Please rethink your file structure.");
-    }
-    memset(GetState()->executablePath, 0, 261); // we do not mess around with user data in c.
-    strncpy(GetState()->executablePath, argv[0], 260);\
-    printf("Executable path: %s\n", GetState()->executablePath);
-
-    if (!RenderPreInit()) {
-        Error("Failed to initialize rendering system.");
+    if (!RenderPreInit())
+    {
+        RenderInitError();
     }
 
     Mix_AllocateChannels(SFX_CHANNEL_COUNT);
 
-    if (Mix_OpenAudio(22050, AUDIO_S16, 2, 2048) < 0) {
+    if (Mix_OpenAudio(48000, AUDIO_S16, 2, 2048) < 0)
+    {
         printf("Mix_OpenAudio Error: %s\n", Mix_GetError());
-        return 1;
+        Error("Failed to initialize audio system.");
     }
 
     const Uint32 rendererFlags = currentRenderer == RENDERER_OPENGL ? SDL_WINDOW_OPENGL : SDL_WINDOW_VULKAN;
-    SDL_Window *w = SDL_CreateWindow(GAME_TITLE,SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,DEF_WIDTH, DEF_HEIGHT, rendererFlags | SDL_WINDOW_RESIZABLE);
-    if (w == NULL) {
+    SDL_Window *w = SDL_CreateWindow(GAME_TITLE, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DEF_WIDTH,
+                                     DEF_HEIGHT, rendererFlags | SDL_WINDOW_RESIZABLE);
+    if (w == NULL)
+    {
         printf("SDL_CreateWindow Error: %s\n", SDL_GetError());
-        SDL_Quit();
-        return 1;
+        Error("Failed to create window.");
     }
+    DwmDarkMode(w);
     SDL_SetWindowFullscreen(w, GetState()->options.fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
     SetWindow(w);
     UpdateViewportSize();
 
-    if (!RenderInit()) {
-        Error("Failed to initialize rendering system.");
+    if (!RenderInit())
+    {
+        RenderInitError();
     }
 
     SDL_SetWindowMinimumSize(w, MIN_WIDTH, MIN_HEIGHT);
@@ -93,11 +96,14 @@ int main(int argc, char *argv[]) {
 
     SDL_Event e;
     bool quit = false;
-    while (!quit) {
+    while (!quit)
+    {
         const ulong frameStart = GetTimeNs();
 
-        while (SDL_PollEvent(&e) != 0) {
-            switch (e.type) {
+        while (SDL_PollEvent(&e) != 0)
+        {
+            switch (e.type)
+            {
                 case SDL_QUIT:
                     quit = 1;
                     break;
@@ -119,7 +125,8 @@ int main(int argc, char *argv[]) {
                 case SDL_WINDOWEVENT:
                     if (e.window.event == SDL_WINDOWEVENT_RESIZED) UpdateViewportSize();
                     break;
-                default: break;
+                default:
+                    break;
             }
         }
         ClearDepthOnly();
@@ -131,17 +138,19 @@ int main(int argc, char *argv[]) {
 #ifndef KEYBOARD_ROTATION
         SDL_SetRelativeMouseMode(g->currentState == MAIN_STATE ? SDL_TRUE : SDL_FALSE);
         // warp the mouse to the center of the screen if we are in the main game state
-        if (g->currentState == MAIN_STATE) {
-            SDL_WarpMouseInWindow(GetWindow(), WindowWidth() / 2, WindowHeight() / 2);
+        if (g->currentState == MAIN_STATE)
+        {
+            const Vector2 realWndSize = ActualWindowSize();
+            SDL_WarpMouseInWindow(GetGameWindow(), realWndSize.x / 2, realWndSize.y / 2);
         }
 #endif
 
         if (g->UpdateGame) g->UpdateGame(g);
 
-        g->cam->x = (float)g->level->position.x;
-        g->cam->y = (float)g->CameraY;
-        g->cam->z = (float)g->level->position.y;
-        g->cam->yaw = (float)g->level->rotation;
+        g->cam->x = (float) g->level->position.x;
+        g->cam->y = (float) g->CameraY;
+        g->cam->z = (float) g->level->position.y;
+        g->cam->yaw = (float) g->level->rotation;
 
         g->RenderGame(g);
 
@@ -151,16 +160,16 @@ int main(int argc, char *argv[]) {
 
         UpdateInputStates();
 
-        if (g->requestExit) {
+        if (g->requestExit)
+        {
             quit = true;
         }
 
         FrameGraphUpdate(GetTimeNs() - frameStart);
-
     }
     printf("Mainloop exited, cleaning up engine...\n");
     DestroyGlobalState();
-    SDL_DestroyWindow(GetWindow());
+    SDL_DestroyWindow(GetGameWindow());
     SDL_FreeSurface(icon);
     InvalidateAssetCache(); // Free all assets
     RenderDestroy();
