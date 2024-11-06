@@ -116,6 +116,8 @@ add_executable(
         Structs/UI/Controls/CheckBox.h
         Structs/UI/Controls/RadioButton.c
         Structs/UI/Controls/RadioButton.h
+        Helpers/Core/Logging.c
+        Helpers/Core/Logging.h
         Helpers/Graphics/Vulkan/Vulkan.c
         Helpers/Graphics/Vulkan/Vulkan.h
 )

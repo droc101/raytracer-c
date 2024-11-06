@@ -59,7 +59,16 @@ float lerp(float a, float b, float f);
  */
 #define clamp(val, min, max)(val < min ? min : val > max ? max : val)
 
+/**
+ * Convert degrees to radians
+ * @param d Degrees
+ */
 #define degToRad(d) (d * 0.017453292519943295)
+
+/**
+ * Convert radians to degrees
+ * @param r Radians
+ */
 #define radToDeg(r) (r * 57.29577951308232)
 
 #endif //GAME_MATHEX_H

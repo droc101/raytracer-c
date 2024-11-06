@@ -2,6 +2,7 @@
 // Created by droc101 on 10/2/2024.
 //
 
+#include "../../Core/Logging.h"
 #ifndef NDEBUG
 
 #include "glDebug.h"
@@ -104,7 +105,7 @@ void GL_DebugMessageCallback(GLenum source, GLenum type, GLuint id,
             break;
     }
 
-    printf("%d: %s of %s severity, raised from %s: %s\n",
+    LogDebug("%d: %s of %s severity, raised from %s: %s\n",
            id, _type, _severity, _source, msg);
 }
 

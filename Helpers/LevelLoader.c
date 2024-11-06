@@ -8,6 +8,7 @@
 #include "../Structs/Actor.h"
 #include "Core/DataReader.h"
 #include "../Helpers/CommonAssets.h"
+#include "Core/Logging.h"
 
 Level *LoadLevel(byte *data)
 {
@@ -94,8 +95,7 @@ Level *LoadLevel(byte *data)
                 break;
             }
             default:
-                printf("Unknown level opcode %u at offset %u", opcode, i);
-                fflush(stdout);
+                LogError("Unknown level opcode %u at offset %u", opcode, i);
                 Error("Unknown Level OpCode");
         }
     }

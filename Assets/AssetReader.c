@@ -9,6 +9,7 @@
 #include "../Helpers/Core/Error.h"
 #include "../Helpers/Core/DataReader.h"
 #include "Assets.h"
+#include "../Helpers/Core/Logging.h"
 
 uint AssetGetSize(const byte *asset)
 {
@@ -45,7 +46,7 @@ byte *DecompressAsset(const byte *asset)
 
     if (assetId >= ASSET_COUNT)
     {
-        printf("Asset ID %d is out of range\n", assetId);
+        LogError("Asset ID %d is out of range\n", assetId);
         Error("Asset ID out of range");
     }
 
@@ -71,7 +72,7 @@ byte *DecompressAsset(const byte *asset)
     if (inflateInit2(&stream, MAX_WBITS | 16) != Z_OK)
     {
         free(decompressedData);
-        printf("Failed to initialize zlib stream: %s\n", stream.msg);
+        LogError("Failed to initialize zlib stream: %s\n", stream.msg);
         Error("Failed to initialize zlib stream");
     }
 
@@ -83,7 +84,7 @@ byte *DecompressAsset(const byte *asset)
         if (ret != Z_OK && ret != Z_STREAM_END)
         {
             free(decompressedData);
-            printf("Failed to decompress zlib stream: %s\n", stream.msg);
+            LogError("Failed to decompress zlib stream: %s\n", stream.msg);
             Error("Failed to decompress zlib stream");
         }
     } while (ret != Z_STREAM_END);

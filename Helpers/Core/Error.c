@@ -14,6 +14,7 @@
 #include "../CommonAssets.h"
 #include "../../Structs/GlobalState.h"
 #include "../../Structs/Options.h"
+#include "Logging.h"
 
 SDL_MessageBoxColorScheme mbColorScheme;
 
@@ -34,7 +35,7 @@ _Noreturn void Error_Internal(char *error, const char *file, const int line, con
     sprintf(buf, "%s", error);
 #endif
 
-    printf("%s", buf);
+    LogError(buf);
 
     char finalMb[768];
     sprintf(finalMb,
@@ -105,6 +106,7 @@ _Noreturn void FriendlyError(const char *title, const char *description)
 
 _Noreturn void RenderInitError()
 {
+    LogError("Failed to initialize renderer");
     SDL_HideWindow(GetGameWindow());
     SDL_MessageBoxData mb;
     mb.title = "Failed to initialize renderer";

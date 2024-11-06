@@ -9,7 +9,9 @@
 #include "../../LevelLoader.h"
 #include "../../CommonAssets.h"
 #include "../../../Assets/AssetReader.h"
+#include "../../Core/DataReader.h"
 #include "../../../Structs/GlobalState.h"
+#include "../../Core/Logging.h"
 
 SDL_GLContext ctx;
 
@@ -22,7 +24,7 @@ GL_Shader *shadow;
 GL_Buffer *ui_buffer;
 GL_Buffer *wall_buffer;
 
-#define MAX_TEXTURES 64
+#define MAX_TEXTURES 128
 
 #if MAX_TEXTURES < ASSET_COUNT
 #error MAX_TEXTURES must be greater than or equal to ASSET_COUNT
@@ -35,7 +37,7 @@ char GL_LastError[512];
 
 void GL_Error(const char *error)
 {
-    printf("OpenGL Error: %s\n", error);
+    LogError("OpenGL Error: %s\n", error);
     strcpy(GL_LastError, error);
 }
 
@@ -58,9 +60,15 @@ bool GL_PreInit()
 
 bool GL_Init(SDL_Window *wnd)
 {
-    printf("Initializing OpenGL\n");
+    LogInfo("Initializing OpenGL\n");
 
     ctx = SDL_GL_CreateContext(wnd);
+    if (ctx == NULL)
+    {
+        LogError("SDL_GL_CreateContext Error: %s\n", SDL_GetError());
+        GL_Error("Failed to create OpenGL context");
+        return false;
+    }
 
     SDL_GL_SetSwapInterval(GetState()->options.vsync ? 1 : 0);
 
@@ -112,11 +120,11 @@ bool GL_Init(SDL_Window *wnd)
     char *version = (char *) glGetString(GL_VERSION);
     char *shading_language = (char *) glGetString(GL_SHADING_LANGUAGE_VERSION);
 
-    printf("OpenGL Initialized\n");
-    printf("OpenGL Vendor: %s\n", vendor);
-    printf("OpenGL Renderer: %s\n", renderer);
-    printf("OpenGL Version: %s\n", version);
-    printf("GLSL: %s\n", shading_language);
+    LogInfo("OpenGL Initialized\n");
+    LogInfo("OpenGL Vendor: %s\n", vendor);
+    LogInfo("OpenGL Renderer: %s\n", renderer);
+    LogInfo("OpenGL Version: %s\n", version);
+    LogInfo("GLSL: %s\n", shading_language);
 
     return true;
 }
@@ -342,7 +350,6 @@ GLuint GL_LoadTextureFromAsset(const unsigned char *imageData)
 {
     if (AssetGetType(imageData) != ASSET_TYPE_TEXTURE)
     {
-        printf("Asset is not a texture\n");
         Error("Asset is not a texture");
     }
 
