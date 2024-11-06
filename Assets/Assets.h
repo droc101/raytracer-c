@@ -75,6 +75,10 @@ extern const unsigned char *texture_assets[];
 
 #define TEXTURE_ASSET_COUNT 41
 
+#define TEXTURE_ASSET_TOTAL_SIZE 1032192
+
+
+
 #define ASSET_COUNT 60
 
 #endif
