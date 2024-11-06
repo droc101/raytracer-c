@@ -70,22 +70,36 @@ const List(Vertex) vertices = {
 };
 const List(uint16_t) indices = {6, (uint16_t[]){0, 1, 2, 2, 3, 0}};
 
-/// A Vulkan instance is the connection between the game and the driver, through Vulkan.
-/// The creation of it requires configuring Vulkan for the app, allowing for better driver performance.
+/// When the instance is created the Vulkan library gets initialized, allowing the game to provide the library with any
+/// information about itself. Any state information that the library provides will then be stored in the instance.
+/// @see https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkInstance.html
 VkInstance instance = VK_NULL_HANDLE;
-/// The interface between Vulkan and SDL, allowing Vulkan to actually draw to the window.
+/// The interface between Vulkan and SDL, allowing Vulkan to actually interact with the window.
+/// @see https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkSurfaceKHR.html
 VkSurfaceKHR surface;
-/// This stores the GPU.
+/// The physical device is the hardware available to the host that has an implementation of Vulkan.
+/// @see https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#devsandqueues-physical-device-enumeration
+/// @see https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkPhysicalDevice.html
 VkPhysicalDevice physicalDevice;
+/// @todo Document this along with the struct
 QueueFamilyIndices *queueFamilyIndices;
+/// @todo Document this along with the struct
 SwapChainSupportDetails swapChainSupport;
-/// This is used for interfacing with the physical device.
+/// The logical device is a connection to a physical device, and is used for interfacing with Vulkan.
+/// @see https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#devsandqueues-devices
+/// @see https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkDevice.html
 VkDevice device = NULL;
-/// Async GPU (I thought I escaped async/await 😭)
+/// The graphics queue is the queue used for executing graphics command buffers and sparse bindings on the device.
+/// @see https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#devsandqueues-queues
+/// @see https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkQueue.html
 VkQueue graphicsQueue;
-/// Async GPU (I thought I escaped async/await 😭)
+/// The present queue is the queue used for executing present command buffers and sparse bindings on the device.
+/// @see https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#devsandqueues-queues
+/// @see https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkQueue.html
 VkQueue presentQueue;
-/// Async GPU (I thought I escaped async/await 😭)
+/// The transfer queue is the queue used for executing transfer command buffers and sparse bindings on the device.
+/// @see https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#devsandqueues-queues
+/// @see https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkQueue.html
 VkQueue transferQueue;
 /// Allows Vulkan to give a surface the rendered image.
 VkSwapchainKHR swapChain = VK_NULL_HANDLE;
