@@ -14,6 +14,7 @@ def int_to_bytes(i):  # Convert an integer to bytes big endian, 4 bytes
 # Convert a PNG file to bytes
 def png_to_bytes(path):
     global aid
+    global texture_asset_total_size
     img = Image.open(path)
     img = img.convert("RGBA")
     img_dta = img.getdata()
@@ -53,6 +54,8 @@ def png_to_bytes(path):
     header[20] = 2
     header[21] = 3
     header[22] = 4
+    
+    texture_asset_total_size += img.width * img.height * 4
 
     aid += 1
 
@@ -281,6 +284,7 @@ assets_h = ""
 
 count = 0
 texture_asset_names = []
+texture_asset_total_size = 0
 
 
 def recursive_search(path):
@@ -366,7 +370,7 @@ texture_asset_array = "\n\nconst unsigned char *texture_assets[TEXTURE_ASSET_COU
 texture_asset_array += ", \n    ".join(texture_asset_names)
 texture_asset_array += "\n};\n\n"
 
-texture_asset_array_header = "\n\nextern const unsigned char *texture_assets[];\n\n#define TEXTURE_ASSET_COUNT " + str(len(texture_asset_names))
+texture_asset_array_header = "\n\nextern const unsigned char *texture_assets[];\n\n#define TEXTURE_ASSET_COUNT " + str(len(texture_asset_names)) + "\n\n#define TEXTURE_ASSET_TOTAL_SIZE " + str(texture_asset_total_size) + "\n\n"
 
 assets_c_header = '#include "Assets.h"'
 assets_h_header = "#ifndef ASSETS_H\n#define ASSETS_H"
