@@ -71,6 +71,10 @@ extern const unsigned char gzshd_GL_wall_v[];
 extern const unsigned char gztex_vfx_shadow[];
 
 
+extern const unsigned char *texture_assets[];
+
+#define TEXTURE_ASSET_COUNT 41
+
 #define ASSET_COUNT 60
 
 #endif
