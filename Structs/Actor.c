@@ -67,14 +67,15 @@ char ActorParamNames[][4][16] = {
 };
 
 char *GetActorName(int actor) {
-    int actorNameCount = sizeof(ActorNames) / sizeof(char*);
+    const int actorNameCount = sizeof(ActorNames) / sizeof(char*);
     if (actor > actorNameCount) {
         return "Invalid!";
     }
     return ActorNames[actor];
 }
 
-char *GetActorParamName(int actor, byte param) {int actorNameCount = sizeof(ActorNames) / sizeof(char*);
+char *GetActorParamName(int actor, byte param) {
+    const int actorNameCount = sizeof(ActorNames) / sizeof(char*);
     if (actor > actorNameCount) {
         return "Invalid!";
     }
