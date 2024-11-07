@@ -4,14 +4,14 @@
 
 #include "Font.h"
 #include <ctype.h>
-#include <string.h>
 #include <stdio.h>
-#include "../Core/MathEx.h"
-#include "SDL.h"
+#include <string.h>
 #include "Drawing.h"
+#include "RenderingHelpers.h"
+#include "SDL.h"
 #include "../CommonAssets.h"
 #include "../../Assets/Assets.h"
-#include "RenderingHelpers.h"
+#include "../Core/MathEx.h"
 
 const char fontChars[] = "abcdefghijklmnopqrstuvwxyz0123456789.:-,/\\|[]{}();'\"<>`~!@#$%^*_=+?";
 
@@ -180,7 +180,8 @@ void TextGetLine(const char *str, const int line, char *out)
     out[end - start] = '\0';
 }
 
-void DrawTextAligned(char *str, const uint size, const uint color, const Vector2 rect_pos, const Vector2 rect_size, const byte h_align, const byte v_align,
+void DrawTextAligned(char *str, const uint size, const uint color, const Vector2 rect_pos, const Vector2 rect_size,
+                     const byte h_align, const byte v_align,
                      const bool small)
 {
     const int lines = StringLineCount(str);

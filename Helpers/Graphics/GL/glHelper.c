@@ -2,15 +2,16 @@
 // Created by droc101 on 9/30/2024.
 //
 
-#include <stdio.h>
 #include "glHelper.h"
-#include "cglm/cglm.h"
+#include <stdio.h>
+#include <cglm/cglm.h>
 #include "../RenderingHelpers.h"
-#include "../../LevelLoader.h"
 #include "../../CommonAssets.h"
+#include "../../LevelLoader.h"
 #include "../../../Assets/AssetReader.h"
-#include "../../Core/DataReader.h"
+#include "../../../Assets/Assets.h"
 #include "../../../Structs/GlobalState.h"
+#include "../../Core/DataReader.h"
 #include "../../Core/Logging.h"
 
 SDL_GLContext ctx;
@@ -430,7 +431,8 @@ void GL_SetTexParams(const unsigned char *imageData, const bool linear, const bo
 }
 
 void
-GL_DrawTexture_Internal(const Vector2 pos, const Vector2 size, const unsigned char *imageData, const uint color, const Vector2 region_start,
+GL_DrawTexture_Internal(const Vector2 pos, const Vector2 size, const unsigned char *imageData, const uint color,
+                        const Vector2 region_start,
                         const Vector2 region_end)
 {
     glUseProgram(ui_textured->program);
@@ -494,13 +496,15 @@ inline void GL_DrawTextureMod(const Vector2 pos, const Vector2 size, const unsig
     GL_DrawTexture_Internal(pos, size, imageData, color, v2(-1, 0), v2s(0));
 }
 
-inline void GL_DrawTextureRegion(const Vector2 pos, const Vector2 size, const unsigned char *imageData, const Vector2 region_start,
+inline void GL_DrawTextureRegion(const Vector2 pos, const Vector2 size, const unsigned char *imageData,
+                                 const Vector2 region_start,
                                  const Vector2 region_end)
 {
     GL_DrawTexture_Internal(pos, size, imageData, 0xFFFFFFFF, region_start, region_end);
 }
 
-inline void GL_DrawTextureRegionMod(const Vector2 pos, const Vector2 size, const unsigned char *imageData, const Vector2 region_start,
+inline void GL_DrawTextureRegionMod(const Vector2 pos, const Vector2 size, const unsigned char *imageData,
+                                    const Vector2 region_start,
                                     const Vector2 region_end, const uint color)
 {
     GL_DrawTexture_Internal(pos, size, imageData, color, region_start, region_end);
@@ -620,7 +624,8 @@ void GL_DrawWall(const Wall *w, const mat4 *mvp, const mat4 *mdl, const Camera *
 }
 
 void
-GL_DrawFloor(const Vector2 vp1, const Vector2 vp2, const mat4 *mvp, const Level *l, const unsigned char *texture, const float height, const float shade)
+GL_DrawFloor(const Vector2 vp1, const Vector2 vp2, const mat4 *mvp, const Level *l, const unsigned char *texture,
+             const float height, const float shade)
 {
     glUseProgram(floor_generic->program);
 
@@ -769,7 +774,8 @@ void GL_DrawColoredArrays(const float *vertices, const uint *indices, const int 
     glDrawElements(GL_TRIANGLES, quad_count * 6, GL_UNSIGNED_INT, NULL);
 }
 
-void GL_DrawTexturedArrays(const float *vertices, const uint *indices, const int quad_count, const unsigned char *imageData, const uint color)
+void GL_DrawTexturedArrays(const float *vertices, const uint *indices, const int quad_count,
+                           const unsigned char *imageData, const uint color)
 {
     glUseProgram(ui_textured->program);
 

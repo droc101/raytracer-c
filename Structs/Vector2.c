@@ -2,9 +2,9 @@
 // Created by droc101 on 4/21/2024.
 //
 
-#include "../defines.h"
 #include "Vector2.h"
 #include <math.h>
+#include "../defines.h"
 
 Vector2 v2(const double x, const double y) // Create a Vector2
 {

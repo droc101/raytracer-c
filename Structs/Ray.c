@@ -2,10 +2,10 @@
 // Created by droc101 on 4/21/2024.
 //
 
-#include "../defines.h"
 #include <math.h>
-#include "Vector2.h"
 #include "Actor.h"
+#include "Vector2.h"
+#include "../defines.h"
 
 // Perform a ray cast from a position and rotation into a wall. Don't forget to free the result!
 RayCastResult Intersect(const Wall wall, const Vector2 from, const double direction)

@@ -3,11 +3,11 @@
 //
 
 #include "RenderingHelpers.h"
-#include "GL/glHelper.h"
-#include "../../Structs/Vector2.h"
 #include "../CommonAssets.h"
 #include "../../Structs/GlobalState.h"
+#include "../../Structs/Vector2.h"
 #include "../Core/Logging.h"
+#include "GL/glHelper.h"
 #ifdef WIN32
 #include <dwmapi.h>
 #include <SDL_syswm.h>

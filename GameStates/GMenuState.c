@@ -2,17 +2,17 @@
 // Created by droc101 on 4/22/2024.
 //
 
-#include <stdio.h>
 #include "GMenuState.h"
+#include <stdio.h>
+#include "GLevelSelectState.h"
+#include "GOptionsState.h"
 #include "../Helpers/Core/Input.h"
-#include "../Structs/Ray.h"
 #include "../Helpers/Graphics/Drawing.h"
 #include "../Helpers/Graphics/Font.h"
 #include "../Structs/GlobalState.h"
-#include "GLevelSelectState.h"
+#include "../Structs/Ray.h"
 #include "../Structs/UI/UiStack.h"
 #include "../Structs/UI/Controls/Button.h"
-#include "GOptionsState.h"
 
 UiStack *menuStack;
 

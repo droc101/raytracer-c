@@ -1,22 +1,23 @@
 #include <SDL.h>
 #include <SDL_mixer.h>
 #include <stdio.h>
-#include "Helpers/Graphics/Drawing.h"
-#include "defines.h"
-#include "Helpers/Core/Input.h"
-#include "Structs/Level.h"
-#include "Structs/GlobalState.h"
-#include "GameStates/GLogoSplashState.h"
-#include "Debug/FrameGrapher.h"
-#include "Debug/DPrint.h"
-#include "Assets/AssetReader.h"
-#include "Helpers/Core/Timing.h"
-#include "config.h"
-#include "Helpers/Core/Error.h"
-#include "Helpers/CommonAssets.h"
-#include "Helpers/Graphics/RenderingHelpers.h"
 #include <string.h>
+#include "config.h"
+#include "defines.h"
+#include "Assets/AssetReader.h"
+#include "Assets/Assets.h"
+#include "Debug/DPrint.h"
+#include "Debug/FrameGrapher.h"
+#include "GameStates/GLogoSplashState.h"
+#include "Helpers/CommonAssets.h"
+#include "Helpers/Core/Error.h"
+#include "Helpers/Core/Input.h"
 #include "Helpers/Core/Logging.h"
+#include "Helpers/Core/Timing.h"
+#include "Helpers/Graphics/Drawing.h"
+#include "Helpers/Graphics/RenderingHelpers.h"
+#include "Structs/GlobalState.h"
+#include "Structs/Level.h"
 
 int main(int argc, char *argv[])
 {
@@ -26,7 +27,9 @@ int main(int argc, char *argv[])
 
     ErrorHandlerInit();
 
-    if (argc < 1) { // this should *never* happen, but let's be safe
+    if (argc < 1)
+    {
+        // this should *never* happen, but let's be safe
         Error("No executable path argument provided.");
     }
 

@@ -2,11 +2,11 @@
 // Created by droc101 on 4/21/2024.
 //
 
-#include "../defines.h"
 #include "Wall.h"
 #include <math.h>
-#include "../Helpers/Graphics/Drawing.h"
+#include "../defines.h"
 #include "../Helpers/CommonAssets.h"
+#include "../Helpers/Graphics/Drawing.h"
 
 Wall *CreateWall(const Vector2 a, const Vector2 b, const byte *tex, const float uvScale, const float uvOffset)
 {

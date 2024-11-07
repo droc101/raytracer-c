@@ -2,19 +2,19 @@
 // Created by droc101 on 4/21/2024.
 //
 
-#include <stdlib.h>
-#include <stdio.h>
-#include "../../defines.h"
 #include "Error.h"
-#include "../Graphics/Drawing.h"
-#include "../Graphics/Font.h"
-#include <string.h>
 #include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "Logging.h"
 #include "zlib.h"
 #include "../CommonAssets.h"
+#include "../../defines.h"
 #include "../../Structs/GlobalState.h"
 #include "../../Structs/Options.h"
-#include "Logging.h"
+#include "../Graphics/Drawing.h"
+#include "../Graphics/Font.h"
 
 SDL_MessageBoxColorScheme mbColorScheme;
 
@@ -89,7 +89,7 @@ _Noreturn void Error_Internal(char *error, const char *file, const int line, con
         fflush(stdout);
 
 #ifdef WIN32
-        *(volatile int*)0 = 0; // die immediately
+        *(volatile int *) 0 = 0; // die immediately
 #else
         // emit sigtrap to allow debugger to catch the error
         raise(SIGTRAP);
@@ -112,10 +112,12 @@ _Noreturn void RenderInitError()
     mb.title = "Failed to initialize renderer";
     if (GetState()->options.renderer == RENDERER_OPENGL)
     {
-        mb.message = "Failed to start the OpenGL renderer.\nPlease make sure your graphics card and drivers support OpenGL 4.6.";
+        mb.message =
+                "Failed to start the OpenGL renderer.\nPlease make sure your graphics card and drivers support OpenGL 4.6.";
     } else if (GetState()->options.renderer == RENDERER_VULKAN)
     {
-        mb.message = "Failed to start the Vulkan renderer.\nPlease make sure your graphics card and drivers support Vulkan 1.3.";
+        mb.message =
+                "Failed to start the Vulkan renderer.\nPlease make sure your graphics card and drivers support Vulkan 1.3.";
     }
 
     mb.numbuttons = 2;
@@ -136,7 +138,9 @@ _Noreturn void RenderInitError()
     SDL_ShowMessageBox(&mb, &buttonid);
     if (buttonid == 0)
     {
-        GetState()->options.renderer = GetState()->options.renderer == RENDERER_OPENGL ? RENDERER_VULKAN : RENDERER_OPENGL;
+        GetState()->options.renderer = GetState()->options.renderer == RENDERER_OPENGL
+                                           ? RENDERER_VULKAN
+                                           : RENDERER_OPENGL;
         SaveOptions(&(GetState()->options));
         RestartProgram();
     } else

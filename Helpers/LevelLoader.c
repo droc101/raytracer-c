@@ -2,12 +2,12 @@
 // Created by droc101 on 4/21/2024.
 //
 
-#include <stdio.h>
 #include "LevelLoader.h"
-#include "Core/Error.h"
+#include <stdio.h>
+#include "../Helpers/CommonAssets.h"
 #include "../Structs/Actor.h"
 #include "Core/DataReader.h"
-#include "../Helpers/CommonAssets.h"
+#include "Core/Error.h"
 #include "Core/Logging.h"
 
 Level *LoadLevel(byte *data)

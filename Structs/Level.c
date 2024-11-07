@@ -1,18 +1,19 @@
 //
 // Created by droc101 on 4/21/2024.
 //
-#include <math.h>
-#include "../defines.h"
-#include "Vector2.h"
-#include "Wall.h"
 #include "Level.h"
-#include "../Helpers/Graphics/Drawing.h"
-#include "Ray.h"
-#include "../Helpers/Core/MathEx.h"
-#include "../Helpers/Core/Error.h"
+#include <math.h>
 #include "Actor.h"
 #include "GlobalState.h"
+#include "Ray.h"
+#include "Vector2.h"
+#include "Wall.h"
+#include "../defines.h"
+#include "../Assets/Assets.h"
 #include "../Helpers/CommonAssets.h"
+#include "../Helpers/Core/Error.h"
+#include "../Helpers/Core/MathEx.h"
+#include "../Helpers/Graphics/Drawing.h"
 #include "../Helpers/Graphics/RenderingHelpers.h"
 
 Level *CreateLevel()

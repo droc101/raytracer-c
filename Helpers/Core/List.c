@@ -2,11 +2,11 @@
 // Created by droc101 on 4/21/2024.
 //
 
-#include <stdlib.h>
-#include <stdio.h>
 #include "List.h"
-#include "../../defines.h"
+#include <stdio.h>
+#include <stdlib.h>
 #include "Error.h"
+#include "../../defines.h"
 
 Node *createNode(void *data)
 {

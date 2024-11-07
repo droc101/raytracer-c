@@ -5,7 +5,7 @@
 #ifndef GAME_WALL_H
 #define GAME_WALL_H
 
-#include "../Assets/Assets.h"
+#include "../defines.h"
 
 /**
  * Get the number of available wall textures

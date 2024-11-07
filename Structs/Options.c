@@ -4,8 +4,8 @@
 
 #include "Options.h"
 #include <stdio.h>
-#include "../Helpers/Core/MathEx.h"
 #include "../Helpers/Core/Logging.h"
+#include "../Helpers/Core/MathEx.h"
 
 void DefaultOptions(Options *options)
 {
@@ -85,7 +85,6 @@ void LoadOptions(Options *options)
 
 void SaveOptions(Options *options)
 {
-
     options->checksum = GetOptionsChecksum((Options *) options);
 
     char *filePath = GetOptionsPath();

@@ -3,12 +3,12 @@
 //
 
 #include "Slider.h"
-#include "../../../Helpers/Core/Input.h"
-#include "../../../Helpers/Graphics/Font.h"
-#include "../../../Helpers/Graphics/Drawing.h"
-#include "../../../Helpers/Core/MathEx.h"
 #include <math.h>
 #include <stdio.h>
+#include "../../../Helpers/Core/Input.h"
+#include "../../../Helpers/Core/MathEx.h"
+#include "../../../Helpers/Graphics/Drawing.h"
+#include "../../../Helpers/Graphics/Font.h"
 
 #include "../../../Assets/Assets.h"
 
@@ -37,7 +37,8 @@ char *SliderLabelInteger(const Control *slider)
 }
 
 Control *
-CreateSliderControl(const Vector2 position, const Vector2 size, char *label, void (*callback)(double), const ControlAnchor anchor,
+CreateSliderControl(const Vector2 position, const Vector2 size, char *label, void (*callback)(double),
+                    const ControlAnchor anchor,
                     const double min, const double max, const double value, const double step, const double altStep,
                     char *(*getLabel)(const Control *slider))
 {

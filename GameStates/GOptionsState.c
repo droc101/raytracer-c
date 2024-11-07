@@ -3,19 +3,19 @@
 //
 
 #include "GOptionsState.h"
+#include "GLevelSelectState.h"
 #include "GMenuState.h"
 #include "../Helpers/Core/Input.h"
-#include "../Structs/Ray.h"
+#include "../Helpers/Core/MathEx.h"
 #include "../Helpers/Graphics/Drawing.h"
 #include "../Helpers/Graphics/Font.h"
 #include "../Structs/GlobalState.h"
-#include "GLevelSelectState.h"
-#include "../Helpers/Core/MathEx.h"
+#include "../Structs/Ray.h"
 #include "../Structs/UI/UiStack.h"
 #include "../Structs/UI/Controls/Button.h"
-#include "../Structs/UI/Controls/Slider.h"
 #include "../Structs/UI/Controls/CheckBox.h"
 #include "../Structs/UI/Controls/RadioButton.h"
+#include "../Structs/UI/Controls/Slider.h"
 
 UiStack *optionsStack;
 
@@ -101,9 +101,10 @@ void GOptionsStateSet()
         int opy = 40;
         const int ops = 25;
         UiStackPush(optionsStack,
-                    CreateSliderControl(v2(0, opy), v2(480, 40), "Mouse Sensitivity", SldOptionsMouseSensitivity, TOP_CENTER, 0.01, 2.00,
+                    CreateSliderControl(v2(0, opy), v2(480, 40), "Mouse Sensitivity", SldOptionsMouseSensitivity,
+                                        TOP_CENTER, 0.01, 2.00,
                                         GetState()->options.mouseSpeed, 0.01, 0.1, SliderLabelPercent));
-        opy += ops*1.5;
+        opy += ops * 1.5;
         UiStackPush(optionsStack,
                     CreateSliderControl(v2(0, opy), v2(480, 40), "Master Volume", SldOptionsMasterVolume, TOP_CENTER,
                                         0.0, 1.0, GetState()->options.masterVolume, 0.01, 0.1, SliderLabelPercent));
@@ -113,16 +114,17 @@ void GOptionsStateSet()
                                         1.0, GetState()->options.musicVolume, 0.01, 0.1, SliderLabelPercent));
         opy += ops;
         UiStackPush(optionsStack,
-                    CreateSliderControl(v2(0, opy), v2(480, 40), "SFX Volume", SldOptionsSfxVolume, TOP_CENTER, 0.0, 1.0,
+                    CreateSliderControl(v2(0, opy), v2(480, 40), "SFX Volume", SldOptionsSfxVolume, TOP_CENTER, 0.0,
+                                        1.0,
                                         GetState()->options.sfxVolume, 0.01, 0.1, SliderLabelPercent));
-        opy += ops*1.5;
+        opy += ops * 1.5;
         UiStackPush(optionsStack,
                     CreateCheckboxControl(v2(0, opy), v2(480, 40), "Fullscreen", CbOptionsFullscreen, TOP_CENTER,
                                           GetState()->options.fullscreen));
         opy += ops;
         UiStackPush(optionsStack, CreateCheckboxControl(v2(0, opy), v2(480, 40), "VSync", CbOptionsVsync, TOP_CENTER,
                                                         GetState()->options.vsync));
-        opy += ops*1.5;
+        opy += ops * 1.5;
         UiStackPush(optionsStack,
                     CreateRadioButtonControl(v2(0, opy), v2(480, 40), "OpenGL", RbOptionsRenderer, TOP_CENTER,
                                              GetState()->options.renderer == RENDERER_OPENGL, 0, RENDERER_OPENGL));
@@ -131,7 +133,6 @@ void GOptionsStateSet()
                     CreateRadioButtonControl(v2(0, opy), v2(480, 40), "Vulkan //todo", RbOptionsRenderer, TOP_CENTER,
                                              GetState()->options.renderer == RENDERER_VULKAN, 0, RENDERER_VULKAN));
         opy += ops;
-
 
 
         UiStackPush(optionsStack, CreateButtonControl(v2(0, -40), v2(480, 40), "Done", BtnOptionsBack, BOTTOM_CENTER));

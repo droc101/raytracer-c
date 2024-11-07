@@ -5,11 +5,11 @@
 #ifndef GAME_LEVEL_H
 #define GAME_LEVEL_H
 
-#include "../defines.h"
+#include "SDL.h"
 #include "Vector2.h"
 #include "Wall.h"
+#include "../defines.h"
 #include "../Helpers/Core/List.h"
-#include "SDL.h"
 
 /**
  * Create a default empty level

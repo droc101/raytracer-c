@@ -3,14 +3,15 @@
 //
 
 #include "CheckBox.h"
+#include "../../GlobalState.h"
 #include "../../../Assets/Assets.h"
 #include "../../../Helpers/Core/Input.h"
-#include "../../GlobalState.h"
 #include "../../../Helpers/Graphics/Drawing.h"
 #include "../../../Helpers/Graphics/Font.h"
 
 Control *
-CreateCheckboxControl(const Vector2 position, const Vector2 size, char *label, void (*callback)(bool), const ControlAnchor anchor,
+CreateCheckboxControl(const Vector2 position, const Vector2 size, char *label, void (*callback)(bool),
+                      const ControlAnchor anchor,
                       const bool checked)
 {
     Control *checkbox = CreateEmptyControl();
@@ -56,7 +57,8 @@ void UpdateCheckbox(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlI
 void DrawCheckbox(const Control *c, ControlState state, const Vector2 position)
 {
     const CheckBoxData *data = (CheckBoxData *) c->ControlData;
-    DrawTextAligned(data->label, 16, 0xFFFFFFFF, v2(c->anchoredPosition.x + 40, c->anchoredPosition.y), v2(c->size.x - 40, c->size.y), FONT_HALIGN_LEFT, FONT_VALIGN_MIDDLE,
+    DrawTextAligned(data->label, 16, 0xFFFFFFFF, v2(c->anchoredPosition.x + 40, c->anchoredPosition.y),
+                    v2(c->size.x - 40, c->size.y), FONT_HALIGN_LEFT, FONT_VALIGN_MIDDLE,
                     true);
 
     setColorUint(0xFF000000);

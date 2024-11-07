@@ -4,12 +4,12 @@
 
 #include "Door.h"
 
-#include "../Structs/Wall.h"
-#include "../Structs/Vector2.h"
 #include "../Helpers/Collision.h"
-#include "../Structs/GlobalState.h"
 #include "../Helpers/CommonAssets.h"
 #include "../Helpers/Core/Logging.h"
+#include "../Structs/GlobalState.h"
+#include "../Structs/Vector2.h"
+#include "../Structs/Wall.h"
 
 typedef enum
 {
@@ -27,7 +27,7 @@ typedef struct DoorData
 
 void DoorSetState(const Actor *door, DoorState state)
 {
-    DoorData *data = (DoorData *)door->extra_data;
+    DoorData *data = (DoorData *) door->extra_data;
     data->state = state;
     data->stateTicks = 0;
 }
@@ -43,19 +43,21 @@ void SetDoorWallPos(const Actor *door, const double pos)
     door->actorWall->b.x = pos + 1.0;
 }
 
-void DoorInit(Actor *this) {
+void DoorInit(Actor *this)
+{
     this->showShadow = false;
     this->solid = true;
     this->actorWall = CreateWall(v2(0, 0), v2(1, 0), actorTextures[11], 1, 0.0);
     this->extra_data = malloc(sizeof(DoorData));
     memset(this->extra_data, 0, sizeof(DoorData));
-    DoorData *data = (DoorData *)this->extra_data;
+    DoorData *data = (DoorData *) this->extra_data;
     data->state = DOOR_CLOSED;
     data->stateTicks = 0;
 }
 
-void DoorUpdate(Actor *this) {
-    DoorData *data = (DoorData *)this->extra_data;
+void DoorUpdate(Actor *this)
+{
+    DoorData *data = (DoorData *) this->extra_data;
     double wallPos;
 
     Wall transformedWall;
@@ -66,26 +68,30 @@ void DoorUpdate(Actor *this) {
     switch (data->state)
     {
         case DOOR_CLOSED:
-            if (playerCollide) {
+            if (playerCollide)
+            {
                 DoorSetState(this, DOOR_OPENING);
             }
             break;
         case DOOR_OPEN:
-            if (data->stateTicks >= 60 && !playerCollide) {
+            if (data->stateTicks >= 60 && !playerCollide)
+            {
                 DoorSetState(this, DOOR_CLOSING);
             }
             break;
         case DOOR_OPENING:
             wallPos = data->stateTicks * (1.0 / 60.0);
             SetDoorWallPos(this, -wallPos);
-            if (data->stateTicks == 60) {
+            if (data->stateTicks == 60)
+            {
                 DoorSetState(this, DOOR_OPEN);
             }
             break;
         case DOOR_CLOSING:
             wallPos = data->stateTicks * (1.0 / 60.0);
             SetDoorWallPos(this, -1.0 + wallPos);
-            if (data->stateTicks == 60) {
+            if (data->stateTicks == 60)
+            {
                 DoorSetState(this, DOOR_CLOSED);
             }
             break;
@@ -96,7 +102,8 @@ void DoorUpdate(Actor *this) {
     data->stateTicks++;
 }
 
-void DoorDestroy(Actor *this) {
+void DoorDestroy(Actor *this)
+{
     free(this->extra_data);
     FreeWall(this->actorWall);
     free(this->actorWall);

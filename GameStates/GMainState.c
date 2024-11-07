@@ -4,17 +4,18 @@
 
 #include "GMainState.h"
 #include <math.h>
-#include "../Helpers/Core/Input.h"
-#include "../Helpers/Core/Error.h"
-#include "../Helpers/Core/MathEx.h"
-#include "../Helpers/Graphics/Drawing.h"
+#include <stdio.h>
+#include "GEditorState.h"
+#include "GPauseState.h"
+#include "../Assets/Assets.h"
 #include "../Debug/DPrint.h"
 #include "../Helpers/Collision.h"
-#include "GPauseState.h"
-#include "GEditorState.h"
-#include <stdio.h>
-#include "../Helpers/Graphics/Font.h"
 #include "../Helpers/TextBox.h"
+#include "../Helpers/Core/Error.h"
+#include "../Helpers/Core/Input.h"
+#include "../Helpers/Core/MathEx.h"
+#include "../Helpers/Graphics/Drawing.h"
+#include "../Helpers/Graphics/Font.h"
 
 void GMainStateUpdate(GlobalState *State)
 {
@@ -52,7 +53,7 @@ void GMainStateUpdate(GlobalState *State)
     if (IsKeyJustPressed(SDL_SCANCODE_T))
     {
         const TextBox tb = DEFINE_TEXT("TEXT BOX", 2, 20, 0, 60, TEXT_BOX_H_ALIGN_CENTER, TEXT_BOX_V_ALIGN_TOP,
-                                 TEXT_BOX_THEME_BLACK);
+                                       TEXT_BOX_THEME_BLACK);
         ShowTextBox(tb);
     }
 

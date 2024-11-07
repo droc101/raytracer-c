@@ -3,26 +3,30 @@
 //
 
 #include "Coin.h"
-#include "../Structs/Wall.h"
-#include "../Structs/Vector2.h"
-#include "../Helpers/Collision.h"
-#include "../Structs/GlobalState.h"
 #include <math.h>
-#include "../Structs/Level.h"
+#include "../Assets/Assets.h"
+#include "../Helpers/Collision.h"
 #include "../Helpers/CommonAssets.h"
+#include "../Structs/GlobalState.h"
+#include "../Structs/Level.h"
+#include "../Structs/Vector2.h"
+#include "../Structs/Wall.h"
 
-void CoinInit(Actor *this) {
+void CoinInit(Actor *this)
+{
     this->solid = false;
-    this->actorWall = CreateWall(v2(0, -0.125), v2(0, 0.125), (this->paramB == 1) ? actorTextures[8] : actorTextures[7], 1.0, 0.0);
+    this->actorWall = CreateWall(v2(0, -0.125), v2(0, 0.125), (this->paramB == 1) ? actorTextures[8] : actorTextures[7],
+                                 1.0, 0.0);
     this->paramA = 0;
     this->actorWall->height = 0.25f;
     this->yPosition = -0.25f;
     this->shadowSize = 0.1;
 }
 
-void CoinUpdate(Actor *this) {
-
-    if (GetState()->physicsFrame % 8 == 0) {
+void CoinUpdate(Actor *this)
+{
+    if (GetState()->physicsFrame % 8 == 0)
+    {
         this->paramA++;
         this->paramA = this->paramA % 4;
 
@@ -34,20 +38,23 @@ void CoinUpdate(Actor *this) {
     this->rotation = atan2(dir.y, dir.x);
     this->rotation += PI;
 
-    if (CollideCylinder(this->position, 0.5, GetState()->level->position)) {
-        if (this->paramB == 0) {
+    if (CollideCylinder(this->position, 0.5, GetState()->level->position))
+    {
+        if (this->paramB == 0)
+        {
             GetState()->coins++;
-        } else {
+        } else
+        {
             GetState()->blueCoins++;
             GetState()->coins += 5;
-
         }
         PlaySoundEffect(gzwav_sfx_coincling);
         RemoveActor(this);
     }
 }
 
-void CoinDestroy(Actor *this) {
+void CoinDestroy(Actor *this)
+{
     FreeWall(this->actorWall);
     free(this->actorWall);
 }
