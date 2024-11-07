@@ -82,6 +82,14 @@ byte level_skyB;
 
 uint musicId;
 
+char *SliderActorNameLabelCallback(const Control *slider)
+{
+    const SliderData *data = (SliderData *) slider->ControlData;
+    char *buf = malloc(64);
+    sprintf(buf, "Type: %s", GetActorName(data->value));
+    return buf;
+}
+
 Level *NodesToLevel()
 {
     Level *l = CreateLevel();
@@ -462,14 +470,14 @@ void GEditorStateUpdate(GlobalState *State)
                 CreateSlider("ang", 0, 359, radToDeg(node->rotation), 1, 45, v2(10, 250), v2(200, 24),
                              slider_setNodeRotation, NULLPTR);
                 CreateSlider("Type", 0, GetActorTypeCount() - 1, node->extra, 1, 16, v2(10, 300), v2(200, 24),
-                             slider_setNodeExtra, SliderLabelInteger);
-                CreateSlider("Param A", 0, 255, (node->extra2 >> 24) & 0xFF, 1, 16, v2(10, 350), v2(200, 24),
+                             slider_setNodeExtra, SliderActorNameLabelCallback);
+                CreateSlider(GetActorParamName(node->extra, 0), 0, 255, (node->extra2 >> 24) & 0xFF, 1, 16, v2(10, 350), v2(200, 24),
                              slider_setActorParamA, SliderLabelInteger);
-                CreateSlider("Param B", 0, 255, (node->extra2 >> 16) & 0xFF, 1, 16, v2(10, 400), v2(200, 24),
+                CreateSlider(GetActorParamName(node->extra, 1), 0, 255, (node->extra2 >> 16) & 0xFF, 1, 16, v2(10, 400), v2(200, 24),
                              slider_setActorParamB, SliderLabelInteger);
-                CreateSlider("Param C", 0, 255, (node->extra2 >> 8) & 0xFF, 1, 16, v2(10, 450), v2(200, 24),
+                CreateSlider(GetActorParamName(node->extra, 2), 0, 255, (node->extra2 >> 8) & 0xFF, 1, 16, v2(10, 450), v2(200, 24),
                              slider_setActorParamC, SliderLabelInteger);
-                CreateSlider("Param D", 0, 255, node->extra2 & 0xFF, 1, 16, v2(10, 500), v2(200, 24),
+                CreateSlider(GetActorParamName(node->extra, 3), 0, 255, node->extra2 & 0xFF, 1, 16, v2(10, 500), v2(200, 24),
                              slider_setActorParamD, SliderLabelInteger);
                 break;
             case NODE_WALL_A:

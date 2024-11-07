@@ -13,6 +13,7 @@
 #include "GL/glHelper.h"
 #include "../../Structs/GlobalState.h"
 #include "../Core/Logging.h"
+#include "../Core/DataReader.h"
 
 SDL_Window *window;
 

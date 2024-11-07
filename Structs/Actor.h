@@ -8,6 +8,10 @@
 #include "../defines.h"
 #include "../Structs/Vector2.h"
 
+char *GetActorName(int actor);
+
+char *GetActorParamName(int actor, byte param);
+
 /**
  * Get the number of Actor types
  * @return Actor type count
