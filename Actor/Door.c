@@ -4,7 +4,6 @@
 
 #include "Door.h"
 
-#include <stdbool.h>
 #include "../Structs/Wall.h"
 #include "../Structs/Vector2.h"
 #include "../Helpers/Collision.h"
