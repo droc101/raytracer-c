@@ -90,6 +90,7 @@ int GetActorTypeCount()
 Actor *CreateActor(const Vector2 position, const double rotation, const int actorType, const byte paramA, const byte paramB, const byte paramC, const byte paramD)
 {
     Actor *actor = malloc(sizeof(Actor));
+    actor->actorWall = NULLPTR;
     actor->position = position;
     actor->rotation = rotation;
     actor->solid = false;
