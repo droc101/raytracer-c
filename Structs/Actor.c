@@ -21,29 +21,34 @@ void ActorDestroy(Actor *this)
 #include "../Actor/TestActor.h"
 #include "../Actor/Coin.h"
 #include "../Actor/Goal.h"
+#include "../Actor/Door.h"
 
 void (*ActorInitFuncs[])(Actor *) = {
     ActorInit,
     TestActorInit,
     CoinInit,
-    GoalInit
+    GoalInit,
+    DoorInit
 };
 
 void (*ActorUpdateFuncs[])(Actor *) = {
     ActorUpdate,
     TestActorUpdate,
     CoinUpdate,
-    GoalUpdate
+    GoalUpdate,
+    DoorUpdate
 };
 
 void (*ActorDestroyFuncs[])(Actor *) = {
     ActorDestroy,
     TestActorDestroy,
     CoinDestroy,
-    GoalDestroy
+    GoalDestroy,
+    DoorDestroy
 };
 
 int ActorHealths[] = {
+    1,
     1,
     1,
     1,
@@ -54,7 +59,8 @@ char *ActorNames[] = {
     "NullActor",
     "TestActor",
     "Coin",
-    "Goal"
+    "Goal",
+    "Door"
 };
 
 // Array of actor parameter names
@@ -64,6 +70,7 @@ char ActorParamNames[][4][16] = {
     {"N/A", "N/A", "N/A", "N/A"},
     {"Anim Frame", "Blue Coin?", "N/A", "N/A"},
     {"N/A", "N/A", "N/A", "N/A"},
+    {"N/A", "N/A", "N/A", "N/A"}
 };
 
 char *GetActorName(int actor) {

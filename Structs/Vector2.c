@@ -86,3 +86,8 @@ double Vector2Angle(const Vector2 a, const Vector2 b)
 {
     return acos(Vector2Dot(a, b) / (Vector2Length(a) * Vector2Length(b)));
 }
+
+Vector2 Vector2Div(const Vector2 vec, const double divisor)
+{
+    return v2(vec.x / divisor, vec.y / divisor);
+}

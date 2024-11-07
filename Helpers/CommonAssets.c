@@ -26,6 +26,7 @@ const byte *actorTextures[ACTOR_TEXTURE_COUNT] = {
     gztex_actor_bluecoin,
     gztex_actor_goal0,
     gztex_actor_goal1,
+    gztex_actor_door
 };
 
 void InitCommonAssets()
