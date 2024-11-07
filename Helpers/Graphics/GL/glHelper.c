@@ -832,6 +832,7 @@ void GL_RenderLevel(Level *l, Camera *cam)
     for (int i = 0; i < l->staticActors->size; i++)
     {
         Actor *actor = SizedArrayGet(l->staticActors, i);
+        if (actor->actorWall == NULLPTR) continue;
         WallBake(actor->actorWall);
         mat4 *actor_xfm = ActorTransformMatrix(actor);
         GL_DrawWall(actor->actorWall, WORLD_VIEW_MATRIX, actor_xfm, cam, l);
