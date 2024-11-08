@@ -22,8 +22,7 @@ GL_Shader *wall_generic;
 GL_Shader *floor_generic;
 GL_Shader *shadow;
 
-GL_Buffer *ui_buffer;
-GL_Buffer *wall_buffer;
+GL_Buffer *gl_buffer;
 
 #define MAX_TEXTURES 128
 
@@ -48,6 +47,7 @@ bool GL_PreInit()
     SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, MSAA_SAMPLES);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
+    SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
     SDL_GL_SetAttribute(
         SDL_GL_CONTEXT_PROFILE_MASK,
         SDL_GL_CONTEXT_PROFILE_CORE);
@@ -73,6 +73,7 @@ bool GL_Init(SDL_Window *wnd)
 
     SDL_GL_SetSwapInterval(GetState()->options.vsync ? 1 : 0);
 
+    // ReSharper disable once CppJoinDeclarationAndAssignment
     GLenum err;
     glewExperimental = GL_TRUE; // Please expose OpenGL 3.x+ interfaces
     err = glewInit();
@@ -83,28 +84,13 @@ bool GL_Init(SDL_Window *wnd)
         return false;
     }
 
-    const char *hud_textured_fsh = (char *) DecompressAsset(gzshd_GL_hud_textured_f);
-    const char *hud_textured_vsh = (char *) DecompressAsset(gzshd_GL_hud_textured_v);
-    ui_textured = GL_ConstructShader(hud_textured_fsh, hud_textured_vsh);
+    ui_textured = GL_ConstructShaderFromAssets(gzshd_GL_hud_textured_f, gzshd_GL_hud_textured_v);
+    ui_colored = GL_ConstructShaderFromAssets(gzshd_GL_hud_color_f, gzshd_GL_hud_color_v);
+    wall_generic = GL_ConstructShaderFromAssets(gzshd_GL_wall_f, gzshd_GL_wall_v);
+    floor_generic = GL_ConstructShaderFromAssets(gzshd_GL_floor_f, gzshd_GL_floor_v);
+    shadow = GL_ConstructShaderFromAssets(gzshd_GL_shadow_f, gzshd_GL_shadow_v);
 
-    const char *hud_colored_fsh = (char *) DecompressAsset(gzshd_GL_hud_color_f);
-    const char *hud_colored_vsh = (char *) DecompressAsset(gzshd_GL_hud_color_v);
-    ui_colored = GL_ConstructShader(hud_colored_fsh, hud_colored_vsh);
-
-    const char *wall_generic_fsh = (char *) DecompressAsset(gzshd_GL_wall_f);
-    const char *wall_generic_vsh = (char *) DecompressAsset(gzshd_GL_wall_v);
-    wall_generic = GL_ConstructShader(wall_generic_fsh, wall_generic_vsh);
-
-    const char *floor_generic_fsh = (char *) DecompressAsset(gzshd_GL_floor_f);
-    const char *floor_generic_vsh = (char *) DecompressAsset(gzshd_GL_floor_v);
-    floor_generic = GL_ConstructShader(floor_generic_fsh, floor_generic_vsh);
-
-    const char *shadow_fsh = (char *) DecompressAsset(gzshd_GL_shadow_f);
-    const char *shadow_vsh = (char *) DecompressAsset(gzshd_GL_shadow_v);
-    shadow = GL_ConstructShader(shadow_fsh, shadow_vsh);
-
-    ui_buffer = GL_ConstructBuffer();
-    wall_buffer = GL_ConstructBuffer();
+    gl_buffer = GL_ConstructBuffer();
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -128,6 +114,13 @@ bool GL_Init(SDL_Window *wnd)
     LogInfo("GLSL: %s\n", shading_language);
 
     return true;
+}
+
+GL_Shader *GL_ConstructShaderFromAssets(const byte *fsh, const byte *vsh)
+{
+    const char *fsh_src = (char *) DecompressAsset(fsh);
+    const char *vsh_src= (char *) DecompressAsset(vsh);
+    return GL_ConstructShader(fsh_src, vsh_src);
 }
 
 GL_Shader *GL_ConstructShader(const char *fsh, const char *vsh)
@@ -239,8 +232,7 @@ void GL_DestroyGL()
     GL_DestroyShader(shadow);
     glUseProgram(0);
     glDisableVertexAttribArray(0);
-    GL_DestroyBuffer(ui_buffer);
-    GL_DestroyBuffer(wall_buffer);
+    GL_DestroyBuffer(gl_buffer);
     SDL_GL_DeleteContext(ctx);
 }
 
@@ -281,12 +273,12 @@ void GL_DrawRect(const Vector2 pos, const Vector2 size, const uint color)
         0, 2, 3
     };
 
-    glBindVertexArray(ui_buffer->vao);
+    glBindVertexArray(gl_buffer->vao);
 
-    glBindBuffer(GL_ARRAY_BUFFER, ui_buffer->vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, gl_buffer->vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ui_buffer->ebo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_buffer->ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     const GLint pos_attr_loc = glGetAttribLocation(ui_colored->program, "VERTEX");
@@ -332,12 +324,12 @@ void GL_DrawRectOutline(const Vector2 pos, const Vector2 size, const uint color,
         0, 1, 2, 3
     };
 
-    glBindVertexArray(ui_buffer->vao);
+    glBindVertexArray(gl_buffer->vao);
 
-    glBindBuffer(GL_ARRAY_BUFFER, ui_buffer->vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, gl_buffer->vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ui_buffer->ebo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_buffer->ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     const GLint pos_attr_loc = glGetAttribLocation(ui_colored->program, "VERTEX");
@@ -354,7 +346,7 @@ GLuint GL_LoadTextureFromAsset(const unsigned char *imageData)
         Error("Asset is not a texture");
     }
 
-    byte *Decompressed = DecompressAsset(imageData);
+    const byte *Decompressed = DecompressAsset(imageData);
 
     //uint size = ReadUintA(Decompressed, 0);
     const uint width = ReadUintA(Decompressed, 4);
@@ -416,7 +408,7 @@ void GL_SetTexParams(const unsigned char *imageData, const bool linear, const bo
 {
     GL_LoadTextureFromAsset(imageData); // make sure the texture is loaded
 
-    byte *Decompressed = DecompressAsset(imageData);
+    const byte *Decompressed = DecompressAsset(imageData);
 
     const uint id = ReadUintA(Decompressed, 12);
 
@@ -467,12 +459,12 @@ GL_DrawTexture_Internal(const Vector2 pos, const Vector2 size, const unsigned ch
         0, 2, 3
     };
 
-    glBindVertexArray(ui_buffer->vao);
+    glBindVertexArray(gl_buffer->vao);
 
-    glBindBuffer(GL_ARRAY_BUFFER, ui_buffer->vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, gl_buffer->vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ui_buffer->ebo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_buffer->ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     const GLint pos_attr_loc = glGetAttribLocation(ui_textured->program, "VERTEX");
@@ -542,12 +534,12 @@ void GL_DrawLine(const Vector2 start, const Vector2 end, const uint color, const
         0, 1
     };
 
-    glBindVertexArray(ui_buffer->vao);
+    glBindVertexArray(gl_buffer->vao);
 
-    glBindBuffer(GL_ARRAY_BUFFER, ui_buffer->vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, gl_buffer->vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ui_buffer->ebo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_buffer->ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     const GLint pos_attr_loc = glGetAttribLocation(ui_colored->program, "VERTEX");
@@ -604,12 +596,12 @@ void GL_DrawWall(const Wall *w, const mat4 *mvp, const mat4 *mdl, const Camera *
         0, 2, 3
     };
 
-    glBindVertexArray(wall_buffer->vao);
+    glBindVertexArray(gl_buffer->vao);
 
-    glBindBuffer(GL_ARRAY_BUFFER, wall_buffer->vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, gl_buffer->vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, wall_buffer->ebo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_buffer->ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     const GLint pos_attr_loc = glGetAttribLocation(wall_generic->program, "VERTEX");
@@ -662,12 +654,12 @@ GL_DrawFloor(const Vector2 vp1, const Vector2 vp2, const mat4 *mvp, const Level 
         0, 2, 3
     };
 
-    glBindVertexArray(wall_buffer->vao);
+    glBindVertexArray(gl_buffer->vao);
 
-    glBindBuffer(GL_ARRAY_BUFFER, wall_buffer->vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, gl_buffer->vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, wall_buffer->ebo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_buffer->ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     const GLint pos_attr_loc = glGetAttribLocation(floor_generic->program, "VERTEX");
@@ -713,12 +705,12 @@ void GL_DrawShadow(const Vector2 vp1, const Vector2 vp2, const mat4 *mvp, const 
         0, 2, 3
     };
 
-    glBindVertexArray(wall_buffer->vao);
+    glBindVertexArray(gl_buffer->vao);
 
-    glBindBuffer(GL_ARRAY_BUFFER, wall_buffer->vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, gl_buffer->vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, wall_buffer->ebo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_buffer->ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     const GLint pos_attr_loc = glGetAttribLocation(shadow->program, "VERTEX");
@@ -759,12 +751,12 @@ void GL_DrawColoredArrays(const float *vertices, const uint *indices, const int 
 
     glUniform4f(glGetUniformLocation(ui_textured->program, "col"), r, g, b, a);
 
-    glBindVertexArray(ui_buffer->vao);
+    glBindVertexArray(gl_buffer->vao);
 
-    glBindBuffer(GL_ARRAY_BUFFER, ui_buffer->vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, gl_buffer->vbo);
     glBufferData(GL_ARRAY_BUFFER, quad_count * 16 * sizeof(float), vertices, GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ui_buffer->ebo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_buffer->ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, quad_count * 6 * sizeof(uint), indices, GL_STATIC_DRAW);
 
     const GLint pos_attr_loc = glGetAttribLocation(ui_colored->program, "VERTEX");
@@ -792,12 +784,12 @@ void GL_DrawTexturedArrays(const float *vertices, const uint *indices, const int
 
     glUniform1i(glGetUniformLocation(ui_textured->program, "alb"), tex);
 
-    glBindVertexArray(ui_buffer->vao);
+    glBindVertexArray(gl_buffer->vao);
 
-    glBindBuffer(GL_ARRAY_BUFFER, ui_buffer->vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, gl_buffer->vbo);
     glBufferData(GL_ARRAY_BUFFER, quad_count * 16 * sizeof(float), vertices, GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ui_buffer->ebo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_buffer->ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, quad_count * 6 * sizeof(uint), indices, GL_STATIC_DRAW);
 
     const GLint pos_attr_loc = glGetAttribLocation(ui_textured->program, "VERTEX");
@@ -811,7 +803,7 @@ void GL_DrawTexturedArrays(const float *vertices, const uint *indices, const int
     glDrawElements(GL_TRIANGLES, quad_count * 6, GL_UNSIGNED_INT, NULL);
 }
 
-void GL_RenderLevel(Level *l, Camera *cam)
+void GL_RenderLevel(const Level *l, const Camera *cam)
 {
     GL_Enable3D();
     //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );

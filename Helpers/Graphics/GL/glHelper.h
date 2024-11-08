@@ -37,6 +37,8 @@ bool GL_PreInit();
  */
 bool GL_Init(SDL_Window *wnd);
 
+GL_Shader *GL_ConstructShaderFromAssets(const byte *fsh, const byte *vsh);
+
 /**
  * Create a shader program
  * @param fsh The fragment shader source
@@ -250,6 +252,6 @@ float GL_Y_TO_NDC(float y);
  * @note - This does not render the sky
  * @note - This destroys the contents of the depth buffer
  */
-void GL_RenderLevel(Level *l, Camera *cam);
+void GL_RenderLevel(const Level *l, const Camera *cam);
 
 #endif //GAME_GLHELPER_H

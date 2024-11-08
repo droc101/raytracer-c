@@ -43,6 +43,8 @@ int main(int argc, char *argv[])
     strncpy(GetState()->executablePath, argv[0], 260);
     LogInfo("Executable path: %s\n", GetState()->executablePath);
 
+    SDL_SetHint(SDL_HINT_APP_NAME, GAME_TITLE);
+
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER) != 0)
     {
         LogError("SDL_Init Error: %s\n", SDL_GetError());
