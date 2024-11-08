@@ -3,17 +3,19 @@
 //
 
 #include "TestActor.h"
-#include "../Structs/Wall.h"
-#include "../Structs/Vector2.h"
 #include "../Helpers/Collision.h"
 #include "../Helpers/CommonAssets.h"
+#include "../Structs/Vector2.h"
+#include "../Structs/Wall.h"
 
-void TestActorInit(Actor *this) {
+void TestActorInit(Actor *this)
+{
     this->solid = true;
     this->actorWall = CreateWall(v2(-0.5, 0), v2(0.5, 0), actorTextures[0], 1.0, 0.0);
 }
 
-void TestActorUpdate(Actor *this) {
+void TestActorUpdate(Actor *this)
+{
     this->rotation += 0.01;
 
     Vector2 MoveDir = v2(0, 0.05);
@@ -24,7 +26,8 @@ void TestActorUpdate(Actor *this) {
     this->position = MoveDir;
 }
 
-void TestActorDestroy(Actor *this) {
+void TestActorDestroy(Actor *this)
+{
     FreeWall(this->actorWall);
     free(this->actorWall);
 }

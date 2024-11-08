@@ -5,10 +5,10 @@
 #ifndef GAME_RENDERINGHELPERS_H
 #define GAME_RENDERINGHELPERS_H
 
-#include "cglm/cglm.h"
-#include "../../defines.h"
-#include "../../config.h"
 #include "Drawing.h"
+#include "../../config.h"
+#include "../../defines.h"
+#include "cglm/cglm.h"
 #include "GL/glHelper.h"
 
 void DwmDarkMode(SDL_Window *window);

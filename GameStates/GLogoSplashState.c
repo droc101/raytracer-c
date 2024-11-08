@@ -3,16 +3,15 @@
 //
 
 #include "GLogoSplashState.h"
-#include "../Helpers/Core/Input.h"
-#include "../Structs/Ray.h"
-#include "../Helpers/Graphics/Drawing.h"
-#include "../Structs/GlobalState.h"
 #include "GLevelSelectState.h"
 #include "GMenuState.h"
+#include "../Helpers/Core/Input.h"
+#include "../Helpers/Graphics/Drawing.h"
+#include "../Structs/GlobalState.h"
+#include "../Structs/Ray.h"
 
 uint GLogoSplashStateFixedUpdate(const uint interval, GlobalState *State)
 {
-
 #ifdef DEBUG_NOSPLASH
     if (State->physicsFrame == 1)
     {

@@ -43,4 +43,6 @@ double Vector2Dot(Vector2 a, Vector2 b);
 // Get the angle between two vectors
 double Vector2Angle(Vector2 a, Vector2 b);
 
+Vector2 Vector2Div(const Vector2 vec, const double divisor);
+
 #endif //GAME_VECTOR2_H

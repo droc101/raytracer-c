@@ -3,13 +3,14 @@
 //
 
 #include "Button.h"
-#include "../../../Helpers/Core/Input.h"
-#include "../../../Helpers/Graphics/Font.h"
-#include "../../../Helpers/Graphics/Drawing.h"
 #include "../../GlobalState.h"
 #include "../../../Assets/Assets.h"
+#include "../../../Helpers/Core/Input.h"
+#include "../../../Helpers/Graphics/Drawing.h"
+#include "../../../Helpers/Graphics/Font.h"
 
-Control *CreateButtonControl(const Vector2 position, const Vector2 size, char *text, void (*callback)(), const ControlAnchor anchor)
+Control *CreateButtonControl(const Vector2 position, const Vector2 size, char *text, void (*callback)(),
+                             const ControlAnchor anchor)
 {
     Control *btn = CreateEmptyControl();
     btn->type = BUTTON;

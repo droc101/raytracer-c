@@ -5,9 +5,9 @@
 #ifndef GAME_RAY_H
 #define GAME_RAY_H
 
-#include "../defines.h"
 #include <math.h>
 #include "Vector2.h"
+#include "../defines.h"
 
 /**
  * Perform a raycast against a wall

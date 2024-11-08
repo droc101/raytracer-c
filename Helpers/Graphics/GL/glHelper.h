@@ -5,12 +5,12 @@
 #ifndef GAME_GLHELPER_H
 #define GAME_GLHELPER_H
 
+#include "glDebug.h"
 #include "SDL.h"
-#include "GL/glew.h"
 #include "../Drawing.h"
 #include "../../Core/Error.h"
 #include "cglm/cglm.h"
-#include "glDebug.h"
+#include "GL/glew.h"
 
 typedef struct GL_Shader
 {
@@ -181,7 +181,8 @@ void GL_DrawWall(const Wall *w, const mat4 *mvp, const mat4 *mdl, const Camera *
  * @param height The height of the floor
  */
 void
-GL_DrawFloor(const Vector2 vp1, const Vector2 vp2, const mat4 *mvp, const Level *l, const unsigned char *texture, const float height, const float shade);
+GL_DrawFloor(const Vector2 vp1, const Vector2 vp2, const mat4 *mvp, const Level *l, const unsigned char *texture,
+             const float height, const float shade);
 
 /**
  * Draw a shadow sprite
@@ -216,7 +217,8 @@ void GL_UpdateViewportSize();
  * @param imageData The texture to use
  * @param color The modulate color
  */
-void GL_DrawTexturedArrays(const float *vertices, const uint *indices, const int quad_count, const unsigned char *imageData, const uint color);
+void GL_DrawTexturedArrays(const float *vertices, const uint *indices, const int quad_count,
+                           const unsigned char *imageData, const uint color);
 
 /**
  * Draw arrays using the ui_colored shader

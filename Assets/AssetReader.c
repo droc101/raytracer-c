@@ -3,12 +3,12 @@
 //
 
 #include "AssetReader.h"
-#include <zlib.h>
-#include <stdlib.h>
 #include <stdio.h>
-#include "../Helpers/Core/Error.h"
-#include "../Helpers/Core/DataReader.h"
+#include <stdlib.h>
+#include <zlib.h>
 #include "Assets.h"
+#include "../Helpers/Core/DataReader.h"
+#include "../Helpers/Core/Error.h"
 #include "../Helpers/Core/Logging.h"
 
 uint AssetGetSize(const byte *asset)
@@ -40,7 +40,8 @@ byte *DecompressAsset(const byte *asset)
     int offset = 0;
     // Read the first 4 bytes of the asset to get the size of the compressed data
     const uint compressedSize = ReadUint(asset, &offset);
-    const uint decompressedSize = ReadUint(asset, &offset); // Read the decompressed size (4 bytes after the compressed size
+    const uint decompressedSize = ReadUint(asset, &offset);
+    // Read the decompressed size (4 bytes after the compressed size
     const uint assetId = ReadUint(asset, &offset); // Read the asset ID (4 bytes after the decompressed size)
     //uint type = ReadUint(asset, &offset); // Read the asset type (4 bytes after the asset ID)
 

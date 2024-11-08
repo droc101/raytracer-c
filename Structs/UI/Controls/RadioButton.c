@@ -3,13 +3,14 @@
 //
 
 #include "RadioButton.h"
+#include "../../GlobalState.h"
 #include "../../../Assets/Assets.h"
 #include "../../../Helpers/Core/Input.h"
-#include "../../GlobalState.h"
 #include "../../../Helpers/Graphics/Drawing.h"
 #include "../../../Helpers/Graphics/Font.h"
 
-Control *CreateRadioButtonControl(const Vector2 position, const Vector2 size, char *label, void (*callback)(bool, byte, byte),
+Control *CreateRadioButtonControl(const Vector2 position, const Vector2 size, char *label,
+                                  void (*callback)(bool, byte, byte),
                                   const ControlAnchor anchor, const bool checked, const byte groupId, const byte id)
 {
     Control *radio = CreateEmptyControl();
@@ -80,7 +81,8 @@ void DrawRadioButton(const Control *c, ControlState state, const Vector2 positio
 
     const uint textColor = data->checked ? 0xFFFFFFFF : 0xFFc0c0c0;
 
-    DrawTextAligned(data->label, 16, textColor, v2(c->anchoredPosition.x + 40, c->anchoredPosition.y), v2(c->size.x - 40, c->size.y), FONT_HALIGN_LEFT, FONT_VALIGN_MIDDLE,
+    DrawTextAligned(data->label, 16, textColor, v2(c->anchoredPosition.x + 40, c->anchoredPosition.y),
+                    v2(c->size.x - 40, c->size.y), FONT_HALIGN_LEFT, FONT_VALIGN_MIDDLE,
                     true);
 
     setColorUint(0xFF0000ff);

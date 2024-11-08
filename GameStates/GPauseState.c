@@ -3,17 +3,17 @@
 //
 
 #include "GPauseState.h"
+#include <stdio.h>
+#include "GLevelSelectState.h"
+#include "GMainState.h"
+#include "GMenuState.h"
+#include "../Helpers/LevelEntries.h"
 #include "../Helpers/Core/Input.h"
-#include "../Structs/Ray.h"
+#include "../Helpers/Core/MathEx.h"
 #include "../Helpers/Graphics/Drawing.h"
 #include "../Helpers/Graphics/Font.h"
 #include "../Structs/GlobalState.h"
-#include "GMainState.h"
-#include "GMenuState.h"
-#include "../Helpers/Core/MathEx.h"
-#include "../Helpers/LevelEntries.h"
-#include "GLevelSelectState.h"
-#include <stdio.h>
+#include "../Structs/Ray.h"
 
 char pauseOptions[2][32] = {
     "Resume",

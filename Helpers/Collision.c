@@ -3,10 +3,10 @@
 //
 
 #include "Collision.h"
-#include "../Structs/Wall.h"
+#include "../Structs/Actor.h"
 #include "../Structs/GlobalState.h"
 #include "../Structs/Vector2.h"
-#include "../Structs/Actor.h"
+#include "../Structs/Wall.h"
 
 Vector2 CollideWall(Wall *w, Vector2 position, Vector2 moveVec)
 {

@@ -178,6 +178,7 @@ Vector2 texture_size(const unsigned char *imageData);
  * @param imageData The texture data
  * @warning This is nine draw calls.
  */
-void draw_ninepatch(const Vector2 pos, const Vector2 size, const int output_margins_px, const int texture_margins_px, const byte *imageData);
+void draw_ninepatch(const Vector2 pos, const Vector2 size, const int output_margins_px, const int texture_margins_px,
+                    const byte *imageData);
 
 #endif //GAME_DRAWING_H

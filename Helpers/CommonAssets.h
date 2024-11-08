@@ -9,7 +9,7 @@
 #include "../defines.h"
 
 #define WALL_TEXTURE_COUNT 5
-#define ACTOR_TEXTURE_COUNT 11
+#define ACTOR_TEXTURE_COUNT 12
 
 extern const byte *wallTextures[WALL_TEXTURE_COUNT];
 extern const byte *actorTextures[ACTOR_TEXTURE_COUNT];

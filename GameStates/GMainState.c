@@ -4,17 +4,18 @@
 
 #include "GMainState.h"
 #include <math.h>
-#include "../Helpers/Core/Input.h"
-#include "../Helpers/Core/Error.h"
-#include "../Helpers/Core/MathEx.h"
-#include "../Helpers/Graphics/Drawing.h"
+#include <stdio.h>
+#include "GEditorState.h"
+#include "GPauseState.h"
+#include "../Assets/Assets.h"
 #include "../Debug/DPrint.h"
 #include "../Helpers/Collision.h"
-#include "GPauseState.h"
-#include "GEditorState.h"
-#include <stdio.h>
-#include "../Helpers/Graphics/Font.h"
 #include "../Helpers/TextBox.h"
+#include "../Helpers/Core/Error.h"
+#include "../Helpers/Core/Input.h"
+#include "../Helpers/Core/MathEx.h"
+#include "../Helpers/Graphics/Drawing.h"
+#include "../Helpers/Graphics/Font.h"
 
 void GMainStateUpdate(GlobalState *State)
 {
@@ -52,19 +53,11 @@ void GMainStateUpdate(GlobalState *State)
     if (IsKeyJustPressed(SDL_SCANCODE_T))
     {
         const TextBox tb = DEFINE_TEXT("TEXT BOX", 2, 20, 0, 60, TEXT_BOX_H_ALIGN_CENTER, TEXT_BOX_V_ALIGN_TOP,
-                                 TEXT_BOX_THEME_BLACK);
+                                       TEXT_BOX_THEME_BLACK);
         ShowTextBox(tb);
     }
 
-#ifdef KEYBOARD_ROTATION
-    if (IsKeyPressed(SDL_SCANCODE_A)) {
-        State->level->rotation -= ROT_SPEED;
-    } else if (IsKeyPressed(SDL_SCANCODE_D)) {
-        State->level->rotation += ROT_SPEED;
-    }
-#else
     State->level->rotation += GetMouseRel().x * (State->options.mouseSpeed / 120.0);
-#endif
 }
 
 uint GMainStateFixedUpdate(const uint interval, GlobalState *State)
@@ -84,13 +77,6 @@ uint GMainStateFixedUpdate(const uint interval, GlobalState *State)
         moveVec.x -= 1;
     }
 
-#ifdef KEYBOARD_ROTATION
-    if (IsKeyPressed(SDL_SCANCODE_Q)) {
-        moveVec.y -= 1;
-    } else if (IsKeyPressed(SDL_SCANCODE_E)) {
-        moveVec.y += 1;
-    }
-#else
     if (IsKeyPressed(SDL_SCANCODE_A))
     {
         moveVec.y -= 1;
@@ -98,7 +84,6 @@ uint GMainStateFixedUpdate(const uint interval, GlobalState *State)
     {
         moveVec.y += 1;
     }
-#endif
 
     const bool isMoving = moveVec.x != 0 || moveVec.y != 0;
 

@@ -2,9 +2,9 @@
 // Created by droc101 on 4/21/2024.
 //
 
-#include "../defines.h"
 #include "Vector2.h"
 #include <math.h>
+#include "../defines.h"
 
 Vector2 v2(const double x, const double y) // Create a Vector2
 {
@@ -85,4 +85,9 @@ Vector2 Vector2Rotate(const Vector2 vec, const double angle)
 double Vector2Angle(const Vector2 a, const Vector2 b)
 {
     return acos(Vector2Dot(a, b) / (Vector2Length(a) * Vector2Length(b)));
+}
+
+Vector2 Vector2Div(const Vector2 vec, const double divisor)
+{
+    return v2(vec.x / divisor, vec.y / divisor);
 }

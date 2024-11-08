@@ -5,8 +5,8 @@
 #ifndef GAME_LEVELENTRIES_H
 #define GAME_LEVELENTRIES_H
 
-#include "../Assets/Assets.h"
 #include "../defines.h"
+#include "../Assets/Assets.h"
 
 typedef struct LevelEntry
 {

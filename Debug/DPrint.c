@@ -3,10 +3,10 @@
 //
 
 #include "DPrint.h"
-#include "../Helpers/Graphics/Font.h"
 #include <stdarg.h>
 #include <stdio.h>
 #include "../Helpers/Core/Logging.h"
+#include "../Helpers/Graphics/Font.h"
 
 int DPrintYPos = 10;
 

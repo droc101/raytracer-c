@@ -5,12 +5,12 @@
 #ifndef GAME_DEFINES_H
 #define GAME_DEFINES_H
 
-#include "Helpers/Core/List.h"
 #include <SDL.h>
 #include <SDL_mixer.h>
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include "config.h"
+#include "Helpers/Core/List.h"
 
 #define byte uint8_t // unsigned 8-bit integer
 #define ushort uint16_t // unsigned 16-bit integer

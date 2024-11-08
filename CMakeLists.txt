@@ -118,6 +118,8 @@ add_executable(
         Structs/UI/Controls/RadioButton.h
         Helpers/Core/Logging.c
         Helpers/Core/Logging.h
+        Actor/Door.c
+        Actor/Door.h
         Helpers/Graphics/Vulkan/Vulkan.c
         Helpers/Graphics/Vulkan/Vulkan.h
 )

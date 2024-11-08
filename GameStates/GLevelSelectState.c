@@ -3,15 +3,15 @@
 //
 
 #include "GLevelSelectState.h"
+#include <stdio.h>
+#include "GMainState.h"
+#include "GMenuState.h"
+#include "../Helpers/LevelEntries.h"
 #include "../Helpers/Core/Input.h"
+#include "../Helpers/Core/MathEx.h"
 #include "../Helpers/Graphics/Drawing.h"
 #include "../Helpers/Graphics/Font.h"
 #include "../Structs/GlobalState.h"
-#include <stdio.h>
-#include "GMainState.h"
-#include "../Helpers/Core/MathEx.h"
-#include "../Helpers/LevelEntries.h"
-#include "GMenuState.h"
 
 int GLevelSelectState_SelectedLevel = 0;
 

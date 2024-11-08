@@ -18,46 +18,91 @@ void ActorDestroy(Actor *this)
 {
 }
 
-#include "../Actor/TestActor.h"
 #include "../Actor/Coin.h"
+#include "../Actor/Door.h"
 #include "../Actor/Goal.h"
+#include "../Actor/TestActor.h"
 
 void (*ActorInitFuncs[])(Actor *) = {
     ActorInit,
     TestActorInit,
     CoinInit,
-    GoalInit
+    GoalInit,
+    DoorInit
 };
 
 void (*ActorUpdateFuncs[])(Actor *) = {
     ActorUpdate,
     TestActorUpdate,
     CoinUpdate,
-    GoalUpdate
+    GoalUpdate,
+    DoorUpdate
 };
 
 void (*ActorDestroyFuncs[])(Actor *) = {
     ActorDestroy,
     TestActorDestroy,
     CoinDestroy,
-    GoalDestroy
+    GoalDestroy,
+    DoorDestroy
 };
 
 int ActorHealths[] = {
     1,
     1,
     1,
+    1,
     1
 };
+
+char *ActorNames[] = {
+    "NullActor",
+    "TestActor",
+    "Coin",
+    "Goal",
+    "Door"
+};
+
+// Array of actor parameter names
+// Each actor type has 4 parameters
+char ActorParamNames[][4][16] = {
+    {"N/A", "N/A", "N/A", "N/A"},
+    {"N/A", "N/A", "N/A", "N/A"},
+    {"Anim Frame", "Blue Coin?", "N/A", "N/A"},
+    {"N/A", "N/A", "N/A", "N/A"},
+    {"N/A", "N/A", "N/A", "N/A"}
+};
+
+char *GetActorName(int actor)
+{
+    const int actorNameCount = sizeof(ActorNames) / sizeof(char *);
+    if (actor > actorNameCount)
+    {
+        return "Invalid!";
+    }
+    return ActorNames[actor];
+}
+
+char *GetActorParamName(int actor, byte param)
+{
+    const int actorNameCount = sizeof(ActorNames) / sizeof(char *);
+    if (actor > actorNameCount)
+    {
+        return "Invalid!";
+    }
+    return ActorParamNames[actor][param];
+}
 
 int GetActorTypeCount()
 {
     return sizeof(ActorInitFuncs) / sizeof(void *);
 }
 
-Actor *CreateActor(const Vector2 position, const double rotation, const int actorType, const byte paramA, const byte paramB, const byte paramC, const byte paramD)
+Actor *CreateActor(const Vector2 position, const double rotation, const int actorType, const byte paramA,
+                   const byte paramB, const byte paramC, const byte paramD)
 {
     Actor *actor = malloc(sizeof(Actor));
+    actor->actorWall = NULLPTR;
     actor->position = position;
     actor->rotation = rotation;
     actor->solid = false;

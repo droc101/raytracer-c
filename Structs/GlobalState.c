@@ -2,15 +2,15 @@
 // Created by droc101 on 4/22/2024.
 //
 
-#include <stdio.h>
 #include "GlobalState.h"
-#include "../Structs/Level.h"
+#include <stdio.h>
+#include "Camera.h"
+#include "Options.h"
 #include "../Assets/AssetReader.h"
 #include "../Helpers/LevelEntries.h"
 #include "../Helpers/LevelLoader.h"
-#include "Camera.h"
-#include "Options.h"
 #include "../Helpers/Core/Logging.h"
+#include "../Structs/Level.h"
 
 GlobalState state;
 

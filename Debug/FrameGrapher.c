@@ -4,10 +4,10 @@
 
 #include "FrameGrapher.h"
 #include <stdio.h>
-#include "../Helpers/Graphics/Drawing.h"
 #include "SDL.h"
-#include "../Structs/GlobalState.h"
+#include "../Helpers/Graphics/Drawing.h"
 #include "../Helpers/Graphics/Font.h"
+#include "../Structs/GlobalState.h"
 
 double framerates[FRAMEGRAPH_HISTORY_SIZE];
 

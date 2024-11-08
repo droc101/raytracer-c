@@ -2,24 +2,24 @@
 // Created by droc101 on 6/23/2024.
 //
 
-#include "../config.h"
 #include "GEditorState.h"
-#include "../Structs/GlobalState.h"
-#include "../Helpers/Core/Input.h"
-#include "../Helpers/Graphics/Drawing.h"
-#include "GMainState.h"
-#include "../Helpers/Core/MathEx.h"
+#include <math.h>
 #include <stdio.h>
+#include "GMainState.h"
+#include "../config.h"
+#include "../Helpers/CommonAssets.h"
+#include "../Helpers/LevelLoader.h"
+#include "../Helpers/Core/Input.h"
+#include "../Helpers/Core/MathEx.h"
+#include "../Helpers/Graphics/Drawing.h"
 #include "../Helpers/Graphics/Font.h"
 #include "../Structs/Actor.h"
-#include <math.h>
-#include "../Helpers/LevelLoader.h"
-#include "../Helpers/CommonAssets.h"
+#include "../Structs/GlobalState.h"
 #include "../Structs/UI/UiStack.h"
 #include "../Structs/UI/Controls/Button.h"
-#include "../Structs/UI/Controls/Slider.h"
-#include "../Structs/UI/Controls/RadioButton.h"
 #include "../Structs/UI/Controls/CheckBox.h"
+#include "../Structs/UI/Controls/RadioButton.h"
+#include "../Structs/UI/Controls/Slider.h"
 
 double EditorZoom = 20.0;
 double EditorPanX = 0.0;
@@ -82,6 +82,14 @@ byte level_skyB;
 
 uint musicId;
 
+char *SliderActorNameLabelCallback(const Control *slider)
+{
+    const SliderData *data = (SliderData *) slider->ControlData;
+    char *buf = malloc(64);
+    sprintf(buf, "Type: %s", GetActorName(data->value));
+    return buf;
+}
+
 Level *NodesToLevel()
 {
     Level *l = CreateLevel();
@@ -134,7 +142,8 @@ Level *NodesToLevel()
     return l;
 }
 
-void CreateSlider(char *label, const double min, const double max, const double value, const double step, const double altStep, const Vector2 position,
+void CreateSlider(char *label, const double min, const double max, const double value, const double step,
+                  const double altStep, const Vector2 position,
                   const Vector2 size, void (*callback)(const double value), char *(*getLabel)(const Control *slider))
 {
     Control *slider = CreateSliderControl(position, size, label, callback, TOP_LEFT, min, max, value, step, altStep,
@@ -260,7 +269,7 @@ void GEditorStateUpdate(GlobalState *State)
         {
             const EditorNode *node = ListGet(EditorNodes, i);
             const Vector2 screenPos = v2((node->position.x * EditorZoom) + EditorPanX,
-                                   (node->position.y * EditorZoom) + EditorPanY);
+                                         (node->position.y * EditorZoom) + EditorPanY);
 
             bool hovered = false;
             const Vector2 mousePos = GetMousePos();
@@ -299,7 +308,7 @@ void GEditorStateUpdate(GlobalState *State)
         for (int i = 0; i < EditorNodes->size; i++)
         {
             const EditorNode *node = ListGet(EditorNodes, i);
-            Vector2 screenPos = v2((node->position.x * EditorZoom) + EditorPanX,
+            const Vector2 screenPos = v2((node->position.x * EditorZoom) + EditorPanX,
                                    (node->position.y * EditorZoom) + EditorPanY);
 
             bool hovered = false;
@@ -430,7 +439,7 @@ void GEditorStateUpdate(GlobalState *State)
         {
             const EditorNode *node = ListGet(EditorNodes, i);
             const Vector2 screenPos = v2((node->position.x * EditorZoom) + EditorPanX,
-                                   (node->position.y * EditorZoom) + EditorPanY);
+                                         (node->position.y * EditorZoom) + EditorPanY);
 
             bool hovered = false;
             const Vector2 mousePos = GetMousePos();
@@ -462,14 +471,18 @@ void GEditorStateUpdate(GlobalState *State)
                 CreateSlider("ang", 0, 359, radToDeg(node->rotation), 1, 45, v2(10, 250), v2(200, 24),
                              slider_setNodeRotation, NULLPTR);
                 CreateSlider("Type", 0, GetActorTypeCount() - 1, node->extra, 1, 16, v2(10, 300), v2(200, 24),
-                             slider_setNodeExtra, SliderLabelInteger);
-                CreateSlider("Param A", 0, 255, (node->extra2 >> 24) & 0xFF, 1, 16, v2(10, 350), v2(200, 24),
+                             slider_setNodeExtra, SliderActorNameLabelCallback);
+                CreateSlider(GetActorParamName(node->extra, 0), 0, 255, (node->extra2 >> 24) & 0xFF, 1, 16, v2(10, 350),
+                             v2(200, 24),
                              slider_setActorParamA, SliderLabelInteger);
-                CreateSlider("Param B", 0, 255, (node->extra2 >> 16) & 0xFF, 1, 16, v2(10, 400), v2(200, 24),
+                CreateSlider(GetActorParamName(node->extra, 1), 0, 255, (node->extra2 >> 16) & 0xFF, 1, 16, v2(10, 400),
+                             v2(200, 24),
                              slider_setActorParamB, SliderLabelInteger);
-                CreateSlider("Param C", 0, 255, (node->extra2 >> 8) & 0xFF, 1, 16, v2(10, 450), v2(200, 24),
+                CreateSlider(GetActorParamName(node->extra, 2), 0, 255, (node->extra2 >> 8) & 0xFF, 1, 16, v2(10, 450),
+                             v2(200, 24),
                              slider_setActorParamC, SliderLabelInteger);
-                CreateSlider("Param D", 0, 255, node->extra2 & 0xFF, 1, 16, v2(10, 500), v2(200, 24),
+                CreateSlider(GetActorParamName(node->extra, 3), 0, 255, node->extra2 & 0xFF, 1, 16, v2(10, 500),
+                             v2(200, 24),
                              slider_setActorParamD, SliderLabelInteger);
                 break;
             case NODE_WALL_A:
@@ -541,14 +554,14 @@ void GEditorStateRender(GlobalState *State)
     {
         const EditorNode *node = ListGet(EditorNodes, i);
         const Vector2 screenPos = v2((node->position.x * EditorZoom) + EditorPanX,
-                               (node->position.y * EditorZoom) + EditorPanY);
+                                     (node->position.y * EditorZoom) + EditorPanY);
 
         if (node->type == NODE_WALL_A)
         {
             // Draw a line to the next node, which should be the wall's other end
             const EditorNode *nodeB = ListGet(EditorNodes, i + 1);
             const Vector2 screenPosB = v2((nodeB->position.x * EditorZoom) + EditorPanX,
-                                    (nodeB->position.y * EditorZoom) + EditorPanY);
+                                          (nodeB->position.y * EditorZoom) + EditorPanY);
             setColorUint(0xFFFFFFFF);
             DrawLine(v2(screenPos.x, screenPos.y), v2(screenPosB.x, screenPosB.y), 2);
         }
@@ -596,7 +609,8 @@ void GEditorStateRender(GlobalState *State)
         // for player and actor nodes, draw a line indicating rotation
         if (node->type == NODE_PLAYER || node->type == NODE_ACTOR)
         {
-            const Vector2 lineEnd = v2(screenPos.x + (cos(node->rotation) * 20), screenPos.y + (sin(node->rotation) * 20));
+            const Vector2 lineEnd = v2(screenPos.x + (cos(node->rotation) * 20),
+                                       screenPos.y + (sin(node->rotation) * 20));
             DrawLine(screenPos, lineEnd, 1);
         }
     }
@@ -605,7 +619,7 @@ void GEditorStateRender(GlobalState *State)
     {
         const EditorNode *node = ListGet(EditorNodes, hoveredNode);
         const Vector2 screenPos = v2((node->position.x * EditorZoom) + EditorPanX,
-                               (node->position.y * EditorZoom) + EditorPanY);
+                                     (node->position.y * EditorZoom) + EditorPanY);
 
         char nodeInfo[96];
         switch (node->type)
@@ -647,7 +661,7 @@ void GEditorStateRender(GlobalState *State)
             const byte *tex = wallTextures[node->extra];
             if (tex != NULL)
             {
-                SDL_Rect dst = {10, 310, 64, 64};
+                const SDL_Rect dst = {10, 310, 64, 64};
                 DrawTexture(v2(dst.x, dst.y), v2(dst.w, dst.h), tex);
             }
         }
@@ -830,7 +844,7 @@ void BtnLoad()
     // add a node for each actor
     for (int i = 0; i < ListGetSize(l->actors); i++)
     {
-        Actor *a = ListGet(l->actors, i);
+        const Actor *a = ListGet(l->actors, i);
         EditorNode *actorNode = malloc(sizeof(EditorNode));
         actorNode->type = NODE_ACTOR;
         actorNode->position = a->position;

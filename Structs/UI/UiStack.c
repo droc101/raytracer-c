@@ -3,15 +3,15 @@
 //
 
 #include "UiStack.h"
-#include "../../Helpers/Core/Input.h"
 #include "../Vector2.h"
 #include "../../Assets/Assets.h"
+#include "../../Helpers/Core/Input.h"
 #include "../../Helpers/Core/MathEx.h"
 
 #include "Controls/Button.h"
-#include "Controls/Slider.h"
 #include "Controls/CheckBox.h"
 #include "Controls/RadioButton.h"
+#include "Controls/Slider.h"
 
 void (*ControlDestroyFuncs[4])(const Control *) = {
     DestroyButton, // BUTTON
@@ -71,7 +71,6 @@ bool ProcessUiStack(UiStack *stack)
         ControlUpdateFuncs[c->type](stack, c, v2(mousePos.x - c->position.x, mousePos.y - c->position.y),
                                     stack->ActiveControl);
     }
-
 
 
     for (int i = stack->Controls->size - 1; i >= 0; i--)
@@ -136,7 +135,6 @@ bool ProcessUiStack(UiStack *stack)
     }
 
 
-
     // return whether the mouse is over a control
     return stack->ActiveControl != -1;
 }
@@ -153,7 +151,8 @@ void DrawUiStack(const UiStack *stack)
         if (i == stack->focusedControl)
         {
             setColorUint(0xFFFFFFFF);
-            draw_ninepatch(v2(c->anchoredPosition.x - 4, c->anchoredPosition.y - 4), v2(c->size.x + 8, c->size.y + 8), 16, 16, gztex_interface_focus_rect);
+            draw_ninepatch(v2(c->anchoredPosition.x - 4, c->anchoredPosition.y - 4), v2(c->size.x + 8, c->size.y + 8),
+                           16, 16, gztex_interface_focus_rect);
         }
     }
 }

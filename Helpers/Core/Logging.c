@@ -3,10 +3,11 @@
 //
 
 #include "Logging.h"
-#include <stdio.h>
 #include <stdarg.h>
+#include <stdio.h>
 
-void LogInfo(const char *str, ...) {
+void LogInfo(const char *str, ...)
+{
     printf("\x1b[37;49m[INFO]  ");
     va_list args;
     va_start(args, str);
@@ -18,7 +19,8 @@ void LogInfo(const char *str, ...) {
 #endif
 }
 
-void LogDebug(const char *str, ...) {
+void LogDebug(const char *str, ...)
+{
 #ifndef NDEBUG
     printf("\x1b[37;49m[DEBUG] ");
     va_list args;
@@ -32,7 +34,8 @@ void LogDebug(const char *str, ...) {
 #endif
 }
 
-void LogWarning(const char *str, ...) {
+void LogWarning(const char *str, ...)
+{
     printf("\x1b[33;49m[WARN]  ");
     va_list args;
     va_start(args, str);
@@ -44,7 +47,8 @@ void LogWarning(const char *str, ...) {
 #endif
 }
 
-void LogError(const char *str, ...) {
+void LogError(const char *str, ...)
+{
     printf("\x1b[31;49m[ERROR] ");
     va_list args;
     va_start(args, str);

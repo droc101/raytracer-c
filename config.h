@@ -12,8 +12,8 @@
 #define DEF_HEIGHT 720
 
 // Minimum and maximum window size
-#define MIN_WIDTH 800
-#define MIN_HEIGHT 600
+#define MIN_WIDTH 960
+#define MIN_HEIGHT 720
 
 // Maximum window size
 #define MAX_WIDTH 9999
@@ -26,9 +26,6 @@
 #define MOVE_SPEED 0.1 // Player movement speed
 #define SLOW_MOVE_SPEED 0.01 // Player movement speed when shift is held
 #define MOUSE_SENSITIVITY 0.01 // higher is less sensitive
-
-//#define KEYBOARD_ROTATION // Uncomment to enable keyboard rotation and disable mouse rotation
-#define ROT_SPEED 0.04 // Keyboard rotation speed
 
 #pragma endregion
 
