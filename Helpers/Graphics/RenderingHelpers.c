@@ -134,7 +134,8 @@ inline void UpdateViewportSize()
 {
     const float newScaleX = (float) ActualWindowSize().x / (float) DEF_WIDTH;
     const float newScaleY = (float) ActualWindowSize().y / (float) DEF_HEIGHT;
-    const float newScale = newScaleX < newScaleY ? newScaleX : newScaleY;
+    float newScale = newScaleX < newScaleY ? newScaleX : newScaleY;
+    newScale = max(newScale, 1.0f);
     GetState()->options.uiScale = newScale;
     switch (currentRenderer)
     {

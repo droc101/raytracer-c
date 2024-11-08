@@ -12,8 +12,8 @@
 #define DEF_HEIGHT 720
 
 // Minimum and maximum window size
-#define MIN_WIDTH 800
-#define MIN_HEIGHT 600
+#define MIN_WIDTH 960
+#define MIN_HEIGHT 720
 
 // Maximum window size
 #define MAX_WIDTH 9999
