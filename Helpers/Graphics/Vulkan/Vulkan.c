@@ -63,7 +63,6 @@ typedef struct
     VkImage image;
     VkMemoryRequirements memoryRequirements;
     VkDeviceSize offset;
-    const VkDeviceMemory *memory;
 } ImageAllocationInformation;
 
 SDL_Window *vk_window;
@@ -78,6 +77,7 @@ const List(Vertex) vertices = {
         {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
     }
 };
+
 const List(uint16_t) indices = {6, (uint16_t[]){0, 1, 2, 2, 3, 0}};
 
 /// When the instance is created the Vulkan library gets initialized, allowing the game to provide the library with any
@@ -142,6 +142,7 @@ VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
 VkDescriptorSet descriptorSets[MAX_FRAMES_IN_FLIGHT];
 ImageAllocationInformation textures[TEXTURE_ASSET_COUNT];
 VkDeviceMemory textureMemory;
+VkImageView texturesImageView[TEXTURE_ASSET_COUNT];
 
 /**
  * This function will create the Vulkan instance, set up for SDL.
@@ -268,11 +269,19 @@ static bool PickPhysicalDevice()
             }
             // TODO investigate if separate transfer family is beneficial
             // queueFamilyIndices->transferFamily = queueFamilyIndices->graphicsFamily;
-            if (queueFamilyIndices->graphicsFamily == -1 || (queueFamilyIndices->presentFamily == -1 && queueFamilyIndices->uniquePresentFamily == -1)) continue;
-            if (queueFamilyIndices->presentFamily == -1) queueFamilyIndices->presentFamily = queueFamilyIndices->uniquePresentFamily;
-            if (queueFamilyIndices->transferFamily == -1) queueFamilyIndices->transferFamily = queueFamilyIndices->graphicsFamily;
-            if (queueFamilyIndices->graphicsFamily == queueFamilyIndices->presentFamily && queueFamilyIndices->graphicsFamily == queueFamilyIndices->transferFamily) queueFamilyIndices->familyCount = 1;
-            else if (queueFamilyIndices->graphicsFamily == queueFamilyIndices->presentFamily || queueFamilyIndices->graphicsFamily == queueFamilyIndices->transferFamily) queueFamilyIndices->familyCount = 2;
+            if (queueFamilyIndices->graphicsFamily == -1 || (
+                    queueFamilyIndices->presentFamily == -1 && queueFamilyIndices->uniquePresentFamily == -1))
+                continue;
+            if (queueFamilyIndices->presentFamily == -1)
+                queueFamilyIndices->presentFamily = queueFamilyIndices->uniquePresentFamily;
+            if (queueFamilyIndices->transferFamily == -1)
+                queueFamilyIndices->transferFamily = queueFamilyIndices->graphicsFamily;
+            if (queueFamilyIndices->graphicsFamily == queueFamilyIndices->presentFamily && queueFamilyIndices->
+                graphicsFamily == queueFamilyIndices->transferFamily)
+                queueFamilyIndices->familyCount = 1;
+            else if (queueFamilyIndices->graphicsFamily == queueFamilyIndices->presentFamily || queueFamilyIndices->
+                     graphicsFamily == queueFamilyIndices->transferFamily)
+                queueFamilyIndices->familyCount = 2;
             else queueFamilyIndices->familyCount = 3;
             break;
         }
@@ -334,7 +343,8 @@ static bool CreateLogicalDevice()
         };
     }
     if (queueFamilyIndices->transferFamily != queueFamilyIndices->presentFamily && (
-        queueCount == 1 || (queueCount == 2 && queueFamilyIndices->transferFamily != queueFamilyIndices->graphicsFamily)))
+            queueCount == 1 || (queueCount == 2 && queueFamilyIndices->transferFamily != queueFamilyIndices->
+                                graphicsFamily)))
     {
         queueCreateInfo[queueCount++] = (VkDeviceQueueCreateInfo){
             VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
@@ -420,7 +430,8 @@ static VkPresentModeKHR GetSwapPresentMode()
 static bool CreateSwapChain()
 {
     QuerySwapChainSupport(physicalDevice);
-    if (!swapChainSupport.capabilities.currentExtent.width || !swapChainSupport.capabilities.currentExtent.height) return false;
+    if (!swapChainSupport.capabilities.currentExtent.width || !swapChainSupport.capabilities.currentExtent.height)
+        return false;
     const SwapSurfaceFormatCheck surfaceFormat = GetSwapSurfaceFormat();
     if (!surfaceFormat.found) return false;
     const VkPresentModeKHR presentMode = GetSwapPresentMode();
@@ -439,11 +450,15 @@ static bool CreateSwapChain()
     {
         imageCount = swapChainSupport.capabilities.maxImageCount;
     }
-    uint32_t* const pQueueFamilyIndices[] = {
-        queueFamilyIndices->familyCount == 1 ? (uint32_t[1]){queueFamilyIndices->graphicsFamily} :
-            queueFamilyIndices->familyCount == 3 ?
-                (uint32_t[3]){queueFamilyIndices->graphicsFamily, queueFamilyIndices->presentFamily, queueFamilyIndices->transferFamily} :
-                (uint32_t[2]){queueFamilyIndices->graphicsFamily}
+    uint32_t *const pQueueFamilyIndices[] = {
+        queueFamilyIndices->familyCount == 1
+            ? (uint32_t[1]){queueFamilyIndices->graphicsFamily}
+            : queueFamilyIndices->familyCount == 3
+                  ? (uint32_t[3]){
+                      queueFamilyIndices->graphicsFamily, queueFamilyIndices->presentFamily,
+                      queueFamilyIndices->transferFamily
+                  }
+                  : (uint32_t[2]){queueFamilyIndices->graphicsFamily}
     };
     const VkSwapchainCreateInfoKHR createInfo = {
         VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
@@ -467,8 +482,10 @@ static bool CreateSwapChain()
     };
     if (queueFamilyIndices->familyCount == 2)
     {
-        if (queueFamilyIndices->presentFamily == queueFamilyIndices->graphicsFamily) (*pQueueFamilyIndices)[1] = queueFamilyIndices->transferFamily;
-        if (queueFamilyIndices->transferFamily == queueFamilyIndices->graphicsFamily) (*pQueueFamilyIndices)[1] = queueFamilyIndices->presentFamily;
+        if (queueFamilyIndices->presentFamily == queueFamilyIndices->graphicsFamily)
+            (*pQueueFamilyIndices)[1] = queueFamilyIndices->transferFamily;
+        if (queueFamilyIndices->transferFamily == queueFamilyIndices->graphicsFamily)
+            (*pQueueFamilyIndices)[1] = queueFamilyIndices->presentFamily;
     }
     VulkanTest(vkCreateSwapchainKHR(device, &createInfo, NULL, &swapChain), "Failed to create Vulkan swap chain!");
     vkGetSwapchainImagesKHR(device, swapChain, &imageCount, NULL);
@@ -492,7 +509,12 @@ static bool CreateImageViews()
             swapChainImages[i],
             VK_IMAGE_VIEW_TYPE_2D,
             swapChainImageFormat,
-            {VK_COMPONENT_SWIZZLE_IDENTITY},
+            {
+                VK_COMPONENT_SWIZZLE_IDENTITY,
+                VK_COMPONENT_SWIZZLE_IDENTITY,
+                VK_COMPONENT_SWIZZLE_IDENTITY,
+                VK_COMPONENT_SWIZZLE_IDENTITY
+            },
             {
                 VK_IMAGE_ASPECT_COLOR_BIT,
                 0,
@@ -501,7 +523,8 @@ static bool CreateImageViews()
                 1
             }
         };
-        VulkanTest(vkCreateImageView(device, &createInfo, NULL, &swapChainImageViews[i]), "Failed to create Vulkan image views!");
+        VulkanTest(vkCreateImageView(device, &createInfo, NULL, &swapChainImageViews[i]),
+                   "Failed to create Vulkan image views!");
     }
     return true;
 }
@@ -575,7 +598,8 @@ static bool CreateDescriptorSetLayout()
         1,
         &layoutBinding
     };
-    VulkanTest(vkCreateDescriptorSetLayout(device, &layoutInfo, NULL, &descriptorSetLayout), "Failed to create Vulkan descriptor set layout!");
+    VulkanTest(vkCreateDescriptorSetLayout(device, &layoutInfo, NULL, &descriptorSetLayout),
+               "Failed to create Vulkan descriptor set layout!");
     return true;
 }
 
@@ -589,7 +613,8 @@ static VkShaderModule CreateShaderModule(const uint32_t *code, const size_t size
         code
     };
     VkShaderModule shaderModule;
-    VulkanTest_Internal(vkCreateShaderModule(device, &createInfo, NULL, &shaderModule), "Failed to create shader module!", NULL);
+    VulkanTest_Internal(vkCreateShaderModule(device, &createInfo, NULL, &shaderModule),
+                        "Failed to create shader module!", NULL);
     return shaderModule;
 }
 
@@ -727,7 +752,8 @@ static bool CreateGraphicsPipeline()
         0,
         NULL
     };
-    VulkanTest(vkCreatePipelineLayout(device, &pipelineLayoutInfo, NULL, &pipelineLayout), "Failed to create pipeline layout!");
+    VulkanTest(vkCreatePipelineLayout(device, &pipelineLayoutInfo, NULL, &pipelineLayout),
+               "Failed to create pipeline layout!");
 
     VkGraphicsPipelineCreateInfo pipelineInfo = {
         VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
@@ -750,7 +776,8 @@ static bool CreateGraphicsPipeline()
         VK_NULL_HANDLE,
         -1
     };
-    VulkanTest(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, NULL, &graphicsPipeline), "Failed to create graphics pipeline!");
+    VulkanTest(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, NULL, &graphicsPipeline),
+               "Failed to create graphics pipeline!");
     vkDestroyShaderModule(device, vertShaderModule, NULL);
     vkDestroyShaderModule(device, fragShaderModule, NULL);
     return true;
@@ -773,7 +800,8 @@ static bool CreateFramebuffers()
             swapChainExtent.height,
             1
         };
-        VulkanTest(vkCreateFramebuffer(device, &framebufferInfo, NULL, &swapChainFramebuffers[i]), "Failed to create Vulkan framebuffer!");
+        VulkanTest(vkCreateFramebuffer(device, &framebufferInfo, NULL, &swapChainFramebuffers[i]),
+                   "Failed to create Vulkan framebuffer!");
     }
     return true;
 }
@@ -786,14 +814,16 @@ static bool CreateCommandPools()
         VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
         queueFamilyIndices->graphicsFamily
     };
-    VulkanTest(vkCreateCommandPool(device, &graphicsPoolInfo, NULL, &graphicsCommandPool), "Failed to create Vulkan graphics command pool!");
+    VulkanTest(vkCreateCommandPool(device, &graphicsPoolInfo, NULL, &graphicsCommandPool),
+               "Failed to create Vulkan graphics command pool!");
     const VkCommandPoolCreateInfo transferPoolInfo = {
         VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
         NULL,
         VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
         queueFamilyIndices->transferFamily
     };
-    VulkanTest(vkCreateCommandPool(device, &transferPoolInfo, NULL, &transferCommandPool), "Failed to create Vulkan transfer command pool!");
+    VulkanTest(vkCreateCommandPool(device, &transferPoolInfo, NULL, &transferCommandPool),
+               "Failed to create Vulkan transfer command pool!");
     return true;
 }
 
@@ -801,11 +831,15 @@ static bool CreateBuffer(const VkDeviceSize size, const VkBufferUsageFlags usage
                          const VkMemoryPropertyFlags propertyFlags,
                          VkBuffer *buffer, VkDeviceMemory *bufferMemory)
 {
-    uint32_t* const pQueueFamilyIndices[] = {
-        queueFamilyIndices->familyCount == 1 ? (uint32_t[1]){queueFamilyIndices->graphicsFamily} :
-            queueFamilyIndices->familyCount == 3 ?
-                (uint32_t[3]){queueFamilyIndices->graphicsFamily, queueFamilyIndices->presentFamily, queueFamilyIndices->transferFamily} :
-                (uint32_t[2]){queueFamilyIndices->graphicsFamily}
+    uint32_t *const pQueueFamilyIndices[] = {
+        queueFamilyIndices->familyCount == 1
+            ? (uint32_t[1]){queueFamilyIndices->graphicsFamily}
+            : queueFamilyIndices->familyCount == 3
+                  ? (uint32_t[3]){
+                      queueFamilyIndices->graphicsFamily, queueFamilyIndices->presentFamily,
+                      queueFamilyIndices->transferFamily
+                  }
+                  : (uint32_t[2]){queueFamilyIndices->graphicsFamily}
     };
     const VkBufferCreateInfo bufferInfo = {
         VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
@@ -819,8 +853,10 @@ static bool CreateBuffer(const VkDeviceSize size, const VkBufferUsageFlags usage
     };
     if (queueFamilyIndices->familyCount == 2)
     {
-        if (queueFamilyIndices->presentFamily == queueFamilyIndices->graphicsFamily) (*pQueueFamilyIndices)[1] = queueFamilyIndices->transferFamily;
-        if (queueFamilyIndices->transferFamily == queueFamilyIndices->graphicsFamily) (*pQueueFamilyIndices)[1] = queueFamilyIndices->presentFamily;
+        if (queueFamilyIndices->presentFamily == queueFamilyIndices->graphicsFamily)
+            (*pQueueFamilyIndices)[1] = queueFamilyIndices->transferFamily;
+        if (queueFamilyIndices->transferFamily == queueFamilyIndices->graphicsFamily)
+            (*pQueueFamilyIndices)[1] = queueFamilyIndices->presentFamily;
     }
     VulkanTest(vkCreateBuffer(device, &bufferInfo, NULL, buffer), "Failed to create Vulkan buffer!");
     VkMemoryRequirements memRequirements;
@@ -838,7 +874,8 @@ static bool CreateBuffer(const VkDeviceSize size, const VkBufferUsageFlags usage
                 memRequirements.size,
                 i
             };
-            VulkanTest(vkAllocateMemory(device, &allocInfo, NULL, bufferMemory), "Failed to allocate Vulkan buffer memory!");
+            VulkanTest(vkAllocateMemory(device, &allocInfo, NULL, bufferMemory),
+                       "Failed to allocate Vulkan buffer memory!");
             vkBindBufferMemory(device, *buffer, *bufferMemory, 0);
             return true;
         }
@@ -895,17 +932,21 @@ static void CopyBuffer(const VkBuffer srcBuffer, const VkBuffer dstBuffer, const
     EndCommandBuffer(commandBuffer);
 }
 
-bool LoadTextures()
+static bool LoadTextures()
 {
     VkDeviceSize memorySize = 0;
     for (uint16_t textureIndex = 0; textureIndex < TEXTURE_ASSET_COUNT; textureIndex++)
     {
         const byte *decompressed = DecompressAsset(texture_assets[textureIndex]);
-        uint32_t* const pQueueFamilyIndices[] = {
-            queueFamilyIndices->familyCount == 1 ? (uint32_t[1]){queueFamilyIndices->graphicsFamily} :
-                queueFamilyIndices->familyCount == 3 ?
-                    (uint32_t[3]){queueFamilyIndices->graphicsFamily, queueFamilyIndices->presentFamily, queueFamilyIndices->transferFamily} :
-                    (uint32_t[2]){queueFamilyIndices->graphicsFamily}
+        uint32_t *const pQueueFamilyIndices[] = {
+            queueFamilyIndices->familyCount == 1
+                ? (uint32_t[1]){queueFamilyIndices->graphicsFamily}
+                : queueFamilyIndices->familyCount == 3
+                      ? (uint32_t[3]){
+                          queueFamilyIndices->graphicsFamily, queueFamilyIndices->presentFamily,
+                          queueFamilyIndices->transferFamily
+                      }
+                      : (uint32_t[2]){queueFamilyIndices->graphicsFamily}
         };
         const VkImageCreateInfo imageInfo = {
             VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
@@ -926,22 +967,26 @@ bool LoadTextures()
         };
         if (queueFamilyIndices->familyCount == 2)
         {
-            if (queueFamilyIndices->presentFamily == queueFamilyIndices->graphicsFamily) (*pQueueFamilyIndices)[1] = queueFamilyIndices->transferFamily;
-            if (queueFamilyIndices->transferFamily == queueFamilyIndices->graphicsFamily) (*pQueueFamilyIndices)[1] = queueFamilyIndices->presentFamily;
+            if (queueFamilyIndices->presentFamily == queueFamilyIndices->graphicsFamily)
+                (*pQueueFamilyIndices)[1] = queueFamilyIndices->transferFamily;
+            if (queueFamilyIndices->transferFamily == queueFamilyIndices->graphicsFamily)
+                (*pQueueFamilyIndices)[1] = queueFamilyIndices->presentFamily;
         }
 
-        VulkanTest(vkCreateImage(device, &imageInfo, NULL, &textures[textureIndex].image), "Failed to create textures for Vulkan!");
+        VulkanTest(vkCreateImage(device, &imageInfo, NULL, &textures[textureIndex].image),
+                   "Failed to create textures for Vulkan!");
         vkGetImageMemoryRequirements(device, textures[textureIndex].image, &textures[textureIndex].memoryRequirements);
         textures[textureIndex].offset = memorySize;
         memorySize += textures[textureIndex].memoryRequirements.size;
-        textures[textureIndex].memory = &textureMemory;
     }
 
     VkPhysicalDeviceMemoryProperties memoryProperties;
     vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
     for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++)
     {
-        if (textures[i].memoryRequirements.memoryTypeBits & 1 << i && (memoryProperties.memoryTypes[i].propertyFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) == VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
+        if (textures[i].memoryRequirements.memoryTypeBits & 1 << i && (
+                memoryProperties.memoryTypes[i].propertyFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) ==
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
         {
             const VkMemoryAllocateInfo allocateInfo = {
                 VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
@@ -949,23 +994,29 @@ bool LoadTextures()
                 memorySize,
                 i
             };
-            VulkanTest(vkAllocateMemory(device, &allocateInfo, NULL, &textureMemory), "Failed to allocate Vulkan texture memory!");
+            VulkanTest(vkAllocateMemory(device, &allocateInfo, NULL, &textureMemory),
+                       "Failed to allocate Vulkan texture memory!");
             break;
         }
     }
 
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
-    CreateBuffer(memorySize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &stagingBuffer, &stagingBufferMemory);
+    CreateBuffer(memorySize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &stagingBuffer,
+                 &stagingBufferMemory);
 
     for (uint16_t textureIndex = 0; textureIndex < TEXTURE_ASSET_COUNT; textureIndex++)
     {
-        VulkanTest(vkBindImageMemory(device, textures[textureIndex].image, textureMemory, textures[textureIndex].offset), "Failed to bind Vulkan texture memory!");
+        VulkanTest(
+            vkBindImageMemory(device, textures[textureIndex].image, textureMemory, textures[textureIndex].offset),
+            "Failed to bind Vulkan texture memory!");
 
         const byte *decompressed = DecompressAsset(texture_assets[textureIndex]);
         void *data;
         data = calloc(1, textures[textureIndex].memoryRequirements.size);
-        vkMapMemory(device, stagingBufferMemory, textures[textureIndex].offset, textures[textureIndex].memoryRequirements.size, 0, &data);
+        vkMapMemory(device, stagingBufferMemory, textures[textureIndex].offset,
+                    textures[textureIndex].memoryRequirements.size, 0, &data);
         memcpy(data, decompressed + sizeof(uint) * 4, ReadUintA(decompressed, 0) * 4);
         vkUnmapMemory(device, stagingBufferMemory);
 
@@ -988,7 +1039,8 @@ bool LoadTextures()
                 1
             }
         };
-        vkCmdPipelineBarrier(firstCommandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, 1, &firstTransferBarrier);
+        vkCmdPipelineBarrier(firstCommandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
+                             0, NULL, 0, NULL, 1, &firstTransferBarrier);
         EndCommandBuffer(firstCommandBuffer);
 
         const VkCommandBuffer secondCommandBuffer = BeginCommandBuffer();
@@ -1009,7 +1061,8 @@ bool LoadTextures()
                 1
             }
         };
-        vkCmdCopyBufferToImage(secondCommandBuffer, stagingBuffer, textures[textureIndex].image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copy);
+        vkCmdCopyBufferToImage(secondCommandBuffer, stagingBuffer, textures[textureIndex].image,
+                               VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copy);
         EndCommandBuffer(secondCommandBuffer);
 
         const VkCommandBuffer thirdCommandBuffer = BeginCommandBuffer();
@@ -1031,13 +1084,45 @@ bool LoadTextures()
                 1
             }
         };
-        vkCmdPipelineBarrier(thirdCommandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, NULL, 0, NULL, 1, &secondTransferBarrier);
+        vkCmdPipelineBarrier(thirdCommandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                             0, 0, NULL, 0, NULL, 1, &secondTransferBarrier);
         EndCommandBuffer(thirdCommandBuffer);
     }
 
     vkDestroyBuffer(device, stagingBuffer, NULL);
     vkFreeMemory(device, stagingBufferMemory, NULL);
 
+    return true;
+}
+
+static bool CreateTexturesImageView()
+{
+    for (uint16_t i = 0; i < TEXTURE_ASSET_COUNT; i++)
+    {
+        VkImageViewCreateInfo createInfo = {
+            VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+            NULL,
+            0,
+            textures[i].image,
+            VK_IMAGE_VIEW_TYPE_2D,
+            VK_FORMAT_R8G8B8A8_SRGB,
+            {
+                VK_COMPONENT_SWIZZLE_IDENTITY,
+                VK_COMPONENT_SWIZZLE_IDENTITY,
+                VK_COMPONENT_SWIZZLE_IDENTITY,
+                VK_COMPONENT_SWIZZLE_IDENTITY
+            },
+            {
+                VK_IMAGE_ASPECT_COLOR_BIT,
+                0,
+                1,
+                0,
+                1
+            }
+        };
+        VulkanTest(vkCreateImageView(device, &createInfo, NULL, &texturesImageView[i]),
+                   "Failed to create Vulkan texture image view!");
+    }
     return true;
 }
 
@@ -1114,7 +1199,8 @@ static bool CreateDescriptorPool()
         1,
         &poolSize
     };
-    VulkanTest(vkCreateDescriptorPool(device, &poolCreateInfo, NULL, &descriptorPool), "Failed to create Vulkan descriptor pool!");
+    VulkanTest(vkCreateDescriptorPool(device, &poolCreateInfo, NULL, &descriptorPool),
+               "Failed to create Vulkan descriptor pool!");
     return true;
 }
 
@@ -1129,7 +1215,8 @@ static bool CreateDescriptorSets()
         MAX_FRAMES_IN_FLIGHT,
         layouts
     };
-    VulkanTest(vkAllocateDescriptorSets(device, &allocateInfo, descriptorSets), "Failed to allocate Vulkan descriptor sets!");
+    VulkanTest(vkAllocateDescriptorSets(device, &allocateInfo, descriptorSets),
+               "Failed to allocate Vulkan descriptor sets!");
     for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
         VkDescriptorBufferInfo bufferInfo = {
@@ -1163,7 +1250,8 @@ static bool CreateCommandBuffers()
         VK_COMMAND_BUFFER_LEVEL_PRIMARY,
         MAX_FRAMES_IN_FLIGHT
     };
-    VulkanTest(vkAllocateCommandBuffers(device, &allocateInfo, commandBuffers), "Failed to allocate Vulkan command buffers!");
+    VulkanTest(vkAllocateCommandBuffers(device, &allocateInfo, commandBuffers),
+               "Failed to allocate Vulkan command buffers!");
     return true;
 }
 
@@ -1181,8 +1269,10 @@ static bool CreateSyncObjects()
     };
     for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
-        VulkanTest(vkCreateSemaphore(device, &semaphoreInfo, NULL, &imageAvailableSemaphores[i]), "Failed to create Vulkan semaphores!");
-        VulkanTest(vkCreateSemaphore(device, &semaphoreInfo, NULL, &renderFinishedSemaphores[i]), "Failed to create Vulkan semaphores!");
+        VulkanTest(vkCreateSemaphore(device, &semaphoreInfo, NULL, &imageAvailableSemaphores[i]),
+                   "Failed to create Vulkan semaphores!");
+        VulkanTest(vkCreateSemaphore(device, &semaphoreInfo, NULL, &renderFinishedSemaphores[i]),
+                   "Failed to create Vulkan semaphores!");
         VulkanTest(vkCreateFence(device, &fenceInfo, NULL, &inFlightFences[i]), "Failed to create Vulkan semaphores!");
     }
     return true;
@@ -1200,19 +1290,19 @@ bool VK_Init(SDL_Window *window)
 {
     vk_window = window;
     // ReSharper disable once CppDFAConstantConditions
-    if (!CreateInstance() || !CreateSurface() || !PickPhysicalDevice() || !CreateLogicalDevice() || !
-        CreateSwapChain() || !CreateImageViews() || !CreateRenderPass() || !CreateDescriptorSetLayout() || !
-        CreateGraphicsPipeline() || !CreateFramebuffers() || !CreateCommandPools() || !LoadTextures() || !CreateVertexBuffer() || !
-        CreateIndexBuffer() || !CreateUniformBuffers() || !CreateDescriptorPool() || !CreateDescriptorSets() || !
-        CreateCommandBuffers() || !CreateSyncObjects())
+    if (CreateInstance() && CreateSurface() && PickPhysicalDevice() && CreateLogicalDevice() && CreateSwapChain() &&
+        CreateImageViews() && CreateRenderPass() && CreateDescriptorSetLayout() && CreateGraphicsPipeline() &&
+        CreateFramebuffers() && CreateCommandPools() && LoadTextures() && CreateTexturesImageView() &&
+        CreateVertexBuffer() && CreateIndexBuffer() && CreateUniformBuffers() && CreateDescriptorPool() &&
+        CreateDescriptorSets() && CreateCommandBuffers() && CreateSyncObjects())
     {
-        VK_Cleanup();
-        return false;
+        return true;
     }
-    return true;
+    VK_Cleanup();
+    return false;
 }
 
-void CleanupSwapChain()
+static void CleanupSwapChain()
 {
     for (uint32_t i = 0; i < swapChainCount; i++) vkDestroyFramebuffer(device, swapChainFramebuffers[i], NULL);
     for (uint32_t i = 0; i < swapChainCount; i++) vkDestroyImageView(device, swapChainImageViews[i], NULL);
@@ -1228,6 +1318,7 @@ void VK_Cleanup()
         CleanupSwapChain();
         for (uint16_t i = 0; i < TEXTURE_ASSET_COUNT; i++)
         {
+            vkDestroyImageView(device, texturesImageView[i], NULL);
             vkDestroyImage(device, textures[i].image, NULL);
         }
         vkFreeMemory(device, textureMemory, NULL);
@@ -1245,7 +1336,8 @@ void VK_Cleanup()
         vkFreeMemory(device, indexBufferMemory, NULL);
         vkDestroyBuffer(device, vertexBuffer, NULL);
         vkFreeMemory(device, vertexBufferMemory, NULL);
-        for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT && imageAvailableSemaphores[i] && renderFinishedSemaphores[i] && inFlightFences[i]; i++)
+        for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT && imageAvailableSemaphores[i] && renderFinishedSemaphores[i] &&
+                            inFlightFences[i]; i++)
         {
             vkDestroySemaphore(device, imageAvailableSemaphores[i], NULL);
             vkDestroySemaphore(device, renderFinishedSemaphores[i], NULL);
@@ -1297,12 +1389,12 @@ static void RecordCommandBuffer(const VkCommandBuffer buffer, const uint32_t ima
         renderPass,
         swapChainFramebuffers[imageIndex],
         {
-                {0, 0},
-                swapChainExtent
-            },
-            1,
-            &clearColor
-        };
+            {0, 0},
+            swapChainExtent
+        },
+        1,
+        &clearColor
+    };
     vkCmdBeginRenderPass(buffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
     vkCmdBindPipeline(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
     const VkViewport viewport = {
@@ -1336,7 +1428,8 @@ void VK_DrawFrame()
     if (minimized) return;
     vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
     uint32_t imageIndex;
-    const VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+    const VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame],
+                                                  VK_NULL_HANDLE, &imageIndex);
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
     {
         RecreateSwapChain();
@@ -1365,7 +1458,8 @@ void VK_DrawFrame()
         1,
         signalSemaphores
     };
-    VulkanTest_Internal(vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]), "Failed to submit Vulkan draw command buffer!",);
+    VulkanTest_Internal(vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]),
+                        "Failed to submit Vulkan draw command buffer!",);
     const VkSwapchainKHR swapChains[] = {swapChain};
     const VkPresentInfoKHR presentInfo = {
         VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
@@ -1381,12 +1475,12 @@ void VK_DrawFrame()
     currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
-void VK_Minimize()
+inline void VK_Minimize()
 {
     minimized = true;
 }
 
-void VK_Restore()
+inline void VK_Restore()
 {
     minimized = false;
 }
