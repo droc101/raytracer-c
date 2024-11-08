@@ -143,6 +143,7 @@ VkDescriptorSet descriptorSets[MAX_FRAMES_IN_FLIGHT];
 ImageAllocationInformation textures[TEXTURE_ASSET_COUNT];
 VkDeviceMemory textureMemory;
 VkImageView texturesImageView[TEXTURE_ASSET_COUNT];
+VkSampler textureSampler;
 
 /**
  * This function will create the Vulkan instance, set up for SDL.
@@ -243,7 +244,7 @@ static bool PickPhysicalDevice()
         const VkPhysicalDevice pDevice = devices[i];
         VkPhysicalDeviceFeatures deviceFeatures;
         vkGetPhysicalDeviceFeatures(pDevice, &deviceFeatures);
-        if (!deviceFeatures.geometryShader) continue;
+        if (!deviceFeatures.geometryShader || !deviceFeatures.samplerAnisotropy) continue;
         uint32_t familyCount = 0;
         vkGetPhysicalDeviceQueueFamilyProperties(pDevice, &familyCount, NULL);
         VkQueueFamilyProperties families[familyCount];
@@ -355,8 +356,10 @@ static bool CreateLogicalDevice()
             &queuePriority
         };
     }
-    VkPhysicalDeviceFeatures deviceFeatures = {VK_FALSE};
-    deviceFeatures.logicOp = true;
+    VkPhysicalDeviceFeatures deviceFeatures = {
+        .logicOp = VK_TRUE,
+        .samplerAnisotropy = VK_TRUE
+    };
     VkDeviceCreateInfo createInfo = {
         VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
         NULL,
@@ -1126,6 +1129,35 @@ static bool CreateTexturesImageView()
     return true;
 }
 
+static bool CreateTextureSampler()
+{
+    VkPhysicalDeviceProperties properties;
+    vkGetPhysicalDeviceProperties(physicalDevice, &properties);
+    const VkSamplerCreateInfo samplerCreateInfo = {
+        VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+        NULL,
+        0,
+        VK_FILTER_LINEAR,
+        VK_FILTER_LINEAR,
+        VK_SAMPLER_MIPMAP_MODE_LINEAR,
+        VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        0,
+        VK_TRUE,
+        properties.limits.maxSamplerAnisotropy,
+        VK_FALSE,
+        VK_COMPARE_OP_ALWAYS,
+        0,
+        0,
+        VK_BORDER_COLOR_INT_OPAQUE_BLACK,
+        VK_FALSE
+    };
+    VulkanTest(vkCreateSampler(device, &samplerCreateInfo, NULL, &textureSampler),
+               "Failed to create Vulkan texture sampler!");
+    return true;
+}
+
 static bool CreateVertexBuffer()
 {
     const VkDeviceSize bufferSize = sizeof(vertices.data[0]) * vertices.length;
@@ -1293,8 +1325,8 @@ bool VK_Init(SDL_Window *window)
     if (CreateInstance() && CreateSurface() && PickPhysicalDevice() && CreateLogicalDevice() && CreateSwapChain() &&
         CreateImageViews() && CreateRenderPass() && CreateDescriptorSetLayout() && CreateGraphicsPipeline() &&
         CreateFramebuffers() && CreateCommandPools() && LoadTextures() && CreateTexturesImageView() &&
-        CreateVertexBuffer() && CreateIndexBuffer() && CreateUniformBuffers() && CreateDescriptorPool() &&
-        CreateDescriptorSets() && CreateCommandBuffers() && CreateSyncObjects())
+        CreateTextureSampler() && CreateVertexBuffer() && CreateIndexBuffer() && CreateUniformBuffers() &&
+        CreateDescriptorPool() && CreateDescriptorSets() && CreateCommandBuffers() && CreateSyncObjects())
     {
         return true;
     }
@@ -1316,6 +1348,7 @@ void VK_Cleanup()
     {
         vkDeviceWaitIdle(device);
         CleanupSwapChain();
+        vkDestroySampler(device, textureSampler, NULL);
         for (uint16_t i = 0; i < TEXTURE_ASSET_COUNT; i++)
         {
             vkDestroyImageView(device, texturesImageView[i], NULL);
