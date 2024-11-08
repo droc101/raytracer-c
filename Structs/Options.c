@@ -17,6 +17,7 @@ void DefaultOptions(Options *options)
     options->fullscreen = false;
     options->vsync = false;
     options->mouseSpeed = 1;
+    options->controllerMode = false;
 }
 
 ushort GetOptionsChecksum(Options *options)

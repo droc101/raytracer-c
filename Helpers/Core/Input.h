@@ -12,6 +12,16 @@
 #define INP_PRESSED 2
 #define INP_JUST_RELEASED 3
 
+void HandleControlerDisconnect(Sint32 which);
+
+void HandleControllerConnect();
+
+void HandleControllerButtonUp(SDL_GameControllerButton button);
+
+void HandleControllerButtonDown(SDL_GameControllerButton button);
+
+void HandleControllerAxis(SDL_GameControllerAxis axis, Sint16 value);
+
 /**
  * Handles key down event
  * @param code Key code
@@ -52,6 +62,13 @@ void HandleMouseUp(int button);
 void UpdateInputStates();
 
 // Exposed methods
+
+bool IsButtonPressed(int button);
+
+bool IsButtonJustPressed(int button);
+
+bool IsButtonJustReleased(int button);
+
 /**
  * Checks if a key is pressed
  * @param code Key code
@@ -112,6 +129,8 @@ Vector2 GetMouseRel();
  */
 void ConsumeKey(int code);
 
+void ConsumeButton(int btn);
+
 /**
  * Consumes a mouse button press state, so no other input check can see it
  * @param button The button code
@@ -127,5 +146,18 @@ void ConsumeAllKeys();
  * Consumes all mouse button press states, so no other input check can see them
  */
 void ConsumeAllMouseButtons();
+
+/**
+ * Gets the value of a controller axis
+ * @param axis The axis to get the value of
+ * @return The value of the axis (between -1 and 1)
+ */
+double GetAxis(SDL_GameControllerAxis axis);
+
+/**
+ * Checks if a controller is being used
+ * @return whether a controller is being used
+ */
+bool UseController();
 
 #endif //GAME_INPUT_H

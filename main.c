@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 
     SDL_SetHint(SDL_HINT_APP_NAME, GAME_TITLE);
 
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER) != 0)
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0)
     {
         LogError("SDL_Init Error: %s\n", SDL_GetError());
         Error("Failed to initialize SDL");
@@ -131,6 +131,21 @@ int main(int argc, char *argv[])
                 case SDL_WINDOWEVENT:
                     if (e.window.event == SDL_WINDOWEVENT_RESIZED) UpdateViewportSize();
                     break;
+                case SDL_CONTROLLERDEVICEADDED:
+                    HandleControllerConnect();
+                    break;
+                case SDL_CONTROLLERDEVICEREMOVED:
+                    HandleControlerDisconnect(e.cdevice.which);
+                    break;
+                case SDL_CONTROLLERBUTTONDOWN:
+                    HandleControllerButtonDown(e.cbutton.button);
+                    break;
+                case SDL_CONTROLLERBUTTONUP:
+                    HandleControllerButtonUp(e.cbutton.button);
+                    break;
+                case SDL_CONTROLLERAXISMOTION:
+                    HandleControllerAxis(e.caxis.axis, e.caxis.value);
+                    break;
                 default:
                     break;
             }
@@ -179,7 +194,7 @@ int main(int argc, char *argv[])
     RenderDestroy();
     Mix_CloseAudio();
     Mix_Quit();
-    SDL_QuitSubSystem(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_TIMER);
+    SDL_QuitSubSystem(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER);
     SDL_Quit();
     return 0;
 }

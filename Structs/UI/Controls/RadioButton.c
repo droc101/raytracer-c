@@ -67,6 +67,7 @@ void UpdateRadioButton(UiStack *stack, Control *c, Vector2 localMousePos, uint c
 
         ConsumeMouseButton(SDL_BUTTON_LEFT);
         ConsumeKey(SDL_SCANCODE_SPACE);
+        ConsumeButton(SDL_CONTROLLER_BUTTON_A);
 
         if (data->callback != NULL)
         {

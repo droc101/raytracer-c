@@ -24,7 +24,7 @@ int pauseSelected = 0;
 
 void GPauseStateUpdate(GlobalState *State)
 {
-    if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE))
+    if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_B))
     {
         PlaySoundEffect(gzwav_sfx_popdown);
         GMainStateSet();
@@ -32,15 +32,15 @@ void GPauseStateUpdate(GlobalState *State)
     }
 
 
-    if (IsKeyJustPressed(SDL_SCANCODE_DOWN))
+    if (IsKeyJustPressed(SDL_SCANCODE_DOWN) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_DPAD_DOWN))
     {
         pauseSelected++;
         pauseSelected = wrap(pauseSelected, 0, 2);
-    } else if (IsKeyJustPressed(SDL_SCANCODE_UP))
+    } else if (IsKeyJustPressed(SDL_SCANCODE_UP) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_DPAD_UP))
     {
         pauseSelected--;
         pauseSelected = wrap(pauseSelected, 0, 2);
-    } else if (IsKeyJustPressed(SDL_SCANCODE_SPACE))
+    } else if (IsKeyJustPressed(SDL_SCANCODE_SPACE) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_A) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_START))
     {
         switch (pauseSelected)
         {

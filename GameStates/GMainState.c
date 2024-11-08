@@ -13,13 +13,14 @@
 #include "../Helpers/TextBox.h"
 #include "../Helpers/Core/Error.h"
 #include "../Helpers/Core/Input.h"
+#include "../Helpers/Core/Logging.h"
 #include "../Helpers/Core/MathEx.h"
 #include "../Helpers/Graphics/Drawing.h"
 #include "../Helpers/Graphics/Font.h"
 
 void GMainStateUpdate(GlobalState *State)
 {
-    if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE))
+    if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_START))
     {
         GPauseStateSet();
         return;
@@ -34,7 +35,7 @@ void GMainStateUpdate(GlobalState *State)
 
     if (State->textBoxActive)
     {
-        if (IsKeyJustPressed(SDL_SCANCODE_SPACE))
+        if (IsKeyJustPressed(SDL_SCANCODE_SPACE) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_A))
         {
             State->textBoxPage++;
             if (State->textBoxPage >= (StringLineCount(State->textBox.text)) / State->textBox.rows)
@@ -69,31 +70,49 @@ uint GMainStateFixedUpdate(const uint interval, GlobalState *State)
 
     Level *l = State->level;
     Vector2 moveVec = v2(0, 0);
-    if (IsKeyPressed(SDL_SCANCODE_W))
+    if (UseController())
     {
-        moveVec.x += 1;
-    } else if (IsKeyPressed(SDL_SCANCODE_S))
+        moveVec.y = GetAxis(SDL_CONTROLLER_AXIS_LEFTX);
+        moveVec.x = -GetAxis(SDL_CONTROLLER_AXIS_LEFTY);
+        if (fabs(moveVec.x) < 0.1)
+        {
+            moveVec.x = 0;
+        }
+        if (fabs(moveVec.y) < 0.1)
+        {
+            moveVec.y = 0;
+        }
+
+    } else
     {
-        moveVec.x -= 1;
+        if (IsKeyPressed(SDL_SCANCODE_W) || GetAxis(SDL_CONTROLLER_AXIS_LEFTY) < -0.5)
+        {
+            moveVec.x += 1;
+        } else if (IsKeyPressed(SDL_SCANCODE_S) || GetAxis(SDL_CONTROLLER_AXIS_LEFTY) > 0.5)
+        {
+            moveVec.x -= 1;
+        }
+
+        if (IsKeyPressed(SDL_SCANCODE_A) || GetAxis(SDL_CONTROLLER_AXIS_LEFTX) < -0.5)
+        {
+            moveVec.y -= 1;
+        } else if (IsKeyPressed(SDL_SCANCODE_D) || GetAxis(SDL_CONTROLLER_AXIS_LEFTX) > 0.5)
+        {
+            moveVec.y += 1;
+        }
     }
 
-    if (IsKeyPressed(SDL_SCANCODE_A))
-    {
-        moveVec.y -= 1;
-    } else if (IsKeyPressed(SDL_SCANCODE_D))
-    {
-        moveVec.y += 1;
-    }
+
 
     const bool isMoving = moveVec.x != 0 || moveVec.y != 0;
 
-    if (isMoving)
+    if (isMoving && !UseController())
     {
         moveVec = Vector2Normalize(moveVec);
     }
 
     double spd = MOVE_SPEED;
-    if (IsKeyPressed(SDL_SCANCODE_LSHIFT))
+    if (IsKeyPressed(SDL_SCANCODE_LSHIFT) || GetAxis(SDL_CONTROLLER_AXIS_TRIGGERLEFT) > 0.5)
     {
         spd = SLOW_MOVE_SPEED;
     }
@@ -102,6 +121,13 @@ uint GMainStateFixedUpdate(const uint interval, GlobalState *State)
     moveVec = Vector2Rotate(moveVec, l->rotation);
 
     l->position = Move(l->position, moveVec, NULL);
+
+    const double cx = GetAxis(SDL_CONTROLLER_AXIS_RIGHTX);
+    if (fabs(cx) > 0.1)
+    {
+        l->rotation += cx * (State->options.mouseSpeed / 15.0);
+    }
+
 
     // view bobbing (scam edition) 💀 (it's better now trust me)
     if (spd == SLOW_MOVE_SPEED)

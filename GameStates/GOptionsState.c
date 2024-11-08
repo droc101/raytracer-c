@@ -62,7 +62,7 @@ void CbOptionsVsync(const bool value)
 
 void GOptionsStateUpdate(GlobalState *State)
 {
-    if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE))
+    if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_B))
     {
         BtnOptionsBack();
     }
@@ -71,6 +71,11 @@ void GOptionsStateUpdate(GlobalState *State)
 void SldOptionsMouseSensitivity(const double value)
 {
     GetState()->options.mouseSpeed = value;
+}
+
+void CbOptionsControllerMode(const bool value)
+{
+    GetState()->options.controllerMode = value;
 }
 
 void GOptionsStateRender(GlobalState *State)
@@ -86,7 +91,7 @@ void GOptionsStateRender(GlobalState *State)
     DrawTextAligned("Options", 32, 0xFFFFFFFF, v2s(0), v2(WindowWidth(), 100), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE,
                     false);
 
-    DrawTextAligned("Changing renderer requires a restart", 16, 0xFFa0a0a0, v2(0, 540), v2(WindowWidth(), 40),
+    DrawTextAligned("Changing renderer requires a restart", 16, 0xFFa0a0a0, v2(0, 590), v2(WindowWidth(), 40),
                     FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
 
     ProcessUiStack(optionsStack);
@@ -101,9 +106,13 @@ void GOptionsStateSet()
         int opy = 40;
         const int ops = 25;
         UiStackPush(optionsStack,
-                    CreateSliderControl(v2(0, opy), v2(480, 40), "Mouse Sensitivity", SldOptionsMouseSensitivity,
+                    CreateSliderControl(v2(0, opy), v2(480, 40), "Camera Sensitivity", SldOptionsMouseSensitivity,
                                         TOP_CENTER, 0.01, 2.00,
                                         GetState()->options.mouseSpeed, 0.01, 0.1, SliderLabelPercent));
+        opy += ops;
+        UiStackPush(optionsStack,
+                    CreateCheckboxControl(v2(0, opy), v2(480, 40), "Controller Mode", CbOptionsControllerMode, TOP_CENTER,
+                                          GetState()->options.controllerMode));
         opy += ops * 1.5;
         UiStackPush(optionsStack,
                     CreateSliderControl(v2(0, opy), v2(480, 40), "Master Volume", SldOptionsMasterVolume, TOP_CENTER,
@@ -137,7 +146,7 @@ void GOptionsStateSet()
 
         UiStackPush(optionsStack, CreateButtonControl(v2(0, -40), v2(480, 40), "Done", BtnOptionsBack, BOTTOM_CENTER));
     }
-    optionsStack->focusedControl = -1;
+    UiStackResetFocus(optionsStack);
 
     SetRenderCallback(GOptionsStateRender);
     SetUpdateCallback(GOptionsStateUpdate, NULL, OPTIONS_STATE); // Fixed update is not needed for this state

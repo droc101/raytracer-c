@@ -128,4 +128,10 @@ bool IsMouseInRect(const Vector2 pos, const Vector2 size);
  */
 bool HasActivation(UiStack *stack, Control *Control);
 
+/**
+ * Reset the focus of a UiStack (to either the first control or none, depending on whether controller is used)
+ * @param stack The UiStack to reset the focus of
+ */
+void UiStackResetFocus(UiStack *stack);
+
 #endif //GAME_UISTACK_H

@@ -36,16 +36,12 @@ double Vector2Length(const Vector2 vec)
 
 Vector2 Vector2Normalize(const Vector2 vec)
 {
-    // Calculate the length of the vector
-    const double length = Vector2Length(vec);
-
-    // If the vector is able to be normalized, continue, otherwise return the input vector
-    if (length != 0 && length != 1)
+    const double len = Vector2Length(vec);
+    if (len == 0)
     {
-        // Calculate the normalized components and return them as a vector
-        return v2(vec.x / length, vec.y / length);
+        return v2(0, 0);
     }
-    return vec;
+    return v2(vec.x / len, vec.y / len);
 }
 
 Vector2 Vector2FromAngle(const double angle)

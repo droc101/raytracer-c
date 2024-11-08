@@ -126,6 +126,7 @@ typedef struct Options
     double mouseSpeed;
     bool fullscreen;
     bool vsync;
+    bool controllerMode;
 } __attribute__((packed)) Options; // This is packed because it is saved to disk
 
 // Global state of the game

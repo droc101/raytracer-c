@@ -82,7 +82,7 @@ void GMenuStateSet()
         UiStackPush(menuStack, CreateButtonControl(v2(0, 130), v2(480, 40), "Options", OpenOptions, MIDDLE_CENTER));
         UiStackPush(menuStack, CreateButtonControl(v2(0, 180), v2(480, 40), "Quit", QuitGame, MIDDLE_CENTER));
     }
-    menuStack->focusedControl = -1;
+    UiStackResetFocus(menuStack);
 
     SetRenderCallback(GMenuStateRender);
     SetUpdateCallback(GMenuStateUpdate, NULL, MENU_STATE); // Fixed update is not needed for this state
