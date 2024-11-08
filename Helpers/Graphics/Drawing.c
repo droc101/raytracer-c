@@ -12,6 +12,7 @@
 #include "../LevelLoader.h" // for ReadUInt
 #include "GL/glHelper.h"
 #include "../../Structs/GlobalState.h"
+#include "../Core/DataReader.h"
 #include "../Core/Logging.h"
 
 SDL_Window *window;

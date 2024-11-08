@@ -10,6 +10,7 @@
 #include <vulkan/vulkan.h>
 #include "../../../Assets/AssetReader.h"
 #include "../../../Assets/Assets.h"
+#include "../../Core/DataReader.h"
 #include "../../Core/Error.h"
 #include "../../Core/MathEx.h"
 
@@ -26,6 +27,7 @@ typedef struct
     uint32_t presentFamily;
     uint32_t uniquePresentFamily;
     uint32_t transferFamily;
+    uint8_t familyCount;
 } QueueFamilyIndices;
 
 typedef struct
@@ -55,6 +57,14 @@ typedef struct
     VkSurfaceFormatKHR chosenFormat;
     bool found;
 } SwapSurfaceFormatCheck;
+
+typedef struct
+{
+    VkImage image;
+    VkMemoryRequirements memoryRequirements;
+    VkDeviceSize offset;
+    const VkDeviceMemory *memory;
+} ImageAllocationInformation;
 
 SDL_Window *vk_window;
 bool minimized = false;
@@ -130,6 +140,8 @@ VkDeviceMemory uniformBuffersMemory[MAX_FRAMES_IN_FLIGHT] = {NULL};
 void *uniformBuffersMapped[MAX_FRAMES_IN_FLIGHT];
 VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
 VkDescriptorSet descriptorSets[MAX_FRAMES_IN_FLIGHT];
+ImageAllocationInformation textures[TEXTURE_ASSET_COUNT];
+VkDeviceMemory textureMemory;
 
 /**
  * This function will create the Vulkan instance, set up for SDL.
@@ -254,9 +266,14 @@ static bool PickPhysicalDevice()
                     queueFamilyIndices->uniquePresentFamily = index;
                 }
             }
+            // TODO investigate if separate transfer family is beneficial
+            // queueFamilyIndices->transferFamily = queueFamilyIndices->graphicsFamily;
             if (queueFamilyIndices->graphicsFamily == -1 || (queueFamilyIndices->presentFamily == -1 && queueFamilyIndices->uniquePresentFamily == -1)) continue;
             if (queueFamilyIndices->presentFamily == -1) queueFamilyIndices->presentFamily = queueFamilyIndices->uniquePresentFamily;
             if (queueFamilyIndices->transferFamily == -1) queueFamilyIndices->transferFamily = queueFamilyIndices->graphicsFamily;
+            if (queueFamilyIndices->graphicsFamily == queueFamilyIndices->presentFamily && queueFamilyIndices->graphicsFamily == queueFamilyIndices->transferFamily) queueFamilyIndices->familyCount = 1;
+            else if (queueFamilyIndices->graphicsFamily == queueFamilyIndices->presentFamily || queueFamilyIndices->graphicsFamily == queueFamilyIndices->transferFamily) queueFamilyIndices->familyCount = 2;
+            else queueFamilyIndices->familyCount = 3;
             break;
         }
         uint32_t extensionCount;
@@ -422,8 +439,13 @@ static bool CreateSwapChain()
     {
         imageCount = swapChainSupport.capabilities.maxImageCount;
     }
-    uint32_t* const pQueueFamilyIndices[3] = {(const uint32_t[3]){queueFamilyIndices->graphicsFamily}};
-    VkSwapchainCreateInfoKHR createInfo = {
+    uint32_t* const pQueueFamilyIndices[] = {
+        queueFamilyIndices->familyCount == 1 ? (uint32_t[1]){queueFamilyIndices->graphicsFamily} :
+            queueFamilyIndices->familyCount == 3 ?
+                (uint32_t[3]){queueFamilyIndices->graphicsFamily, queueFamilyIndices->presentFamily, queueFamilyIndices->transferFamily} :
+                (uint32_t[2]){queueFamilyIndices->graphicsFamily}
+    };
+    const VkSwapchainCreateInfoKHR createInfo = {
         VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
         NULL,
         0,
@@ -434,8 +456,8 @@ static bool CreateSwapChain()
         extent,
         1,
         VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-        VK_SHARING_MODE_CONCURRENT,
-        1,
+        queueFamilyIndices->familyCount == 1 ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_CONCURRENT,
+        queueFamilyIndices->familyCount,
         *pQueueFamilyIndices,
         swapChainSupport.capabilities.currentTransform,
         VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
@@ -443,16 +465,11 @@ static bool CreateSwapChain()
         VK_TRUE,
         VK_NULL_HANDLE
     };
-    if (queueFamilyIndices->presentFamily != queueFamilyIndices->graphicsFamily)
+    if (queueFamilyIndices->familyCount == 2)
     {
-        (*pQueueFamilyIndices)[createInfo.queueFamilyIndexCount++] = queueFamilyIndices->presentFamily;
+        if (queueFamilyIndices->presentFamily == queueFamilyIndices->graphicsFamily) (*pQueueFamilyIndices)[1] = queueFamilyIndices->transferFamily;
+        if (queueFamilyIndices->transferFamily == queueFamilyIndices->graphicsFamily) (*pQueueFamilyIndices)[1] = queueFamilyIndices->presentFamily;
     }
-    if (queueFamilyIndices->transferFamily != queueFamilyIndices->presentFamily && (
-        createInfo.queueFamilyIndexCount == 1 || (createInfo.queueFamilyIndexCount == 2 && queueFamilyIndices->transferFamily != queueFamilyIndices->graphicsFamily)))
-    {
-        (*pQueueFamilyIndices)[createInfo.queueFamilyIndexCount++] = queueFamilyIndices->transferFamily;
-    }
-    if (createInfo.queueFamilyIndexCount == 1) createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
     VulkanTest(vkCreateSwapchainKHR(device, &createInfo, NULL, &swapChain), "Failed to create Vulkan swap chain!");
     vkGetSwapchainImagesKHR(device, swapChain, &imageCount, NULL);
     swapChainImages = malloc(sizeof(*swapChainImages) * imageCount);
@@ -784,27 +801,27 @@ static bool CreateBuffer(const VkDeviceSize size, const VkBufferUsageFlags usage
                          const VkMemoryPropertyFlags propertyFlags,
                          VkBuffer *buffer, VkDeviceMemory *bufferMemory)
 {
-    uint32_t* const pQueueFamilyIndices[3] = {(const uint32_t[3]){queueFamilyIndices->graphicsFamily}};
-    VkBufferCreateInfo bufferInfo = {
+    uint32_t* const pQueueFamilyIndices[] = {
+        queueFamilyIndices->familyCount == 1 ? (uint32_t[1]){queueFamilyIndices->graphicsFamily} :
+            queueFamilyIndices->familyCount == 3 ?
+                (uint32_t[3]){queueFamilyIndices->graphicsFamily, queueFamilyIndices->presentFamily, queueFamilyIndices->transferFamily} :
+                (uint32_t[2]){queueFamilyIndices->graphicsFamily}
+    };
+    const VkBufferCreateInfo bufferInfo = {
         VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
         NULL,
         0,
         size,
         usageFlags,
-        VK_SHARING_MODE_CONCURRENT,
-        1,
+        queueFamilyIndices->familyCount == 1 ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_CONCURRENT,
+        queueFamilyIndices->familyCount,
         *pQueueFamilyIndices
     };
-    if (queueFamilyIndices->presentFamily != queueFamilyIndices->graphicsFamily)
+    if (queueFamilyIndices->familyCount == 2)
     {
-        (*pQueueFamilyIndices)[bufferInfo.queueFamilyIndexCount++] = queueFamilyIndices->presentFamily;
+        if (queueFamilyIndices->presentFamily == queueFamilyIndices->graphicsFamily) (*pQueueFamilyIndices)[1] = queueFamilyIndices->transferFamily;
+        if (queueFamilyIndices->transferFamily == queueFamilyIndices->graphicsFamily) (*pQueueFamilyIndices)[1] = queueFamilyIndices->presentFamily;
     }
-    if (queueFamilyIndices->transferFamily != queueFamilyIndices->presentFamily && (
-        bufferInfo.queueFamilyIndexCount == 1 || (bufferInfo.queueFamilyIndexCount == 2 && queueFamilyIndices->transferFamily != queueFamilyIndices->graphicsFamily)))
-    {
-        (*pQueueFamilyIndices)[bufferInfo.queueFamilyIndexCount++] = queueFamilyIndices->transferFamily;
-    }
-    if (bufferInfo.queueFamilyIndexCount == 1) bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     VulkanTest(vkCreateBuffer(device, &bufferInfo, NULL, buffer), "Failed to create Vulkan buffer!");
     VkMemoryRequirements memRequirements;
     vkGetBufferMemoryRequirements(device, *buffer, &memRequirements);
@@ -830,7 +847,7 @@ static bool CreateBuffer(const VkDeviceSize size, const VkBufferUsageFlags usage
     return false;
 }
 
-static void CopyBuffer(const VkBuffer srcBuffer, const VkBuffer dstBuffer, const VkDeviceSize size)
+static VkCommandBuffer BeginCommandBuffer()
 {
     const VkCommandBufferAllocateInfo allocateInfo = {
         VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
@@ -848,8 +865,11 @@ static void CopyBuffer(const VkBuffer srcBuffer, const VkBuffer dstBuffer, const
         NULL
     };
     vkBeginCommandBuffer(commandBuffer, &beginInfo);
-    const VkBufferCopy copyRegion = {0, 0, size};
-    vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+    return commandBuffer;
+}
+
+static void EndCommandBuffer(VkCommandBuffer commandBuffer)
+{
     vkEndCommandBuffer(commandBuffer);
     const VkSubmitInfo submitInfo = {
         VK_STRUCTURE_TYPE_SUBMIT_INFO,
@@ -865,6 +885,160 @@ static void CopyBuffer(const VkBuffer srcBuffer, const VkBuffer dstBuffer, const
     vkQueueSubmit(transferQueue, 1, &submitInfo, VK_NULL_HANDLE);
     vkQueueWaitIdle(transferQueue);
     vkFreeCommandBuffers(device, transferCommandPool, 1, &commandBuffer);
+}
+
+static void CopyBuffer(const VkBuffer srcBuffer, const VkBuffer dstBuffer, const VkDeviceSize size)
+{
+    const VkCommandBuffer commandBuffer = BeginCommandBuffer();
+    const VkBufferCopy copyRegion = {0, 0, size};
+    vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+    EndCommandBuffer(commandBuffer);
+}
+
+bool LoadTextures()
+{
+    VkDeviceSize memorySize = 0;
+    for (uint16_t textureIndex = 0; textureIndex < TEXTURE_ASSET_COUNT; textureIndex++)
+    {
+        const byte *decompressed = DecompressAsset(texture_assets[textureIndex]);
+        uint32_t* const pQueueFamilyIndices[] = {
+            queueFamilyIndices->familyCount == 1 ? (uint32_t[1]){queueFamilyIndices->graphicsFamily} :
+                queueFamilyIndices->familyCount == 3 ?
+                    (uint32_t[3]){queueFamilyIndices->graphicsFamily, queueFamilyIndices->presentFamily, queueFamilyIndices->transferFamily} :
+                    (uint32_t[2]){queueFamilyIndices->graphicsFamily}
+        };
+        const VkImageCreateInfo imageInfo = {
+            VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+            NULL,
+            0,
+            VK_IMAGE_TYPE_2D,
+            VK_FORMAT_R8G8B8A8_SRGB,
+            {ReadUintA(decompressed, 4), ReadUintA(decompressed, 8), 1},
+            1,
+            1,
+            VK_SAMPLE_COUNT_1_BIT,
+            VK_IMAGE_TILING_OPTIMAL,
+            VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+            queueFamilyIndices->familyCount == 1 ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_CONCURRENT,
+            queueFamilyIndices->familyCount,
+            *pQueueFamilyIndices,
+            VK_IMAGE_LAYOUT_UNDEFINED
+        };
+        if (queueFamilyIndices->familyCount == 2)
+        {
+            if (queueFamilyIndices->presentFamily == queueFamilyIndices->graphicsFamily) (*pQueueFamilyIndices)[1] = queueFamilyIndices->transferFamily;
+            if (queueFamilyIndices->transferFamily == queueFamilyIndices->graphicsFamily) (*pQueueFamilyIndices)[1] = queueFamilyIndices->presentFamily;
+        }
+
+        VulkanTest(vkCreateImage(device, &imageInfo, NULL, &textures[textureIndex].image), "Failed to create textures for Vulkan!");
+        vkGetImageMemoryRequirements(device, textures[textureIndex].image, &textures[textureIndex].memoryRequirements);
+        textures[textureIndex].offset = memorySize;
+        memorySize += textures[textureIndex].memoryRequirements.size;
+        textures[textureIndex].memory = &textureMemory;
+    }
+
+    VkPhysicalDeviceMemoryProperties memoryProperties;
+    vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
+    for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++)
+    {
+        if (textures[i].memoryRequirements.memoryTypeBits & 1 << i && (memoryProperties.memoryTypes[i].propertyFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) == VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
+        {
+            const VkMemoryAllocateInfo allocateInfo = {
+                VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+                NULL,
+                memorySize,
+                i
+            };
+            VulkanTest(vkAllocateMemory(device, &allocateInfo, NULL, &textureMemory), "Failed to allocate Vulkan texture memory!");
+            break;
+        }
+    }
+
+    VkBuffer stagingBuffer;
+    VkDeviceMemory stagingBufferMemory;
+    CreateBuffer(memorySize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &stagingBuffer, &stagingBufferMemory);
+
+    for (uint16_t textureIndex = 0; textureIndex < TEXTURE_ASSET_COUNT; textureIndex++)
+    {
+        VulkanTest(vkBindImageMemory(device, textures[textureIndex].image, textureMemory, textures[textureIndex].offset), "Failed to bind Vulkan texture memory!");
+
+        const byte *decompressed = DecompressAsset(texture_assets[textureIndex]);
+        void *data;
+        data = calloc(1, textures[textureIndex].memoryRequirements.size);
+        vkMapMemory(device, stagingBufferMemory, textures[textureIndex].offset, textures[textureIndex].memoryRequirements.size, 0, &data);
+        memcpy(data, decompressed + sizeof(uint) * 4, ReadUintA(decompressed, 0) * 4);
+        vkUnmapMemory(device, stagingBufferMemory);
+
+        const VkCommandBuffer firstCommandBuffer = BeginCommandBuffer();
+        VkImageMemoryBarrier firstTransferBarrier = {
+            VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+            NULL,
+            0,
+            VK_ACCESS_TRANSFER_WRITE_BIT,
+            VK_IMAGE_LAYOUT_UNDEFINED,
+            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+            VK_QUEUE_FAMILY_IGNORED,
+            VK_QUEUE_FAMILY_IGNORED,
+            textures[textureIndex].image,
+            {
+                VK_IMAGE_ASPECT_COLOR_BIT,
+                0,
+                1,
+                0,
+                1
+            }
+        };
+        vkCmdPipelineBarrier(firstCommandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, 1, &firstTransferBarrier);
+        EndCommandBuffer(firstCommandBuffer);
+
+        const VkCommandBuffer secondCommandBuffer = BeginCommandBuffer();
+        VkBufferImageCopy copy = {
+            0,
+            0,
+            0,
+            {
+                VK_IMAGE_ASPECT_COLOR_BIT,
+                0,
+                0,
+                1
+            },
+            {0, 0, 0},
+            {
+                ReadUintA(decompressed, 4),
+                ReadUintA(decompressed, 8),
+                1
+            }
+        };
+        vkCmdCopyBufferToImage(secondCommandBuffer, stagingBuffer, textures[textureIndex].image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copy);
+        EndCommandBuffer(secondCommandBuffer);
+
+        const VkCommandBuffer thirdCommandBuffer = BeginCommandBuffer();
+        VkImageMemoryBarrier secondTransferBarrier = {
+            VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+            NULL,
+            VK_ACCESS_TRANSFER_WRITE_BIT,
+            VK_ACCESS_SHADER_READ_BIT,
+            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+            VK_QUEUE_FAMILY_IGNORED,
+            VK_QUEUE_FAMILY_IGNORED,
+            textures[textureIndex].image,
+            {
+                VK_IMAGE_ASPECT_COLOR_BIT,
+                0,
+                1,
+                0,
+                1
+            }
+        };
+        vkCmdPipelineBarrier(thirdCommandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, NULL, 0, NULL, 1, &secondTransferBarrier);
+        EndCommandBuffer(thirdCommandBuffer);
+    }
+
+    vkDestroyBuffer(device, stagingBuffer, NULL);
+    vkFreeMemory(device, stagingBufferMemory, NULL);
+
+    return true;
 }
 
 static bool CreateVertexBuffer()
@@ -1014,56 +1188,6 @@ static bool CreateSyncObjects()
     return true;
 }
 
-static void RecordCommandBuffer(const VkCommandBuffer buffer, const uint32_t imageIndex)
-{
-    const VkCommandBufferBeginInfo beginInfo = {
-        VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-        NULL,
-        0,
-        NULL
-    };
-    VulkanTest_Internal(vkBeginCommandBuffer(buffer, &beginInfo), "Failed to begin recording Vulkan command buffer!",);
-    VkClearValue clearColor = {{{0, 0, 0}}};
-    const VkRenderPassBeginInfo renderPassInfo = {
-        VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-        NULL,
-        renderPass,
-        swapChainFramebuffers[imageIndex],
-        {
-            {0, 0},
-            swapChainExtent
-        },
-        1,
-        &clearColor
-    };
-    vkCmdBeginRenderPass(buffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-    vkCmdBindPipeline(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
-    const VkViewport viewport = {
-        0,
-        0,
-        (float) swapChainExtent.width,
-        (float) swapChainExtent.height,
-        0,
-        1
-    };
-    vkCmdSetViewport(buffer, 0, 1, &viewport);
-    const VkRect2D scissor = {
-        {
-            0,
-            0
-        },
-        swapChainExtent
-    };
-    vkCmdSetScissor(buffer, 0, 1, &scissor);
-    vkCmdBindVertexBuffers(buffer, 0, 1, (VkBuffer[1]){vertexBuffer}, (VkDeviceSize[1]){0});
-    vkCmdBindIndexBuffer(buffer, indexBuffer, 0, VK_INDEX_TYPE_UINT16);
-    vkCmdBindDescriptorSets(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1,
-                            &descriptorSets[currentFrame], 0, NULL);
-    vkCmdDrawIndexed(buffer, indices.length, 1, 0, 0, 0);
-    vkCmdEndRenderPass(buffer);
-    VulkanTest_Internal(vkEndCommandBuffer(buffer), "Failed to record the Vulkan command buffer!",);
-}
-
 /**
  * This function is used to create the Vulkan instance and surface, as well as configuring the environment properly.
  * This function (and the functions it calls) do NOT perform any drawing, though the framebuffers are initialized here.
@@ -1076,9 +1200,9 @@ bool VK_Init(SDL_Window *window)
 {
     vk_window = window;
     // ReSharper disable once CppDFAConstantConditions
-    if (!CreateInstance(window) || !CreateSurface(window) || !PickPhysicalDevice() || !CreateLogicalDevice() || !
-        CreateSwapChain(window) || !CreateImageViews() || !CreateRenderPass() || !CreateDescriptorSetLayout() || !
-        CreateGraphicsPipeline() || !CreateFramebuffers() || !CreateCommandPools() || !CreateVertexBuffer() || !
+    if (!CreateInstance() || !CreateSurface() || !PickPhysicalDevice() || !CreateLogicalDevice() || !
+        CreateSwapChain() || !CreateImageViews() || !CreateRenderPass() || !CreateDescriptorSetLayout() || !
+        CreateGraphicsPipeline() || !CreateFramebuffers() || !CreateCommandPools() || !LoadTextures() || !CreateVertexBuffer() || !
         CreateIndexBuffer() || !CreateUniformBuffers() || !CreateDescriptorPool() || !CreateDescriptorSets() || !
         CreateCommandBuffers() || !CreateSyncObjects())
     {
@@ -1102,6 +1226,11 @@ void VK_Cleanup()
     {
         vkDeviceWaitIdle(device);
         CleanupSwapChain();
+        for (uint16_t i = 0; i < TEXTURE_ASSET_COUNT; i++)
+        {
+            vkDestroyImage(device, textures[i].image, NULL);
+        }
+        vkFreeMemory(device, textureMemory, NULL);
         vkDestroyPipeline(device, graphicsPipeline, NULL);
         vkDestroyPipelineLayout(device, pipelineLayout, NULL);
         vkDestroyRenderPass(device, renderPass, NULL);
@@ -1150,6 +1279,56 @@ static void UpdateUniformBuffer(const uint32_t currentFrame)
     glm_perspective_lh_no(PI / 4, (float) swapChainExtent.width / (float) swapChainExtent.height, 0.1f, 10.0f,
                           bufferObject.proj);
     memcpy(uniformBuffersMapped[currentFrame], &bufferObject, sizeof(bufferObject));
+}
+
+static void RecordCommandBuffer(const VkCommandBuffer buffer, const uint32_t imageIndex)
+{
+    const VkCommandBufferBeginInfo beginInfo = {
+        VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+        NULL,
+        0,
+        NULL
+    };
+    VulkanTest_Internal(vkBeginCommandBuffer(buffer, &beginInfo), "Failed to begin recording Vulkan command buffer!",);
+    VkClearValue clearColor = {{{0, 0, 0}}};
+    const VkRenderPassBeginInfo renderPassInfo = {
+        VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+        NULL,
+        renderPass,
+        swapChainFramebuffers[imageIndex],
+        {
+                {0, 0},
+                swapChainExtent
+            },
+            1,
+            &clearColor
+        };
+    vkCmdBeginRenderPass(buffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdBindPipeline(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+    const VkViewport viewport = {
+        0,
+        0,
+        (float) swapChainExtent.width,
+        (float) swapChainExtent.height,
+        0,
+        1
+    };
+    vkCmdSetViewport(buffer, 0, 1, &viewport);
+    const VkRect2D scissor = {
+        {
+            0,
+            0
+        },
+        swapChainExtent
+    };
+    vkCmdSetScissor(buffer, 0, 1, &scissor);
+    vkCmdBindVertexBuffers(buffer, 0, 1, (VkBuffer[1]){vertexBuffer}, (VkDeviceSize[1]){0});
+    vkCmdBindIndexBuffer(buffer, indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+    vkCmdBindDescriptorSets(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1,
+                            &descriptorSets[currentFrame], 0, NULL);
+    vkCmdDrawIndexed(buffer, indices.length, 1, 0, 0, 0);
+    vkCmdEndRenderPass(buffer);
+    VulkanTest_Internal(vkEndCommandBuffer(buffer), "Failed to record the Vulkan command buffer!",);
 }
 
 void VK_DrawFrame()
