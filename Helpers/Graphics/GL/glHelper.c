@@ -83,24 +83,24 @@ bool GL_Init(SDL_Window *wnd)
         return false;
     }
 
-    char *hud_textured_fsh = (char *) DecompressAsset(gzshd_GL_hud_textured_f);
-    char *hud_textured_vsh = (char *) DecompressAsset(gzshd_GL_hud_textured_v);
+    const char *hud_textured_fsh = (char *) DecompressAsset(gzshd_GL_hud_textured_f);
+    const char *hud_textured_vsh = (char *) DecompressAsset(gzshd_GL_hud_textured_v);
     ui_textured = GL_ConstructShader(hud_textured_fsh, hud_textured_vsh);
 
-    char *hud_colored_fsh = (char *) DecompressAsset(gzshd_GL_hud_color_f);
-    char *hud_colored_vsh = (char *) DecompressAsset(gzshd_GL_hud_color_v);
+    const char *hud_colored_fsh = (char *) DecompressAsset(gzshd_GL_hud_color_f);
+    const char *hud_colored_vsh = (char *) DecompressAsset(gzshd_GL_hud_color_v);
     ui_colored = GL_ConstructShader(hud_colored_fsh, hud_colored_vsh);
 
-    char *wall_generic_fsh = (char *) DecompressAsset(gzshd_GL_wall_f);
-    char *wall_generic_vsh = (char *) DecompressAsset(gzshd_GL_wall_v);
+    const char *wall_generic_fsh = (char *) DecompressAsset(gzshd_GL_wall_f);
+    const char *wall_generic_vsh = (char *) DecompressAsset(gzshd_GL_wall_v);
     wall_generic = GL_ConstructShader(wall_generic_fsh, wall_generic_vsh);
 
-    char *floor_generic_fsh = (char *) DecompressAsset(gzshd_GL_floor_f);
-    char *floor_generic_vsh = (char *) DecompressAsset(gzshd_GL_floor_v);
+    const char *floor_generic_fsh = (char *) DecompressAsset(gzshd_GL_floor_f);
+    const char *floor_generic_vsh = (char *) DecompressAsset(gzshd_GL_floor_v);
     floor_generic = GL_ConstructShader(floor_generic_fsh, floor_generic_vsh);
 
-    char *shadow_fsh = (char *) DecompressAsset(gzshd_GL_shadow_f);
-    char *shadow_vsh = (char *) DecompressAsset(gzshd_GL_shadow_v);
+    const char *shadow_fsh = (char *) DecompressAsset(gzshd_GL_shadow_f);
+    const char *shadow_vsh = (char *) DecompressAsset(gzshd_GL_shadow_v);
     shadow = GL_ConstructShader(shadow_fsh, shadow_vsh);
 
     ui_buffer = GL_ConstructBuffer();
