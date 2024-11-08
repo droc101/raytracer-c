@@ -57,15 +57,7 @@ void GMainStateUpdate(GlobalState *State)
         ShowTextBox(tb);
     }
 
-#ifdef KEYBOARD_ROTATION
-    if (IsKeyPressed(SDL_SCANCODE_A)) {
-        State->level->rotation -= ROT_SPEED;
-    } else if (IsKeyPressed(SDL_SCANCODE_D)) {
-        State->level->rotation += ROT_SPEED;
-    }
-#else
     State->level->rotation += GetMouseRel().x * (State->options.mouseSpeed / 120.0);
-#endif
 }
 
 uint GMainStateFixedUpdate(const uint interval, GlobalState *State)
@@ -85,13 +77,6 @@ uint GMainStateFixedUpdate(const uint interval, GlobalState *State)
         moveVec.x -= 1;
     }
 
-#ifdef KEYBOARD_ROTATION
-    if (IsKeyPressed(SDL_SCANCODE_Q)) {
-        moveVec.y -= 1;
-    } else if (IsKeyPressed(SDL_SCANCODE_E)) {
-        moveVec.y += 1;
-    }
-#else
     if (IsKeyPressed(SDL_SCANCODE_A))
     {
         moveVec.y -= 1;
@@ -99,7 +84,6 @@ uint GMainStateFixedUpdate(const uint interval, GlobalState *State)
     {
         moveVec.y += 1;
     }
-#endif
 
     const bool isMoving = moveVec.x != 0 || moveVec.y != 0;
 

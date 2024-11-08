@@ -139,7 +139,6 @@ int main(int argc, char *argv[])
 
         GlobalState *g = GetState();
 
-#ifndef KEYBOARD_ROTATION
         SDL_SetRelativeMouseMode(g->currentState == MAIN_STATE ? SDL_TRUE : SDL_FALSE);
         // warp the mouse to the center of the screen if we are in the main game state
         if (g->currentState == MAIN_STATE)
@@ -147,7 +146,6 @@ int main(int argc, char *argv[])
             const Vector2 realWndSize = ActualWindowSize();
             SDL_WarpMouseInWindow(GetGameWindow(), realWndSize.x / 2, realWndSize.y / 2);
         }
-#endif
 
         if (g->UpdateGame) g->UpdateGame(g);
 
