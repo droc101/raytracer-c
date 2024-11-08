@@ -85,7 +85,7 @@ void DrawRadioButton(const Control *c, ControlState state, const Vector2 positio
                     v2(c->size.x - 40, c->size.y), FONT_HALIGN_LEFT, FONT_VALIGN_MIDDLE,
                     true);
 
-    setColorUint(0xFF0000ff);
+    SetColorUint(0xFF0000ff);
 
     const Vector2 boxSize = v2s(32);
     const Vector2 boxPos = v2(position.x + 2, position.y + c->size.y / 2 - boxSize.y / 2);

@@ -50,13 +50,13 @@ void DrawButton(const Control *c, const ControlState state, const Vector2 positi
     switch (state)
     {
         case NORMAL:
-            draw_ninepatch(c->anchoredPosition, c->size, 8, 8, gztex_interface_button);
+            DrawNinePatchTexture(c->anchoredPosition, c->size, 8, 8, gztex_interface_button);
             break;
         case HOVER:
-            draw_ninepatch(c->anchoredPosition, c->size, 8, 8, gztex_interface_button_hover);
+            DrawNinePatchTexture(c->anchoredPosition, c->size, 8, 8, gztex_interface_button_hover);
             break;
         case ACTIVE:
-            draw_ninepatch(c->anchoredPosition, c->size, 8, 8, gztex_interface_button_press);
+            DrawNinePatchTexture(c->anchoredPosition, c->size, 8, 8, gztex_interface_button_press);
             break;
     }
 

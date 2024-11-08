@@ -154,7 +154,7 @@ void UpdateSlider(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlInd
 
 void DrawSlider(const Control *c, const ControlState state, const Vector2 position)
 {
-    draw_ninepatch(c->anchoredPosition, c->size, 8, 8, gztex_interface_slider);
+    DrawNinePatchTexture(c->anchoredPosition, c->size, 8, 8, gztex_interface_slider);
 
     const SliderData *data = (SliderData *) c->ControlData;
     const double handlePos = remap(data->value, data->min, data->max, 0, c->size.x - 18);

@@ -12,7 +12,7 @@
  * Set the main window
  * @param w The window to use
  */
-void SetWindow(SDL_Window *w);
+void SetGameWindow(SDL_Window *w);
 
 /**
  * Get the main window
@@ -46,7 +46,7 @@ Vector2 ActualWindowSize();
  * @param h Height
  * @note Call @c setColorUint before calling this function
  */
-void draw_rect(int x, int y, int w, int h);
+void DrawRect(int x, int y, int w, int h);
 
 /**
  * Convert a texture asset to an SDL_Surface
@@ -60,14 +60,14 @@ SDL_Surface *ToSDLSurface(const unsigned char *imageData, const char *filterMode
  * Set the color to draw with
  * @param color Color as uint, @c 0xAARRGGBB
  */
-void setColorUint(uint color);
+void SetColorUint(uint color);
 
 /**
  * Split a color into its components
  * @param color Color as uint, @c 0xAARRGGBB
  * @return Four byte array with the color components
  */
-byte *getColorUint(uint color);
+byte *GetColorUint(uint color);
 
 /**
  * Mix two colors together
@@ -167,7 +167,7 @@ void Swap();
  * @param imageData The texture data
  * @return The size of the texture
  */
-Vector2 texture_size(const unsigned char *imageData);
+Vector2 GetTextureSize(const unsigned char *imageData);
 
 /**
  * Draw a ninepatch image to the screen
@@ -178,7 +178,7 @@ Vector2 texture_size(const unsigned char *imageData);
  * @param imageData The texture data
  * @warning This is nine draw calls.
  */
-void draw_ninepatch(const Vector2 pos, const Vector2 size, const int output_margins_px, const int texture_margins_px,
+void DrawNinePatchTexture(const Vector2 pos, const Vector2 size, const int output_margins_px, const int texture_margins_px,
                     const byte *imageData);
 
 #endif //GAME_DRAWING_H

@@ -15,7 +15,7 @@
 
 const char fontChars[] = "abcdefghijklmnopqrstuvwxyz0123456789.:-,/\\|[]{}();'\"<>`~!@#$%^*_=+?";
 
-int findChar(const char target)
+int FontFindChar(const char target)
 {
     int i = 0;
     while (fontChars[i] != 0)
@@ -55,10 +55,10 @@ Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, cons
         }
 
         const float uv_per_char = 1.0f / strlen(fontChars);
-        int index = findChar(tolower(str[i]));
+        int index = FontFindChar(tolower(str[i]));
         if (index == -1)
         {
-            index = findChar('U');
+            index = FontFindChar('U');
         }
 
         const Vector2 ndc_pos = v2(X_TO_NDC(x), Y_TO_NDC(y));

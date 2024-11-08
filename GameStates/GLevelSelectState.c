@@ -44,7 +44,7 @@ void GLevelSelectStateUpdate(GlobalState *State)
 
 void GLevelSelectStateRender(GlobalState *State)
 {
-    setColorUint(0xFF123456);
+    SetColorUint(0xFF123456);
     ClearColor(0xFF123456);
 
     const Vector2 bg_tile_size = v2(320, 240);

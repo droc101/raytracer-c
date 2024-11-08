@@ -77,7 +77,7 @@ void GOptionsStateRender(GlobalState *State)
 {
     // sorry for the confusing variable names
     const Vector2 bg_tile_size = v2(320, 240); // size on screen
-    const Vector2 bg_tex_size = texture_size(gztex_interface_menu_bg_tile); // actual size of the texture
+    const Vector2 bg_tex_size = GetTextureSize(gztex_interface_menu_bg_tile); // actual size of the texture
 
     const Vector2 tilesOnScreen = v2(WindowWidth() / bg_tile_size.x, WindowHeight() / bg_tile_size.y);
     const Vector2 tileRegion = v2(tilesOnScreen.x * bg_tex_size.x, tilesOnScreen.y * bg_tex_size.y);

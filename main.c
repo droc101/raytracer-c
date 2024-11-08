@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
     }
     DwmDarkMode(w);
     SDL_SetWindowFullscreen(w, GetState()->options.fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
-    SetWindow(w);
+    SetGameWindow(w);
     UpdateViewportSize();
 
     if (!RenderInit())

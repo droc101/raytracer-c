@@ -65,8 +65,8 @@ void GPauseStateRender(GlobalState *State)
 {
     RenderLevel(State);
 
-    setColorUint(0x80000000);
-    draw_rect(0, 0, WindowWidth(), WindowHeight());
+    SetColorUint(0x80000000);
+    DrawRect(0, 0, WindowWidth(), WindowHeight());
 
     DrawTextAligned("Game Paused", 32, 0xFFFFFFFF, v2s(0), v2(WindowWidth(), 250), FONT_HALIGN_CENTER,
                     FONT_VALIGN_MIDDLE, false);

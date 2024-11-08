@@ -8,7 +8,7 @@
 #include "Error.h"
 #include "../../defines.h"
 
-Node *createNode(void *data)
+Node *CreateListNode(void *data)
 {
     Node *newNode = (Node *) malloc(sizeof(Node));
     if (newNode == NULLPTR)
@@ -36,7 +36,7 @@ List *CreateList()
 
 void ListAdd(List *list, void *data)
 {
-    Node *newNode = createNode(data);
+    Node *newNode = CreateListNode(data);
     if (list->head == NULLPTR)
     {
         list->head = newNode;
@@ -99,7 +99,7 @@ void ListInsertAfter(List *list, Node *prevNode, void *data)
         Error("List: Previous node is NULL");
     }
 
-    Node *newNode = createNode(data);
+    Node *newNode = CreateListNode(data);
     newNode->next = prevNode->next;
     newNode->prev = prevNode;
     if (prevNode->next != NULLPTR)

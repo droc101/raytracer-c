@@ -40,7 +40,7 @@ uint GLogoSplashStateFixedUpdate(const uint interval, GlobalState *State)
 
 void GLogoSplashStateRender(GlobalState *State)
 {
-    setColorUint(0x0);
+    SetColorUint(0x0);
     ClearColor(0xFF000000);
     if (State->physicsFrame < 20 || State->physicsFrame > 100)
     {

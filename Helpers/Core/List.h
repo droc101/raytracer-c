@@ -28,7 +28,7 @@ typedef struct SizedArray
 } SizedArray;
 
 // Internal functions
-Node *createNode(void *data);
+Node *CreateListNode(void *data);
 
 // Public functions
 

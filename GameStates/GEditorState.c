@@ -151,92 +151,92 @@ void CreateSlider(char *label, const double min, const double max, const double 
     UiStackPush(editorUiStack, slider);
 }
 
-void slider_setMusic(const double value)
+void SetMusicSlider(const double value)
 {
     musicId = (byte) value;
 }
 
-void slider_setNodeRotation(const double value)
+void SetNodeRotationSlider(const double value)
 {
     EditorNode *node = ListGet(EditorNodes, EditorSelectedNode);
     node->rotation = degToRad(value);
 }
 
-void slider_setNodeExtra(const double value)
+void SetNodeExtraSlider(const double value)
 {
     EditorNode *node = ListGet(EditorNodes, EditorSelectedNode);
     node->extra = (uint) value;
 }
 
-void slider_setFogR(const double value)
+void SetFogRSlider(const double value)
 {
     level_fogR = (byte) value;
 }
 
-void slider_setFogG(const double value)
+void SetFogGSlider(const double value)
 {
     level_fogG = (byte) value;
 }
 
-void slider_setFogB(const double value)
+void SetFogBSlider(const double value)
 {
     level_fogB = (byte) value;
 }
 
-void slider_setFogStart(const double value)
+void SetFogStartSlider(const double value)
 {
     level_fogStart = value;
 }
 
-void slider_setFogEnd(const double value)
+void SetFogEndSlider(const double value)
 {
     level_fogEnd = value;
 }
 
-void slider_setFloorTex(const double value)
+void SetFloorTexSlider(const double value)
 {
     level_floor_tex = (uint) value;
 }
 
-void slider_setCeilTex(const double value)
+void SetCeilTexSlider(const double value)
 {
     level_ceil_tex = (byte) value;
 }
 
-void slider_setSkyR(const double value)
+void SetSkyRSlider(const double value)
 {
     level_skyR = (byte) value;
 }
 
-void slider_setSkyG(const double value)
+void SetSkyGSlider(const double value)
 {
     level_skyG = (byte) value;
 }
 
-void slider_setSkyB(const double value)
+void SetSkyBSlider(const double value)
 {
     level_skyB = (byte) value;
 }
 
-void slider_setActorParamA(const double value)
+void SetActorParamASlider(const double value)
 {
     EditorNode *node = ListGet(EditorNodes, EditorSelectedNode);
     node->extra2 = (node->extra2 & 0x00FFFFFF) | ((byte) value << 24);
 }
 
-void slider_setActorParamB(const double value)
+void SetActorParamBSlider(const double value)
 {
     EditorNode *node = ListGet(EditorNodes, EditorSelectedNode);
     node->extra2 = (node->extra2 & 0xFF00FFFF) | ((byte) value << 16);
 }
 
-void slider_setActorParamC(const double value)
+void SetActorParamCSlider(const double value)
 {
     EditorNode *node = ListGet(EditorNodes, EditorSelectedNode);
     node->extra2 = (node->extra2 & 0xFFFF00FF) | ((byte) value << 8);
 }
 
-void slider_setActorParamD(const double value)
+void SetActorParamDSlider(const double value)
 {
     EditorNode *node = ListGet(EditorNodes, EditorSelectedNode);
     node->extra2 = (node->extra2 & 0xFFFFFF00) | (byte) value;
@@ -465,29 +465,29 @@ void GEditorStateUpdate(GlobalState *State)
         {
             case NODE_PLAYER:
                 CreateSlider("ang", 0, 359, radToDeg(node->rotation), 1, 45, v2(10, 250), v2(200, 24),
-                             slider_setNodeRotation, NULL);
+                             SetNodeRotationSlider, NULL);
                 break;
             case NODE_ACTOR:
                 CreateSlider("ang", 0, 359, radToDeg(node->rotation), 1, 45, v2(10, 250), v2(200, 24),
-                             slider_setNodeRotation, NULLPTR);
+                             SetNodeRotationSlider, NULLPTR);
                 CreateSlider("Type", 0, GetActorTypeCount() - 1, node->extra, 1, 16, v2(10, 300), v2(200, 24),
-                             slider_setNodeExtra, SliderActorNameLabelCallback);
+                             SetNodeExtraSlider, SliderActorNameLabelCallback);
                 CreateSlider(GetActorParamName(node->extra, 0), 0, 255, (node->extra2 >> 24) & 0xFF, 1, 16, v2(10, 350),
                              v2(200, 24),
-                             slider_setActorParamA, SliderLabelInteger);
+                             SetActorParamASlider, SliderLabelInteger);
                 CreateSlider(GetActorParamName(node->extra, 1), 0, 255, (node->extra2 >> 16) & 0xFF, 1, 16, v2(10, 400),
                              v2(200, 24),
-                             slider_setActorParamB, SliderLabelInteger);
+                             SetActorParamBSlider, SliderLabelInteger);
                 CreateSlider(GetActorParamName(node->extra, 2), 0, 255, (node->extra2 >> 8) & 0xFF, 1, 16, v2(10, 450),
                              v2(200, 24),
-                             slider_setActorParamC, SliderLabelInteger);
+                             SetActorParamCSlider, SliderLabelInteger);
                 CreateSlider(GetActorParamName(node->extra, 3), 0, 255, node->extra2 & 0xFF, 1, 16, v2(10, 500),
                              v2(200, 24),
-                             slider_setActorParamD, SliderLabelInteger);
+                             SetActorParamDSlider, SliderLabelInteger);
                 break;
             case NODE_WALL_A:
                 CreateSlider("Tex", 0, WALL_TEXTURE_COUNT - 1, node->extra, 1, 16, v2(10, 250), v2(200, 24),
-                             slider_setNodeExtra, SliderLabelInteger);
+                             SetNodeExtraSlider, SliderLabelInteger);
                 break;
             default:
                 break;
@@ -499,27 +499,27 @@ void GEditorStateUpdate(GlobalState *State)
 void GEditorStateRender(GlobalState *State)
 {
 #ifdef ENABLE_LEVEL_EDITOR
-    setColorUint(0xFF123456);
+    SetColorUint(0xFF123456);
     ClearColor(0xFF123456);
 
     const int gridSpacing = EditorZoom;
     const int gridOffsetX = (int) EditorPanX % gridSpacing;
     const int gridOffsetY = (int) EditorPanY % gridSpacing;
 
-    setColorUint(0xFF808080);
+    SetColorUint(0xFF808080);
     for (int x = gridOffsetX; x < WindowWidth(); x += gridSpacing)
     {
-        draw_rect(x, 0, 1, WindowHeight());
+        DrawRect(x, 0, 1, WindowHeight());
     }
     for (int y = gridOffsetY; y < WindowHeight(); y += gridSpacing)
     {
-        draw_rect(0, y, WindowWidth(), 1);
+        DrawRect(0, y, WindowWidth(), 1);
     }
 
-    setColorUint(0xFF0000FF);
-    draw_rect((int) EditorPanX, 0, 1, WindowHeight());
-    setColorUint(0xFFFF0000);
-    draw_rect(0, (int) EditorPanY, WindowWidth(), 1);
+    SetColorUint(0xFF0000FF);
+    DrawRect((int) EditorPanX, 0, 1, WindowHeight());
+    SetColorUint(0xFFFF0000);
+    DrawRect(0, (int) EditorPanY, WindowWidth(), 1);
 
     // draw world space numbers along bottom and right
     char buf[32];
@@ -562,7 +562,7 @@ void GEditorStateRender(GlobalState *State)
             const EditorNode *nodeB = ListGet(EditorNodes, i + 1);
             const Vector2 screenPosB = v2((nodeB->position.x * EditorZoom) + EditorPanX,
                                           (nodeB->position.y * EditorZoom) + EditorPanY);
-            setColorUint(0xFFFFFFFF);
+            SetColorUint(0xFFFFFFFF);
             DrawLine(v2(screenPos.x, screenPos.y), v2(screenPosB.x, screenPosB.y), 2);
         }
 
@@ -599,12 +599,12 @@ void GEditorStateRender(GlobalState *State)
 
         if (hovered || EditorSelectedNode == i)
         {
-            setColorUint(0xFFFFFFFF);
-            draw_rect(screenPos.x - 6, screenPos.y - 6, 12, 12);
+            SetColorUint(0xFFFFFFFF);
+            DrawRect(screenPos.x - 6, screenPos.y - 6, 12, 12);
         }
 
-        setColorUint(color);
-        draw_rect(screenPos.x - 5, screenPos.y - 5, 10, 10);
+        SetColorUint(color);
+        DrawRect(screenPos.x - 5, screenPos.y - 5, 10, 10);
 
         // for player and actor nodes, draw a line indicating rotation
         if (node->type == NODE_PLAYER || node->type == NODE_ACTOR)
@@ -644,8 +644,8 @@ void GEditorStateRender(GlobalState *State)
         const Vector2 measuredText = MeasureText(nodeInfo, 16, false);
         const int textWidth = measuredText.x;
         const int textHeight = measuredText.y;
-        setColorUint(0x80000000);
-        draw_rect(screenPos.x + 10, screenPos.y, textWidth + 20, textHeight + 20);
+        SetColorUint(0x80000000);
+        DrawRect(screenPos.x + 10, screenPos.y, textWidth + 20, textHeight + 20);
         FontDrawString(v2(screenPos.x + 20, screenPos.y + 10), nodeInfo, 16, 0xFFFFFFFF, false);
     }
 
@@ -785,30 +785,30 @@ void SetEditorMode(bool _c, byte _g, byte id)
     } else if (id == 4)
     {
         CurrentEditorMode = EDITOR_MODE_LEVEL;
-        CreateSlider("Fog R", 0, 255, level_fogR, 1, 16, v2(10, sy), v2(200, 24), slider_setFogR, SliderLabelInteger);
+        CreateSlider("Fog R", 0, 255, level_fogR, 1, 16, v2(10, sy), v2(200, 24), SetFogRSlider, SliderLabelInteger);
         sy += szy + sp;
-        CreateSlider("Fog G", 0, 255, level_fogG, 1, 16, v2(10, sy), v2(200, 24), slider_setFogG, SliderLabelInteger);
+        CreateSlider("Fog G", 0, 255, level_fogG, 1, 16, v2(10, sy), v2(200, 24), SetFogGSlider, SliderLabelInteger);
         sy += szy + sp;
-        CreateSlider("Fog B", 0, 255, level_fogB, 1, 16, v2(10, sy), v2(200, 24), slider_setFogB, SliderLabelInteger);
+        CreateSlider("Fog B", 0, 255, level_fogB, 1, 16, v2(10, sy), v2(200, 24), SetFogBSlider, SliderLabelInteger);
         sy += szy + sp;
-        CreateSlider("Fog Start", -50, 200, level_fogStart, 1, 50, v2(10, sy), v2(200, 24), slider_setFogStart,
+        CreateSlider("Fog Start", -50, 200, level_fogStart, 1, 50, v2(10, sy), v2(200, 24), SetFogStartSlider,
                      NULLPTR);
         sy += szy + sp;
-        CreateSlider("Fog End", 0, 300, level_fogEnd, 1, 50, v2(10, sy), v2(200, 24), slider_setFogEnd, NULLPTR);
+        CreateSlider("Fog End", 0, 300, level_fogEnd, 1, 50, v2(10, sy), v2(200, 24), SetFogEndSlider, NULLPTR);
         sy += szy + sp;
         CreateSlider("Floor Tex", 0, WALL_TEXTURE_COUNT - 1, level_floor_tex, 1, 16, v2(10, sy), v2(200, 24),
-                     slider_setFloorTex, SliderLabelInteger);
+                     SetFloorTexSlider, SliderLabelInteger);
         sy += szy + sp;
         CreateSlider("Ceil Tex", 0, WALL_TEXTURE_COUNT, level_ceil_tex, 1, 16, v2(10, sy), v2(200, 24),
-                     slider_setCeilTex, SliderLabelInteger);
+                     SetCeilTexSlider, SliderLabelInteger);
         sy += szy + sp;
-        CreateSlider("Sky R", 0, 255, level_skyR, 1, 16, v2(10, sy), v2(200, 24), slider_setSkyR, SliderLabelInteger);
+        CreateSlider("Sky R", 0, 255, level_skyR, 1, 16, v2(10, sy), v2(200, 24), SetSkyRSlider, SliderLabelInteger);
         sy += szy + sp;
-        CreateSlider("Sky G", 0, 255, level_skyG, 1, 16, v2(10, sy), v2(200, 24), slider_setSkyG, SliderLabelInteger);
+        CreateSlider("Sky G", 0, 255, level_skyG, 1, 16, v2(10, sy), v2(200, 24), SetSkyGSlider, SliderLabelInteger);
         sy += szy + sp;
-        CreateSlider("Sky B", 0, 255, level_skyB, 1, 16, v2(10, sy), v2(200, 24), slider_setSkyB, SliderLabelInteger);
+        CreateSlider("Sky B", 0, 255, level_skyB, 1, 16, v2(10, sy), v2(200, 24), SetSkyBSlider, SliderLabelInteger);
         sy += szy + sp;
-        CreateSlider("Music", 0, MUSIC_COUNT, musicId, 1, 1, v2(10, sy), v2(200, 24), slider_setMusic,
+        CreateSlider("Music", 0, MUSIC_COUNT, musicId, 1, 1, v2(10, sy), v2(200, 24), SetMusicSlider,
                      SliderLabelInteger);
     }
 }
