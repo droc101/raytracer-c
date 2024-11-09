@@ -2,17 +2,19 @@
 // Created by droc101 on 10/2/24.
 //
 
-#include "RenderingHelpers.h"
-#include "../CommonAssets.h"
-#include "../../Structs/GlobalState.h"
-#include "../Core/Logging.h"
-#include "GL/glHelper.h"
 #ifdef WIN32
 #include <dwmapi.h>
 #include <SDL_syswm.h>
 
 #define DWMWA_USE_IMMERSIVE_DARK_MODE 20
 #endif
+
+#include "RenderingHelpers.h"
+#include "../CommonAssets.h"
+#include "../../Structs/GlobalState.h"
+#include "../Core/Logging.h"
+#include "GL/glHelper.h"
+#include "../Core/MathEx.h"
 
 Renderer currentRenderer;
 
