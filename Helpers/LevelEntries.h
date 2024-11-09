@@ -6,7 +6,6 @@
 #define GAME_LEVELENTRIES_H
 
 #include "../defines.h"
-#include "../Assets/Assets.h"
 
 typedef struct LevelEntry
 {

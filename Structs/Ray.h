@@ -5,8 +5,6 @@
 #ifndef GAME_RAY_H
 #define GAME_RAY_H
 
-#include <math.h>
-#include "Vector2.h"
 #include "../defines.h"
 
 /**

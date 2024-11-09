@@ -5,20 +5,16 @@
 #include <math.h>
 #include "Actor.h"
 #include "GlobalState.h"
-#include "Ray.h"
 #include "Vector2.h"
 #include "Wall.h"
 #include "../defines.h"
 #include "../Assets/Assets.h"
-#include "../Helpers/CommonAssets.h"
-#include "../Helpers/Core/Error.h"
-#include "../Helpers/Core/MathEx.h"
 #include "../Helpers/Graphics/Drawing.h"
 #include "../Helpers/Graphics/RenderingHelpers.h"
 
 Level *CreateLevel()
 {
-    Level *l = (Level *) malloc(sizeof(Level));
+    Level *l = malloc(sizeof(Level));
     l->actors = CreateList();
     l->walls = CreateList();
     l->position = v2s(0);
@@ -39,12 +35,12 @@ void DestroyLevel(Level *l)
 {
     for (int i = 0; i < l->walls->size; i++)
     {
-        Wall *w = (Wall *) ListGet(l->walls, i);
+        Wall *w = ListGet(l->walls, i);
         FreeWall(w);
     }
     for (int i = 0; i < l->actors->size; i++)
     {
-        Actor *a = (Actor *) ListGet(l->actors, i);
+        Actor *a = ListGet(l->actors, i);
         FreeActor(a);
     }
 

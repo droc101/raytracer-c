@@ -19,7 +19,7 @@ Control *CreateButtonControl(const Vector2 position, const Vector2 size, char *t
     btn->anchor = anchor;
 
     btn->ControlData = malloc(sizeof(ButtonData));
-    ButtonData *data = (ButtonData *) btn->ControlData;
+    ButtonData *data = btn->ControlData;
     data->text = text;
     data->callback = callback;
     data->enabled = true;
@@ -29,11 +29,11 @@ Control *CreateButtonControl(const Vector2 position, const Vector2 size, char *t
 
 void DestroyButton(const Control *c)
 {
-    ButtonData *data = (ButtonData *) c->ControlData;
+    ButtonData *data = c->ControlData;
     free(data);
 }
 
-void UpdateButton(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlIndex)
+void UpdateButton(UiStack *stack, Control *c, Vector2 /*localMousePos*/, uint /*ctlIndex*/)
 {
     const ButtonData *data = (ButtonData *) c->ControlData;
     if (data->enabled && HasActivation(stack, c))

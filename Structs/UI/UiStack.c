@@ -8,7 +8,7 @@
 #include "../Vector2.h"
 #include "../../Assets/Assets.h"
 #include "../../Helpers/Core/Input.h"
-#include "../../Helpers/Core/MathEx.h"
+#include "../../Helpers/Graphics/Drawing.h"
 
 #include "Controls/Button.h"
 #include "Controls/CheckBox.h"
@@ -38,7 +38,7 @@ void (*ControlUpdateFuncs[4])(UiStack *stack, Control *, Vector2 localMousePos, 
 
 UiStack *CreateUiStack()
 {
-    UiStack *stack = (UiStack *) malloc(sizeof(UiStack));
+    UiStack *stack = malloc(sizeof(UiStack));
     stack->Controls = CreateList();
     stack->ActiveControl = -1;
     stack->ActiveControlState = NORMAL;
@@ -50,7 +50,7 @@ void DestroyUiStack(UiStack *stack)
 {
     for (int i = 0; i < stack->Controls->size; i++)
     {
-        Control *c = (Control *) ListGet(stack->Controls, i);
+        const Control *c = ListGet(stack->Controls, i);
         ControlDestroyFuncs[c->type](c);
     }
     ListFreeWithData(stack->Controls);
@@ -63,13 +63,13 @@ bool ProcessUiStack(UiStack *stack)
 
     if (stack->focusedControl != -1)
     {
-        Control *c = (Control *) ListGet(stack->Controls, stack->focusedControl);
+        Control *c = ListGet(stack->Controls, stack->focusedControl);
         ControlUpdateFuncs[c->type](stack, c, v2(mousePos.x - c->position.x, mousePos.y - c->position.y),
                                     stack->focusedControl);
     }
     if (stack->ActiveControl != -1)
     {
-        Control *c = (Control *) ListGet(stack->Controls, stack->ActiveControl);
+        Control *c = ListGet(stack->Controls, stack->ActiveControl);
         ControlUpdateFuncs[c->type](stack, c, v2(mousePos.x - c->position.x, mousePos.y - c->position.y),
                                     stack->ActiveControl);
     }
@@ -77,7 +77,7 @@ bool ProcessUiStack(UiStack *stack)
 
     for (int i = stack->Controls->size - 1; i >= 0; i--)
     {
-        Control *c = (Control *) ListGet(stack->Controls, i);
+        Control *c = ListGet(stack->Controls, i);
 
         c->anchoredPosition = CalculateControlPosition(c);
     }
@@ -161,7 +161,7 @@ void DrawUiStack(const UiStack *stack)
 {
     for (int i = 0; i < stack->Controls->size; i++)
     {
-        Control *c = (Control *) ListGet(stack->Controls, i);
+        const Control *c = ListGet(stack->Controls, i);
         ControlDrawFuncs[c->type](c, i == stack->ActiveControl ? stack->ActiveControlState : NORMAL,
                                   c->anchoredPosition);
 
@@ -218,7 +218,7 @@ Vector2 CalculateControlPosition(const Control *control)
 
 Control *CreateEmptyControl()
 {
-    Control *c = (Control *) malloc(sizeof(Control));
+    Control *c = malloc(sizeof(Control));
     c->ControlData = NULL;
     return c;
 }
@@ -228,7 +228,7 @@ void UiStackPush(const UiStack *stack, Control *control)
     ListAdd(stack->Controls, control);
 }
 
-void UiStackRemove(const UiStack *stack, Control *control)
+void UiStackRemove(const UiStack *stack, const Control *control)
 {
     ControlDestroyFuncs[control->type](control);
 
@@ -241,15 +241,15 @@ bool IsMouseInRect(const Vector2 pos, const Vector2 size)
     return mousePos.x >= pos.x && mousePos.x <= pos.x + size.x && mousePos.y >= pos.y && mousePos.y <= pos.y + size.y;
 }
 
-bool HasMouseActivation(UiStack *stack, const Control *Control)
+bool HasMouseActivation(UiStack */*stack*/, const Control *Control)
 {
     return IsMouseInRect(Control->anchoredPosition, Control->size) &&
-           (IsMouseButtonJustReleased(SDL_BUTTON_LEFT));
+           IsMouseButtonJustReleased(SDL_BUTTON_LEFT);
 }
 
-bool HasKeyboardActivation(UiStack *stack, Control *Control)
+bool HasKeyboardActivation(UiStack */*stack*/, Control */*Control*/)
 {
-    return (IsKeyJustPressed(SDL_SCANCODE_RETURN) || IsKeyJustPressed(SDL_SCANCODE_SPACE) || IsButtonJustReleased((SDL_CONTROLLER_BUTTON_A)));
+    return IsKeyJustPressed(SDL_SCANCODE_RETURN) || IsKeyJustPressed(SDL_SCANCODE_SPACE) || IsButtonJustReleased(SDL_CONTROLLER_BUTTON_A);
 }
 
 bool HasActivation(UiStack *stack, Control *Control)

@@ -54,9 +54,9 @@ Vector2 Vector2Add(const Vector2 a, const Vector2 b)
     return v2(a.x + b.x, a.y + b.y);
 }
 
-Vector2 Vector2Sub(const Vector2 a, const Vector2 b)
+Vector2 Vector2Sub(const Vector2 vec, const Vector2 offset)
 {
-    return v2(a.x - b.x, a.y - b.y);
+    return v2(vec.x - offset.x, vec.y - offset.y);
 }
 
 Vector2 Vector2Scale(const Vector2 vec, const double scale)

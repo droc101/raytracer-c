@@ -5,7 +5,6 @@
 #include "Options.h"
 #include <stdio.h>
 #include "../Helpers/Core/Logging.h"
-#include "../Helpers/Core/MathEx.h"
 
 void DefaultOptions(Options *options)
 {
@@ -24,7 +23,7 @@ ushort GetOptionsChecksum(Options *options)
 {
     const byte *data = (byte *) options;
     ushort checksum = 0;
-    for (int i = sizeof(ushort); i < (sizeof(Options) - sizeof(ushort)); i++)
+    for (int i = sizeof(ushort); i < sizeof(Options) - sizeof(ushort); i++)
     {
         checksum += data[i];
     }
@@ -86,7 +85,7 @@ void LoadOptions(Options *options)
 
 void SaveOptions(Options *options)
 {
-    options->checksum = GetOptionsChecksum((Options *) options);
+    options->checksum = GetOptionsChecksum(options);
 
     char *filePath = GetOptionsPath();
 

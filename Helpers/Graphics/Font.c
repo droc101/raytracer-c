@@ -4,12 +4,10 @@
 
 #include "Font.h"
 #include <ctype.h>
-#include <stdio.h>
 #include <string.h>
 #include "Drawing.h"
 #include "RenderingHelpers.h"
 #include "SDL.h"
-#include "../CommonAssets.h"
 #include "../../Assets/Assets.h"
 #include "../Core/MathEx.h"
 
@@ -180,27 +178,26 @@ void TextGetLine(const char *str, const int line, char *out)
     out[end - start] = '\0';
 }
 
-void DrawTextAligned(char *str, const uint size, const uint color, const Vector2 rect_pos, const Vector2 rect_size,
+void DrawTextAligned(const char *str, const uint size, const uint color, const Vector2 rect_pos, const Vector2 rect_size,
                      const byte h_align, const byte v_align,
                      const bool small)
 {
     const int lines = StringLineCount(str);
-    Vector2 textSize;
     int x;
     int y = rect_pos.y;
     if (v_align == FONT_VALIGN_MIDDLE)
     {
-        y += (rect_size.y - (lines * size)) / 2;
+        y += (rect_size.y - lines * size) / 2;
     } else if (v_align == FONT_VALIGN_BOTTOM)
     {
-        y += rect_size.y - (lines * size);
+        y += rect_size.y - lines * size;
     }
 
     for (int i = 0; i < lines; i++)
     {
         char line[256];
         TextGetLine(str, i, line);
-        textSize = MeasureText(line, size, small);
+        const Vector2 textSize = MeasureText(line, size, small);
         if (h_align == FONT_HALIGN_CENTER)
         {
             x = rect_pos.x + (rect_size.x - textSize.x) / 2;

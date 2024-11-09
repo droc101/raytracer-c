@@ -3,15 +3,16 @@
 //
 
 #include "glHelper.h"
-#include <stdio.h>
 #include <cglm/cglm.h>
 #include "../RenderingHelpers.h"
 #include "../../CommonAssets.h"
-#include "../../LevelLoader.h"
 #include "../../../Assets/AssetReader.h"
 #include "../../../Assets/Assets.h"
 #include "../../../Structs/GlobalState.h"
+#include "../../../Structs/Vector2.h"
+#include "../../../Structs/Wall.h"
 #include "../../Core/DataReader.h"
+#include "../../Core/Error.h"
 #include "../../Core/Logging.h"
 
 SDL_GLContext ctx;
@@ -203,10 +204,10 @@ inline void GL_ClearScreen()
 
 void GL_ClearColor(const uint color)
 {
-    const float r = ((color >> 16) & 0xFF) / 255.0f;
-    const float g = ((color >> 8) & 0xFF) / 255.0f;
+    const float r = (color >> 16 & 0xFF) / 255.0f;
+    const float g = (color >> 8 & 0xFF) / 255.0f;
     const float b = (color & 0xFF) / 255.0f;
-    const float a = ((color >> 24) & 0xFF) / 255.0f;
+    const float a = (color >> 24 & 0xFF) / 255.0f;
 
     glClearColor(r, g, b, a);
 
@@ -238,21 +239,21 @@ void GL_DestroyGL()
 
 inline float GL_X_TO_NDC(const float x)
 {
-    return (x / WindowWidth()) * 2.0f - 1.0f;
+    return x / WindowWidth() * 2.0f - 1.0f;
 }
 
 inline float GL_Y_TO_NDC(const float y)
 {
-    return 1.0f - (y / WindowHeight()) * 2.0f;
+    return 1.0f - y / WindowHeight() * 2.0f;
 }
 
 void GL_DrawRect(const Vector2 pos, const Vector2 size, const uint color)
 {
     glUseProgram(ui_colored->program);
 
-    const float a = ((color >> 24) & 0xFF) / 255.0f;
-    const float r = ((color >> 16) & 0xFF) / 255.0f;
-    const float g = ((color >> 8) & 0xFF) / 255.0f;
+    const float a = (color >> 24 & 0xFF) / 255.0f;
+    const float r = (color >> 16 & 0xFF) / 255.0f;
+    const float g = (color >> 8 & 0xFF) / 255.0f;
     const float b = (color & 0xFF) / 255.0f;
 
     glUniform4f(glGetUniformLocation(ui_colored->program, "col"), r, g, b, a);
@@ -302,9 +303,9 @@ void GL_DrawRectOutline(const Vector2 pos, const Vector2 size, const uint color,
 
     glUseProgram(ui_colored->program);
 
-    const float a = ((color >> 24) & 0xFF) / 255.0f;
-    const float r = ((color >> 16) & 0xFF) / 255.0f;
-    const float g = ((color >> 8) & 0xFF) / 255.0f;
+    const float a = (color >> 24 & 0xFF) / 255.0f;
+    const float r = (color >> 16 & 0xFF) / 255.0f;
+    const float g = (color >> 8 & 0xFF) / 255.0f;
     const float b = (color & 0xFF) / 255.0f;
 
     glUniform4f(glGetUniformLocation(ui_colored->program, "col"), r, g, b, a);
@@ -367,7 +368,7 @@ GLuint GL_LoadTextureFromAsset(const unsigned char *imageData)
         }
     }
 
-    const byte *pixelData = Decompressed + (sizeof(uint) * 4);
+    const byte *pixelData = Decompressed + sizeof(uint) * 4;
 
     const int slot = GL_RegisterTexture(pixelData, width, height);
 
@@ -431,9 +432,9 @@ GL_DrawTexture_Internal(const Vector2 pos, const Vector2 size, const unsigned ch
 
     const GLuint tex = GL_LoadTextureFromAsset(imageData);
 
-    const float a = ((color >> 24) & 0xFF) / 255.0f;
-    const float r = ((color >> 16) & 0xFF) / 255.0f;
-    const float g = ((color >> 8) & 0xFF) / 255.0f;
+    const float a = (color >> 24 & 0xFF) / 255.0f;
+    const float r = (color >> 16 & 0xFF) / 255.0f;
+    const float g = (color >> 8 & 0xFF) / 255.0f;
     const float b = (color & 0xFF) / 255.0f;
 
     glUniform4f(glGetUniformLocation(ui_textured->program, "col"), r, g, b, a);
@@ -514,9 +515,9 @@ void GL_DrawLine(const Vector2 start, const Vector2 end, const uint color, const
 
     glUseProgram(ui_colored->program);
 
-    const float a = ((color >> 24) & 0xFF) / 255.0f;
-    const float r = ((color >> 16) & 0xFF) / 255.0f;
-    const float g = ((color >> 8) & 0xFF) / 255.0f;
+    const float a = (color >> 24 & 0xFF) / 255.0f;
+    const float r = (color >> 16 & 0xFF) / 255.0f;
+    const float g = (color >> 8 & 0xFF) / 255.0f;
     const float b = (color & 0xFF) / 255.0f;
 
     glUniform4f(glGetUniformLocation(ui_colored->program, "col"), r, g, b, a);
@@ -558,8 +559,8 @@ void GL_SetLevelParams(const mat4 *mvp, const Level *l)
                        mvp[0][0]); // world -> screen
 
     const uint color = l->FogColor;
-    const float r = ((color >> 16) & 0xFF) / 255.0f;
-    const float g = ((color >> 8) & 0xFF) / 255.0f;
+    const float r = (color >> 16 & 0xFF) / 255.0f;
+    const float g = (color >> 8 & 0xFF) / 255.0f;
     const float b = (color & 0xFF) / 255.0f;
 
     glUniform3f(glGetUniformLocation(wall_generic->program, "fog_color"), r, g, b);
@@ -568,7 +569,7 @@ void GL_SetLevelParams(const mat4 *mvp, const Level *l)
     glUniform1f(glGetUniformLocation(wall_generic->program, "fog_end"), l->FogEnd);
 }
 
-void GL_DrawWall(const Wall *w, const mat4 *mdl, const Camera *cam, const Level *l)
+void GL_DrawWall(const Wall *w, const mat4 *mdl, const Camera *cam, const Level */*l*/)
 {
     glUseProgram(wall_generic->program);
 
@@ -594,7 +595,7 @@ void GL_DrawWall(const Wall *w, const mat4 *mdl, const Camera *cam, const Level 
     const float uvs = w->uvScale;
     for (int i = 0; i < 4; i++)
     {
-        vertices[i][3] = (vertices[i][3] * uvs) + uvo;
+        vertices[i][3] = vertices[i][3] * uvs + uvo;
     }
 
     const uint indices[] = {
@@ -635,8 +636,8 @@ GL_DrawFloor(const Vector2 vp1, const Vector2 vp2, const mat4 *mvp, const Level 
                        mvp[0][0]); // world -> screen
 
     const uint color = l->FogColor;
-    const float r = ((color >> 16) & 0xFF) / 255.0f;
-    const float g = ((color >> 8) & 0xFF) / 255.0f;
+    const float r = (color >> 16 & 0xFF) / 255.0f;
+    const float g = (color >> 8 & 0xFF) / 255.0f;
     const float b = (color & 0xFF) / 255.0f;
 
     glUniform3f(glGetUniformLocation(floor_generic->program, "fog_color"), r, g, b);
@@ -689,8 +690,8 @@ void GL_DrawShadow(const Vector2 vp1, const Vector2 vp2, const mat4 *mvp, const 
                        mdl[0][0]); // model -> world
 
     const uint color = l->FogColor;
-    const float r = ((color >> 16) & 0xFF) / 255.0f;
-    const float g = ((color >> 8) & 0xFF) / 255.0f;
+    const float r = (color >> 16 & 0xFF) / 255.0f;
+    const float g = (color >> 8 & 0xFF) / 255.0f;
     const float b = (color & 0xFF) / 255.0f;
 
     glUniform3f(glGetUniformLocation(shadow->program, "fog_color"), r, g, b);
@@ -750,9 +751,9 @@ void GL_DrawColoredArrays(const float *vertices, const uint *indices, const int 
 {
     glUseProgram(ui_colored->program);
 
-    const float a = ((color >> 24) & 0xFF) / 255.0f;
-    const float r = ((color >> 16) & 0xFF) / 255.0f;
-    const float g = ((color >> 8) & 0xFF) / 255.0f;
+    const float a = (color >> 24 & 0xFF) / 255.0f;
+    const float r = (color >> 16 & 0xFF) / 255.0f;
+    const float g = (color >> 8 & 0xFF) / 255.0f;
     const float b = (color & 0xFF) / 255.0f;
 
     glUniform4f(glGetUniformLocation(ui_textured->program, "col"), r, g, b, a);
@@ -779,9 +780,9 @@ void GL_DrawTexturedArrays(const float *vertices, const uint *indices, const int
 
     const GLuint tex = GL_LoadTextureFromAsset(imageData);
 
-    const float a = ((color >> 24) & 0xFF) / 255.0f;
-    const float r = ((color >> 16) & 0xFF) / 255.0f;
-    const float g = ((color >> 8) & 0xFF) / 255.0f;
+    const float a = (color >> 24 & 0xFF) / 255.0f;
+    const float r = (color >> 16 & 0xFF) / 255.0f;
+    const float g = (color >> 8 & 0xFF) / 255.0f;
     const float b = (color & 0xFF) / 255.0f;
 
     glUniform4f(glGetUniformLocation(ui_textured->program, "col"), r, g, b, a);

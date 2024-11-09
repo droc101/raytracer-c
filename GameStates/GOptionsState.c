@@ -3,14 +3,12 @@
 //
 
 #include "GOptionsState.h"
-#include "GLevelSelectState.h"
 #include "GMenuState.h"
+#include "../Assets/Assets.h"
 #include "../Helpers/Core/Input.h"
-#include "../Helpers/Core/MathEx.h"
 #include "../Helpers/Graphics/Drawing.h"
 #include "../Helpers/Graphics/Font.h"
 #include "../Structs/GlobalState.h"
-#include "../Structs/Ray.h"
 #include "../Structs/UI/UiStack.h"
 #include "../Structs/UI/Controls/Button.h"
 #include "../Structs/UI/Controls/CheckBox.h"
@@ -48,7 +46,7 @@ void CbOptionsFullscreen(const bool value)
     SDL_SetWindowFullscreen(GetGameWindow(), value ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
 }
 
-void RbOptionsRenderer(const bool value, const byte groupId, const byte id)
+void RbOptionsRenderer(const bool /*value*/, const byte /*groupId*/, const byte id)
 {
     GetState()->options.renderer = id;
     // Renderer change will happen on next restart
@@ -60,7 +58,7 @@ void CbOptionsVsync(const bool value)
     // VSync change will happen on next restart
 }
 
-void GOptionsStateUpdate(GlobalState *State)
+void GOptionsStateUpdate(GlobalState */*State*/)
 {
     if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_B))
     {
@@ -78,7 +76,7 @@ void CbOptionsControllerMode(const bool value)
     GetState()->options.controllerMode = value;
 }
 
-void GOptionsStateRender(GlobalState *State)
+void GOptionsStateRender(GlobalState */*State*/)
 {
     // sorry for the confusing variable names
     const Vector2 bg_tile_size = v2(320, 240); // size on screen
@@ -141,7 +139,7 @@ void GOptionsStateSet()
         UiStackPush(optionsStack,
                     CreateRadioButtonControl(v2(0, opy), v2(480, 40), "Vulkan //todo", RbOptionsRenderer, TOP_CENTER,
                                              GetState()->options.renderer == RENDERER_VULKAN, 0, RENDERER_VULKAN));
-        opy += ops;
+        //opy += ops;
 
 
         UiStackPush(optionsStack, CreateButtonControl(v2(0, -40), v2(480, 40), "Done", BtnOptionsBack, BOTTOM_CENTER));

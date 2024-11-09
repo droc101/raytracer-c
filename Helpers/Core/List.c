@@ -10,7 +10,7 @@
 
 Node *CreateListNode(void *data)
 {
-    Node *newNode = (Node *) malloc(sizeof(Node));
+    Node *newNode = malloc(sizeof(Node));
     if (newNode == NULLPTR)
     {
         Error("Node: malloc fail");
@@ -23,7 +23,7 @@ Node *CreateListNode(void *data)
 
 List *CreateList()
 {
-    List *newList = (List *) malloc(sizeof(List));
+    List *newList = malloc(sizeof(List));
     if (newList == NULLPTR)
     {
         Error("List: malloc fail");
@@ -175,7 +175,7 @@ int ListFind(const List *list, const void *data)
     return -1;
 }
 
-SizedArray *ToSizedArray(List *list)
+SizedArray *ToSizedArray(const List *list)
 {
     SizedArray *array = malloc(sizeof(SizedArray));
     array->size = list->size;

@@ -8,7 +8,6 @@
 #include "glDebug.h"
 #include "SDL.h"
 #include "../Drawing.h"
-#include "../../Core/Error.h"
 #include "cglm/cglm.h"
 #include "GL/glew.h"
 
@@ -170,6 +169,8 @@ void GL_SetLevelParams(const mat4 *mvp, const Level *l);
  * Draw a wall in 3D
  * @param w The wall to draw
  * @param mdl The model -> world matrix
+ * @param cam The camera
+ * @param l The level
  * @note This expects 3D mode to be enabled
  */
 void GL_DrawWall(const Wall *w, const mat4 *mdl, const Camera *cam, const Level *l);
@@ -182,10 +183,11 @@ void GL_DrawWall(const Wall *w, const mat4 *mdl, const Camera *cam, const Level 
  * @param l The level
  * @param texture The texture to use
  * @param height The height of the floor
+ * @param shade The shade of the floor
  */
 void
-GL_DrawFloor(const Vector2 vp1, const Vector2 vp2, const mat4 *mvp, const Level *l, const unsigned char *texture,
-             const float height, const float shade);
+GL_DrawFloor(Vector2 vp1, Vector2 vp2, const mat4 *mvp, const Level *l, const unsigned char *texture,
+             float height, float shade);
 
 /**
  * Draw a shadow sprite
@@ -195,7 +197,7 @@ GL_DrawFloor(const Vector2 vp1, const Vector2 vp2, const mat4 *mvp, const Level 
  * @param mdl The model -> world matrix
  * @param l The level
  */
-void GL_DrawShadow(const Vector2 vp1, const Vector2 vp2, const mat4 *mvp, const mat4 *mdl, const Level *l);
+void GL_DrawShadow(Vector2 vp1, Vector2 vp2, const mat4 *mvp, const mat4 *mdl, const Level *l);
 
 /**
  * Enable 3D mode
@@ -220,8 +222,8 @@ void GL_UpdateViewportSize();
  * @param imageData The texture to use
  * @param color The modulate color
  */
-void GL_DrawTexturedArrays(const float *vertices, const uint *indices, const int quad_count,
-                           const unsigned char *imageData, const uint color);
+void GL_DrawTexturedArrays(const float *vertices, const uint *indices, int quad_count,
+                           const unsigned char *imageData, uint color);
 
 /**
  * Draw arrays using the ui_colored shader

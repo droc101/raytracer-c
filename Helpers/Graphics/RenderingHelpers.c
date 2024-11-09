@@ -5,7 +5,6 @@
 #include "RenderingHelpers.h"
 #include "../CommonAssets.h"
 #include "../../Structs/GlobalState.h"
-#include "../../Structs/Vector2.h"
 #include "../Core/Logging.h"
 #include "GL/glHelper.h"
 #ifdef WIN32
@@ -117,7 +116,7 @@ void RenderDestroy()
     }
 }
 
-void RenderLevel3D(Level *l, Camera *cam)
+void RenderLevel3D(const Level *l, const Camera *cam)
 {
     switch (currentRenderer)
     {

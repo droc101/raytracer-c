@@ -13,10 +13,11 @@
 #include "../Helpers/TextBox.h"
 #include "../Helpers/Core/Error.h"
 #include "../Helpers/Core/Input.h"
-#include "../Helpers/Core/Logging.h"
 #include "../Helpers/Core/MathEx.h"
 #include "../Helpers/Graphics/Drawing.h"
 #include "../Helpers/Graphics/Font.h"
+#include "../Structs/GlobalState.h"
+#include "../Structs/Level.h"
 
 void GMainStateUpdate(GlobalState *State)
 {
@@ -38,7 +39,7 @@ void GMainStateUpdate(GlobalState *State)
         if (IsKeyJustPressed(SDL_SCANCODE_SPACE) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_A))
         {
             State->textBoxPage++;
-            if (State->textBoxPage >= (StringLineCount(State->textBox.text)) / State->textBox.rows)
+            if (State->textBoxPage >= StringLineCount(State->textBox.text) / State->textBox.rows)
             {
                 State->textBoxActive = false;
             }
@@ -122,19 +123,21 @@ uint GMainStateFixedUpdate(const uint interval, GlobalState *State)
 
     l->position = Move(l->position, moveVec, NULL);
 
-    const double cx = GetAxis(SDL_CONTROLLER_AXIS_RIGHTX);
-    if (fabs(cx) > 0.1)
+    if (UseController())
     {
-        l->rotation += cx * (State->options.mouseSpeed / 15.0);
+        const double cx = GetAxis(SDL_CONTROLLER_AXIS_RIGHTX);
+        if (fabs(cx) > 0.1)
+        {
+            l->rotation += cx * (State->options.mouseSpeed / 11.25);
+        }
     }
-
 
     // view bobbing (scam edition) 💀 (it's better now trust me)
     if (spd == SLOW_MOVE_SPEED)
     {
         if (isMoving)
         {
-            State->CameraY = sin(State->physicsFrame / 7.0) * 0.02; // NOLINT(*-narrowing-conversions)
+            State->CameraY = sin(State->physicsFrame / 7.0) * 0.005; // NOLINT(*-narrowing-conversions)
         } else
         {
             State->CameraY = lerp(State->CameraY, 0, 0.1); // NOLINT(*-narrowing-conversions)
@@ -162,6 +165,7 @@ uint GMainStateFixedUpdate(const uint interval, GlobalState *State)
     return interval;
 }
 
+// ReSharper disable once CppParameterMayBeConstPtrOrRef
 void GMainStateRender(GlobalState *State)
 {
     const Level *l = State->level;
@@ -179,13 +183,13 @@ void GMainStateRender(GlobalState *State)
 
     for (int bc = 0; bc < State->blueCoins; bc++)
     {
-        coinIconRect.x = WindowWidth() - 260 + (bc * 48);
+        coinIconRect.x = WindowWidth() - 260 + bc * 48;
         DrawTexture(v2(coinIconRect.x, coinIconRect.y), v2(40, 40), gztex_interface_hud_bcoin);
     }
 
     if (State->textBoxActive)
     {
-        TextBoxRender(&(State->textBox), State->textBoxPage);
+        TextBoxRender(&State->textBox, State->textBoxPage);
     }
     DPrintF("Position: (%.2f, %.2f)\nRotation: %.4f (%.2fdeg)", 0xFFFFFFFF, false, l->position.x, l->position.y,
             l->rotation, radToDeg(l->rotation));

@@ -5,8 +5,6 @@
 #ifndef GAME_RENDERINGHELPERS_H
 #define GAME_RENDERINGHELPERS_H
 
-#include "Drawing.h"
-#include "../../config.h"
 #include "../../defines.h"
 #include "cglm/cglm.h"
 #include "GL/glHelper.h"
@@ -60,7 +58,7 @@ void RenderDestroy();
  * @note - This does not render the sky
  * @note - This destroys the contents of the depth buffer
  */
-void RenderLevel3D(Level *l, Camera *cam);
+void RenderLevel3D(const Level *l, const Camera *cam);
 
 /**
  * Update the viewport size

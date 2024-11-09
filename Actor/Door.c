@@ -25,9 +25,9 @@ typedef struct DoorData
     ulong stateTicks;
 } DoorData;
 
-void DoorSetState(const Actor *door, DoorState state)
+void DoorSetState(const Actor *door, const DoorState state)
 {
-    DoorData *data = (DoorData *) door->extra_data;
+    DoorData *data = door->extra_data;
     data->state = state;
     data->stateTicks = 0;
 }
@@ -50,20 +50,21 @@ void DoorInit(Actor *this)
     this->actorWall = CreateWall(v2(0, 0), v2(1, 0), actorTextures[11], 1, 0.0);
     this->extra_data = malloc(sizeof(DoorData));
     memset(this->extra_data, 0, sizeof(DoorData));
-    DoorData *data = (DoorData *) this->extra_data;
+    DoorData *data = this->extra_data;
     data->state = DOOR_CLOSED;
     data->stateTicks = 0;
 }
 
+// ReSharper disable once CppParameterMayBeConstPtrOrRef
 void DoorUpdate(Actor *this)
 {
-    DoorData *data = (DoorData *) this->extra_data;
+    DoorData *data = this->extra_data;
     double wallPos;
 
     Wall transformedWall;
     GetTransformedWall(this, &transformedWall);
     const Vector2 wallCenter = Vector2Scale(Vector2Add(transformedWall.a, transformedWall.b), 0.5);
-    bool playerCollide = CollideCylinder(wallCenter, 1.0, GetState()->level->position);
+    const bool playerCollide = CollideCylinder(wallCenter, 1.0, GetState()->level->position);
 
     switch (data->state)
     {
@@ -102,6 +103,7 @@ void DoorUpdate(Actor *this)
     data->stateTicks++;
 }
 
+// ReSharper disable once CppParameterMayBeConstPtrOrRef
 void DoorDestroy(Actor *this)
 {
     free(this->extra_data);

@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include "GMainState.h"
 #include "GMenuState.h"
+#include "../Assets/Assets.h"
 #include "../Helpers/LevelEntries.h"
 #include "../Helpers/Core/Input.h"
 #include "../Helpers/Core/MathEx.h"
@@ -15,7 +16,7 @@
 
 int GLevelSelectState_SelectedLevel = 0;
 
-void GLevelSelectStateUpdate(GlobalState *State)
+void GLevelSelectStateUpdate(GlobalState */*State*/)
 {
     if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_B))
     {
@@ -42,7 +43,7 @@ void GLevelSelectStateUpdate(GlobalState *State)
     }
 }
 
-void GLevelSelectStateRender(GlobalState *State)
+void GLevelSelectStateRender(GlobalState */*State*/)
 {
     SetColorUint(0xFF123456);
     ClearColor(0xFF123456);

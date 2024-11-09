@@ -5,8 +5,6 @@
 #ifndef GAME_GMENUSTATE_H
 #define GAME_GMENUSTATE_H
 
-#include <SDL.h>
-
 void GMenuStateSet();
 
 #endif //GAME_GMENUSTATE_H

@@ -31,8 +31,8 @@ void TextBoxRender(const TextBox *box, const int page)
     const uint textColor = textBoxThemes[box->theme];
     const uint boxColor = textBoxThemes[box->theme] >> 32;
 
-    const int width = (box->cols * TEXT_BOX_FONT_WIDTH) + (BOX_OUTER_PADDING * 2);
-    const int height = (box->rows * TEXT_BOX_FONT_SIZE) + (BOX_OUTER_PADDING * 2);
+    const int width = box->cols * TEXT_BOX_FONT_WIDTH + BOX_OUTER_PADDING * 2;
+    const int height = box->rows * TEXT_BOX_FONT_SIZE + BOX_OUTER_PADDING * 2;
 
     if (box->h_align == TEXT_BOX_H_ALIGN_CENTER)
     {

@@ -14,7 +14,6 @@
 #include "../../Structs/GlobalState.h"
 #include "../../Structs/Options.h"
 #include "../Graphics/Drawing.h"
-#include "../Graphics/Font.h"
 
 SDL_MessageBoxColorScheme mbColorScheme;
 
@@ -77,25 +76,26 @@ _Noreturn void Error_Internal(char *error, const char *file, const int line, con
     int buttonid;
     SDL_ShowMessageBox(&mb, &buttonid);
 
-    if (buttonid == 0)
+    switch (buttonid)
     {
-        exit(1);
-    } else if (buttonid == 1)
-    {
-        // restart
-        RestartProgram();
-    } else if (buttonid == 2)
-    {
-        fflush(stdout);
+        case 0:
+            exit(1);
+        case 1:
+            RestartProgram();
+        case 2:
+            fflush(stdout);
 
 #ifdef WIN32
-        *(volatile int *) 0 = 0; // die immediately
+            *(volatile int *) 0 = 0; // die immediately
 #else
-        // emit sigtrap to allow debugger to catch the error
-        raise(SIGTRAP);
+            // emit sigtrap to allow debugger to catch the error
+            raise(SIGTRAP);
 #endif
+            break;
+        default:
+            exit(1);
     }
-    exit(1);
+    while (1) {}
 }
 
 _Noreturn void FriendlyError(const char *title, const char *description)
@@ -141,12 +141,10 @@ _Noreturn void RenderInitError()
         GetState()->options.renderer = GetState()->options.renderer == RENDERER_OPENGL
                                            ? RENDERER_VULKAN
                                            : RENDERER_OPENGL;
-        SaveOptions(&(GetState()->options));
+        SaveOptions(&GetState()->options);
         RestartProgram();
-    } else
-    {
-        exit(1);
-    }
+    } // else
+    exit(1);
 }
 
 void SignalHandler(const int sig)
@@ -154,7 +152,8 @@ void SignalHandler(const int sig)
     if (sig == SIGSEGV)
     {
         Error("Segmentation Fault");
-    } else if (sig == SIGFPE)
+    }
+    if (sig == SIGFPE)
     {
         Error("Floating Point Exception");
     }

@@ -3,18 +3,19 @@
 //
 
 #include "Actor.h"
+#include "Vector2.h"
 #include "Wall.h"
 
 // Empty template functions
-void ActorInit(Actor *this)
+void ActorInit(Actor * /*this*/)
 {
 }
 
-void ActorUpdate(Actor *this)
+void ActorUpdate(Actor */*this*/)
 {
 }
 
-void ActorDestroy(Actor *this)
+void ActorDestroy(Actor */*this*/)
 {
 }
 
@@ -73,22 +74,22 @@ char ActorParamNames[][4][16] = {
     {"N/A", "N/A", "N/A", "N/A"}
 };
 
-char *GetActorName(int actor)
+char *GetActorName(const int actor)
 {
     const int actorNameCount = sizeof(ActorNames) / sizeof(char *);
-    if (actor > actorNameCount)
+    if (actor > actorNameCount - 1)
     {
-        return "Invalid!";
+        return "Invalid Actor!";
     }
     return ActorNames[actor];
 }
 
-char *GetActorParamName(int actor, byte param)
+char *GetActorParamName(const int actor, const byte param)
 {
     const int actorNameCount = sizeof(ActorNames) / sizeof(char *);
-    if (actor > actorNameCount)
+    if (actor > actorNameCount - 1)
     {
-        return "Invalid!";
+        return "Invalid Actor!";
     }
     return ActorParamNames[actor][param];
 }

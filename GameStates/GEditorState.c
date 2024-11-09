@@ -15,6 +15,8 @@
 #include "../Helpers/Graphics/Font.h"
 #include "../Structs/Actor.h"
 #include "../Structs/GlobalState.h"
+#include "../Structs/Level.h"
+#include "../Structs/Wall.h"
 #include "../Structs/UI/UiStack.h"
 #include "../Structs/UI/Controls/Button.h"
 #include "../Structs/UI/Controls/CheckBox.h"
@@ -116,9 +118,9 @@ Level *NodesToLevel()
                 break;
             case NODE_ACTOR:
             {
-                const byte paramA = (node->extra2 >> 24) & 0xFF;
-                const byte paramB = (node->extra2 >> 16) & 0xFF;
-                const byte paramC = (node->extra2 >> 8) & 0xFF;
+                const byte paramA = node->extra2 >> 24 & 0xFF;
+                const byte paramB = node->extra2 >> 16 & 0xFF;
+                const byte paramC = node->extra2 >> 8 & 0xFF;
                 const byte paramD = node->extra2 & 0xFF;
                 Actor *a = CreateActor(node->position, node->rotation, node->extra, paramA, paramB, paramC, paramD);
                 ListAdd(l->actors, a);
@@ -144,7 +146,7 @@ Level *NodesToLevel()
 
 void CreateSlider(char *label, const double min, const double max, const double value, const double step,
                   const double altStep, const Vector2 position,
-                  const Vector2 size, void (*callback)(const double value), char *(*getLabel)(const Control *slider))
+                  const Vector2 size, void (*callback)(double sld_value), char *(*getLabel)(const Control *slider))
 {
     Control *slider = CreateSliderControl(position, size, label, callback, TOP_LEFT, min, max, value, step, altStep,
                                           getLabel);
@@ -221,28 +223,32 @@ void SetSkyBSlider(const double value)
 void SetActorParamASlider(const double value)
 {
     EditorNode *node = ListGet(EditorNodes, EditorSelectedNode);
-    node->extra2 = (node->extra2 & 0x00FFFFFF) | ((byte) value << 24);
+    // ReSharper disable once CppRedundantParentheses
+    node->extra2 = (node->extra2 & 0x00FFFFFF) | (byte) value << 24;
 }
 
 void SetActorParamBSlider(const double value)
 {
     EditorNode *node = ListGet(EditorNodes, EditorSelectedNode);
-    node->extra2 = (node->extra2 & 0xFF00FFFF) | ((byte) value << 16);
+    // ReSharper disable once CppRedundantParentheses
+    node->extra2 = (node->extra2 & 0xFF00FFFF) | (byte) value << 16;
 }
 
 void SetActorParamCSlider(const double value)
 {
     EditorNode *node = ListGet(EditorNodes, EditorSelectedNode);
-    node->extra2 = (node->extra2 & 0xFFFF00FF) | ((byte) value << 8);
+    // ReSharper disable once CppRedundantParentheses
+    node->extra2 = (node->extra2 & 0xFFFF00FF) | (byte) value << 8;
 }
 
 void SetActorParamDSlider(const double value)
 {
     EditorNode *node = ListGet(EditorNodes, EditorSelectedNode);
+    // ReSharper disable once CppRedundantParentheses
     node->extra2 = (node->extra2 & 0xFFFFFF00) | (byte) value;
 }
 
-void GEditorStateUpdate(GlobalState *State)
+void GEditorStateUpdate(GlobalState */*State*/)
 {
 #ifdef ENABLE_LEVEL_EDITOR
     if (IsKeyJustPressed(SDL_SCANCODE_F6))
@@ -268,8 +274,8 @@ void GEditorStateUpdate(GlobalState *State)
         for (int i = 0; i < EditorNodes->size; i++)
         {
             const EditorNode *node = ListGet(EditorNodes, i);
-            const Vector2 screenPos = v2((node->position.x * EditorZoom) + EditorPanX,
-                                         (node->position.y * EditorZoom) + EditorPanY);
+            const Vector2 screenPos = v2(node->position.x * EditorZoom + EditorPanX,
+                                         node->position.y * EditorZoom + EditorPanY);
 
             bool hovered = false;
             const Vector2 mousePos = GetMousePos();
@@ -308,8 +314,8 @@ void GEditorStateUpdate(GlobalState *State)
         for (int i = 0; i < EditorNodes->size; i++)
         {
             const EditorNode *node = ListGet(EditorNodes, i);
-            const Vector2 screenPos = v2((node->position.x * EditorZoom) + EditorPanX,
-                                   (node->position.y * EditorZoom) + EditorPanY);
+            const Vector2 screenPos = v2(node->position.x * EditorZoom + EditorPanX,
+                                   node->position.y * EditorZoom + EditorPanY);
 
             bool hovered = false;
             const Vector2 mousePos = GetMousePos();
@@ -328,11 +334,9 @@ void GEditorStateUpdate(GlobalState *State)
                     if (node->type == NODE_WALL_A)
                     {
                         ListRemoveAt(EditorNodes, i);
-                        i--;
                     } else if (node->type == NODE_WALL_B)
                     {
                         ListRemoveAt(EditorNodes, i - 1);
-                        i--;
                     }
                 }
                 break; // don't delete more than one node per click
@@ -342,7 +346,7 @@ void GEditorStateUpdate(GlobalState *State)
     {
         const Control *modeSld = ListGet(editorUiStack->Controls, 0 + EditorBaseControlCount);
         const SliderData *sldData = (SliderData *) modeSld->ControlData;
-        int mode = sldData->value;
+        const int mode = sldData->value;
         switch (mode)
         {
             case 0:
@@ -432,14 +436,15 @@ void GEditorStateUpdate(GlobalState *State)
                 }
                 break;
             }
+            default: break;
         }
     } else if (CurrentEditorMode == EDITOR_MODE_PROPERTIES)
     {
         for (int i = 0; i < EditorNodes->size; i++)
         {
             const EditorNode *node = ListGet(EditorNodes, i);
-            const Vector2 screenPos = v2((node->position.x * EditorZoom) + EditorPanX,
-                                         (node->position.y * EditorZoom) + EditorPanY);
+            const Vector2 screenPos = v2(node->position.x * EditorZoom + EditorPanX,
+                                         node->position.y * EditorZoom + EditorPanY);
 
             bool hovered = false;
             const Vector2 mousePos = GetMousePos();
@@ -472,13 +477,13 @@ void GEditorStateUpdate(GlobalState *State)
                              SetNodeRotationSlider, NULLPTR);
                 CreateSlider("Type", 0, GetActorTypeCount() - 1, node->extra, 1, 16, v2(10, 300), v2(200, 24),
                              SetNodeExtraSlider, SliderActorNameLabelCallback);
-                CreateSlider(GetActorParamName(node->extra, 0), 0, 255, (node->extra2 >> 24) & 0xFF, 1, 16, v2(10, 350),
+                CreateSlider(GetActorParamName(node->extra, 0), 0, 255, node->extra2 >> 24 & 0xFF, 1, 16, v2(10, 350),
                              v2(200, 24),
                              SetActorParamASlider, SliderLabelInteger);
-                CreateSlider(GetActorParamName(node->extra, 1), 0, 255, (node->extra2 >> 16) & 0xFF, 1, 16, v2(10, 400),
+                CreateSlider(GetActorParamName(node->extra, 1), 0, 255, node->extra2 >> 16 & 0xFF, 1, 16, v2(10, 400),
                              v2(200, 24),
                              SetActorParamBSlider, SliderLabelInteger);
-                CreateSlider(GetActorParamName(node->extra, 2), 0, 255, (node->extra2 >> 8) & 0xFF, 1, 16, v2(10, 450),
+                CreateSlider(GetActorParamName(node->extra, 2), 0, 255, node->extra2 >> 8 & 0xFF, 1, 16, v2(10, 450),
                              v2(200, 24),
                              SetActorParamCSlider, SliderLabelInteger);
                 CreateSlider(GetActorParamName(node->extra, 3), 0, 255, node->extra2 & 0xFF, 1, 16, v2(10, 500),
@@ -496,7 +501,7 @@ void GEditorStateUpdate(GlobalState *State)
 #endif
 }
 
-void GEditorStateRender(GlobalState *State)
+void GEditorStateRender(GlobalState */*State*/)
 {
 #ifdef ENABLE_LEVEL_EDITOR
     SetColorUint(0xFF123456);
@@ -553,15 +558,15 @@ void GEditorStateRender(GlobalState *State)
     for (int i = 0; i < EditorNodes->size; i++)
     {
         const EditorNode *node = ListGet(EditorNodes, i);
-        const Vector2 screenPos = v2((node->position.x * EditorZoom) + EditorPanX,
-                                     (node->position.y * EditorZoom) + EditorPanY);
+        const Vector2 screenPos = v2(node->position.x * EditorZoom + EditorPanX,
+                                     node->position.y * EditorZoom + EditorPanY);
 
         if (node->type == NODE_WALL_A)
         {
             // Draw a line to the next node, which should be the wall's other end
             const EditorNode *nodeB = ListGet(EditorNodes, i + 1);
-            const Vector2 screenPosB = v2((nodeB->position.x * EditorZoom) + EditorPanX,
-                                          (nodeB->position.y * EditorZoom) + EditorPanY);
+            const Vector2 screenPosB = v2(nodeB->position.x * EditorZoom + EditorPanX,
+                                          nodeB->position.y * EditorZoom + EditorPanY);
             SetColorUint(0xFFFFFFFF);
             DrawLine(v2(screenPos.x, screenPos.y), v2(screenPosB.x, screenPosB.y), 2);
         }
@@ -609,8 +614,8 @@ void GEditorStateRender(GlobalState *State)
         // for player and actor nodes, draw a line indicating rotation
         if (node->type == NODE_PLAYER || node->type == NODE_ACTOR)
         {
-            const Vector2 lineEnd = v2(screenPos.x + (cos(node->rotation) * 20),
-                                       screenPos.y + (sin(node->rotation) * 20));
+            const Vector2 lineEnd = v2(screenPos.x + cos(node->rotation) * 20,
+                                       screenPos.y + sin(node->rotation) * 20);
             DrawLine(screenPos, lineEnd, 1);
         }
     }
@@ -618,8 +623,8 @@ void GEditorStateRender(GlobalState *State)
     if (hoveredNode != -1)
     {
         const EditorNode *node = ListGet(EditorNodes, hoveredNode);
-        const Vector2 screenPos = v2((node->position.x * EditorZoom) + EditorPanX,
-                                     (node->position.y * EditorZoom) + EditorPanY);
+        const Vector2 screenPos = v2(node->position.x * EditorZoom + EditorPanX,
+                                     node->position.y * EditorZoom + EditorPanY);
 
         char nodeInfo[96];
         switch (node->type)
@@ -670,7 +675,7 @@ void GEditorStateRender(GlobalState *State)
         const Control *texSld = ListGet(editorUiStack->Controls, 1 + EditorBaseControlCount);
         const SliderData *sliderData = (SliderData *) texSld->ControlData;
 
-        const byte *tex = wallTextures[(int) (sliderData->value)];
+        const byte *tex = wallTextures[(int) sliderData->value];
         if (tex != NULL)
         {
             const SDL_Rect dst = {10, 360, 64, 64};
@@ -681,7 +686,7 @@ void GEditorStateRender(GlobalState *State)
 #endif
 }
 
-void CreateButton(char *text, const Vector2 position, const Vector2 size, void (*callback)(), bool enabled)
+void CreateButton(char *text, const Vector2 position, const Vector2 size, void (*callback)(), bool /*enabled*/)
 {
     Control *button = CreateButtonControl(position, size, text, callback, TOP_LEFT);
     UiStackPush(editorUiStack, button);
@@ -723,7 +728,7 @@ void BtnCopyBytecode()
     free(buf);
 }
 
-void ToggleSnapToGrid(bool enabled)
+void ToggleSnapToGrid(const bool enabled)
 {
     EditorSnapToGrid = enabled;
 }
@@ -752,7 +757,7 @@ void BtnNextNode()
     }
 }
 
-void SetEditorMode(bool _c, byte _g, byte id)
+void SetEditorMode(bool /*c*/, byte /*g*/, const byte id)
 {
     // Remove all controls that were added for the previous mode
     while (editorUiStack->Controls->size > EditorBaseControlCount)
@@ -855,7 +860,7 @@ void BtnLoad()
         extra2 |= (a->paramA & 0xFF) << 24;
         extra2 |= (a->paramB & 0xFF) << 16;
         extra2 |= (a->paramC & 0xFF) << 8;
-        extra2 |= (a->paramD & 0xFF);
+        extra2 |= a->paramD & 0xFF;
         actorNode->extra2 = extra2;
         ListAdd(EditorNodes, actorNode);
     }

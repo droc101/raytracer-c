@@ -3,14 +3,16 @@
 //
 
 #include "LevelLoader.h"
-#include <stdio.h>
 #include "../Helpers/CommonAssets.h"
 #include "../Structs/Actor.h"
+#include "../Structs/Level.h"
+#include "../Structs/Vector2.h"
+#include "../Structs/Wall.h"
 #include "Core/DataReader.h"
 #include "Core/Error.h"
 #include "Core/Logging.h"
 
-Level *LoadLevel(byte *data)
+Level *LoadLevel(const byte *data)
 {
     Level *l = CreateLevel();
     int i = 0;

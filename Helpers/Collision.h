@@ -14,7 +14,7 @@
  * @param ignore Wall or actor to ignore
  * @return new position
  */
-Vector2 Move(const Vector2 position, const Vector2 moveVec, const void *ignore);
+Vector2 Move(Vector2 position, Vector2 moveVec, const void *ignore);
 
 /**
  * Check if a point is inside a cylinder
@@ -32,6 +32,6 @@ bool CollideCylinder(Vector2 cylOrigin, double cylRadius, Vector2 testPoint);
  * @return Whether the point is inside the actor's cylinder
  * @note The cylinder is defined by the actor's wall
  */
-bool CollideActorCylinder(Actor *a, Vector2 testPoint);
+bool CollideActorCylinder(const Actor *a, Vector2 testPoint);
 
 #endif //GAME_COLLISION_H

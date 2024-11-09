@@ -24,7 +24,7 @@ double ReadDouble(const byte *data, int *offset);
  * @param offset Offset to read from
  * @return The double read
  */
-double ReadDoubleA(const byte *data, const int offset);
+double ReadDoubleA(const byte *data, int offset);
 
 /**
  * Reads a uint from the given data at the given offset
@@ -41,7 +41,7 @@ uint ReadUint(const byte *data, int *offset);
  * @param offset The offset to read from
  * @return The uint read
  */
-uint ReadUintA(const byte *data, const int offset);
+uint ReadUintA(const byte *data, int offset);
 
 /**
  * Reads a float from the given data at the given offset

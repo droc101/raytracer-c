@@ -20,19 +20,20 @@ void GoalInit(Actor *this)
 
 void GoalUpdate(Actor *this)
 {
-    Vector2 dir = Vector2Sub(GetState()->level->position, this->position);
+    const Vector2 dir = Vector2Sub(GetState()->level->position, this->position);
     this->rotation = atan2(dir.y, dir.x);
     this->rotation += PI;
 
     if (CollideActorCylinder(this, GetState()->level->position))
     {
         RemoveActor(this);
-        TextBox tb = DEFINE_TEXT("Goal!", 2, 20, 0, 70, TEXT_BOX_H_ALIGN_CENTER, TEXT_BOX_V_ALIGN_TOP,
+        const TextBox tb = DEFINE_TEXT("Goal!", 2, 20, 0, 70, TEXT_BOX_H_ALIGN_CENTER, TEXT_BOX_V_ALIGN_TOP,
                                  TEXT_BOX_THEME_WHITE);
         ShowTextBox(tb);
     }
 }
 
+// ReSharper disable once CppParameterMayBeConstPtrOrRef
 void GoalDestroy(Actor *this)
 {
     FreeWall(this->actorWall);

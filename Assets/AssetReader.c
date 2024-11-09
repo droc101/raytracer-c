@@ -59,14 +59,14 @@ byte *DecompressAsset(const byte *asset)
     asset += 16; // skip header
 
     // Allocate memory for the decompressed data
-    byte *decompressedData = (byte *) malloc(decompressedSize);
+    byte *decompressedData = malloc(decompressedSize);
 
     z_stream stream = {0};
 
     // Initialize the zlib stream
-    stream.next_in = (Bytef *) (asset);
+    stream.next_in = (Bytef *) asset;
     stream.avail_in = compressedSize;
-    stream.next_out = (Bytef *) decompressedData;
+    stream.next_out = decompressedData;
     stream.avail_out = decompressedSize;
 
     // Initialize the zlib stream

@@ -6,7 +6,6 @@
 #define GAME_LEVELLOADER_H
 
 #include "../defines.h"
-#include "../Structs/Level.h"
 
 // Level bytecode commands
 #define LEVEL_CMD_WALL 0 // Indicates that the next 36 bytes should be parsed as a wall
@@ -23,7 +22,7 @@
  * @param data Level bytecode
  * @return Level struct
  */
-Level *LoadLevel(byte *data);
+Level *LoadLevel(const byte *data);
 
 typedef struct LevelBytecode
 {

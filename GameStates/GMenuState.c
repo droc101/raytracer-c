@@ -6,11 +6,11 @@
 #include <stdio.h>
 #include "GLevelSelectState.h"
 #include "GOptionsState.h"
+#include "../Assets/Assets.h"
 #include "../Helpers/Core/Input.h"
 #include "../Helpers/Graphics/Drawing.h"
 #include "../Helpers/Graphics/Font.h"
 #include "../Structs/GlobalState.h"
-#include "../Structs/Ray.h"
 #include "../Structs/UI/UiStack.h"
 #include "../Structs/UI/Controls/Button.h"
 
@@ -35,11 +35,11 @@ void OpenOptions()
     GOptionsStateSet();
 }
 
-void GMenuStateUpdate(GlobalState *State)
+void GMenuStateUpdate(GlobalState */*State*/)
 {
 }
 
-void GMenuStateRender(GlobalState *State)
+void GMenuStateRender(GlobalState */*State*/)
 {
     // sorry for the confusing variable names
     const Vector2 bg_tile_size = v2(320, 240); // size on screen

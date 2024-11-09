@@ -4,7 +4,6 @@
 
 #include "FrameGrapher.h"
 #include <stdio.h>
-#include "SDL.h"
 #include "../Helpers/Graphics/Drawing.h"
 #include "../Helpers/Graphics/Font.h"
 #include "../Structs/GlobalState.h"

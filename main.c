@@ -17,9 +17,8 @@
 #include "Helpers/Graphics/Drawing.h"
 #include "Helpers/Graphics/RenderingHelpers.h"
 #include "Structs/GlobalState.h"
-#include "Structs/Level.h"
 
-int main(int argc, char *argv[])
+int main(const int argc, char *argv[])
 {
     LogInfo("Build time: %s at %s\n", __DATE__, __TIME__);
     LogInfo("Version: %s\n", VERSION);
