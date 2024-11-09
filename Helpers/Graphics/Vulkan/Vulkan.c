@@ -1023,8 +1023,8 @@ static bool LoadTextures()
         VulkanTest(vkCreateImage(device, &imageInfo, NULL, &textures[textureIndex].image),
                    "Failed to create textures for Vulkan!");
         vkGetImageMemoryRequirements(device, textures[textureIndex].image, &textures[textureIndex].memoryRequirements);
-        textures[textureIndex].offset = memorySize;
-        memorySize += textures[textureIndex].memoryRequirements.size;
+        textures[textureIndex].offset = textures[textureIndex].memoryRequirements.alignment * (VkDeviceSize)ceil(((double)memorySize + (double)textures[textureIndex].memoryRequirements.size) / (double)textures[textureIndex].memoryRequirements.alignment);
+        memorySize = textures[textureIndex].offset + textures[textureIndex].memoryRequirements.size;
         texturesAssetIDMap[ReadUintA(decompressed, 12)] = textureIndex;
     }
 
@@ -1274,15 +1274,15 @@ static bool CreateDescriptorPool()
         (VkDescriptorPoolSize[]){
             {
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                MAX_FRAMES_IN_FLIGHT
+                2 * MAX_FRAMES_IN_FLIGHT
             },
             {
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                TEXTURE_ASSET_COUNT
+                2 * TEXTURE_ASSET_COUNT
             },
             {
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                MAX_FRAMES_IN_FLIGHT
+                2
             }
         }
     };
