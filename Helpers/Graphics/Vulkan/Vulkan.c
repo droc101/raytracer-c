@@ -184,9 +184,59 @@ static bool CreateInstance()
         extensionCount,
         extensionNames
     };
-#ifdef VK_VALIDATION_ENABLE
+#if defined(VK_ENABLE_VALIDATION_LAYER) && defined(VK_ENABLE_MESA_FPS_OVERLAY)
+    uint32_t layerCount;
+    vkEnumerateInstanceLayerProperties(&layerCount, NULL);
+    VkLayerProperties availableLayers[layerCount];
+    vkEnumerateInstanceLayerProperties(&layerCount, availableLayers);
+    uint8_t found = 0;
+    for (uint32_t i = 0; i < layerCount; i++)
+    {
+        if (!strncmp(availableLayers[i].layerName, "VK_LAYER_KHRONOS_validation", 28)) found |= 1;
+        if (!strncmp(availableLayers[i].layerName, "VK_LAYER_MESA_overlay", 22)) found |= 2;
+        if (found == 3) break;
+    }
+    if (found != 3)
+    {
+        if (found == 1) FriendlyError("Missing Vulkan Mesa layers!", "The Vulkan Mesa layers must be installed on your device to use the Mesa FPS overlay. If you wish to disable the Mesa FPS overlay, that can be done by removing the definition for VK_ENABLE_MESA_FPS_OVERLAY in config.h");
+        FriendlyError("Missing Vulkan validation layers!", "The Vulkan SDK must be installed on your device to use the Vulkan validation layer.\nYou can get the Vulkan SDK from https://vulkan.lunarg.com/sdk/home or by using the package manager of your choice.\nIf you wish to disable the validation layer, that can be done by removing the definition for VK_ENABLE_VALIDATION_LAYER in config.h");
+    }
+    createInfo.enabledLayerCount = 2;
+    createInfo.ppEnabledLayerNames = (const char *const[2]){"VK_LAYER_KHRONOS_validation", "VK_LAYER_MESA_overlay"};
+#elifdef VK_ENABLE_VALIDATION_LAYER
+    uint32_t layerCount;
+    vkEnumerateInstanceLayerProperties(&layerCount, NULL);
+    VkLayerProperties availableLayers[layerCount];
+    vkEnumerateInstanceLayerProperties(&layerCount, availableLayers);
+    bool found = false;
+    for (uint32_t i = 0; i < layerCount; i++)
+    {
+        if (!strncmp(availableLayers[i].layerName, "VK_LAYER_KHRONOS_validation", 28))
+        {
+            found = true;
+            break;
+        }
+    }
+    if (!found) FriendlyError("Missing Vulkan validation layers!", "The Vulkan SDK must be installed on your device to use the Vulkan validation layer.\nYou can get the Vulkan SDK from https://vulkan.lunarg.com/sdk/home or by using the package manager of your choice.\nIf you wish to disable the validation layer, that can be done by removing the definition for VK_ENABLE_VALIDATION_LAYER in config.h");
     createInfo.enabledLayerCount = 1;
     createInfo.ppEnabledLayerNames = (const char *const[1]){"VK_LAYER_KHRONOS_validation"};
+#elifdef VK_ENABLE_MESA_FPS_OVERLAY
+    uint32_t layerCount;
+    vkEnumerateInstanceLayerProperties(&layerCount, NULL);
+    VkLayerProperties availableLayers[layerCount];
+    vkEnumerateInstanceLayerProperties(&layerCount, availableLayers);
+    bool found = false;
+    for (uint32_t i = 0; i < layerCount; i++)
+    {
+        if (!strncmp(availableLayers[i].layerName, "VK_LAYER_MESA_overlay", 22))
+        {
+            found = true;
+            break;
+        }
+    }
+    if (!found) FriendlyError("Missing Vulkan Mesa layers!", "The Vulkan Mesa layers must be installed on your device to use the Mesa FPS overlay.\nIf you wish to disable the Mesa FPS overlay, that can be done by removing the definition for VK_ENABLE_MESA_FPS_OVERLAY in config.h");
+    createInfo.enabledLayerCount = 1;
+    createInfo.ppEnabledLayerNames = (const char *const[1]){"VK_LAYER_MESA_overlay"};
 #endif
     VulkanTest(vkCreateInstance(&createInfo, NULL, &instance), "Failed to create Vulkan instance!")
     return true;
@@ -387,7 +437,7 @@ static bool CreateLogicalDevice()
         (const char *const[1]){VK_KHR_SWAPCHAIN_EXTENSION_NAME},
         &deviceFeatures
     };
-#ifdef VK_VALIDATION_ENABLE
+#ifdef VK_ENABLE_VALIDATION_LAYER
     createInfo.enabledLayerCount = 1;
     createInfo.ppEnabledLayerNames = (const char *const[1]){"VK_LAYER_KHRONOS_validation"};
 #endif

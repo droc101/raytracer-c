@@ -7,17 +7,6 @@
 
 #include "../../../defines.h"
 
-#ifndef NDEBUG
-/**
- * Extra verification, mainly for debugging (slower)
- * This will only work if the LunarG Vulkan SDK is installed on the device running the program.
- * @warning NOT FOR RELEASE BUILDS
- * @see https://docs.vulkan.org/guide/latest/validation_overview.html
- * @see https://vulkan.lunarg.com/doc/sdk/1.3.283.0/windows/khronos_validation_layer.html
- */
-#define VK_VALIDATION_ENABLE
-#endif
-
 bool VK_Init(SDL_Window *window);
 void VK_DrawFrame();
 void VK_Cleanup();
