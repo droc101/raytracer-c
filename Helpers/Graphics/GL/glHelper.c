@@ -550,21 +550,12 @@ void GL_DrawLine(const Vector2 start, const Vector2 end, const uint color, const
     glDrawElements(GL_LINES, 2, GL_UNSIGNED_INT, NULL);
 }
 
-void GL_DrawWall(const Wall *w, const mat4 *mvp, const mat4 *mdl, const Camera *cam, const Level *l)
+void GL_SetLevelParams(const mat4 *mvp, const Level *l)
 {
     glUseProgram(wall_generic->program);
 
-    const GLuint tex = GL_LoadTextureFromAsset(w->tex);
-
-    glUniform1i(glGetUniformLocation(wall_generic->program, "alb"), tex);
-
-    glUniformMatrix4fv(glGetUniformLocation(wall_generic->program, "MODEL_WORLD_MATRIX"), 1, GL_FALSE,
-                       mdl[0][0]); // model -> world
     glUniformMatrix4fv(glGetUniformLocation(wall_generic->program, "WORLD_VIEW_MATRIX"), 1, GL_FALSE,
                        mvp[0][0]); // world -> screen
-
-    glUniform1f(glGetUniformLocation(wall_generic->program, "camera_yaw"), cam->yaw);
-    glUniform1f(glGetUniformLocation(wall_generic->program, "wall_angle"), w->Angle);
 
     const uint color = l->FogColor;
     const float r = ((color >> 16) & 0xFF) / 255.0f;
@@ -575,6 +566,21 @@ void GL_DrawWall(const Wall *w, const mat4 *mvp, const mat4 *mdl, const Camera *
 
     glUniform1f(glGetUniformLocation(wall_generic->program, "fog_start"), l->FogStart);
     glUniform1f(glGetUniformLocation(wall_generic->program, "fog_end"), l->FogEnd);
+}
+
+void GL_DrawWall(const Wall *w, const mat4 *mdl, const Camera *cam, const Level *l)
+{
+    glUseProgram(wall_generic->program);
+
+    const GLuint tex = GL_LoadTextureFromAsset(w->tex);
+
+    glUniform1i(glGetUniformLocation(wall_generic->program, "alb"), tex);
+
+    glUniformMatrix4fv(glGetUniformLocation(wall_generic->program, "MODEL_WORLD_MATRIX"), 1, GL_FALSE,
+                       mdl[0][0]); // model -> world
+
+    glUniform1f(glGetUniformLocation(wall_generic->program, "camera_yaw"), cam->yaw);
+    glUniform1f(glGetUniformLocation(wall_generic->program, "wall_angle"), w->Angle);
 
     float vertices[4][5] = {
         // X Y Z U V
@@ -816,6 +822,8 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
     const Vector2 floor_start = v2(l->position.x - 100, l->position.y - 100);
     const Vector2 floor_end = v2(l->position.x + 100, l->position.y + 100);
 
+    GL_SetLevelParams(WORLD_VIEW_MATRIX, l);
+
     GL_DrawFloor(floor_start, floor_end, WORLD_VIEW_MATRIX, l, wallTextures[l->FloorTexture], -0.5, 1.0);
     if (l->CeilingTexture != 0)
     {
@@ -824,7 +832,7 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
 
     for (int i = 0; i < l->staticWalls->size; i++)
     {
-        GL_DrawWall(SizedArrayGet(l->staticWalls, i), WORLD_VIEW_MATRIX, IDENTITY, cam, l);
+        GL_DrawWall(SizedArrayGet(l->staticWalls, i), IDENTITY, cam, l);
     }
 
     for (int i = 0; i < l->staticActors->size; i++)
@@ -836,7 +844,7 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
         WallBake(&w);
         w.Angle += actor->rotation;
         mat4 *actor_xfm = ActorTransformMatrix(actor);
-        GL_DrawWall(&w, WORLD_VIEW_MATRIX, actor_xfm, cam, l);
+        GL_DrawWall(&w, actor_xfm, cam, l);
 
         if (actor->showShadow)
         {

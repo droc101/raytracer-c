@@ -164,14 +164,15 @@ void GL_DrawTextureRegionMod(Vector2 pos, Vector2 size, const unsigned char *ima
  */
 void GL_ClearColor(uint color);
 
+void GL_SetLevelParams(const mat4 *mvp, const Level *l);
+
 /**
  * Draw a wall in 3D
  * @param w The wall to draw
- * @param mvp The world -> screen matrix
  * @param mdl The model -> world matrix
  * @note This expects 3D mode to be enabled
  */
-void GL_DrawWall(const Wall *w, const mat4 *mvp, const mat4 *mdl, const Camera *cam, const Level *l);
+void GL_DrawWall(const Wall *w, const mat4 *mdl, const Camera *cam, const Level *l);
 
 /**
  * Draw the floor in 3D
