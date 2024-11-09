@@ -137,10 +137,10 @@ uint GMainStateFixedUpdate(const uint interval, GlobalState *State)
     {
         if (isMoving)
         {
-            State->CameraY = sin(State->physicsFrame / 7.0) * 0.005; // NOLINT(*-narrowing-conversions)
+            State->CameraY = (sin(State->physicsFrame / 7.0) * 0.005) - 0.1; // NOLINT(*-narrowing-conversions)
         } else
         {
-            State->CameraY = lerp(State->CameraY, 0, 0.1); // NOLINT(*-narrowing-conversions)
+            State->CameraY = lerp(State->CameraY, -0.1, 0.1); // NOLINT(*-narrowing-conversions)
         }
     } else
     {
