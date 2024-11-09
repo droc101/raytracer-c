@@ -17,7 +17,7 @@
 #define VULKAN_VERSION VK_MAKE_VERSION(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH)
 #define MAX_FRAMES_IN_FLIGHT 2
 #define VulkanLogError(error) printf("\033[31m%s\033[0m\n", error); fflush(stdout)
-#define VulkanTest_Internal(function, error, returnValue) {VkResult result=function; if (result != VK_SUCCESS) { printf("\033[31m%s\033[0m Error code %d\n", error, result); fflush(stdout); return returnValue; }}
+#define VulkanTest_Internal(function, error, returnValue) {const VkResult result=function; if (result != VK_SUCCESS) { printf("\033[31m%s\033[0m Error code %d\n", error, result); fflush(stdout); return returnValue; }}
 #define VulkanTest(function, error) VulkanTest_Internal(function, error, false)
 #define List(type) struct {uint64_t length;type* data;}
 
@@ -43,6 +43,7 @@ typedef struct
 {
     vec2 pos;
     vec3 color;
+    vec2 textureCoordinate;
 } Vertex;
 
 typedef struct
@@ -65,16 +66,21 @@ typedef struct
     VkDeviceSize offset;
 } ImageAllocationInformation;
 
+typedef struct
+{
+    uint16_t textureIndex;
+} DataBufferObject;
+
 SDL_Window *vk_window;
 bool minimized = false;
 
 const List(Vertex) vertices = {
     4,
     (Vertex[]){
-        {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-        {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
-        {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
-        {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
+        {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+        {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+        {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+        {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
     }
 };
 
@@ -126,24 +132,28 @@ VkFramebuffer *swapChainFramebuffers;
 VkCommandPool graphicsCommandPool = VK_NULL_HANDLE;
 VkCommandPool transferCommandPool = VK_NULL_HANDLE;
 VkCommandBuffer commandBuffers[MAX_FRAMES_IN_FLIGHT];
-VkSemaphore imageAvailableSemaphores[MAX_FRAMES_IN_FLIGHT] = {NULL};
-VkSemaphore renderFinishedSemaphores[MAX_FRAMES_IN_FLIGHT] = {NULL};
-VkFence inFlightFences[MAX_FRAMES_IN_FLIGHT] = {NULL};
+VkSemaphore imageAvailableSemaphores[MAX_FRAMES_IN_FLIGHT] = {VK_NULL_HANDLE};
+VkSemaphore renderFinishedSemaphores[MAX_FRAMES_IN_FLIGHT] = {VK_NULL_HANDLE};
+VkFence inFlightFences[MAX_FRAMES_IN_FLIGHT] = {VK_NULL_HANDLE};
 bool framebufferResized = false;
 uint8_t currentFrame = 0;
 VkBuffer vertexBuffer = VK_NULL_HANDLE;
 VkDeviceMemory vertexBufferMemory = VK_NULL_HANDLE;
 VkBuffer indexBuffer = VK_NULL_HANDLE;
 VkDeviceMemory indexBufferMemory = VK_NULL_HANDLE;
-VkBuffer uniformBuffers[MAX_FRAMES_IN_FLIGHT] = {NULL};
-VkDeviceMemory uniformBuffersMemory[MAX_FRAMES_IN_FLIGHT] = {NULL};
+VkBuffer uniformBuffers[MAX_FRAMES_IN_FLIGHT] = {VK_NULL_HANDLE};
+VkDeviceMemory uniformBuffersMemory[MAX_FRAMES_IN_FLIGHT] = {VK_NULL_HANDLE};
 void *uniformBuffersMapped[MAX_FRAMES_IN_FLIGHT];
 VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
 VkDescriptorSet descriptorSets[MAX_FRAMES_IN_FLIGHT];
 ImageAllocationInformation textures[TEXTURE_ASSET_COUNT];
 VkDeviceMemory textureMemory;
 VkImageView texturesImageView[TEXTURE_ASSET_COUNT];
+uint16_t texturesAssetIDMap[ASSET_COUNT];
 VkSampler textureSampler;
+VkBuffer dataBuffer = VK_NULL_HANDLE;
+VkDeviceMemory dataBufferMemory = VK_NULL_HANDLE;
+void *mappedDataBuffer;
 
 /**
  * This function will create the Vulkan instance, set up for SDL.
@@ -356,13 +366,18 @@ static bool CreateLogicalDevice()
             &queuePriority
         };
     }
+    VkPhysicalDeviceVulkan12Features vulkan12Features = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
+        .pNext = NULL,
+        .runtimeDescriptorArray = VK_TRUE
+    };
     VkPhysicalDeviceFeatures deviceFeatures = {
         .logicOp = VK_TRUE,
-        .samplerAnisotropy = VK_TRUE
+        .samplerAnisotropy = VK_TRUE,
     };
     VkDeviceCreateInfo createInfo = {
         VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-        NULL,
+        &vulkan12Features,
         0,
         queueCount,
         queueCreateInfo,
@@ -587,19 +602,38 @@ static bool CreateRenderPass()
 
 static bool CreateDescriptorSetLayout()
 {
-    VkDescriptorSetLayoutBinding layoutBinding = {
-        0,
-        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-        1,
-        VK_SHADER_STAGE_VERTEX_BIT,
-        NULL
+    const List(VkDescriptorSetLayoutBinding) bindings = {
+        3,
+        (VkDescriptorSetLayoutBinding[]){
+            {
+                0,
+                VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                1,
+                VK_SHADER_STAGE_VERTEX_BIT,
+                NULL
+            },
+            {
+                1,
+                VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                TEXTURE_ASSET_COUNT,
+                VK_SHADER_STAGE_FRAGMENT_BIT,
+                NULL
+            },
+            {
+                2,
+                VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                1,
+                VK_SHADER_STAGE_FRAGMENT_BIT,
+                NULL
+            }
+        }
     };
     const VkDescriptorSetLayoutCreateInfo layoutInfo = {
         VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
         NULL,
         0,
-        1,
-        &layoutBinding
+        bindings.length,
+        bindings.data
     };
     VulkanTest(vkCreateDescriptorSetLayout(device, &layoutInfo, NULL, &descriptorSetLayout),
                "Failed to create Vulkan descriptor set layout!");
@@ -654,14 +688,9 @@ static bool CreateGraphicsPipeline()
         sizeof(Vertex),
         VK_VERTEX_INPUT_RATE_VERTEX
     };
-    VkPipelineVertexInputStateCreateInfo vertexInputInfo = {
-        VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
-        NULL,
-        0,
-        1,
-        &bindingDescription,
-        2,
-        (VkVertexInputAttributeDescription[2]){
+    const List(VkVertexInputAttributeDescription) vertexDescriptions = {
+        3,
+        (VkVertexInputAttributeDescription[]){
             {
                 0,
                 0,
@@ -673,8 +702,23 @@ static bool CreateGraphicsPipeline()
                 0,
                 VK_FORMAT_R32G32B32_SFLOAT,
                 offsetof(Vertex, color)
+            },
+            {
+                2,
+                0,
+                VK_FORMAT_R32G32_SFLOAT,
+                offsetof(Vertex, textureCoordinate)
             }
         }
+    };
+    VkPipelineVertexInputStateCreateInfo vertexInputInfo = {
+        VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
+        NULL,
+        0,
+        1,
+        &bindingDescription,
+        vertexDescriptions.length,
+        vertexDescriptions.data
     };
     VkPipelineInputAssemblyStateCreateInfo inputAssembly = {
         VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
@@ -981,6 +1025,7 @@ static bool LoadTextures()
         vkGetImageMemoryRequirements(device, textures[textureIndex].image, &textures[textureIndex].memoryRequirements);
         textures[textureIndex].offset = memorySize;
         memorySize += textures[textureIndex].memoryRequirements.size;
+        texturesAssetIDMap[ReadUintA(decompressed, 12)] = textureIndex;
     }
 
     VkPhysicalDeviceMemoryProperties memoryProperties;
@@ -1048,7 +1093,7 @@ static bool LoadTextures()
 
         const VkCommandBuffer secondCommandBuffer = BeginCommandBuffer();
         VkBufferImageCopy copy = {
-            0,
+            textures[textureIndex].offset,
             0,
             0,
             {
@@ -1100,13 +1145,13 @@ static bool LoadTextures()
 
 static bool CreateTexturesImageView()
 {
-    for (uint16_t i = 0; i < TEXTURE_ASSET_COUNT; i++)
+    for (uint16_t textureIndex = 0; textureIndex < TEXTURE_ASSET_COUNT; textureIndex++)
     {
         VkImageViewCreateInfo createInfo = {
             VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
             NULL,
             0,
-            textures[i].image,
+            textures[textureIndex].image,
             VK_IMAGE_VIEW_TYPE_2D,
             VK_FORMAT_R8G8B8A8_SRGB,
             {
@@ -1123,7 +1168,7 @@ static bool CreateTexturesImageView()
                 1
             }
         };
-        VulkanTest(vkCreateImageView(device, &createInfo, NULL, &texturesImageView[i]),
+        VulkanTest(vkCreateImageView(device, &createInfo, NULL, &texturesImageView[textureIndex]),
                    "Failed to create Vulkan texture image view!");
     }
     return true;
@@ -1137,15 +1182,15 @@ static bool CreateTextureSampler()
         VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
         NULL,
         0,
-        VK_FILTER_LINEAR,
-        VK_FILTER_LINEAR,
+        VK_FILTER_NEAREST,
+        VK_FILTER_NEAREST,
         VK_SAMPLER_MIPMAP_MODE_LINEAR,
         VK_SAMPLER_ADDRESS_MODE_REPEAT,
         VK_SAMPLER_ADDRESS_MODE_REPEAT,
         VK_SAMPLER_ADDRESS_MODE_REPEAT,
         0,
-        VK_TRUE,
-        properties.limits.maxSamplerAnisotropy,
+        VK_FALSE,
+        1,
         VK_FALSE,
         VK_COMPARE_OP_ALWAYS,
         0,
@@ -1208,28 +1253,46 @@ static bool CreateUniformBuffers()
 {
     for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
-        const VkDeviceSize bufferSize = sizeof(UniformBufferObject);
-        CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+        const VkDeviceSize uniformBufferSize = sizeof(UniformBufferObject);
+        CreateBuffer(uniformBufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &uniformBuffers[i],
                      &uniformBuffersMemory[i]);
-        vkMapMemory(device, uniformBuffersMemory[i], 0, bufferSize, 0, &uniformBuffersMapped[i]);
+        vkMapMemory(device, uniformBuffersMemory[i], 0, uniformBufferSize, 0, &uniformBuffersMapped[i]);
     }
+    const VkDeviceSize dataBufferSize = sizeof(DataBufferObject);
+    CreateBuffer(dataBufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &dataBuffer,
+                 &dataBufferMemory);
+    vkMapMemory(device, dataBufferMemory, 0, dataBufferSize, 0, &mappedDataBuffer);
     return true;
 }
 
 static bool CreateDescriptorPool()
 {
-    VkDescriptorPoolSize poolSize = {
-        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-        MAX_FRAMES_IN_FLIGHT
+    const List(VkDescriptorPoolSize) poolSizes = {
+        3,
+        (VkDescriptorPoolSize[]){
+            {
+                VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                MAX_FRAMES_IN_FLIGHT
+            },
+            {
+                VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                TEXTURE_ASSET_COUNT
+            },
+            {
+                VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                MAX_FRAMES_IN_FLIGHT
+            }
+        }
     };
     const VkDescriptorPoolCreateInfo poolCreateInfo = {
         VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
         NULL,
         0,
         MAX_FRAMES_IN_FLIGHT,
-        1,
-        &poolSize
+        poolSizes.length,
+        poolSizes.data
     };
     VulkanTest(vkCreateDescriptorPool(device, &poolCreateInfo, NULL, &descriptorPool),
                "Failed to create Vulkan descriptor pool!");
@@ -1251,24 +1314,67 @@ static bool CreateDescriptorSets()
                "Failed to allocate Vulkan descriptor sets!");
     for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
-        VkDescriptorBufferInfo bufferInfo = {
+        VkDescriptorBufferInfo uniformBufferInfo = {
             uniformBuffers[i],
             0,
             sizeof(UniformBufferObject)
         };
-        VkWriteDescriptorSet writeDescriptors = {
-            VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-            NULL,
-            descriptorSets[i],
+        VkDescriptorImageInfo imageInfo[TEXTURE_ASSET_COUNT];
+        for (uint16_t textureIndex = 0; textureIndex < TEXTURE_ASSET_COUNT; textureIndex++)
+        {
+            imageInfo[textureIndex] = (VkDescriptorImageInfo){
+                textureSampler,
+                texturesImageView[textureIndex],
+                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+            };
+        }
+        VkDescriptorBufferInfo dataBufferInfo = {
+            dataBuffer,
             0,
-            0,
-            1,
-            VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-            NULL,
-            &bufferInfo,
-            NULL
+            sizeof(DataBufferObject)
         };
-        vkUpdateDescriptorSets(device, 1, &writeDescriptors, 0, NULL);
+        const List(VkWriteDescriptorSet) writeDescriptorList = {
+            3,
+            (VkWriteDescriptorSet[]){
+                {
+                    VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+                    NULL,
+                    descriptorSets[i],
+                    0,
+                    0,
+                    1,
+                    VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                    NULL,
+                    &uniformBufferInfo,
+                    NULL
+                },
+                {
+                    VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+                    NULL,
+                    descriptorSets[i],
+                    1,
+                    0,
+                    TEXTURE_ASSET_COUNT,
+                    VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    imageInfo,
+                    NULL,
+                    NULL
+                },
+                {
+                    VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+                    NULL,
+                    descriptorSets[i],
+                    2,
+                    0,
+                    1,
+                    VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                    NULL,
+                    &dataBufferInfo,
+                    NULL
+                }
+            }
+        };
+        vkUpdateDescriptorSets(device, writeDescriptorList.length, writeDescriptorList.data, 0, NULL);
     }
     return true;
 }
@@ -1328,6 +1434,10 @@ bool VK_Init(SDL_Window *window)
         CreateTextureSampler() && CreateVertexBuffer() && CreateIndexBuffer() && CreateUniformBuffers() &&
         CreateDescriptorPool() && CreateDescriptorSets() && CreateCommandBuffers() && CreateSyncObjects())
     {
+        const DataBufferObject dataBufferObject = {
+            texturesAssetIDMap[ReadUintA(DecompressAsset(gztex_level_uvtest), 12)]
+        };
+        memcpy(mappedDataBuffer, &dataBufferObject, sizeof(dataBufferObject));
         return true;
     }
     VK_Cleanup();
@@ -1349,28 +1459,29 @@ void VK_Cleanup()
         vkDeviceWaitIdle(device);
         CleanupSwapChain();
         vkDestroySampler(device, textureSampler, NULL);
-        for (uint16_t i = 0; i < TEXTURE_ASSET_COUNT; i++)
+        for (uint16_t textureIndex = 0; textureIndex < TEXTURE_ASSET_COUNT; textureIndex++)
         {
-            vkDestroyImageView(device, texturesImageView[i], NULL);
-            vkDestroyImage(device, textures[i].image, NULL);
+            vkDestroyImageView(device, texturesImageView[textureIndex], NULL);
+            vkDestroyImage(device, textures[textureIndex].image, NULL);
         }
         vkFreeMemory(device, textureMemory, NULL);
         vkDestroyPipeline(device, graphicsPipeline, NULL);
         vkDestroyPipelineLayout(device, pipelineLayout, NULL);
         vkDestroyRenderPass(device, renderPass, NULL);
-        for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT && uniformBuffers[i] && uniformBuffersMemory[i]; i++)
+        for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
         {
             vkDestroyBuffer(device, uniformBuffers[i], NULL);
             vkFreeMemory(device, uniformBuffersMemory[i], NULL);
         }
+        vkDestroyBuffer(device, dataBuffer, NULL);
+        vkFreeMemory(device, dataBufferMemory, NULL);
         vkDestroyDescriptorPool(device, descriptorPool, NULL);
         vkDestroyDescriptorSetLayout(device, descriptorSetLayout, NULL);
         vkDestroyBuffer(device, indexBuffer, NULL);
         vkFreeMemory(device, indexBufferMemory, NULL);
         vkDestroyBuffer(device, vertexBuffer, NULL);
         vkFreeMemory(device, vertexBufferMemory, NULL);
-        for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT && imageAvailableSemaphores[i] && renderFinishedSemaphores[i] &&
-                            inFlightFences[i]; i++)
+        for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
         {
             vkDestroySemaphore(device, imageAvailableSemaphores[i], NULL);
             vkDestroySemaphore(device, renderFinishedSemaphores[i], NULL);

@@ -2,19 +2,19 @@
 // Created by droc101 on 10/2/24.
 //
 
-#include "RenderingHelpers.h"
-#include "../CommonAssets.h"
-#include "../../Structs/GlobalState.h"
-#include "../../Structs/Vector2.h"
-#include "../Core/Logging.h"
-#include "GL/glHelper.h"
-#include "Vulkan/Vulkan.h"
 #ifdef WIN32
 #include <dwmapi.h>
 #include <SDL_syswm.h>
 
 #define DWMWA_USE_IMMERSIVE_DARK_MODE 20
 #endif
+
+#include "RenderingHelpers.h"
+#include "../CommonAssets.h"
+#include "../../Structs/GlobalState.h"
+#include "../Core/Logging.h"
+#include "GL/glHelper.h"
+#include "Vulkan/Vulkan.h"
 
 Renderer currentRenderer;
 bool lowFPSMode;
@@ -137,7 +137,7 @@ inline void UpdateViewportSize()
     const float newScaleX = (float) ActualWindowSize().x / (float) DEF_WIDTH;
     const float newScaleY = (float) ActualWindowSize().y / (float) DEF_HEIGHT;
     float newScale = newScaleX < newScaleY ? newScaleX : newScaleY;
-    newScale = max(newScale, 1.0f);
+    newScale = newScale > 1.0f ? newScale : 1.0f;
     GetState()->options.uiScale = newScale;
     switch (currentRenderer)
     {
