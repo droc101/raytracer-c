@@ -83,6 +83,7 @@ void GMenuStateSet()
         UiStackPush(menuStack, CreateButtonControl(v2(0, 180), v2(480, 40), "Quit", QuitGame, MIDDLE_CENTER));
     }
     UiStackResetFocus(menuStack);
+    StopMusic();
 
     SetRenderCallback(GMenuStateRender);
     SetUpdateCallback(GMenuStateUpdate, NULL, MENU_STATE); // Fixed update is not needed for this state
