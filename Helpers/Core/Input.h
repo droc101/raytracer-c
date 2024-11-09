@@ -63,10 +63,25 @@ void UpdateInputStates();
 
 // Exposed methods
 
+/**
+ * Checks if a controller button is pressed
+ * @param button The button code
+ * @return Whether the button is pressed
+ */
 bool IsButtonPressed(int button);
 
+/**
+ * Checks if a controller button is just pressed
+ * @param button The button code
+ * @return Whether the button is just pressed
+ */
 bool IsButtonJustPressed(int button);
 
+/**
+ * Checks if a controller button is just released
+ * @param button The button code
+ * @return Whether the button is just released
+ */
 bool IsButtonJustReleased(int button);
 
 /**
@@ -129,6 +144,10 @@ Vector2 GetMouseRel();
  */
 void ConsumeKey(int code);
 
+/**
+ * Consumes a controller button press state, so no other input check can see it
+ * @param btn The button code
+ */
 void ConsumeButton(int btn);
 
 /**
