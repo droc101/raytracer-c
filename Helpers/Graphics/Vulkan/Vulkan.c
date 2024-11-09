@@ -1274,11 +1274,11 @@ static bool CreateDescriptorPool()
         (VkDescriptorPoolSize[]){
             {
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                2 * MAX_FRAMES_IN_FLIGHT
+                MAX_FRAMES_IN_FLIGHT * MAX_FRAMES_IN_FLIGHT
             },
             {
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                2 * TEXTURE_ASSET_COUNT
+                MAX_FRAMES_IN_FLIGHT * TEXTURE_ASSET_COUNT
             },
             {
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
