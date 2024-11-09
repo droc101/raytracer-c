@@ -4,6 +4,7 @@
 
 #include "Vulkan.h"
 #include <SDL_vulkan.h>
+#include <string.h>
 #include <cglm/cglm.h>
 #include <cglm/clipspace/persp_lh_no.h>
 #include <cglm/clipspace/view_lh.h>
