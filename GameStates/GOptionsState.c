@@ -3,14 +3,12 @@
 //
 
 #include "GOptionsState.h"
-#include "GLevelSelectState.h"
 #include "GMenuState.h"
+#include "../Assets/Assets.h"
 #include "../Helpers/Core/Input.h"
-#include "../Helpers/Core/MathEx.h"
 #include "../Helpers/Graphics/Drawing.h"
 #include "../Helpers/Graphics/Font.h"
 #include "../Structs/GlobalState.h"
-#include "../Structs/Ray.h"
 #include "../Structs/UI/UiStack.h"
 #include "../Structs/UI/Controls/Button.h"
 #include "../Structs/UI/Controls/CheckBox.h"
@@ -48,7 +46,7 @@ void CbOptionsFullscreen(const bool value)
     SDL_SetWindowFullscreen(GetGameWindow(), value ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
 }
 
-void RbOptionsRenderer(const bool value, const byte groupId, const byte id)
+void RbOptionsRenderer(const bool /*value*/, const byte /*groupId*/, const byte id)
 {
     GetState()->options.renderer = id;
     // Renderer change will happen on next restart
@@ -60,9 +58,9 @@ void CbOptionsVsync(const bool value)
     // VSync change will happen on next restart
 }
 
-void GOptionsStateUpdate(GlobalState *State)
+void GOptionsStateUpdate(GlobalState */*State*/)
 {
-    if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE))
+    if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_B))
     {
         BtnOptionsBack();
     }
@@ -73,11 +71,16 @@ void SldOptionsMouseSensitivity(const double value)
     GetState()->options.mouseSpeed = value;
 }
 
-void GOptionsStateRender(GlobalState *State)
+void CbOptionsControllerMode(const bool value)
+{
+    GetState()->options.controllerMode = value;
+}
+
+void GOptionsStateRender(GlobalState */*State*/)
 {
     // sorry for the confusing variable names
     const Vector2 bg_tile_size = v2(320, 240); // size on screen
-    const Vector2 bg_tex_size = texture_size(gztex_interface_menu_bg_tile); // actual size of the texture
+    const Vector2 bg_tex_size = GetTextureSize(gztex_interface_menu_bg_tile); // actual size of the texture
 
     const Vector2 tilesOnScreen = v2(WindowWidth() / bg_tile_size.x, WindowHeight() / bg_tile_size.y);
     const Vector2 tileRegion = v2(tilesOnScreen.x * bg_tex_size.x, tilesOnScreen.y * bg_tex_size.y);
@@ -86,7 +89,7 @@ void GOptionsStateRender(GlobalState *State)
     DrawTextAligned("Options", 32, 0xFFFFFFFF, v2s(0), v2(WindowWidth(), 100), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE,
                     false);
 
-    DrawTextAligned("Changing renderer requires a restart", 16, 0xFFa0a0a0, v2(0, 540), v2(WindowWidth(), 40),
+    DrawTextAligned("Changing renderer requires a restart", 16, 0xFFa0a0a0, v2(0, 590), v2(WindowWidth(), 40),
                     FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
 
     ProcessUiStack(optionsStack);
@@ -101,9 +104,13 @@ void GOptionsStateSet()
         int opy = 40;
         const int ops = 25;
         UiStackPush(optionsStack,
-                    CreateSliderControl(v2(0, opy), v2(480, 40), "Mouse Sensitivity", SldOptionsMouseSensitivity,
+                    CreateSliderControl(v2(0, opy), v2(480, 40), "Camera Sensitivity", SldOptionsMouseSensitivity,
                                         TOP_CENTER, 0.01, 2.00,
                                         GetState()->options.mouseSpeed, 0.01, 0.1, SliderLabelPercent));
+        opy += ops;
+        UiStackPush(optionsStack,
+                    CreateCheckboxControl(v2(0, opy), v2(480, 40), "Controller Mode", CbOptionsControllerMode, TOP_CENTER,
+                                          GetState()->options.controllerMode));
         opy += ops * 1.5;
         UiStackPush(optionsStack,
                     CreateSliderControl(v2(0, opy), v2(480, 40), "Master Volume", SldOptionsMasterVolume, TOP_CENTER,
@@ -132,12 +139,12 @@ void GOptionsStateSet()
         UiStackPush(optionsStack,
                     CreateRadioButtonControl(v2(0, opy), v2(480, 40), "Vulkan //todo", RbOptionsRenderer, TOP_CENTER,
                                              GetState()->options.renderer == RENDERER_VULKAN, 0, RENDERER_VULKAN));
-        opy += ops;
+        //opy += ops;
 
 
         UiStackPush(optionsStack, CreateButtonControl(v2(0, -40), v2(480, 40), "Done", BtnOptionsBack, BOTTOM_CENTER));
     }
-    optionsStack->focusedControl = -1;
+    UiStackResetFocus(optionsStack);
 
     SetRenderCallback(GOptionsStateRender);
     SetUpdateCallback(GOptionsStateUpdate, NULL, OPTIONS_STATE); // Fixed update is not needed for this state

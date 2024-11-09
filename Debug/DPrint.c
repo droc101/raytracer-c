@@ -3,7 +3,6 @@
 //
 
 #include "DPrint.h"
-#include <stdarg.h>
 #include <stdio.h>
 #include "../Helpers/Core/Logging.h"
 #include "../Helpers/Graphics/Font.h"
@@ -15,11 +14,11 @@ void ResetDPrintYPos()
     DPrintYPos = 10;
 }
 
-void DPrint(char *str, const uint color)
+void DPrint(const char *str, const uint color)
 {
 #ifdef ENABLE_DEBUG_PRINT
     FontDrawString((Vector2){12, DPrintYPos + 2}, str, 16, 0xFF000000, true);
-    DPrintYPos += (FontDrawString((Vector2){10, DPrintYPos}, str, 16, color, true).y - DPrintYPos) + 8;
+    DPrintYPos += FontDrawString((Vector2){10, DPrintYPos}, str, 16, color, true).y - DPrintYPos + 8;
 #endif
 }
 

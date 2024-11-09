@@ -28,7 +28,7 @@ typedef struct SizedArray
 } SizedArray;
 
 // Internal functions
-Node *createNode(void *data);
+Node *CreateListNode(void *data);
 
 // Public functions
 
@@ -73,7 +73,7 @@ void ListInsertAfter(List *list, Node *prevNode, void *data);
  * @param index Index to get
  * @return Data at index (not node)
  */
-void *ListGet(const List *list, const int index);
+void *ListGet(const List *list, int index);
 
 /**
  * Free the list structure
@@ -116,7 +116,7 @@ void ListClear(List *list);
  * @param list List to convert
  * @return Sized array
  */
-SizedArray *ToSizedArray(List *list);
+SizedArray *ToSizedArray(const List *list);
 
 /**
  * Get an element from a sized array

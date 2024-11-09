@@ -6,7 +6,6 @@
 #define GAME_ACTOR_H
 
 #include "../defines.h"
-#include "../Structs/Vector2.h"
 
 char *GetActorName(int actor);
 

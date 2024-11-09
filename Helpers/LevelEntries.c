@@ -3,6 +3,7 @@
 //
 
 #include "LevelEntries.h"
+#include "../Assets/Assets.h"
 
 LevelEntry gLevelEntries[LEVEL_COUNT] = {
     DEFINE_LEVEL("stage1", test_level, "Test Level", true, 1),

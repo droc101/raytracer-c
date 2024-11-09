@@ -4,7 +4,6 @@
 
 #include "FrameGrapher.h"
 #include <stdio.h>
-#include "SDL.h"
 #include "../Helpers/Graphics/Drawing.h"
 #include "../Helpers/Graphics/Font.h"
 #include "../Structs/GlobalState.h"
@@ -69,7 +68,7 @@ void FrameGraphDraw()
 #endif
     // set the alpha to 255
     color |= 0xff000000;
-    setColorUint(color);
+    SetColorUint(color);
     char fps[20];
     sprintf(fps, "FPS: %.2f", framerates[FRAMEGRAPH_HISTORY_SIZE - 1]);
     FontDrawString(v2(10, WindowHeight() - 32), fps, 16, color, true);

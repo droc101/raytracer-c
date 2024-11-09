@@ -8,7 +8,7 @@
 #include "../Structs/Vector2.h"
 #include "../Structs/Wall.h"
 
-Vector2 CollideWall(Wall *w, Vector2 position, Vector2 moveVec)
+Vector2 CollideWall(const Wall *w, const Vector2 position, Vector2 moveVec)
 {
     const double dx = w->b.x - w->a.x;
     const double dy = w->b.y - w->a.y;
@@ -17,12 +17,12 @@ Vector2 CollideWall(Wall *w, Vector2 position, Vector2 moveVec)
     const Vector2 pos = Vector2Add(position, moveVec);
     const Vector2 hitboxOffset = v2(hitboxSize * dy / w->Length, -hitboxSize * dx / w->Length);
     if (
-        (mult * ((pos.x - w->a.x - hitboxOffset.x) * (w->b.y - w->a.y) -
-                 (pos.y - w->a.y - hitboxOffset.y) * (w->b.x - w->a.x)) <= 0) &&
-        (mult * ((pos.x - w->a.x - hitboxOffset.x) * hitboxOffset.y -
-                 (pos.y - w->a.y - hitboxOffset.y) * hitboxOffset.x) <= 0) &&
-        (mult * ((pos.y - w->b.y - hitboxOffset.y) * hitboxOffset.x -
-                 (pos.x - w->b.x - hitboxOffset.x) * hitboxOffset.y) <= 0)
+        mult * ((pos.x - w->a.x - hitboxOffset.x) * (w->b.y - w->a.y) -
+                (pos.y - w->a.y - hitboxOffset.y) * (w->b.x - w->a.x)) <= 0 &&
+        mult * ((pos.x - w->a.x - hitboxOffset.x) * hitboxOffset.y -
+                (pos.y - w->a.y - hitboxOffset.y) * hitboxOffset.x) <= 0 &&
+        mult * ((pos.y - w->b.y - hitboxOffset.y) * hitboxOffset.x -
+                (pos.x - w->b.x - hitboxOffset.x) * hitboxOffset.y) <= 0
     )
     {
         const double dydx = dy / (dx ? dx : 1);
@@ -51,7 +51,7 @@ Vector2 Move(Vector2 position, Vector2 moveVec, const void *ignore)
     const Level *l = GetState()->level;
     for (int i = 0; i < l->staticWalls->size; i++)
     {
-        Wall *w = SizedArrayGet(l->staticWalls, i);
+        const Wall *w = SizedArrayGet(l->staticWalls, i);
         if (w == ignore)
         {
             continue;
@@ -60,7 +60,7 @@ Vector2 Move(Vector2 position, Vector2 moveVec, const void *ignore)
     }
     for (int i = 0; i < l->staticActors->size; i++)
     {
-        Actor *a = SizedArrayGet(l->staticActors, i);
+        const Actor *a = SizedArrayGet(l->staticActors, i);
         if (a == ignore)
         {
             continue;
@@ -83,7 +83,7 @@ bool CollideCylinder(const Vector2 cylOrigin, const double cylRadius, const Vect
     return Vector2Distance(cylOrigin, testPoint) < cylRadius;
 }
 
-bool CollideActorCylinder(Actor *a, const Vector2 testPoint)
+bool CollideActorCylinder(const Actor *a, const Vector2 testPoint)
 {
     Wall transformedWall;
     if (!GetTransformedWall(a, &transformedWall))

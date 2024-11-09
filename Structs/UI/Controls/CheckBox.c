@@ -21,7 +21,7 @@ CreateCheckboxControl(const Vector2 position, const Vector2 size, char *label, v
     checkbox->anchor = anchor;
 
     checkbox->ControlData = malloc(sizeof(CheckBoxData));
-    CheckBoxData *data = (CheckBoxData *) checkbox->ControlData;
+    CheckBoxData *data = checkbox->ControlData;
     data->label = label;
     data->checked = checked;
     data->callback = callback;
@@ -31,13 +31,13 @@ CreateCheckboxControl(const Vector2 position, const Vector2 size, char *label, v
 
 void DestroyCheckbox(const Control *c)
 {
-    CheckBoxData *data = (CheckBoxData *) c->ControlData;
+    CheckBoxData *data = c->ControlData;
     free(data);
 }
 
-void UpdateCheckbox(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlIndex)
+void UpdateCheckbox(UiStack *stack, Control *c, Vector2 /*localMousePos*/, uint /*ctlIndex*/)
 {
-    CheckBoxData *data = (CheckBoxData *) c->ControlData;
+    CheckBoxData *data = c->ControlData;
 
     if (HasActivation(stack, c))
     {
@@ -46,6 +46,7 @@ void UpdateCheckbox(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlI
 
         ConsumeMouseButton(SDL_BUTTON_LEFT);
         ConsumeKey(SDL_SCANCODE_SPACE);
+        ConsumeButton(SDL_CONTROLLER_BUTTON_A);
 
         if (data->callback != NULL)
         {
@@ -54,14 +55,14 @@ void UpdateCheckbox(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlI
     }
 }
 
-void DrawCheckbox(const Control *c, ControlState state, const Vector2 position)
+void DrawCheckbox(const Control *c, ControlState /*state*/, const Vector2 position)
 {
     const CheckBoxData *data = (CheckBoxData *) c->ControlData;
     DrawTextAligned(data->label, 16, 0xFFFFFFFF, v2(c->anchoredPosition.x + 40, c->anchoredPosition.y),
                     v2(c->size.x - 40, c->size.y), FONT_HALIGN_LEFT, FONT_VALIGN_MIDDLE,
                     true);
 
-    setColorUint(0xFF000000);
+    SetColorUint(0xFF000000);
 
     const Vector2 boxSize = v2s(32);
     const Vector2 boxPos = v2(position.x + 2, position.y + c->size.y / 2 - boxSize.y / 2);

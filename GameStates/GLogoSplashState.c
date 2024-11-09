@@ -3,12 +3,12 @@
 //
 
 #include "GLogoSplashState.h"
-#include "GLevelSelectState.h"
 #include "GMenuState.h"
+#include "../Assets/Assets.h"
 #include "../Helpers/Core/Input.h"
 #include "../Helpers/Graphics/Drawing.h"
 #include "../Structs/GlobalState.h"
-#include "../Structs/Ray.h"
+#include "../Structs/Vector2.h"
 
 uint GLogoSplashStateFixedUpdate(const uint interval, GlobalState *State)
 {
@@ -38,9 +38,10 @@ uint GLogoSplashStateFixedUpdate(const uint interval, GlobalState *State)
     return interval;
 }
 
+// ReSharper disable once CppParameterMayBeConstPtrOrRef
 void GLogoSplashStateRender(GlobalState *State)
 {
-    setColorUint(0x0);
+    SetColorUint(0x0);
     ClearColor(0xFF000000);
     if (State->physicsFrame < 20 || State->physicsFrame > 100)
     {

@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include "GMainState.h"
 #include "GMenuState.h"
+#include "../Assets/Assets.h"
 #include "../Helpers/LevelEntries.h"
 #include "../Helpers/Core/Input.h"
 #include "../Helpers/Core/MathEx.h"
@@ -15,21 +16,21 @@
 
 int GLevelSelectState_SelectedLevel = 0;
 
-void GLevelSelectStateUpdate(GlobalState *State)
+void GLevelSelectStateUpdate(GlobalState */*State*/)
 {
-    if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE))
+    if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_B))
     {
         GMenuStateSet();
     }
-    if (IsKeyJustPressed(SDL_SCANCODE_DOWN))
+    if (IsKeyJustPressed(SDL_SCANCODE_DOWN) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_DPAD_DOWN))
     {
         GLevelSelectState_SelectedLevel--;
         GLevelSelectState_SelectedLevel = wrap(GLevelSelectState_SelectedLevel, 0, LEVEL_COUNT);
-    } else if (IsKeyJustPressed(SDL_SCANCODE_UP))
+    } else if (IsKeyJustPressed(SDL_SCANCODE_UP) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_DPAD_UP))
     {
         GLevelSelectState_SelectedLevel++;
         GLevelSelectState_SelectedLevel = wrap(GLevelSelectState_SelectedLevel, 0, LEVEL_COUNT);
-    } else if (IsKeyJustPressed(SDL_SCANCODE_SPACE))
+    } else if (IsKeyJustPressed(SDL_SCANCODE_SPACE) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_A))
     {
         // check if the level is a stub
         if (gLevelEntries[GLevelSelectState_SelectedLevel].levelData == NULLPTR)
@@ -42,9 +43,9 @@ void GLevelSelectStateUpdate(GlobalState *State)
     }
 }
 
-void GLevelSelectStateRender(GlobalState *State)
+void GLevelSelectStateRender(GlobalState */*State*/)
 {
-    setColorUint(0xFF123456);
+    SetColorUint(0xFF123456);
     ClearColor(0xFF123456);
 
     const Vector2 bg_tile_size = v2(320, 240);
@@ -68,6 +69,7 @@ void GLevelSelectStateRender(GlobalState *State)
 
 void GLevelSelectStateSet()
 {
+    StopMusic();
     SetRenderCallback(GLevelSelectStateRender);
     SetUpdateCallback(GLevelSelectStateUpdate, NULL, LEVEL_SELECT_STATE); // Fixed update is not needed for this state
 }

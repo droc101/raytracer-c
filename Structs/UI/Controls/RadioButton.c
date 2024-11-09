@@ -20,7 +20,7 @@ Control *CreateRadioButtonControl(const Vector2 position, const Vector2 size, ch
     radio->anchor = anchor;
 
     radio->ControlData = malloc(sizeof(RadioButtonData));
-    RadioButtonData *data = (RadioButtonData *) radio->ControlData;
+    RadioButtonData *data = radio->ControlData;
     data->label = label;
     data->checked = checked;
     data->callback = callback;
@@ -32,13 +32,13 @@ Control *CreateRadioButtonControl(const Vector2 position, const Vector2 size, ch
 
 void DestroyRadioButton(const Control *c)
 {
-    RadioButtonData *data = (RadioButtonData *) c->ControlData;
+    RadioButtonData *data = c->ControlData;
     free(data);
 }
 
-void UpdateRadioButton(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlIndex)
+void UpdateRadioButton(UiStack *stack, Control *c, Vector2 /*localMousePos*/, uint /*ctlIndex*/)
 {
-    RadioButtonData *data = (RadioButtonData *) c->ControlData;
+    RadioButtonData *data = c->ControlData;
 
     if (HasActivation(stack, c))
     {
@@ -57,7 +57,7 @@ void UpdateRadioButton(UiStack *stack, Control *c, Vector2 localMousePos, uint c
             const Control *control = ListGet(stack->Controls, i);
             if (control->type == RADIO_BUTTON)
             {
-                RadioButtonData *radioData = (RadioButtonData *) control->ControlData;
+                RadioButtonData *radioData = control->ControlData;
                 if (radioData->groupId == data->groupId && radioData->id != data->id)
                 {
                     radioData->checked = false;
@@ -67,6 +67,7 @@ void UpdateRadioButton(UiStack *stack, Control *c, Vector2 localMousePos, uint c
 
         ConsumeMouseButton(SDL_BUTTON_LEFT);
         ConsumeKey(SDL_SCANCODE_SPACE);
+        ConsumeButton(SDL_CONTROLLER_BUTTON_A);
 
         if (data->callback != NULL)
         {
@@ -75,7 +76,7 @@ void UpdateRadioButton(UiStack *stack, Control *c, Vector2 localMousePos, uint c
     }
 }
 
-void DrawRadioButton(const Control *c, ControlState state, const Vector2 position)
+void DrawRadioButton(const Control *c, ControlState /*state*/, const Vector2 position)
 {
     const RadioButtonData *data = (RadioButtonData *) c->ControlData;
 
@@ -85,7 +86,7 @@ void DrawRadioButton(const Control *c, ControlState state, const Vector2 positio
                     v2(c->size.x - 40, c->size.y), FONT_HALIGN_LEFT, FONT_VALIGN_MIDDLE,
                     true);
 
-    setColorUint(0xFF0000ff);
+    SetColorUint(0xFF0000ff);
 
     const Vector2 boxSize = v2s(32);
     const Vector2 boxPos = v2(position.x + 2, position.y + c->size.y / 2 - boxSize.y / 2);

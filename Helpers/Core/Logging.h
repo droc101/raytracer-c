@@ -6,7 +6,7 @@
 #define GAME_LOGGING_H
 
 //#define FLUSH_ON_INFO
-//#define FLUSH_ON_DEBUG
+#define FLUSH_ON_DEBUG
 #define FLUSH_ON_WARNING
 #define FLUSH_ON_ERROR
 

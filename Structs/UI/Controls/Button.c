@@ -19,7 +19,7 @@ Control *CreateButtonControl(const Vector2 position, const Vector2 size, char *t
     btn->anchor = anchor;
 
     btn->ControlData = malloc(sizeof(ButtonData));
-    ButtonData *data = (ButtonData *) btn->ControlData;
+    ButtonData *data = btn->ControlData;
     data->text = text;
     data->callback = callback;
     data->enabled = true;
@@ -29,11 +29,11 @@ Control *CreateButtonControl(const Vector2 position, const Vector2 size, char *t
 
 void DestroyButton(const Control *c)
 {
-    ButtonData *data = (ButtonData *) c->ControlData;
+    ButtonData *data = c->ControlData;
     free(data);
 }
 
-void UpdateButton(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlIndex)
+void UpdateButton(UiStack *stack, Control *c, Vector2 /*localMousePos*/, uint /*ctlIndex*/)
 {
     const ButtonData *data = (ButtonData *) c->ControlData;
     if (data->enabled && HasActivation(stack, c))
@@ -41,6 +41,7 @@ void UpdateButton(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlInd
         PlaySoundEffect(gzwav_sfx_click);
         ConsumeMouseButton(SDL_BUTTON_LEFT);
         ConsumeKey(SDL_SCANCODE_SPACE);
+        ConsumeButton(SDL_CONTROLLER_BUTTON_A);
         data->callback();
     }
 }
@@ -50,13 +51,13 @@ void DrawButton(const Control *c, const ControlState state, const Vector2 positi
     switch (state)
     {
         case NORMAL:
-            draw_ninepatch(c->anchoredPosition, c->size, 8, 8, gztex_interface_button);
+            DrawNinePatchTexture(c->anchoredPosition, c->size, 8, 8, gztex_interface_button);
             break;
         case HOVER:
-            draw_ninepatch(c->anchoredPosition, c->size, 8, 8, gztex_interface_button_hover);
+            DrawNinePatchTexture(c->anchoredPosition, c->size, 8, 8, gztex_interface_button_hover);
             break;
         case ACTIVE:
-            draw_ninepatch(c->anchoredPosition, c->size, 8, 8, gztex_interface_button_press);
+            DrawNinePatchTexture(c->anchoredPosition, c->size, 8, 8, gztex_interface_button_press);
             break;
     }
 

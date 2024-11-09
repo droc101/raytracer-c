@@ -17,11 +17,10 @@
 #include "Helpers/Graphics/Drawing.h"
 #include "Helpers/Graphics/RenderingHelpers.h"
 #include "Structs/GlobalState.h"
-#include "Structs/Level.h"
 
 #include "GameStates/GPauseState.h"
 
-int main(int argc, char *argv[])
+int main(const int argc, char *argv[])
 {
     LogInfo("Build time: %s at %s\n", __DATE__, __TIME__);
     LogInfo("Version: %s\n", VERSION);
@@ -45,7 +44,9 @@ int main(int argc, char *argv[])
     strncpy(GetState()->executablePath, argv[0], 260);
     LogInfo("Executable path: %s\n", GetState()->executablePath);
 
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER) != 0)
+    SDL_SetHint(SDL_HINT_APP_NAME, GAME_TITLE);
+
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0)
     {
         LogError("SDL_Init Error: %s\n", SDL_GetError());
         Error("Failed to initialize SDL");
@@ -76,7 +77,7 @@ int main(int argc, char *argv[])
     }
     DwmDarkMode(w);
     SDL_SetWindowFullscreen(w, GetState()->options.fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
-    SetWindow(w);
+    SetGameWindow(w);
     UpdateViewportSize();
 
     if (!RenderInit())
@@ -153,6 +154,21 @@ int main(int argc, char *argv[])
                         default: break;
                     }
                     break;
+                case SDL_CONTROLLERDEVICEADDED:
+                    HandleControllerConnect();
+                    break;
+                case SDL_CONTROLLERDEVICEREMOVED:
+                    HandleControlerDisconnect(e.cdevice.which);
+                    break;
+                case SDL_CONTROLLERBUTTONDOWN:
+                    HandleControllerButtonDown(e.cbutton.button);
+                    break;
+                case SDL_CONTROLLERBUTTONUP:
+                    HandleControllerButtonUp(e.cbutton.button);
+                    break;
+                case SDL_CONTROLLERAXISMOTION:
+                    HandleControllerAxis(e.caxis.axis, e.caxis.value);
+                    break;
                 default:
                     break;
             }
@@ -202,7 +218,7 @@ int main(int argc, char *argv[])
     RenderDestroy();
     Mix_CloseAudio();
     Mix_Quit();
-    SDL_QuitSubSystem(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_TIMER);
+    SDL_QuitSubSystem(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER);
     SDL_Quit();
     return 0;
 }

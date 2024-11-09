@@ -5,9 +5,6 @@
 #ifndef GAME_GLEVELSELECTSTATE_H
 #define GAME_GLEVELSELECTSTATE_H
 
-#include "../defines.h"
-#include "../Assets/Assets.h"
-
 void GLevelSelectStateSet();
 
 #endif //GAME_GLEVELSELECTSTATE_H

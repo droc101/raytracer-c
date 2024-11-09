@@ -7,10 +7,12 @@
 #include "Camera.h"
 #include "Options.h"
 #include "../Assets/AssetReader.h"
+#include "../Assets/Assets.h"
 #include "../Helpers/LevelEntries.h"
 #include "../Helpers/LevelLoader.h"
 #include "../Helpers/Core/Logging.h"
 #include "../Structs/Level.h"
+#include "../Structs/Wall.h"
 
 GlobalState state;
 
@@ -153,7 +155,7 @@ void ChangeLevel(Level *l)
 
     for (int i = 0; i < l->walls->size; i++)
     {
-        Wall *w = (Wall *) ListGet(l->walls, i);
+        Wall *w = ListGet(l->walls, i);
         WallBake(w);
     }
 
@@ -251,7 +253,7 @@ void ChangeLevelByID(const int id)
 {
     GetState()->levelID = id;
     GetState()->blueCoins = 0;
-    void *levelData = DecompressAsset(gLevelEntries[id].levelData);
+    const void *levelData = DecompressAsset(gLevelEntries[id].levelData);
     Level *l = LoadLevel(levelData);
     ChangeLevel(l);
 }

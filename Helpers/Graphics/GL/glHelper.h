@@ -8,7 +8,6 @@
 #include "glDebug.h"
 #include "SDL.h"
 #include "../Drawing.h"
-#include "../../Core/Error.h"
 #include "cglm/cglm.h"
 #include "GL/glew.h"
 
@@ -36,6 +35,8 @@ bool GL_PreInit();
  * Initialize OpenGL
  */
 bool GL_Init(SDL_Window *wnd);
+
+GL_Shader *GL_ConstructShaderFromAssets(const byte *fsh, const byte *vsh);
 
 /**
  * Create a shader program
@@ -162,14 +163,17 @@ void GL_DrawTextureRegionMod(Vector2 pos, Vector2 size, const unsigned char *ima
  */
 void GL_ClearColor(uint color);
 
+void GL_SetLevelParams(const mat4 *mvp, const Level *l);
+
 /**
  * Draw a wall in 3D
  * @param w The wall to draw
- * @param mvp The world -> screen matrix
  * @param mdl The model -> world matrix
+ * @param cam The camera
+ * @param l The level
  * @note This expects 3D mode to be enabled
  */
-void GL_DrawWall(const Wall *w, const mat4 *mvp, const mat4 *mdl, const Camera *cam, const Level *l);
+void GL_DrawWall(const Wall *w, const mat4 *mdl, const Camera *cam, const Level *l);
 
 /**
  * Draw the floor in 3D
@@ -179,10 +183,11 @@ void GL_DrawWall(const Wall *w, const mat4 *mvp, const mat4 *mdl, const Camera *
  * @param l The level
  * @param texture The texture to use
  * @param height The height of the floor
+ * @param shade The shade of the floor
  */
 void
-GL_DrawFloor(const Vector2 vp1, const Vector2 vp2, const mat4 *mvp, const Level *l, const unsigned char *texture,
-             const float height, const float shade);
+GL_DrawFloor(Vector2 vp1, Vector2 vp2, const mat4 *mvp, const Level *l, const unsigned char *texture,
+             float height, float shade);
 
 /**
  * Draw a shadow sprite
@@ -192,7 +197,7 @@ GL_DrawFloor(const Vector2 vp1, const Vector2 vp2, const mat4 *mvp, const Level 
  * @param mdl The model -> world matrix
  * @param l The level
  */
-void GL_DrawShadow(const Vector2 vp1, const Vector2 vp2, const mat4 *mvp, const mat4 *mdl, const Level *l);
+void GL_DrawShadow(Vector2 vp1, Vector2 vp2, const mat4 *mvp, const mat4 *mdl, const Level *l);
 
 /**
  * Enable 3D mode
@@ -217,8 +222,8 @@ void GL_UpdateViewportSize();
  * @param imageData The texture to use
  * @param color The modulate color
  */
-void GL_DrawTexturedArrays(const float *vertices, const uint *indices, const int quad_count,
-                           const unsigned char *imageData, const uint color);
+void GL_DrawTexturedArrays(const float *vertices, const uint *indices, int quad_count,
+                           const unsigned char *imageData, uint color);
 
 /**
  * Draw arrays using the ui_colored shader
@@ -250,6 +255,6 @@ float GL_Y_TO_NDC(float y);
  * @note - This does not render the sky
  * @note - This destroys the contents of the depth buffer
  */
-void GL_RenderLevel(Level *l, Camera *cam);
+void GL_RenderLevel(const Level *l, const Camera *cam);
 
 #endif //GAME_GLHELPER_H

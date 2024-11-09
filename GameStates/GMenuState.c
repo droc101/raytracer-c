@@ -6,11 +6,11 @@
 #include <stdio.h>
 #include "GLevelSelectState.h"
 #include "GOptionsState.h"
+#include "../Assets/Assets.h"
 #include "../Helpers/Core/Input.h"
 #include "../Helpers/Graphics/Drawing.h"
 #include "../Helpers/Graphics/Font.h"
 #include "../Structs/GlobalState.h"
-#include "../Structs/Ray.h"
 #include "../Structs/UI/UiStack.h"
 #include "../Structs/UI/Controls/Button.h"
 
@@ -35,15 +35,15 @@ void OpenOptions()
     GOptionsStateSet();
 }
 
-void GMenuStateUpdate(GlobalState *State)
+void GMenuStateUpdate(GlobalState */*State*/)
 {
 }
 
-void GMenuStateRender(GlobalState *State)
+void GMenuStateRender(GlobalState */*State*/)
 {
     // sorry for the confusing variable names
     const Vector2 bg_tile_size = v2(320, 240); // size on screen
-    const Vector2 bg_tex_size = texture_size(gztex_interface_menu_bg_tile); // actual size of the texture
+    const Vector2 bg_tex_size = GetTextureSize(gztex_interface_menu_bg_tile); // actual size of the texture
 
     const Vector2 tilesOnScreen = v2(WindowWidth() / bg_tile_size.x, WindowHeight() / bg_tile_size.y);
     const Vector2 tileRegion = v2(tilesOnScreen.x * bg_tex_size.x, tilesOnScreen.y * bg_tex_size.y);
@@ -82,7 +82,8 @@ void GMenuStateSet()
         UiStackPush(menuStack, CreateButtonControl(v2(0, 130), v2(480, 40), "Options", OpenOptions, MIDDLE_CENTER));
         UiStackPush(menuStack, CreateButtonControl(v2(0, 180), v2(480, 40), "Quit", QuitGame, MIDDLE_CENTER));
     }
-    menuStack->focusedControl = -1;
+    UiStackResetFocus(menuStack);
+    StopMusic();
 
     SetRenderCallback(GMenuStateRender);
     SetUpdateCallback(GMenuStateUpdate, NULL, MENU_STATE); // Fixed update is not needed for this state

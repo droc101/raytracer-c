@@ -8,9 +8,9 @@
 #include "Error.h"
 #include "../../defines.h"
 
-Node *createNode(void *data)
+Node *CreateListNode(void *data)
 {
-    Node *newNode = (Node *) malloc(sizeof(Node));
+    Node *newNode = malloc(sizeof(Node));
     if (newNode == NULLPTR)
     {
         Error("Node: malloc fail");
@@ -23,7 +23,7 @@ Node *createNode(void *data)
 
 List *CreateList()
 {
-    List *newList = (List *) malloc(sizeof(List));
+    List *newList = malloc(sizeof(List));
     if (newList == NULLPTR)
     {
         Error("List: malloc fail");
@@ -36,7 +36,7 @@ List *CreateList()
 
 void ListAdd(List *list, void *data)
 {
-    Node *newNode = createNode(data);
+    Node *newNode = CreateListNode(data);
     if (list->head == NULLPTR)
     {
         list->head = newNode;
@@ -99,7 +99,7 @@ void ListInsertAfter(List *list, Node *prevNode, void *data)
         Error("List: Previous node is NULL");
     }
 
-    Node *newNode = createNode(data);
+    Node *newNode = CreateListNode(data);
     newNode->next = prevNode->next;
     newNode->prev = prevNode;
     if (prevNode->next != NULLPTR)
@@ -175,7 +175,7 @@ int ListFind(const List *list, const void *data)
     return -1;
 }
 
-SizedArray *ToSizedArray(List *list)
+SizedArray *ToSizedArray(const List *list)
 {
     SizedArray *array = malloc(sizeof(SizedArray));
     array->size = list->size;

@@ -33,5 +33,5 @@ double remap(const double in, const double in_min, const double in_max, const do
 
 float lerp(const float a, const float b, const float f)
 {
-    return a * (1.0 - f) + (b * f);
+    return a * (1.0 - f) + b * f;
 }

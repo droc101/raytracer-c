@@ -10,12 +10,79 @@
 // this *could* be optimized, but it's not necessary
 // on modern systems where memory is not a concern
 byte keys[SDL_NUM_SCANCODES];
+byte controllerButtons[SDL_CONTROLLER_BUTTON_MAX];
 
 byte mouseButtons[4];
 
 int mouseX, mouseY, mouseXrel, mouseYrel;
 
-void HandleMouseMotion(int x, int y, int xrel, int yrel)
+Vector2 leftStick, rightStick, triggers; // 0 is left, 1 is right
+
+SDL_GameController *controller;
+
+SDL_GameController *FindGameController() {
+    for (int i = 0; i < SDL_NumJoysticks(); i++) {
+        if (SDL_IsGameController(i)) {
+            return SDL_GameControllerOpen(i);
+        }
+    }
+    return NULLPTR;
+}
+
+void HandleControlerDisconnect(const Sint32 which)
+{
+    if (controller == NULLPTR) return;
+    if (SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(controller)) != which) return;
+    SDL_GameControllerClose(controller);
+    controller = NULLPTR;
+    FindGameController(); // try to find another controller
+}
+
+void HandleControllerConnect()
+{
+    if (controller) return;
+    controller = FindGameController();
+}
+
+void HandleControllerButtonUp(const SDL_GameControllerButton button)
+{
+    controllerButtons[button] = INP_JUST_RELEASED;
+}
+
+void HandleControllerButtonDown(const SDL_GameControllerButton button)
+{
+    controllerButtons[button] = INP_JUST_PRESSED;
+}
+
+void HandleControllerAxis(const SDL_GameControllerAxis axis, const Sint16 value)
+{
+    const double dValue = value / 32767.0;
+    switch (axis)
+    {
+        case SDL_CONTROLLER_AXIS_LEFTX:
+            leftStick.x = dValue;
+            break;
+        case SDL_CONTROLLER_AXIS_LEFTY:
+            leftStick.y = dValue;
+            break;
+        case SDL_CONTROLLER_AXIS_RIGHTX:
+            rightStick.x = dValue;
+            break;
+        case SDL_CONTROLLER_AXIS_RIGHTY:
+            rightStick.y = dValue;
+            break;
+        case SDL_CONTROLLER_AXIS_TRIGGERLEFT:
+            triggers.x = dValue;
+            break;
+        case SDL_CONTROLLER_AXIS_TRIGGERRIGHT:
+            triggers.y = dValue;
+            break;
+        default:
+            break;
+    }
+}
+
+void HandleMouseMotion(const int x, const int y, const int xrel, const int yrel)
 {
     mouseX = x;
     mouseY = y;
@@ -23,22 +90,22 @@ void HandleMouseMotion(int x, int y, int xrel, int yrel)
     mouseYrel = yrel;
 }
 
-void HandleMouseDown(int button)
+void HandleMouseDown(const int button)
 {
     mouseButtons[button] = INP_JUST_PRESSED;
 }
 
-void HandleMouseUp(int button)
+void HandleMouseUp(const int button)
 {
     mouseButtons[button] = INP_JUST_RELEASED;
 }
 
-void HandleKeyDown(int code)
+void HandleKeyDown(const int code)
 {
     keys[code] = INP_JUST_PRESSED;
 }
 
-void HandleKeyUp(int code)
+void HandleKeyUp(const int code)
 {
     keys[code] = INP_JUST_RELEASED;
 }
@@ -67,36 +134,62 @@ void UpdateInputStates()
         }
     }
 
+    for (int i = 0; i < SDL_CONTROLLER_BUTTON_MAX; i++)
+    {
+        if (controllerButtons[i] == INP_JUST_RELEASED)
+        {
+            controllerButtons[i] = INP_RELEASED;
+        } else if (controllerButtons[i] == INP_JUST_PRESSED)
+        {
+            controllerButtons[i] = INP_PRESSED;
+        }
+    }
+
     mouseXrel = 0;
     mouseYrel = 0;
 }
 
-bool IsKeyPressed(int code)
+bool IsButtonPressed(const int button)
+{
+    return controllerButtons[button] == INP_PRESSED || controllerButtons[button] == INP_JUST_PRESSED;
+}
+
+bool IsButtonJustPressed(const int button)
+{
+    return controllerButtons[button] == INP_JUST_PRESSED;
+}
+
+bool IsButtonJustReleased(const int button)
+{
+    return controllerButtons[button] == INP_JUST_RELEASED;
+}
+
+bool IsKeyPressed(const int code)
 {
     return keys[code] == INP_PRESSED || keys[code] == INP_JUST_PRESSED;
 }
 
-bool IsKeyJustPressed(int code)
+bool IsKeyJustPressed(const int code)
 {
     return keys[code] == INP_JUST_PRESSED;
 }
 
-bool IsKeyJustReleased(int code)
+bool IsKeyJustReleased(const int code)
 {
     return keys[code] == INP_JUST_RELEASED;
 }
 
-bool IsMouseButtonPressed(int button)
+bool IsMouseButtonPressed(const int button)
 {
     return mouseButtons[button] == INP_PRESSED || mouseButtons[button] == INP_JUST_PRESSED;
 }
 
-bool IsMouseButtonJustPressed(int button)
+bool IsMouseButtonJustPressed(const int button)
 {
     return mouseButtons[button] == INP_JUST_PRESSED;
 }
 
-bool IsMouseButtonJustReleased(int button)
+bool IsMouseButtonJustReleased(const int button)
 {
     return mouseButtons[button] == INP_JUST_RELEASED;
 }
@@ -111,12 +204,17 @@ Vector2 GetMouseRel()
     return v2(mouseXrel, mouseYrel);
 }
 
-void ConsumeKey(int code)
+void ConsumeKey(const int code)
 {
     keys[code] = INP_RELEASED;
 }
 
-void ConsumeMouseButton(int button)
+void ConsumeButton(const int btn)
+{
+    controllerButtons[btn] = INP_RELEASED;
+}
+
+void ConsumeMouseButton(const int button)
 {
     mouseButtons[button] = INP_RELEASED;
 }
@@ -135,4 +233,30 @@ void ConsumeAllMouseButtons()
     {
         mouseButtons[i] = INP_RELEASED;
     }
+}
+
+double GetAxis(const SDL_GameControllerAxis axis)
+{
+    switch (axis)
+    {
+        case SDL_CONTROLLER_AXIS_LEFTX:
+            return leftStick.x;
+        case SDL_CONTROLLER_AXIS_LEFTY:
+            return leftStick.y;
+        case SDL_CONTROLLER_AXIS_RIGHTX:
+            return rightStick.x;
+        case SDL_CONTROLLER_AXIS_RIGHTY:
+            return rightStick.y;
+        case SDL_CONTROLLER_AXIS_TRIGGERLEFT:
+            return triggers.x;
+        case SDL_CONTROLLER_AXIS_TRIGGERRIGHT:
+            return triggers.y;
+        default:
+            return 0;
+    }
+}
+
+bool UseController()
+{
+    return GetState()->options.controllerMode && controller != NULLPTR;
 }

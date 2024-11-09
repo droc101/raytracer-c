@@ -6,7 +6,6 @@
 #define GAME_UISTACK_H
 
 #include "../../defines.h"
-#include "../../Helpers/Graphics/Drawing.h"
 
 typedef enum
 {
@@ -110,7 +109,7 @@ void UiStackPush(const UiStack *stack, Control *control);
  * @param stack The UiStack to remove the control from
  * @param control The control to remove
  */
-void UiStackRemove(const UiStack *stack, Control *control);
+void UiStackRemove(const UiStack *stack, const Control *control);
 
 /**
  * Check if the mouse is in a rectangle
@@ -118,7 +117,7 @@ void UiStackRemove(const UiStack *stack, Control *control);
  * @param size The size of the rectangle
  * @return Whether the mouse is in the rectangle
  */
-bool IsMouseInRect(const Vector2 pos, const Vector2 size);
+bool IsMouseInRect(Vector2 pos, Vector2 size);
 
 /**
  * Check if a control is activated (keyboard or mouse)
@@ -127,5 +126,11 @@ bool IsMouseInRect(const Vector2 pos, const Vector2 size);
  * @return Whether the control is activated
  */
 bool HasActivation(UiStack *stack, Control *Control);
+
+/**
+ * Reset the focus of a UiStack (to either the first control or none, depending on whether controller is used)
+ * @param stack The UiStack to reset the focus of
+ */
+void UiStackResetFocus(UiStack *stack);
 
 #endif //GAME_UISTACK_H

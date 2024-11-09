@@ -26,6 +26,7 @@ void TestActorUpdate(Actor *this)
     this->position = MoveDir;
 }
 
+// ReSharper disable once CppParameterMayBeConstPtrOrRef
 void TestActorDestroy(Actor *this)
 {
     FreeWall(this->actorWall);

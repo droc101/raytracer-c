@@ -13,6 +13,7 @@
 #include "../CommonAssets.h"
 #include "../../Structs/GlobalState.h"
 #include "../Core/Logging.h"
+#include "../Core/MathEx.h"
 #include "GL/glHelper.h"
 #include "Vulkan/Vulkan.h"
 
@@ -119,7 +120,7 @@ void RenderDestroy()
     }
 }
 
-void RenderLevel3D(Level *l, Camera *cam)
+void RenderLevel3D(const Level *l, const Camera *cam)
 {
     switch (currentRenderer)
     {

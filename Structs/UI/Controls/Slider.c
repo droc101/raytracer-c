@@ -54,7 +54,7 @@ CreateSliderControl(const Vector2 position, const Vector2 size, char *label, voi
     slider->anchor = anchor;
 
     slider->ControlData = malloc(sizeof(SliderData));
-    SliderData *data = (SliderData *) slider->ControlData;
+    SliderData *data = slider->ControlData;
     data->label = label;
     data->callback = callback;
     data->min = min;
@@ -71,20 +71,23 @@ CreateSliderControl(const Vector2 position, const Vector2 size, char *label, voi
 
 void DestroySlider(const Control *c)
 {
-    SliderData *data = (SliderData *) c->ControlData;
+    SliderData *data = c->ControlData;
     free(data);
 }
 
-void UpdateSlider(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlIndex)
+// ReSharper disable once CppParameterMayBeConst
+// ReSharper disable twice CppParameterMayBeConstPtrOrRef
+void UpdateSlider(UiStack *stack, Control *c, Vector2 /*localMousePos*/, uint ctlIndex)
 {
-    SliderData *data = (SliderData *) c->ControlData;
+    SliderData *data = c->ControlData;
 
     // handle l and r arrow keys
     if (stack->focusedControl == ctlIndex)
     {
-        if (IsKeyJustPressed(SDL_SCANCODE_LEFT))
+        if (IsKeyJustPressed(SDL_SCANCODE_LEFT) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_DPAD_LEFT))
         {
             ConsumeKey(SDL_SCANCODE_LEFT);
+            ConsumeButton(SDL_CONTROLLER_BUTTON_DPAD_LEFT);
             data->value -= data->step;
             if (data->value < data->min)
             {
@@ -94,9 +97,10 @@ void UpdateSlider(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlInd
             {
                 data->callback(data->value);
             }
-        } else if (IsKeyJustPressed(SDL_SCANCODE_RIGHT))
+        } else if (IsKeyJustPressed(SDL_SCANCODE_RIGHT) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_DPAD_RIGHT))
         {
             ConsumeKey(SDL_SCANCODE_RIGHT);
+            ConsumeButton(SDL_CONTROLLER_BUTTON_DPAD_RIGHT);
             data->value += data->step;
             if (data->value > data->max)
             {
@@ -152,9 +156,9 @@ void UpdateSlider(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlInd
     data->value = clamp(data->value, data->min, data->max);
 }
 
-void DrawSlider(const Control *c, const ControlState state, const Vector2 position)
+void DrawSlider(const Control *c, const ControlState /*state*/, const Vector2 position)
 {
-    draw_ninepatch(c->anchoredPosition, c->size, 8, 8, gztex_interface_slider);
+    DrawNinePatchTexture(c->anchoredPosition, c->size, 8, 8, gztex_interface_slider);
 
     const SliderData *data = (SliderData *) c->ControlData;
     const double handlePos = remap(data->value, data->min, data->max, 0, c->size.x - 18);

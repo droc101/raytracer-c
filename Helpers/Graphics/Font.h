@@ -16,7 +16,7 @@
  * @param small Whether to use the small font or not
  * @return Bottom right position of the text
  */
-Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, const uint color, const bool small);
+Vector2 FontDrawString(Vector2 pos, const char *str, uint size, uint color, bool small);
 
 /**
  * Count the number of lines in a string
@@ -53,7 +53,7 @@ void TextGetLine(const char *str, int line, char *out);
  * @param v_align Vertical alignment of text within the rectangle
  * @param small Whether to use the small font or not
  */
-void DrawTextAligned(char *str, uint size, uint color, Vector2 rect_pos, Vector2 rect_size, byte h_align, byte v_align,
+void DrawTextAligned(const char *str, uint size, uint color, Vector2 rect_pos, Vector2 rect_size, byte h_align, byte v_align,
                      bool small);
 
 // Texture sizes of the font

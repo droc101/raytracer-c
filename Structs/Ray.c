@@ -10,7 +10,7 @@
 // Perform a ray cast from a position and rotation into a wall. Don't forget to free the result!
 RayCastResult Intersect(const Wall wall, const Vector2 from, const double direction)
 {
-    RayCastResult rr;
+    RayCastResult rr = {0};
     rr.Collided = false;
     rr.Distance = 0;
     if (wall.dx == 0)
@@ -40,7 +40,7 @@ RayCastResult Intersect(const Wall wall, const Vector2 from, const double direct
         {
             rr.Collided = true;
             rr.Distance = distance;
-            rr.CollisionPoint = v2(x, (wall.dy * (x - wall.a.x)) / wall.dx + wall.a.y);
+            rr.CollisionPoint = v2(x, wall.dy * (x - wall.a.x) / wall.dx + wall.a.y);
             rr.CollisionWall = wall;
             return rr;
         }

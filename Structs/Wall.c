@@ -6,7 +6,6 @@
 #include <math.h>
 #include "../defines.h"
 #include "../Helpers/CommonAssets.h"
-#include "../Helpers/Graphics/Drawing.h"
 
 Wall *CreateWall(const Vector2 a, const Vector2 b, const byte *tex, const float uvScale, const float uvOffset)
 {
@@ -21,7 +20,7 @@ Wall *CreateWall(const Vector2 a, const Vector2 b, const byte *tex, const float 
     return w;
 }
 
-void FreeWall(Wall *w)
+void FreeWall(Wall */*w*/)
 {
     // no longer need to free the texture
 }

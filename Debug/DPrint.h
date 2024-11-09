@@ -21,6 +21,6 @@ void ResetDPrintYPos();
  * @param con Whether to print to the console
  * @param ... Parameters to be formatted
  */
-void DPrintF(const char *str, const uint color, const bool con, ...);
+void DPrintF(const char *str, uint color, bool con, ...);
 
 #endif //GAME_DPRINT_H

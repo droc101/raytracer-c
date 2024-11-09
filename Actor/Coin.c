@@ -15,7 +15,7 @@
 void CoinInit(Actor *this)
 {
     this->solid = false;
-    this->actorWall = CreateWall(v2(0, -0.125), v2(0, 0.125), (this->paramB == 1) ? actorTextures[8] : actorTextures[7],
+    this->actorWall = CreateWall(v2(0, -0.125), v2(0, 0.125), this->paramB == 1 ? actorTextures[8] : actorTextures[7],
                                  1.0, 0.0);
     this->paramA = 0;
     this->actorWall->height = 0.25f;
@@ -30,11 +30,11 @@ void CoinUpdate(Actor *this)
         this->paramA++;
         this->paramA = this->paramA % 4;
 
-        double uvo = 0.25 * this->paramA;
+        const double uvo = 0.25 * this->paramA;
         this->actorWall->uvOffset = uvo;
     }
 
-    Vector2 dir = Vector2Sub(GetState()->level->position, this->position);
+    const Vector2 dir = Vector2Sub(GetState()->level->position, this->position);
     this->rotation = atan2(dir.y, dir.x);
     this->rotation += PI;
 
@@ -53,6 +53,7 @@ void CoinUpdate(Actor *this)
     }
 }
 
+// ReSharper disable once CppParameterMayBeConstPtrOrRef
 void CoinDestroy(Actor *this)
 {
     FreeWall(this->actorWall);

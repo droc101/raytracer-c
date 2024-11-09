@@ -19,7 +19,7 @@ typedef struct SliderData
     double step;
     double altStep; // Step when holding shift
 
-    void (*callback)(const double);
+    void (*callback)(double);
 
     char *(*getLabel)(const Control *slider);
 } SliderData;

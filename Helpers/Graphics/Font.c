@@ -4,18 +4,16 @@
 
 #include "Font.h"
 #include <ctype.h>
-#include <stdio.h>
 #include <string.h>
 #include "Drawing.h"
 #include "RenderingHelpers.h"
 #include "SDL.h"
-#include "../CommonAssets.h"
 #include "../../Assets/Assets.h"
 #include "../Core/MathEx.h"
 
 const char fontChars[] = "abcdefghijklmnopqrstuvwxyz0123456789.:-,/\\|[]{}();'\"<>`~!@#$%^*_=+?";
 
-int findChar(const char target)
+int FontFindChar(const char target)
 {
     int i = 0;
     while (fontChars[i] != 0)
@@ -55,10 +53,10 @@ Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, cons
         }
 
         const float uv_per_char = 1.0f / strlen(fontChars);
-        int index = findChar(tolower(str[i]));
+        int index = FontFindChar(tolower(str[i]));
         if (index == -1)
         {
-            index = findChar('U');
+            index = FontFindChar('U');
         }
 
         const Vector2 ndc_pos = v2(X_TO_NDC(x), Y_TO_NDC(y));
@@ -180,27 +178,26 @@ void TextGetLine(const char *str, const int line, char *out)
     out[end - start] = '\0';
 }
 
-void DrawTextAligned(char *str, const uint size, const uint color, const Vector2 rect_pos, const Vector2 rect_size,
+void DrawTextAligned(const char *str, const uint size, const uint color, const Vector2 rect_pos, const Vector2 rect_size,
                      const byte h_align, const byte v_align,
                      const bool small)
 {
     const int lines = StringLineCount(str);
-    Vector2 textSize;
     int x;
     int y = rect_pos.y;
     if (v_align == FONT_VALIGN_MIDDLE)
     {
-        y += (rect_size.y - (lines * size)) / 2;
+        y += (rect_size.y - lines * size) / 2;
     } else if (v_align == FONT_VALIGN_BOTTOM)
     {
-        y += rect_size.y - (lines * size);
+        y += rect_size.y - lines * size;
     }
 
     for (int i = 0; i < lines; i++)
     {
         char line[256];
         TextGetLine(str, i, line);
-        textSize = MeasureText(line, size, small);
+        const Vector2 textSize = MeasureText(line, size, small);
         if (h_align == FONT_HALIGN_CENTER)
         {
             x = rect_pos.x + (rect_size.x - textSize.x) / 2;
