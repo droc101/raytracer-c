@@ -2,13 +2,6 @@
 // Created by droc101 on 10/2/24.
 //
 
-#ifdef WIN32
-#include <dwmapi.h>
-#include <SDL_syswm.h>
-
-#define DWMWA_USE_IMMERSIVE_DARK_MODE 20
-#endif
-
 #include "RenderingHelpers.h"
 #include "../CommonAssets.h"
 #include "../../Structs/GlobalState.h"
@@ -17,22 +10,6 @@
 #include "../Core/MathEx.h"
 
 Renderer currentRenderer;
-
-void DwmDarkMode(SDL_Window *window)
-{
-#ifdef WIN32
-    SDL_SysWMinfo info;
-    SDL_VERSION(&info.version);
-    SDL_GetWindowWMInfo(window, &info);
-    const HWND hWnd = info.info.win.window;
-    const BOOL enable = true;
-    const HRESULT res = DwmSetWindowAttribute(hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &enable, sizeof(BOOL));
-    if (res != S_OK)
-    {
-        LogWarning("Failed to enable dark mode: %lx\n", res);
-    }
-#endif
-}
 
 mat4 *GetMatrix(const Camera *cam)
 {

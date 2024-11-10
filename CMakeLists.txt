@@ -120,6 +120,8 @@ add_executable(
         Helpers/Core/Logging.h
         Actor/Door.c
         Actor/Door.h
+        Helpers/PlatformHelpers.c
+        Helpers/PlatformHelpers.h
 )
 
 set(SDL2_PATH "${CMAKE_SOURCE_DIR}/lib/SDL2/x86_64-w64-mingw32")

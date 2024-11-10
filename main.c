@@ -10,6 +10,7 @@
 #include "Debug/FrameGrapher.h"
 #include "GameStates/GLogoSplashState.h"
 #include "Helpers/CommonAssets.h"
+#include "Helpers/PlatformHelpers.h"
 #include "Helpers/Core/Error.h"
 #include "Helpers/Core/Input.h"
 #include "Helpers/Core/Logging.h"

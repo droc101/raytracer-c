@@ -9,8 +9,6 @@
 #include "cglm/cglm.h"
 #include "GL/glHelper.h"
 
-void DwmDarkMode(SDL_Window *window);
-
 typedef struct BatchedQuadArray
 {
     float *verts;
