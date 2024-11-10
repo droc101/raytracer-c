@@ -7,13 +7,14 @@
 #include <SDL_syswm.h>
 
 #define DWMWA_USE_IMMERSIVE_DARK_MODE 20
+#else
+#include "../Core/MathEx.h"
 #endif
 
 #include "RenderingHelpers.h"
 #include "../CommonAssets.h"
 #include "../../Structs/GlobalState.h"
 #include "../Core/Logging.h"
-#include "../Core/MathEx.h"
 #include "GL/glHelper.h"
 #include "Vulkan/Vulkan.h"
 

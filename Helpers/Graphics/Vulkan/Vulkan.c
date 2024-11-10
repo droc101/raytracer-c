@@ -2,12 +2,13 @@
 // Created by Noah on 7/5/2024.
 //
 
+#define CGLM_FORCE_LEFT_HANDED
+#define CGLM_FORCE_DEPTH_ZERO_TO_ONE
+
 #include "Vulkan.h"
 #include <SDL_vulkan.h>
 #include <string.h>
 #include <cglm/cglm.h>
-#include <cglm/clipspace/persp_lh_no.h>
-#include <cglm/clipspace/view_lh.h>
 #include <vulkan/vulkan.h>
 #include "../../../Assets/AssetReader.h"
 #include "../../../Assets/Assets.h"
@@ -15,13 +16,16 @@
 #include "../../Core/Error.h"
 #include "../../Core/MathEx.h"
 
+#pragma region macros
 #define VULKAN_VERSION VK_MAKE_VERSION(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH)
 #define MAX_FRAMES_IN_FLIGHT 2
 #define VulkanLogError(error) printf("\033[31m%s\033[0m\n", error); fflush(stdout)
 #define VulkanTest_Internal(function, error, returnValue) {const VkResult result=function; if (result != VK_SUCCESS) { printf("\033[31m%s\033[0m Error code %d\n", error, result); fflush(stdout); return returnValue; }}
 #define VulkanTest(function, error) VulkanTest_Internal(function, error, false)
 #define List(type) struct {uint64_t length;type* data;}
+#pragma endregion macros
 
+#pragma region typedefs
 typedef struct
 {
     uint32_t graphicsFamily;
@@ -71,7 +75,9 @@ typedef struct
 {
     uint16_t textureIndex;
 } DataBufferObject;
+#pragma endregion typedefs
 
+#pragma region variables
 SDL_Window *vk_window;
 bool minimized = false;
 
@@ -86,7 +92,9 @@ const List(Vertex) vertices = {
 };
 
 const List(uint16_t) indices = {6, (uint16_t[]){0, 1, 2, 2, 3, 0}};
+#pragma endregion variables
 
+#pragma region vulkanVariables
 /// When the instance is created the Vulkan library gets initialized, allowing the game to provide the library with any
 /// information about itself. Any state information that the library provides will then be stored in the instance.
 /// @see https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkInstance.html
@@ -155,7 +163,9 @@ VkSampler textureSampler;
 VkBuffer dataBuffer = VK_NULL_HANDLE;
 VkDeviceMemory dataBufferMemory = VK_NULL_HANDLE;
 void *mappedDataBuffer;
+#pragma endregion vulkanVariables
 
+#pragma region internalFunctions
 /**
  * This function will create the Vulkan instance, set up for SDL.
  * @see instance
@@ -218,7 +228,8 @@ static bool CreateInstance()
             break;
         }
     }
-    if (!found) FriendlyError("Missing Vulkan validation layers!", "The Vulkan SDK must be installed on your device to use the Vulkan validation layer.\nYou can get the Vulkan SDK from https://vulkan.lunarg.com/sdk/home or by using the package manager of your choice.\nIf you wish to disable the validation layer, that can be done by removing the definition for VK_ENABLE_VALIDATION_LAYER in config.h");
+    if (!found) FriendlyError("Missing Vulkan validation layers!",
+                              "The Vulkan SDK must be installed on your device to use the Vulkan validation layer.\nYou can get the Vulkan SDK from https://vulkan.lunarg.com/sdk/home or by using the package manager of your choice.\nIf you wish to disable the validation layer, that can be done by removing the definition for VK_ENABLE_VALIDATION_LAYER in config.h");
     createInfo.enabledLayerCount = 1;
     createInfo.ppEnabledLayerNames = (const char *const[1]){"VK_LAYER_KHRONOS_validation"};
 #elifdef VK_ENABLE_MESA_FPS_OVERLAY
@@ -571,7 +582,7 @@ static bool CreateImageViews()
     swapChainImageViews = malloc(sizeof(*swapChainImageViews) * swapChainCount);
     for (uint32_t i = 0; i < swapChainCount; i++)
     {
-        VkImageViewCreateInfo createInfo = {
+        const VkImageViewCreateInfo createInfo = {
             VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
             NULL,
             0,
@@ -593,7 +604,7 @@ static bool CreateImageViews()
             }
         };
         VulkanTest(vkCreateImageView(device, &createInfo, NULL, &swapChainImageViews[i]),
-                   "Failed to create Vulkan image views!");
+                   "Failed to create Vulkan swap chain image view!");
     }
     return true;
 }
@@ -1074,7 +1085,9 @@ static bool LoadTextures()
         VulkanTest(vkCreateImage(device, &imageInfo, NULL, &textures[textureIndex].image),
                    "Failed to create textures for Vulkan!");
         vkGetImageMemoryRequirements(device, textures[textureIndex].image, &textures[textureIndex].memoryRequirements);
-        textures[textureIndex].offset = textures[textureIndex].memoryRequirements.alignment * (VkDeviceSize)ceil(((double)memorySize + (double)textures[textureIndex].memoryRequirements.size) / (double)textures[textureIndex].memoryRequirements.alignment);
+        textures[textureIndex].offset = textures[textureIndex].memoryRequirements.alignment * (VkDeviceSize) ceil(
+                                            ((double) memorySize + (double) textures[textureIndex].memoryRequirements.
+                                             size) / (double) textures[textureIndex].memoryRequirements.alignment);
         memorySize = textures[textureIndex].offset + textures[textureIndex].memoryRequirements.size;
         texturesAssetIDMap[ReadUintA(decompressed, 12)] = textureIndex;
     }
@@ -1198,7 +1211,7 @@ static bool CreateTexturesImageView()
 {
     for (uint16_t textureIndex = 0; textureIndex < TEXTURE_ASSET_COUNT; textureIndex++)
     {
-        VkImageViewCreateInfo createInfo = {
+        const VkImageViewCreateInfo createInfo = {
             VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
             NULL,
             0,
@@ -1467,34 +1480,6 @@ static bool CreateSyncObjects()
     return true;
 }
 
-/**
- * This function is used to create the Vulkan instance and surface, as well as configuring the environment properly.
- * This function (and the functions it calls) do NOT perform any drawing, though the framebuffers are initialized here.
- * @param window The window to initialize Vulkan for.
- * @see CreateInstance
- * @see PickPhysicalDevice
- * @see CreateLogicalDevice
- */
-bool VK_Init(SDL_Window *window)
-{
-    vk_window = window;
-    // ReSharper disable once CppDFAConstantConditions
-    if (CreateInstance() && CreateSurface() && PickPhysicalDevice() && CreateLogicalDevice() && CreateSwapChain() &&
-        CreateImageViews() && CreateRenderPass() && CreateDescriptorSetLayout() && CreateGraphicsPipeline() &&
-        CreateFramebuffers() && CreateCommandPools() && LoadTextures() && CreateTexturesImageView() &&
-        CreateTextureSampler() && CreateVertexBuffer() && CreateIndexBuffer() && CreateUniformBuffers() &&
-        CreateDescriptorPool() && CreateDescriptorSets() && CreateCommandBuffers() && CreateSyncObjects())
-    {
-        const DataBufferObject dataBufferObject = {
-            texturesAssetIDMap[ReadUintA(DecompressAsset(gztex_level_uvtest), 12)]
-        };
-        memcpy(mappedDataBuffer, &dataBufferObject, sizeof(dataBufferObject));
-        return true;
-    }
-    VK_Cleanup();
-    return false;
-}
-
 static void CleanupSwapChain()
 {
     for (uint32_t i = 0; i < swapChainCount; i++) vkDestroyFramebuffer(device, swapChainFramebuffers[i], NULL);
@@ -1502,50 +1487,7 @@ static void CleanupSwapChain()
     vkDestroySwapchainKHR(device, swapChain, NULL);
 }
 
-/// A function used to destroy the Vulkan objects when they are no longer needed.
-void VK_Cleanup()
-{
-    if (device)
-    {
-        vkDeviceWaitIdle(device);
-        CleanupSwapChain();
-        vkDestroySampler(device, textureSampler, NULL);
-        for (uint16_t textureIndex = 0; textureIndex < TEXTURE_ASSET_COUNT; textureIndex++)
-        {
-            vkDestroyImageView(device, texturesImageView[textureIndex], NULL);
-            vkDestroyImage(device, textures[textureIndex].image, NULL);
-        }
-        vkFreeMemory(device, textureMemory, NULL);
-        vkDestroyPipeline(device, graphicsPipeline, NULL);
-        vkDestroyPipelineLayout(device, pipelineLayout, NULL);
-        vkDestroyRenderPass(device, renderPass, NULL);
-        for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-        {
-            vkDestroyBuffer(device, uniformBuffers[i], NULL);
-            vkFreeMemory(device, uniformBuffersMemory[i], NULL);
-        }
-        vkDestroyBuffer(device, dataBuffer, NULL);
-        vkFreeMemory(device, dataBufferMemory, NULL);
-        vkDestroyDescriptorPool(device, descriptorPool, NULL);
-        vkDestroyDescriptorSetLayout(device, descriptorSetLayout, NULL);
-        vkDestroyBuffer(device, indexBuffer, NULL);
-        vkFreeMemory(device, indexBufferMemory, NULL);
-        vkDestroyBuffer(device, vertexBuffer, NULL);
-        vkFreeMemory(device, vertexBufferMemory, NULL);
-        for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-        {
-            vkDestroySemaphore(device, imageAvailableSemaphores[i], NULL);
-            vkDestroySemaphore(device, renderFinishedSemaphores[i], NULL);
-            vkDestroyFence(device, inFlightFences[i], NULL);
-        }
-        vkDestroyCommandPool(device, graphicsCommandPool, NULL);
-        vkDestroyCommandPool(device, transferCommandPool, NULL);
-    }
-    vkDestroyDevice(device, NULL);
-    if (instance) vkDestroySurfaceKHR(instance, surface, NULL);
-    vkDestroyInstance(instance, NULL);
-}
-
+#pragma region drawingFunctions
 static bool RecreateSwapChain()
 {
     vkDeviceWaitIdle(device);
@@ -1562,9 +1504,9 @@ static void UpdateUniformBuffer(const uint32_t currentFrame)
         GLM_MAT4_IDENTITY_INIT
     };
     glm_rotate(bufferObject.model, (float) SDL_GetTicks64() * PIf / 10000.0f, GLM_YUP);
-    glm_lookat_lh((vec3){2.0f, 2.0f, 2.0f}, GLM_VEC3_ZERO, ((vec3){0.0f, -1.0f, 0.0f}), bufferObject.view);
-    glm_perspective_lh_no(PI / 4, (float) swapChainExtent.width / (float) swapChainExtent.height, 0.1f, 10.0f,
-                          bufferObject.proj);
+    glm_lookat((vec3){2.0f, 2.0f, 2.0f}, GLM_VEC3_ZERO, (vec3){0.0f, -1.0f, 0.0f}, bufferObject.view);
+    glm_perspective(PI / 4, (float) swapChainExtent.width / (float) swapChainExtent.height, 0.1f, 10.0f,
+                    bufferObject.proj);
     memcpy(uniformBuffersMapped[currentFrame], &bufferObject, sizeof(bufferObject));
 }
 
@@ -1616,6 +1558,80 @@ static void RecordCommandBuffer(const VkCommandBuffer buffer, const uint32_t ima
     vkCmdDrawIndexed(buffer, indices.length, 1, 0, 0, 0);
     vkCmdEndRenderPass(buffer);
     VulkanTest_Internal(vkEndCommandBuffer(buffer), "Failed to record the Vulkan command buffer!",);
+}
+#pragma endregion drawingFunctions
+#pragma endregion internalFunctions
+
+/**
+ * This function is used to create the Vulkan instance and surface, as well as configuring the environment properly.
+ * This function (and the functions it calls) do NOT perform any drawing, though the framebuffers are initialized here.
+ * @param window The window to initialize Vulkan for.
+ * @see CreateInstance
+ * @see PickPhysicalDevice
+ * @see CreateLogicalDevice
+ */
+bool VK_Init(SDL_Window *window)
+{
+    vk_window = window;
+    // ReSharper disable once CppDFAConstantConditions
+    if (CreateInstance() && CreateSurface() && PickPhysicalDevice() && CreateLogicalDevice() && CreateSwapChain() &&
+        CreateImageViews() && CreateRenderPass() && CreateDescriptorSetLayout() && CreateGraphicsPipeline() &&
+        CreateFramebuffers() && CreateCommandPools() && LoadTextures() && CreateTexturesImageView() &&
+        CreateTextureSampler() && CreateVertexBuffer() && CreateIndexBuffer() && CreateUniformBuffers() &&
+        CreateDescriptorPool() && CreateDescriptorSets() && CreateCommandBuffers() && CreateSyncObjects())
+    {
+        const DataBufferObject dataBufferObject = {
+            texturesAssetIDMap[ReadUintA(DecompressAsset(gztex_level_uvtest), 12)]
+        };
+        memcpy(mappedDataBuffer, &dataBufferObject, sizeof(dataBufferObject));
+        return true;
+    }
+    VK_Cleanup();
+    return false;
+}
+
+/// A function used to destroy the Vulkan objects when they are no longer needed.
+void VK_Cleanup()
+{
+    if (device)
+    {
+        vkDeviceWaitIdle(device);
+        CleanupSwapChain();
+        vkDestroySampler(device, textureSampler, NULL);
+        for (uint16_t textureIndex = 0; textureIndex < TEXTURE_ASSET_COUNT; textureIndex++)
+        {
+            vkDestroyImageView(device, texturesImageView[textureIndex], NULL);
+            vkDestroyImage(device, textures[textureIndex].image, NULL);
+        }
+        vkFreeMemory(device, textureMemory, NULL);
+        vkDestroyPipeline(device, graphicsPipeline, NULL);
+        vkDestroyPipelineLayout(device, pipelineLayout, NULL);
+        vkDestroyRenderPass(device, renderPass, NULL);
+        for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+        {
+            vkDestroyBuffer(device, uniformBuffers[i], NULL);
+            vkFreeMemory(device, uniformBuffersMemory[i], NULL);
+        }
+        vkDestroyBuffer(device, dataBuffer, NULL);
+        vkFreeMemory(device, dataBufferMemory, NULL);
+        vkDestroyDescriptorPool(device, descriptorPool, NULL);
+        vkDestroyDescriptorSetLayout(device, descriptorSetLayout, NULL);
+        vkDestroyBuffer(device, indexBuffer, NULL);
+        vkFreeMemory(device, indexBufferMemory, NULL);
+        vkDestroyBuffer(device, vertexBuffer, NULL);
+        vkFreeMemory(device, vertexBufferMemory, NULL);
+        for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+        {
+            vkDestroySemaphore(device, imageAvailableSemaphores[i], NULL);
+            vkDestroySemaphore(device, renderFinishedSemaphores[i], NULL);
+            vkDestroyFence(device, inFlightFences[i], NULL);
+        }
+        vkDestroyCommandPool(device, graphicsCommandPool, NULL);
+        vkDestroyCommandPool(device, transferCommandPool, NULL);
+    }
+    vkDestroyDevice(device, NULL);
+    if (instance) vkDestroySurfaceKHR(instance, surface, NULL);
+    vkDestroyInstance(instance, NULL);
 }
 
 void VK_DrawFrame()
