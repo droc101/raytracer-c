@@ -262,7 +262,7 @@ static bool RecreateSwapChain()
     vkDeviceWaitIdle(device);
     CleanupSwapChain();
 
-    return CreateSwapChain() && CreateImageViews() && CreateFramebuffers();
+    return CreateSwapChain() && CreateImageViews() && CreateDepthImage() && CreateFramebuffers();
 }
 
 static void UpdateUniformBuffer(const uint32_t currentFrame)
