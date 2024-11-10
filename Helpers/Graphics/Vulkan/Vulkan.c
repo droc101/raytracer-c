@@ -166,6 +166,205 @@ void *mappedDataBuffer;
 #pragma endregion vulkanVariables
 
 #pragma region internalFunctions
+#pragma region helperFunctions
+/**
+ * Provides information about the physical device's support for the swap chain.
+ * @param pDevice The physical device to query for
+ * @return A @c SwapChainSupportDetails struct
+ */
+static void QuerySwapChainSupport(const VkPhysicalDevice pDevice)
+{
+    SwapChainSupportDetails details = {0, NULL, 0, NULL, {}};
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(pDevice, surface, &details.capabilities);
+    vkGetPhysicalDeviceSurfaceFormatsKHR(pDevice, surface, &details.formatCount, NULL);
+    if (details.formatCount != 0)
+    {
+        details.formats = malloc(sizeof(*details.formats) * details.formatCount);
+        vkGetPhysicalDeviceSurfaceFormatsKHR(pDevice, surface, &details.formatCount, details.formats);
+    }
+    vkGetPhysicalDeviceSurfacePresentModesKHR(pDevice, surface, &details.presentModeCount, NULL);
+    if (details.presentModeCount != 0)
+    {
+        details.presentMode = malloc(sizeof(*details.presentMode) * details.presentModeCount);
+        vkGetPhysicalDeviceSurfacePresentModesKHR(pDevice, surface, &details.presentModeCount, details.presentMode);
+    }
+    swapChainSupport = details;
+}
+
+/**
+ * A helper function used in @c CreateSwapChain used to find the color format for the surface to use.
+ * If found, the function will pick R8G8B8A8_SRGB, otherwise it will simply use the first format found.
+ * @return A @c VkSurfaceFormatKHR struct that contains the format.
+ */
+static SwapSurfaceFormatCheck GetSwapSurfaceFormat()
+{
+    int fallback = -1;
+    for (uint32_t i = 0; i < swapChainSupport.formatCount; i++)
+    {
+        const VkSurfaceFormatKHR format = swapChainSupport.formats[i];
+        if (format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+        {
+            if (format.format == VK_FORMAT_B8G8R8A8_SRGB || fallback == -1)
+            {
+                fallback = (int) i;
+            } else if (format.format == VK_FORMAT_R8G8B8A8_SRGB)
+            {
+                return (SwapSurfaceFormatCheck){format, true};
+            }
+        }
+    }
+    if (fallback != -1)
+    {
+        return (SwapSurfaceFormatCheck){swapChainSupport.formats[fallback], true};
+    }
+    VulkanLogError("Unable to find suitable Vulkan swap chain color format!");
+    return (SwapSurfaceFormatCheck){{}, false};
+}
+
+/**
+ * A helper function used in @c CreateSwapChain used to find the present mode for the surface to use.
+ * @return The best present mode available
+ */
+static VkPresentModeKHR GetSwapPresentMode()
+{
+    for (uint32_t i = 0; i < swapChainSupport.presentModeCount; i++)
+    {
+        const VkPresentModeKHR presentMode = swapChainSupport.presentMode[i];
+        if (presentMode == VK_PRESENT_MODE_MAILBOX_KHR)
+        {
+            return presentMode;
+        }
+    }
+    return VK_PRESENT_MODE_FIFO_KHR;
+}
+
+static VkShaderModule CreateShaderModule(const uint32_t *code, const size_t size)
+{
+    const VkShaderModuleCreateInfo createInfo = {
+        VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
+        NULL,
+        0,
+        size - 16,
+        code
+    };
+    VkShaderModule shaderModule;
+    VulkanTest_Internal(vkCreateShaderModule(device, &createInfo, NULL, &shaderModule),
+                        "Failed to create shader module!", NULL);
+    return shaderModule;
+}
+
+static bool CreateBuffer(const VkDeviceSize size, const VkBufferUsageFlags usageFlags,
+                         const VkMemoryPropertyFlags propertyFlags,
+                         VkBuffer *buffer, VkDeviceMemory *bufferMemory)
+{
+    uint32_t *const pQueueFamilyIndices[] = {
+        queueFamilyIndices->familyCount == 1
+            ? (uint32_t[1]){queueFamilyIndices->graphicsFamily}
+            : queueFamilyIndices->familyCount == 3
+                  ? (uint32_t[3]){
+                      queueFamilyIndices->graphicsFamily, queueFamilyIndices->presentFamily,
+                      queueFamilyIndices->transferFamily
+                  }
+                  : (uint32_t[2]){queueFamilyIndices->graphicsFamily}
+    };
+    const VkBufferCreateInfo bufferInfo = {
+        VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+        NULL,
+        0,
+        size,
+        usageFlags,
+        queueFamilyIndices->familyCount == 1 ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_CONCURRENT,
+        queueFamilyIndices->familyCount,
+        *pQueueFamilyIndices
+    };
+    if (queueFamilyIndices->familyCount == 2)
+    {
+        if (queueFamilyIndices->presentFamily == queueFamilyIndices->graphicsFamily)
+            (*pQueueFamilyIndices)[1] = queueFamilyIndices->transferFamily;
+        if (queueFamilyIndices->transferFamily == queueFamilyIndices->graphicsFamily)
+            (*pQueueFamilyIndices)[1] = queueFamilyIndices->presentFamily;
+    }
+    VulkanTest(vkCreateBuffer(device, &bufferInfo, NULL, buffer), "Failed to create Vulkan buffer!");
+    VkMemoryRequirements memRequirements;
+    vkGetBufferMemoryRequirements(device, *buffer, &memRequirements);
+    VkPhysicalDeviceMemoryProperties memoryProperties;
+    vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
+    for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++)
+    {
+        if (memRequirements.memoryTypeBits & 1 << i &&
+            (memoryProperties.memoryTypes[i].propertyFlags & propertyFlags) == propertyFlags)
+        {
+            const VkMemoryAllocateInfo allocInfo = {
+                VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+                NULL,
+                memRequirements.size,
+                i
+            };
+            VulkanTest(vkAllocateMemory(device, &allocInfo, NULL, bufferMemory),
+                       "Failed to allocate Vulkan buffer memory!");
+            vkBindBufferMemory(device, *buffer, *bufferMemory, 0);
+            return true;
+        }
+    }
+    VulkanLogError("Failed to find suitable memory type for Vulkan!");
+    return false;
+}
+
+static VkCommandBuffer BeginCommandBuffer()
+{
+    const VkCommandBufferAllocateInfo allocateInfo = {
+        VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+        NULL,
+        transferCommandPool,
+        VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+        1
+    };
+    VkCommandBuffer commandBuffer;
+    vkAllocateCommandBuffers(device, &allocateInfo, &commandBuffer);
+    const VkCommandBufferBeginInfo beginInfo = {
+        VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+        NULL,
+        VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
+        NULL
+    };
+    vkBeginCommandBuffer(commandBuffer, &beginInfo);
+    return commandBuffer;
+}
+
+static void EndCommandBuffer(VkCommandBuffer commandBuffer)
+{
+    vkEndCommandBuffer(commandBuffer);
+    const VkSubmitInfo submitInfo = {
+        VK_STRUCTURE_TYPE_SUBMIT_INFO,
+        NULL,
+        0,
+        NULL,
+        0,
+        1,
+        &commandBuffer,
+        0,
+        NULL
+    };
+    vkQueueSubmit(transferQueue, 1, &submitInfo, VK_NULL_HANDLE);
+    vkQueueWaitIdle(transferQueue);
+    vkFreeCommandBuffers(device, transferCommandPool, 1, &commandBuffer);
+}
+
+static void CopyBuffer(const VkBuffer srcBuffer, const VkBuffer dstBuffer, const VkDeviceSize size)
+{
+    const VkCommandBuffer commandBuffer = BeginCommandBuffer();
+    const VkBufferCopy copyRegion = {0, 0, size};
+    vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+    EndCommandBuffer(commandBuffer);
+}
+
+static void CleanupSwapChain()
+{
+    for (uint32_t i = 0; i < swapChainCount; i++) vkDestroyFramebuffer(device, swapChainFramebuffers[i], NULL);
+    for (uint32_t i = 0; i < swapChainCount; i++) vkDestroyImageView(device, swapChainImageViews[i], NULL);
+    vkDestroySwapchainKHR(device, swapChain, NULL);
+}
+#pragma endregion helperFunctions
 /**
  * This function will create the Vulkan instance, set up for SDL.
  * @see instance
@@ -266,30 +465,6 @@ static bool CreateSurface()
         return false;
     }
     return true;
-}
-
-/**
- * Provides information about the physical device's support for the swap chain.
- * @param pDevice The physical device to query for
- * @return A @c SwapChainSupportDetails struct
- */
-static void QuerySwapChainSupport(const VkPhysicalDevice pDevice)
-{
-    SwapChainSupportDetails details = {0, NULL, 0, NULL, {}};
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(pDevice, surface, &details.capabilities);
-    vkGetPhysicalDeviceSurfaceFormatsKHR(pDevice, surface, &details.formatCount, NULL);
-    if (details.formatCount != 0)
-    {
-        details.formats = malloc(sizeof(*details.formats) * details.formatCount);
-        vkGetPhysicalDeviceSurfaceFormatsKHR(pDevice, surface, &details.formatCount, details.formats);
-    }
-    vkGetPhysicalDeviceSurfacePresentModesKHR(pDevice, surface, &details.presentModeCount, NULL);
-    if (details.presentModeCount != 0)
-    {
-        details.presentMode = malloc(sizeof(*details.presentMode) * details.presentModeCount);
-        vkGetPhysicalDeviceSurfacePresentModesKHR(pDevice, surface, &details.presentModeCount, details.presentMode);
-    }
-    swapChainSupport = details;
 }
 
 /**
@@ -458,53 +633,6 @@ static bool CreateLogicalDevice()
     vkGetDeviceQueue(device, queueFamilyIndices->transferFamily, 0, &transferQueue);
     vkGetDeviceQueue(device, queueFamilyIndices->presentFamily, 0, &presentQueue);
     return true;
-}
-
-/**
- * A helper function used in @c CreateSwapChain used to find the color format for the surface to use.
- * If found, the function will pick R8G8B8A8_SRGB, otherwise it will simply use the first format found.
- * @return A @c VkSurfaceFormatKHR struct that contains the format.
- */
-static SwapSurfaceFormatCheck GetSwapSurfaceFormat()
-{
-    int fallback = -1;
-    for (uint32_t i = 0; i < swapChainSupport.formatCount; i++)
-    {
-        const VkSurfaceFormatKHR format = swapChainSupport.formats[i];
-        if (format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
-        {
-            if (format.format == VK_FORMAT_B8G8R8A8_SRGB || fallback == -1)
-            {
-                fallback = (int) i;
-            } else if (format.format == VK_FORMAT_R8G8B8A8_SRGB)
-            {
-                return (SwapSurfaceFormatCheck){format, true};
-            }
-        }
-    }
-    if (fallback != -1)
-    {
-        return (SwapSurfaceFormatCheck){swapChainSupport.formats[fallback], true};
-    }
-    VulkanLogError("Unable to find suitable Vulkan swap chain color format!");
-    return (SwapSurfaceFormatCheck){{}, false};
-}
-
-/**
- * A helper function used in @c CreateSwapChain used to find the present mode for the surface to use.
- * @return The best present mode available
- */
-static VkPresentModeKHR GetSwapPresentMode()
-{
-    for (uint32_t i = 0; i < swapChainSupport.presentModeCount; i++)
-    {
-        const VkPresentModeKHR presentMode = swapChainSupport.presentMode[i];
-        if (presentMode == VK_PRESENT_MODE_MAILBOX_KHR)
-        {
-            return presentMode;
-        }
-    }
-    return VK_PRESENT_MODE_FIFO_KHR;
 }
 
 static bool CreateSwapChain()
@@ -700,21 +828,6 @@ static bool CreateDescriptorSetLayout()
     VulkanTest(vkCreateDescriptorSetLayout(device, &layoutInfo, NULL, &descriptorSetLayout),
                "Failed to create Vulkan descriptor set layout!");
     return true;
-}
-
-static VkShaderModule CreateShaderModule(const uint32_t *code, const size_t size)
-{
-    const VkShaderModuleCreateInfo createInfo = {
-        VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-        NULL,
-        0,
-        size - 16,
-        code
-    };
-    VkShaderModule shaderModule;
-    VulkanTest_Internal(vkCreateShaderModule(device, &createInfo, NULL, &shaderModule),
-                        "Failed to create shader module!", NULL);
-    return shaderModule;
 }
 
 static bool CreateGraphicsPipeline()
@@ -936,10 +1049,26 @@ static bool CreateCommandPools()
     return true;
 }
 
-static bool CreateBuffer(const VkDeviceSize size, const VkBufferUsageFlags usageFlags,
-                         const VkMemoryPropertyFlags propertyFlags,
-                         VkBuffer *buffer, VkDeviceMemory *bufferMemory)
+static bool CreateDepthImage()
 {
+    VkFormat format;
+    VkFormatProperties properties;
+    vkGetPhysicalDeviceFormatProperties(physicalDevice, VK_FORMAT_D32_SFLOAT_S8_UINT, &properties);
+    if (properties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
+    {
+        format = VK_FORMAT_D32_SFLOAT_S8_UINT;
+    } else
+    {
+        vkGetPhysicalDeviceFormatProperties(physicalDevice, VK_FORMAT_D24_UNORM_S8_UINT, &properties);
+        if (properties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
+        {
+            format = VK_FORMAT_D24_UNORM_S8_UINT;
+        } else
+        {
+            VulkanLogError("Unable to find suitable format for Vulkan depth image!");
+            return false;
+        }
+    }
     uint32_t *const pQueueFamilyIndices[] = {
         queueFamilyIndices->familyCount == 1
             ? (uint32_t[1]){queueFamilyIndices->graphicsFamily}
@@ -950,15 +1079,22 @@ static bool CreateBuffer(const VkDeviceSize size, const VkBufferUsageFlags usage
                   }
                   : (uint32_t[2]){queueFamilyIndices->graphicsFamily}
     };
-    const VkBufferCreateInfo bufferInfo = {
-        VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+    const VkImageCreateInfo imageInfo = {
+        VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
         NULL,
         0,
-        size,
-        usageFlags,
+        VK_IMAGE_TYPE_2D,
+        format,
+        {swapChainExtent.width, swapChainExtent.height, 1},
+        1,
+        1,
+        VK_SAMPLE_COUNT_1_BIT,
+        VK_IMAGE_TILING_OPTIMAL,
+        VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
         queueFamilyIndices->familyCount == 1 ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_CONCURRENT,
         queueFamilyIndices->familyCount,
-        *pQueueFamilyIndices
+        *pQueueFamilyIndices,
+        VK_IMAGE_LAYOUT_UNDEFINED
     };
     if (queueFamilyIndices->familyCount == 2)
     {
@@ -967,78 +1103,54 @@ static bool CreateBuffer(const VkDeviceSize size, const VkBufferUsageFlags usage
         if (queueFamilyIndices->transferFamily == queueFamilyIndices->graphicsFamily)
             (*pQueueFamilyIndices)[1] = queueFamilyIndices->presentFamily;
     }
-    VulkanTest(vkCreateBuffer(device, &bufferInfo, NULL, buffer), "Failed to create Vulkan buffer!");
-    VkMemoryRequirements memRequirements;
-    vkGetBufferMemoryRequirements(device, *buffer, &memRequirements);
+    VulkanTest(vkCreateImage(device, &imageInfo, NULL, &depthImage), "Failed to create Vulkan depth test image!");
+
+    VkMemoryRequirements memoryRequirements;
+    vkGetImageMemoryRequirements(device, depthImage, &memoryRequirements);
     VkPhysicalDeviceMemoryProperties memoryProperties;
     vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
     for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++)
     {
-        if (memRequirements.memoryTypeBits & 1 << i &&
-            (memoryProperties.memoryTypes[i].propertyFlags & propertyFlags) == propertyFlags)
+        if (textures[i].memoryRequirements.memoryTypeBits & 1 << i && (
+                memoryProperties.memoryTypes[i].propertyFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) ==
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
         {
-            const VkMemoryAllocateInfo allocInfo = {
+            const VkMemoryAllocateInfo allocateInfo = {
                 VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
                 NULL,
-                memRequirements.size,
+                memoryRequirements.alignment * (VkDeviceSize) ceil(
+                    (double) memoryRequirements.size / (double) memoryRequirements.alignment),
                 i
             };
-            VulkanTest(vkAllocateMemory(device, &allocInfo, NULL, bufferMemory),
-                       "Failed to allocate Vulkan buffer memory!");
-            vkBindBufferMemory(device, *buffer, *bufferMemory, 0);
-            return true;
+            VulkanTest(vkAllocateMemory(device, &allocateInfo, NULL, &textureMemory),
+                       "Failed to allocate Vulkan depth test image memory!");
+            break;
         }
     }
-    VulkanLogError("Failed to find suitable memory type for Vulkan!");
-    return false;
-}
-
-static VkCommandBuffer BeginCommandBuffer()
-{
-    const VkCommandBufferAllocateInfo allocateInfo = {
-        VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-        NULL,
-        transferCommandPool,
-        VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-        1
-    };
-    VkCommandBuffer commandBuffer;
-    vkAllocateCommandBuffers(device, &allocateInfo, &commandBuffer);
-    const VkCommandBufferBeginInfo beginInfo = {
-        VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-        NULL,
-        VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
-        NULL
-    };
-    vkBeginCommandBuffer(commandBuffer, &beginInfo);
-    return commandBuffer;
-}
-
-static void EndCommandBuffer(VkCommandBuffer commandBuffer)
-{
-    vkEndCommandBuffer(commandBuffer);
-    const VkSubmitInfo submitInfo = {
-        VK_STRUCTURE_TYPE_SUBMIT_INFO,
+    const VkImageViewCreateInfo createInfo = {
+        VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
         NULL,
         0,
-        NULL,
-        0,
-        1,
-        &commandBuffer,
-        0,
-        NULL
+        depthImage,
+        VK_IMAGE_VIEW_TYPE_2D,
+        format,
+        {
+            VK_COMPONENT_SWIZZLE_IDENTITY,
+            VK_COMPONENT_SWIZZLE_IDENTITY,
+            VK_COMPONENT_SWIZZLE_IDENTITY,
+            VK_COMPONENT_SWIZZLE_IDENTITY
+        },
+        {
+            VK_IMAGE_ASPECT_DEPTH_BIT,
+            0,
+            1,
+            0,
+            1
+        }
     };
-    vkQueueSubmit(transferQueue, 1, &submitInfo, VK_NULL_HANDLE);
-    vkQueueWaitIdle(transferQueue);
-    vkFreeCommandBuffers(device, transferCommandPool, 1, &commandBuffer);
-}
-
-static void CopyBuffer(const VkBuffer srcBuffer, const VkBuffer dstBuffer, const VkDeviceSize size)
-{
-    const VkCommandBuffer commandBuffer = BeginCommandBuffer();
-    const VkBufferCopy copyRegion = {0, 0, size};
-    vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
-    EndCommandBuffer(commandBuffer);
+    VulkanTest(vkCreateImageView(device, &createInfo, NULL, &depthImageView),
+               "Failed to create Vulkan image views!");
+    return true;
 }
 
 static bool LoadTextures()
@@ -1480,14 +1592,7 @@ static bool CreateSyncObjects()
     return true;
 }
 
-static void CleanupSwapChain()
-{
-    for (uint32_t i = 0; i < swapChainCount; i++) vkDestroyFramebuffer(device, swapChainFramebuffers[i], NULL);
-    for (uint32_t i = 0; i < swapChainCount; i++) vkDestroyImageView(device, swapChainImageViews[i], NULL);
-    vkDestroySwapchainKHR(device, swapChain, NULL);
-}
-
-#pragma region drawingFunctions
+#pragma region drawingHelpers
 static bool RecreateSwapChain()
 {
     vkDeviceWaitIdle(device);
@@ -1559,7 +1664,7 @@ static void RecordCommandBuffer(const VkCommandBuffer buffer, const uint32_t ima
     vkCmdEndRenderPass(buffer);
     VulkanTest_Internal(vkEndCommandBuffer(buffer), "Failed to record the Vulkan command buffer!",);
 }
-#pragma endregion drawingFunctions
+#pragma endregion drawingHelpers
 #pragma endregion internalFunctions
 
 /**
