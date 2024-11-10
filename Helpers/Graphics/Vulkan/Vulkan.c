@@ -46,7 +46,7 @@ typedef struct
 
 typedef struct
 {
-    vec2 pos;
+    vec3 pos;
     vec3 color;
     vec2 textureCoordinate;
 } Vertex;
@@ -82,16 +82,26 @@ SDL_Window *vk_window;
 bool minimized = false;
 
 const List(Vertex) vertices = {
-    4,
+    8,
     (Vertex[]){
-        {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-        {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-        {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-        {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
+        {{-0.5f, 0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+        {{0.5f, 0.0f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+        {{0.5f, 0.0f, 0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+        {{-0.5f, 0.0f, 0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
+
+        {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+        {{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+        {{0.5f, -0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+        {{-0.5f, -0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
     }
 };
 
-const List(uint16_t) indices = {6, (uint16_t[]){0, 1, 2, 2, 3, 0}};
+const List(uint16_t) indices = {
+    12, (uint16_t[]){
+        0, 1, 2, 2, 3, 0,
+        4, 5, 6, 6, 7, 4
+    }
+};
 #pragma endregion variables
 
 #pragma region vulkanVariables
@@ -163,6 +173,9 @@ VkSampler textureSampler;
 VkBuffer dataBuffer = VK_NULL_HANDLE;
 VkDeviceMemory dataBufferMemory = VK_NULL_HANDLE;
 void *mappedDataBuffer;
+VkImage depthImage;
+VkDeviceMemory depthImageMemory;
+VkImageView depthImageView;
 #pragma endregion vulkanVariables
 
 #pragma region internalFunctions
@@ -251,6 +264,73 @@ static VkShaderModule CreateShaderModule(const uint32_t *code, const size_t size
     VulkanTest_Internal(vkCreateShaderModule(device, &createInfo, NULL, &shaderModule),
                         "Failed to create shader module!", NULL);
     return shaderModule;
+}
+
+static bool CreateImage(VkImage *image, const VkFormat format, const VkExtent3D extent, const VkImageUsageFlags usageFlags, const char *errorMessage)
+{
+    uint32_t *const pQueueFamilyIndices[] = {
+        queueFamilyIndices->familyCount == 1
+            ? (uint32_t[1]){queueFamilyIndices->graphicsFamily}
+        : queueFamilyIndices->familyCount == 3
+              ? (uint32_t[3]){
+                  queueFamilyIndices->graphicsFamily, queueFamilyIndices->presentFamily,
+                  queueFamilyIndices->transferFamily
+              }
+        : (uint32_t[2]){queueFamilyIndices->graphicsFamily}
+    };
+    const VkImageCreateInfo imageInfo = {
+        VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+        NULL,
+        0,
+        VK_IMAGE_TYPE_2D,
+        format,
+        extent,
+        1,
+        1,
+        VK_SAMPLE_COUNT_1_BIT,
+        VK_IMAGE_TILING_OPTIMAL,
+        usageFlags,
+        queueFamilyIndices->familyCount == 1 ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_CONCURRENT,
+        queueFamilyIndices->familyCount,
+        *pQueueFamilyIndices,
+        VK_IMAGE_LAYOUT_UNDEFINED
+    };
+    if (queueFamilyIndices->familyCount == 2)
+    {
+        if (queueFamilyIndices->presentFamily == queueFamilyIndices->graphicsFamily)
+            (*pQueueFamilyIndices)[1] = queueFamilyIndices->transferFamily;
+        if (queueFamilyIndices->transferFamily == queueFamilyIndices->graphicsFamily)
+            (*pQueueFamilyIndices)[1] = queueFamilyIndices->presentFamily;
+    }
+    VulkanTest(vkCreateImage(device, &imageInfo, NULL, image), errorMessage);
+    return true;
+}
+
+static bool CreateImageView(VkImageView *imageView, const VkImage image, const VkFormat format, const VkImageAspectFlagBits aspectMask, const char *errorMessage)
+{
+    const VkImageViewCreateInfo createInfo = {
+        VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+        NULL,
+        0,
+        image,
+        VK_IMAGE_VIEW_TYPE_2D,
+        format,
+        {
+            VK_COMPONENT_SWIZZLE_IDENTITY,
+            VK_COMPONENT_SWIZZLE_IDENTITY,
+            VK_COMPONENT_SWIZZLE_IDENTITY,
+            VK_COMPONENT_SWIZZLE_IDENTITY
+        },
+        {
+            aspectMask,
+            0,
+            1,
+            0,
+            1
+        }
+    };
+    VulkanTest(vkCreateImageView(device, &createInfo, NULL, imageView), errorMessage);
+    return true;
 }
 
 static bool CreateBuffer(const VkDeviceSize size, const VkBufferUsageFlags usageFlags,
@@ -710,29 +790,7 @@ static bool CreateImageViews()
     swapChainImageViews = malloc(sizeof(*swapChainImageViews) * swapChainCount);
     for (uint32_t i = 0; i < swapChainCount; i++)
     {
-        const VkImageViewCreateInfo createInfo = {
-            VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-            NULL,
-            0,
-            swapChainImages[i],
-            VK_IMAGE_VIEW_TYPE_2D,
-            swapChainImageFormat,
-            {
-                VK_COMPONENT_SWIZZLE_IDENTITY,
-                VK_COMPONENT_SWIZZLE_IDENTITY,
-                VK_COMPONENT_SWIZZLE_IDENTITY,
-                VK_COMPONENT_SWIZZLE_IDENTITY
-            },
-            {
-                VK_IMAGE_ASPECT_COLOR_BIT,
-                0,
-                1,
-                0,
-                1
-            }
-        };
-        VulkanTest(vkCreateImageView(device, &createInfo, NULL, &swapChainImageViews[i]),
-                   "Failed to create Vulkan swap chain image view!");
+        if (!CreateImageView(&swapChainImageViews[i], swapChainImages[i], swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT, "Failed to create Vulkan swap chain image view!")) return false;
     }
     return true;
 }
@@ -1069,41 +1127,8 @@ static bool CreateDepthImage()
             return false;
         }
     }
-    uint32_t *const pQueueFamilyIndices[] = {
-        queueFamilyIndices->familyCount == 1
-            ? (uint32_t[1]){queueFamilyIndices->graphicsFamily}
-            : queueFamilyIndices->familyCount == 3
-                  ? (uint32_t[3]){
-                      queueFamilyIndices->graphicsFamily, queueFamilyIndices->presentFamily,
-                      queueFamilyIndices->transferFamily
-                  }
-                  : (uint32_t[2]){queueFamilyIndices->graphicsFamily}
-    };
-    const VkImageCreateInfo imageInfo = {
-        VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-        NULL,
-        0,
-        VK_IMAGE_TYPE_2D,
-        format,
-        {swapChainExtent.width, swapChainExtent.height, 1},
-        1,
-        1,
-        VK_SAMPLE_COUNT_1_BIT,
-        VK_IMAGE_TILING_OPTIMAL,
-        VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-        queueFamilyIndices->familyCount == 1 ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_CONCURRENT,
-        queueFamilyIndices->familyCount,
-        *pQueueFamilyIndices,
-        VK_IMAGE_LAYOUT_UNDEFINED
-    };
-    if (queueFamilyIndices->familyCount == 2)
-    {
-        if (queueFamilyIndices->presentFamily == queueFamilyIndices->graphicsFamily)
-            (*pQueueFamilyIndices)[1] = queueFamilyIndices->transferFamily;
-        if (queueFamilyIndices->transferFamily == queueFamilyIndices->graphicsFamily)
-            (*pQueueFamilyIndices)[1] = queueFamilyIndices->presentFamily;
-    }
-    VulkanTest(vkCreateImage(device, &imageInfo, NULL, &depthImage), "Failed to create Vulkan depth test image!");
+
+    if (!CreateImage(&depthImage, format, (VkExtent3D){swapChainExtent.width, swapChainExtent.height, 1}, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, "Failed to create Vulkan depth test image!")) return false;
 
     VkMemoryRequirements memoryRequirements;
     vkGetImageMemoryRequirements(device, depthImage, &memoryRequirements);
@@ -1111,7 +1136,7 @@ static bool CreateDepthImage()
     vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
     for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++)
     {
-        if (textures[i].memoryRequirements.memoryTypeBits & 1 << i && (
+        if (memoryRequirements.memoryTypeBits & 1 << i && (
                 memoryProperties.memoryTypes[i].propertyFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) ==
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
         {
@@ -1122,35 +1147,14 @@ static bool CreateDepthImage()
                     (double) memoryRequirements.size / (double) memoryRequirements.alignment),
                 i
             };
-            VulkanTest(vkAllocateMemory(device, &allocateInfo, NULL, &textureMemory),
+            VulkanTest(vkAllocateMemory(device, &allocateInfo, NULL, &depthImageMemory),
                        "Failed to allocate Vulkan depth test image memory!");
             break;
         }
     }
-    const VkImageViewCreateInfo createInfo = {
-        VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-        NULL,
-        0,
-        depthImage,
-        VK_IMAGE_VIEW_TYPE_2D,
-        format,
-        {
-            VK_COMPONENT_SWIZZLE_IDENTITY,
-            VK_COMPONENT_SWIZZLE_IDENTITY,
-            VK_COMPONENT_SWIZZLE_IDENTITY,
-            VK_COMPONENT_SWIZZLE_IDENTITY
-        },
-        {
-            VK_IMAGE_ASPECT_DEPTH_BIT,
-            0,
-            1,
-            0,
-            1
-        }
-    };
-    VulkanTest(vkCreateImageView(device, &createInfo, NULL, &depthImageView),
-               "Failed to create Vulkan image views!");
-    return true;
+    VulkanTest(vkBindImageMemory(device, depthImage, depthImageMemory, 0), "Failed to bind Vulkan depth image memory!");
+
+    return CreateImageView(&depthImageView, depthImage, format, VK_IMAGE_ASPECT_DEPTH_BIT, "Failed to create Vulkan depth image view!");
 }
 
 static bool LoadTextures()
@@ -1159,43 +1163,7 @@ static bool LoadTextures()
     for (uint16_t textureIndex = 0; textureIndex < TEXTURE_ASSET_COUNT; textureIndex++)
     {
         const byte *decompressed = DecompressAsset(texture_assets[textureIndex]);
-        uint32_t *const pQueueFamilyIndices[] = {
-            queueFamilyIndices->familyCount == 1
-                ? (uint32_t[1]){queueFamilyIndices->graphicsFamily}
-                : queueFamilyIndices->familyCount == 3
-                      ? (uint32_t[3]){
-                          queueFamilyIndices->graphicsFamily, queueFamilyIndices->presentFamily,
-                          queueFamilyIndices->transferFamily
-                      }
-                      : (uint32_t[2]){queueFamilyIndices->graphicsFamily}
-        };
-        const VkImageCreateInfo imageInfo = {
-            VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-            NULL,
-            0,
-            VK_IMAGE_TYPE_2D,
-            VK_FORMAT_R8G8B8A8_SRGB,
-            {ReadUintA(decompressed, 4), ReadUintA(decompressed, 8), 1},
-            1,
-            1,
-            VK_SAMPLE_COUNT_1_BIT,
-            VK_IMAGE_TILING_OPTIMAL,
-            VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-            queueFamilyIndices->familyCount == 1 ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_CONCURRENT,
-            queueFamilyIndices->familyCount,
-            *pQueueFamilyIndices,
-            VK_IMAGE_LAYOUT_UNDEFINED
-        };
-        if (queueFamilyIndices->familyCount == 2)
-        {
-            if (queueFamilyIndices->presentFamily == queueFamilyIndices->graphicsFamily)
-                (*pQueueFamilyIndices)[1] = queueFamilyIndices->transferFamily;
-            if (queueFamilyIndices->transferFamily == queueFamilyIndices->graphicsFamily)
-                (*pQueueFamilyIndices)[1] = queueFamilyIndices->presentFamily;
-        }
-
-        VulkanTest(vkCreateImage(device, &imageInfo, NULL, &textures[textureIndex].image),
-                   "Failed to create textures for Vulkan!");
+        CreateImage(&textures[textureIndex].image, VK_FORMAT_R8G8B8A8_SRGB, (VkExtent3D){ReadUintA(decompressed, 4), ReadUintA(decompressed, 8), 1}, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, "Failed to create textures for Vulkan!");
         vkGetImageMemoryRequirements(device, textures[textureIndex].image, &textures[textureIndex].memoryRequirements);
         textures[textureIndex].offset = textures[textureIndex].memoryRequirements.alignment * (VkDeviceSize) ceil(
                                             ((double) memorySize + (double) textures[textureIndex].memoryRequirements.
@@ -1323,29 +1291,7 @@ static bool CreateTexturesImageView()
 {
     for (uint16_t textureIndex = 0; textureIndex < TEXTURE_ASSET_COUNT; textureIndex++)
     {
-        const VkImageViewCreateInfo createInfo = {
-            VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-            NULL,
-            0,
-            textures[textureIndex].image,
-            VK_IMAGE_VIEW_TYPE_2D,
-            VK_FORMAT_R8G8B8A8_SRGB,
-            {
-                VK_COMPONENT_SWIZZLE_IDENTITY,
-                VK_COMPONENT_SWIZZLE_IDENTITY,
-                VK_COMPONENT_SWIZZLE_IDENTITY,
-                VK_COMPONENT_SWIZZLE_IDENTITY
-            },
-            {
-                VK_IMAGE_ASPECT_COLOR_BIT,
-                0,
-                1,
-                0,
-                1
-            }
-        };
-        VulkanTest(vkCreateImageView(device, &createInfo, NULL, &texturesImageView[textureIndex]),
-                   "Failed to create Vulkan texture image view!");
+        CreateImageView(&texturesImageView[textureIndex], textures[textureIndex].image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, "Failed to create Vulkan texture image view!");
     }
     return true;
 }
@@ -1681,9 +1627,10 @@ bool VK_Init(SDL_Window *window)
     // ReSharper disable once CppDFAConstantConditions
     if (CreateInstance() && CreateSurface() && PickPhysicalDevice() && CreateLogicalDevice() && CreateSwapChain() &&
         CreateImageViews() && CreateRenderPass() && CreateDescriptorSetLayout() && CreateGraphicsPipeline() &&
-        CreateFramebuffers() && CreateCommandPools() && LoadTextures() && CreateTexturesImageView() &&
-        CreateTextureSampler() && CreateVertexBuffer() && CreateIndexBuffer() && CreateUniformBuffers() &&
-        CreateDescriptorPool() && CreateDescriptorSets() && CreateCommandBuffers() && CreateSyncObjects())
+        CreateFramebuffers() && CreateCommandPools() && CreateDepthImage() && LoadTextures() &&
+        CreateTexturesImageView() && CreateTextureSampler() && CreateVertexBuffer() && CreateIndexBuffer() &&
+        CreateUniformBuffers() && CreateDescriptorPool() && CreateDescriptorSets() && CreateCommandBuffers() &&
+        CreateSyncObjects())
     {
         const DataBufferObject dataBufferObject = {
             texturesAssetIDMap[ReadUintA(DecompressAsset(gztex_level_uvtest), 12)]
@@ -1709,6 +1656,9 @@ void VK_Cleanup()
             vkDestroyImage(device, textures[textureIndex].image, NULL);
         }
         vkFreeMemory(device, textureMemory, NULL);
+        vkDestroyImageView(device, depthImageView, NULL);
+        vkDestroyImage(device, depthImage, NULL);
+        vkFreeMemory(device, depthImageMemory, NULL);
         vkDestroyPipeline(device, graphicsPipeline, NULL);
         vkDestroyPipelineLayout(device, pipelineLayout, NULL);
         vkDestroyRenderPass(device, renderPass, NULL);
