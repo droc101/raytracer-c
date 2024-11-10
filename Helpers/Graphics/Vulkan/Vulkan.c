@@ -288,7 +288,13 @@ static void RecordCommandBuffer(const VkCommandBuffer buffer, const uint32_t ima
         NULL
     };
     VulkanTest_Internal(vkBeginCommandBuffer(buffer, &beginInfo), "Failed to begin recording Vulkan command buffer!",);
-    VkClearValue clearColor = {{{0, 0, 0}}};
+    const List(VkClearValue) clearColor = {
+        2,
+        (VkClearValue[]){
+            {.color = {{0, 0, 0, 1}}},
+            {.depthStencil = {1, 0}}
+        }
+    };
     const VkRenderPassBeginInfo renderPassInfo = {
         VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
         NULL,
@@ -298,8 +304,8 @@ static void RecordCommandBuffer(const VkCommandBuffer buffer, const uint32_t ima
             {0, 0},
             swapChainExtent
         },
-        1,
-        &clearColor
+        clearColor.length,
+        clearColor.data
     };
     vkCmdBeginRenderPass(buffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
     vkCmdBindPipeline(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
@@ -330,10 +336,6 @@ static void RecordCommandBuffer(const VkCommandBuffer buffer, const uint32_t ima
 }
 #pragma endregion drawingHelpers
 #pragma endregion helperFunctions
-/**
- * This function will create the Vulkan instance, set up for SDL.
- * @see instance
- */
 static bool CreateInstance()
 {
     uint32_t extensionCount;
@@ -418,10 +420,6 @@ static bool CreateInstance()
     return true;
 }
 
-/**
- * Creates the Vulkan surface
- * @see surface
- */
 static bool CreateSurface()
 {
     if (SDL_Vulkan_CreateSurface(vk_window, instance, &surface) == SDL_FALSE)
@@ -432,10 +430,6 @@ static bool CreateSurface()
     return true;
 }
 
-/**
- * This function selects the GPU that will be used to render the game.
- * Assuming I did it right, it will pick the best GPU available.
- */
 static bool PickPhysicalDevice()
 {
     queueFamilyIndices = malloc(sizeof(*queueFamilyIndices));
@@ -526,9 +520,6 @@ static bool PickPhysicalDevice()
     return match;
 }
 
-/**
- * Creates the logical device that is used to interface with the physical device.
- */
 static bool CreateLogicalDevice()
 {
     const float queuePriority = 1;
@@ -682,7 +673,25 @@ static bool CreateImageViews()
 
 static bool CreateRenderPass()
 {
-    VkAttachmentDescription colorAttachment = {
+    // TODO if stencil is not needed then allow for using VK_FORMAT_D32_SFLOAT
+    VkFormatProperties properties;
+    vkGetPhysicalDeviceFormatProperties(physicalDevice, VK_FORMAT_D32_SFLOAT_S8_UINT, &properties);
+    if (properties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
+    {
+        depthImageFormat = VK_FORMAT_D32_SFLOAT_S8_UINT;
+    } else
+    {
+        vkGetPhysicalDeviceFormatProperties(physicalDevice, VK_FORMAT_D24_UNORM_S8_UINT, &properties);
+        if (properties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
+        {
+            depthImageFormat = VK_FORMAT_D24_UNORM_S8_UINT;
+        } else
+        {
+            VulkanLogError("Unable to find suitable format for Vulkan depth image!");
+            return false;
+        }
+    }
+    const VkAttachmentDescription colorAttachment = {
         0,
         swapChainImageFormat,
         VK_SAMPLE_COUNT_1_BIT,
@@ -697,6 +706,21 @@ static bool CreateRenderPass()
         0,
         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
     };
+    const VkAttachmentDescription depthAttachment  = {
+        0,
+        depthImageFormat,
+        VK_SAMPLE_COUNT_1_BIT,
+        VK_ATTACHMENT_LOAD_OP_CLEAR,
+        VK_ATTACHMENT_STORE_OP_DONT_CARE,
+        VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+        VK_ATTACHMENT_STORE_OP_DONT_CARE,
+        VK_IMAGE_LAYOUT_UNDEFINED,
+        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+    };
+    VkAttachmentReference depthAttachmentReference = {
+        1,
+        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+    };
     VkSubpassDescription subpass = {
         0,
         VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -705,25 +729,29 @@ static bool CreateRenderPass()
         1,
         &colorAttachmentRef,
         NULL,
-        NULL,
+        &depthAttachmentReference,
         0,
         NULL
     };
     VkSubpassDependency dependency = {
         VK_SUBPASS_EXTERNAL,
         0,
-        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-        0,
-        VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+        VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+        VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
         0
+    };
+    const List(VkAttachmentDescription) attachments = {
+        2,
+        (VkAttachmentDescription[]){colorAttachment, depthAttachment}
     };
     const VkRenderPassCreateInfo renderPassInfo = {
         VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
         NULL,
         0,
-        1,
-        &colorAttachment,
+        attachments.length,
+        attachments.data,
         1,
         &subpass,
         1,
@@ -920,6 +948,20 @@ static bool CreateGraphicsPipeline()
     VulkanTest(vkCreatePipelineLayout(device, &pipelineLayoutInfo, NULL, &pipelineLayout),
                "Failed to create pipeline layout!");
 
+    VkPipelineDepthStencilStateCreateInfo depthStencil = {
+        VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
+        NULL,
+        0,
+        VK_TRUE,
+        VK_TRUE,
+        VK_COMPARE_OP_LESS,
+        VK_FALSE,
+        VK_FALSE,
+        {},
+        {},
+        0,
+        1
+    };
     VkGraphicsPipelineCreateInfo pipelineInfo = {
         VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
         NULL,
@@ -932,7 +974,7 @@ static bool CreateGraphicsPipeline()
         &viewportState,
         &rasterizer,
         &multisampling,
-        NULL,
+        &depthStencil,
         &colorBlending,
         &dynamicState,
         pipelineLayout,
@@ -945,29 +987,6 @@ static bool CreateGraphicsPipeline()
                "Failed to create graphics pipeline!");
     vkDestroyShaderModule(device, vertShaderModule, NULL);
     vkDestroyShaderModule(device, fragShaderModule, NULL);
-    return true;
-}
-
-static bool CreateFramebuffers()
-{
-    swapChainFramebuffers = malloc(sizeof(*swapChainFramebuffers) * swapChainCount);
-    for (uint32_t i = 0; i < swapChainCount; i++)
-    {
-        VkImageView attachments[] = {swapChainImageViews[i]};
-        VkFramebufferCreateInfo framebufferInfo = {
-            VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-            NULL,
-            0,
-            renderPass,
-            1,
-            attachments,
-            swapChainExtent.width,
-            swapChainExtent.height,
-            1
-        };
-        VulkanTest(vkCreateFramebuffer(device, &framebufferInfo, NULL, &swapChainFramebuffers[i]),
-                   "Failed to create Vulkan framebuffer!");
-    }
     return true;
 }
 
@@ -994,26 +1013,7 @@ static bool CreateCommandPools()
 
 static bool CreateDepthImage()
 {
-    VkFormat format;
-    VkFormatProperties properties;
-    vkGetPhysicalDeviceFormatProperties(physicalDevice, VK_FORMAT_D32_SFLOAT_S8_UINT, &properties);
-    if (properties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
-    {
-        format = VK_FORMAT_D32_SFLOAT_S8_UINT;
-    } else
-    {
-        vkGetPhysicalDeviceFormatProperties(physicalDevice, VK_FORMAT_D24_UNORM_S8_UINT, &properties);
-        if (properties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
-        {
-            format = VK_FORMAT_D24_UNORM_S8_UINT;
-        } else
-        {
-            VulkanLogError("Unable to find suitable format for Vulkan depth image!");
-            return false;
-        }
-    }
-
-    if (!CreateImage(&depthImage, format, (VkExtent3D){swapChainExtent.width, swapChainExtent.height, 1}, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, "Failed to create Vulkan depth test image!")) return false;
+    if (!CreateImage(&depthImage, depthImageFormat, (VkExtent3D){swapChainExtent.width, swapChainExtent.height, 1}, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, "Failed to create Vulkan depth test image!")) return false;
 
     VkMemoryRequirements memoryRequirements;
     vkGetImageMemoryRequirements(device, depthImage, &memoryRequirements);
@@ -1038,8 +1038,57 @@ static bool CreateDepthImage()
         }
     }
     VulkanTest(vkBindImageMemory(device, depthImage, depthImageMemory, 0), "Failed to bind Vulkan depth image memory!");
+    if (!CreateImageView(&depthImageView, depthImage, depthImageFormat, VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT, "Failed to create Vulkan depth image view!")) return false;
 
-    return CreateImageView(&depthImageView, depthImage, format, VK_IMAGE_ASPECT_DEPTH_BIT, "Failed to create Vulkan depth image view!");
+    const VkCommandBuffer commandBuffer = BeginCommandBuffer();
+    const VkImageMemoryBarrier transferBarrier = {
+        VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+        NULL,
+        0,
+        VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+        VK_IMAGE_LAYOUT_UNDEFINED,
+        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+        VK_QUEUE_FAMILY_IGNORED,
+        VK_QUEUE_FAMILY_IGNORED,
+        depthImage,
+        {
+            VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT,
+            0,
+            1,
+            0,
+            1
+        }
+    };
+    vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, 0,
+                         0, NULL, 0, NULL, 1, &transferBarrier);
+    EndCommandBuffer(commandBuffer);
+    return true;
+}
+
+static bool CreateFramebuffers()
+{
+    swapChainFramebuffers = malloc(sizeof(*swapChainFramebuffers) * swapChainCount);
+    for (uint32_t i = 0; i < swapChainCount; i++)
+    {
+        const List(VkImageView) attachments = {
+            2,
+            (VkImageView[]){swapChainImageViews[i], depthImageView}
+        };
+        VkFramebufferCreateInfo framebufferInfo = {
+            VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+            NULL,
+            0,
+            renderPass,
+            attachments.length,
+            attachments.data,
+            swapChainExtent.width,
+            swapChainExtent.height,
+            1
+        };
+        VulkanTest(vkCreateFramebuffer(device, &framebufferInfo, NULL, &swapChainFramebuffers[i]),
+                   "Failed to create Vulkan framebuffer!");
+    }
+    return true;
 }
 
 static bool LoadTextures()
@@ -1098,7 +1147,7 @@ static bool LoadTextures()
         vkUnmapMemory(device, stagingBufferMemory);
 
         const VkCommandBuffer firstCommandBuffer = BeginCommandBuffer();
-        VkImageMemoryBarrier firstTransferBarrier = {
+        const VkImageMemoryBarrier firstTransferBarrier = {
             VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
             NULL,
             0,
@@ -1121,7 +1170,7 @@ static bool LoadTextures()
         EndCommandBuffer(firstCommandBuffer);
 
         const VkCommandBuffer secondCommandBuffer = BeginCommandBuffer();
-        VkBufferImageCopy copy = {
+        const VkBufferImageCopy copy = {
             textures[textureIndex].offset,
             0,
             0,
@@ -1143,7 +1192,7 @@ static bool LoadTextures()
         EndCommandBuffer(secondCommandBuffer);
 
         const VkCommandBuffer thirdCommandBuffer = BeginCommandBuffer();
-        VkImageMemoryBarrier secondTransferBarrier = {
+        const VkImageMemoryBarrier secondTransferBarrier = {
             VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
             NULL,
             VK_ACCESS_TRANSFER_WRITE_BIT,
@@ -1430,7 +1479,7 @@ bool VK_Init(SDL_Window *window)
     // ReSharper disable once CppDFAConstantConditions
     if (CreateInstance() && CreateSurface() && PickPhysicalDevice() && CreateLogicalDevice() && CreateSwapChain() &&
         CreateImageViews() && CreateRenderPass() && CreateDescriptorSetLayout() && CreateGraphicsPipeline() &&
-        CreateFramebuffers() && CreateCommandPools() && CreateDepthImage() && LoadTextures() &&
+        CreateCommandPools() && CreateDepthImage() && CreateFramebuffers() && LoadTextures() &&
         CreateTexturesImageView() && CreateTextureSampler() && CreateVertexBuffer() && CreateIndexBuffer() &&
         CreateUniformBuffers() && CreateDescriptorPool() && CreateDescriptorSets() && CreateCommandBuffers() &&
         CreateSyncObjects())

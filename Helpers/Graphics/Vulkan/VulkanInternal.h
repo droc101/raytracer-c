@@ -177,6 +177,7 @@ VkSampler textureSampler;
 VkBuffer dataBuffer = VK_NULL_HANDLE;
 VkDeviceMemory dataBufferMemory = VK_NULL_HANDLE;
 void *mappedDataBuffer;
+VkFormat depthImageFormat;
 VkImage depthImage;
 VkDeviceMemory depthImageMemory;
 VkImageView depthImageView;
@@ -262,11 +263,11 @@ static bool CreateDescriptorSetLayout();
 
 static bool CreateGraphicsPipeline();
 
-static bool CreateFramebuffers();
-
 static bool CreateCommandPools();
 
 static bool CreateDepthImage();
+
+static bool CreateFramebuffers();
 
 static bool LoadTextures();
 
