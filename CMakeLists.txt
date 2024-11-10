@@ -122,6 +122,7 @@ add_executable(
         Actor/Door.h
         Helpers/Graphics/Vulkan/Vulkan.c
         Helpers/Graphics/Vulkan/Vulkan.h
+        Helpers/Graphics/Vulkan/VulkanInternal.h
 )
 
 set(SDL2_PATH "${CMAKE_SOURCE_DIR}/lib/SDL2/x86_64-w64-mingw32")

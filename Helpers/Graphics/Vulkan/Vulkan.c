@@ -2,189 +2,10 @@
 // Created by Noah on 7/5/2024.
 //
 
-#define CGLM_FORCE_LEFT_HANDED
-#define CGLM_FORCE_DEPTH_ZERO_TO_ONE
-
-#include "Vulkan.h"
-#include <SDL_vulkan.h>
-#include <string.h>
-#include <cglm/cglm.h>
-#include <vulkan/vulkan.h>
-#include "../../../Assets/AssetReader.h"
-#include "../../../Assets/Assets.h"
-#include "../../Core/DataReader.h"
-#include "../../Core/Error.h"
-#include "../../Core/MathEx.h"
-
-#pragma region macros
-#define VULKAN_VERSION VK_MAKE_VERSION(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH)
-#define MAX_FRAMES_IN_FLIGHT 2
-#define VulkanLogError(error) printf("\033[31m%s\033[0m\n", error); fflush(stdout)
-#define VulkanTest_Internal(function, error, returnValue) {const VkResult result=function; if (result != VK_SUCCESS) { printf("\033[31m%s\033[0m Error code %d\n", error, result); fflush(stdout); return returnValue; }}
-#define VulkanTest(function, error) VulkanTest_Internal(function, error, false)
-#define List(type) struct {uint64_t length;type* data;}
-#pragma endregion macros
-
-#pragma region typedefs
-typedef struct
-{
-    uint32_t graphicsFamily;
-    uint32_t presentFamily;
-    uint32_t uniquePresentFamily;
-    uint32_t transferFamily;
-    uint8_t familyCount;
-} QueueFamilyIndices;
-
-typedef struct
-{
-    uint32_t formatCount;
-    VkSurfaceFormatKHR *formats;
-    uint32_t presentModeCount;
-    VkPresentModeKHR *presentMode;
-    VkSurfaceCapabilitiesKHR capabilities;
-} SwapChainSupportDetails;
-
-typedef struct
-{
-    vec3 pos;
-    vec3 color;
-    vec2 textureCoordinate;
-} Vertex;
-
-typedef struct
-{
-    mat4 model;
-    mat4 view;
-    mat4 proj;
-} UniformBufferObject;
-
-typedef struct
-{
-    VkSurfaceFormatKHR chosenFormat;
-    bool found;
-} SwapSurfaceFormatCheck;
-
-typedef struct
-{
-    VkImage image;
-    VkMemoryRequirements memoryRequirements;
-    VkDeviceSize offset;
-} ImageAllocationInformation;
-
-typedef struct
-{
-    uint16_t textureIndex;
-} DataBufferObject;
-#pragma endregion typedefs
-
-#pragma region variables
-SDL_Window *vk_window;
-bool minimized = false;
-
-const List(Vertex) vertices = {
-    8,
-    (Vertex[]){
-        {{-0.5f, 0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-        {{0.5f, 0.0f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-        {{0.5f, 0.0f, 0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-        {{-0.5f, 0.0f, 0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
-
-        {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-        {{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-        {{0.5f, -0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-        {{-0.5f, -0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
-    }
-};
-
-const List(uint16_t) indices = {
-    12, (uint16_t[]){
-        0, 1, 2, 2, 3, 0,
-        4, 5, 6, 6, 7, 4
-    }
-};
-#pragma endregion variables
-
-#pragma region vulkanVariables
-/// When the instance is created the Vulkan library gets initialized, allowing the game to provide the library with any
-/// information about itself. Any state information that the library provides will then be stored in the instance.
-/// @see https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkInstance.html
-VkInstance instance = VK_NULL_HANDLE;
-/// The interface between Vulkan and SDL, allowing Vulkan to actually interact with the window.
-/// @see https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkSurfaceKHR.html
-VkSurfaceKHR surface;
-/// The physical device is the hardware available to the host that has an implementation of Vulkan.
-/// @see https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#devsandqueues-physical-device-enumeration
-/// @see https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkPhysicalDevice.html
-VkPhysicalDevice physicalDevice;
-/// @todo Document this along with the struct
-QueueFamilyIndices *queueFamilyIndices;
-/// @todo Document this along with the struct
-SwapChainSupportDetails swapChainSupport;
-/// The logical device is a connection to a physical device, and is used for interfacing with Vulkan.
-/// @see https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#devsandqueues-devices
-/// @see https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkDevice.html
-VkDevice device = NULL;
-/// The graphics queue is the queue used for executing graphics command buffers and sparse bindings on the device.
-/// @see https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#devsandqueues-queues
-/// @see https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkQueue.html
-VkQueue graphicsQueue;
-/// The present queue is the queue used for executing present command buffers and sparse bindings on the device.
-/// @see https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#devsandqueues-queues
-/// @see https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkQueue.html
-VkQueue presentQueue;
-/// The transfer queue is the queue used for executing transfer command buffers and sparse bindings on the device.
-/// @see https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#devsandqueues-queues
-/// @see https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkQueue.html
-VkQueue transferQueue;
-/// Allows Vulkan to give a surface the rendered image.
-VkSwapchainKHR swapChain = VK_NULL_HANDLE;
-VkImage *swapChainImages;
-uint32_t swapChainCount = 0;
-VkFormat swapChainImageFormat;
-VkExtent2D swapChainExtent;
-VkImageView *swapChainImageViews;
-VkRenderPass renderPass = VK_NULL_HANDLE;
-VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
-VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
-VkPipeline graphicsPipeline = VK_NULL_HANDLE;
-VkFramebuffer *swapChainFramebuffers;
-VkCommandPool graphicsCommandPool = VK_NULL_HANDLE;
-VkCommandPool transferCommandPool = VK_NULL_HANDLE;
-VkCommandBuffer commandBuffers[MAX_FRAMES_IN_FLIGHT];
-VkSemaphore imageAvailableSemaphores[MAX_FRAMES_IN_FLIGHT] = {VK_NULL_HANDLE};
-VkSemaphore renderFinishedSemaphores[MAX_FRAMES_IN_FLIGHT] = {VK_NULL_HANDLE};
-VkFence inFlightFences[MAX_FRAMES_IN_FLIGHT] = {VK_NULL_HANDLE};
-bool framebufferResized = false;
-uint8_t currentFrame = 0;
-VkBuffer vertexBuffer = VK_NULL_HANDLE;
-VkDeviceMemory vertexBufferMemory = VK_NULL_HANDLE;
-VkBuffer indexBuffer = VK_NULL_HANDLE;
-VkDeviceMemory indexBufferMemory = VK_NULL_HANDLE;
-VkBuffer uniformBuffers[MAX_FRAMES_IN_FLIGHT] = {VK_NULL_HANDLE};
-VkDeviceMemory uniformBuffersMemory[MAX_FRAMES_IN_FLIGHT] = {VK_NULL_HANDLE};
-void *uniformBuffersMapped[MAX_FRAMES_IN_FLIGHT];
-VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
-VkDescriptorSet descriptorSets[MAX_FRAMES_IN_FLIGHT];
-ImageAllocationInformation textures[TEXTURE_ASSET_COUNT];
-VkDeviceMemory textureMemory;
-VkImageView texturesImageView[TEXTURE_ASSET_COUNT];
-uint16_t texturesAssetIDMap[ASSET_COUNT];
-VkSampler textureSampler;
-VkBuffer dataBuffer = VK_NULL_HANDLE;
-VkDeviceMemory dataBufferMemory = VK_NULL_HANDLE;
-void *mappedDataBuffer;
-VkImage depthImage;
-VkDeviceMemory depthImageMemory;
-VkImageView depthImageView;
-#pragma endregion vulkanVariables
+#include "VulkanInternal.h"
 
 #pragma region internalFunctions
 #pragma region helperFunctions
-/**
- * Provides information about the physical device's support for the swap chain.
- * @param pDevice The physical device to query for
- * @return A @c SwapChainSupportDetails struct
- */
 static void QuerySwapChainSupport(const VkPhysicalDevice pDevice)
 {
     SwapChainSupportDetails details = {0, NULL, 0, NULL, {}};
@@ -204,11 +25,6 @@ static void QuerySwapChainSupport(const VkPhysicalDevice pDevice)
     swapChainSupport = details;
 }
 
-/**
- * A helper function used in @c CreateSwapChain used to find the color format for the surface to use.
- * If found, the function will pick R8G8B8A8_SRGB, otherwise it will simply use the first format found.
- * @return A @c VkSurfaceFormatKHR struct that contains the format.
- */
 static SwapSurfaceFormatCheck GetSwapSurfaceFormat()
 {
     int fallback = -1;
@@ -234,10 +50,6 @@ static SwapSurfaceFormatCheck GetSwapSurfaceFormat()
     return (SwapSurfaceFormatCheck){{}, false};
 }
 
-/**
- * A helper function used in @c CreateSwapChain used to find the present mode for the surface to use.
- * @return The best present mode available
- */
 static VkPresentModeKHR GetSwapPresentMode()
 {
     for (uint32_t i = 0; i < swapChainSupport.presentModeCount; i++)
@@ -444,6 +256,79 @@ static void CleanupSwapChain()
     for (uint32_t i = 0; i < swapChainCount; i++) vkDestroyImageView(device, swapChainImageViews[i], NULL);
     vkDestroySwapchainKHR(device, swapChain, NULL);
 }
+#pragma region drawingHelpers
+static bool RecreateSwapChain()
+{
+    vkDeviceWaitIdle(device);
+    CleanupSwapChain();
+
+    return CreateSwapChain() && CreateImageViews() && CreateFramebuffers();
+}
+
+static void UpdateUniformBuffer(const uint32_t currentFrame)
+{
+    UniformBufferObject bufferObject = {
+        GLM_MAT4_IDENTITY_INIT,
+        GLM_MAT4_IDENTITY_INIT,
+        GLM_MAT4_IDENTITY_INIT
+    };
+    glm_rotate(bufferObject.model, (float) SDL_GetTicks64() * PIf / 10000.0f, GLM_YUP);
+    glm_lookat((vec3){2.0f, 2.0f, 2.0f}, GLM_VEC3_ZERO, (vec3){0.0f, -1.0f, 0.0f}, bufferObject.view);
+    glm_perspective(PI / 4, (float) swapChainExtent.width / (float) swapChainExtent.height, 0.1f, 10.0f,
+                    bufferObject.proj);
+    memcpy(uniformBuffersMapped[currentFrame], &bufferObject, sizeof(bufferObject));
+}
+
+static void RecordCommandBuffer(const VkCommandBuffer buffer, const uint32_t imageIndex)
+{
+    const VkCommandBufferBeginInfo beginInfo = {
+        VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+        NULL,
+        0,
+        NULL
+    };
+    VulkanTest_Internal(vkBeginCommandBuffer(buffer, &beginInfo), "Failed to begin recording Vulkan command buffer!",);
+    VkClearValue clearColor = {{{0, 0, 0}}};
+    const VkRenderPassBeginInfo renderPassInfo = {
+        VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+        NULL,
+        renderPass,
+        swapChainFramebuffers[imageIndex],
+        {
+            {0, 0},
+            swapChainExtent
+        },
+        1,
+        &clearColor
+    };
+    vkCmdBeginRenderPass(buffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdBindPipeline(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+    const VkViewport viewport = {
+        0,
+        0,
+        (float) swapChainExtent.width,
+        (float) swapChainExtent.height,
+        0,
+        1
+    };
+    vkCmdSetViewport(buffer, 0, 1, &viewport);
+    const VkRect2D scissor = {
+        {
+            0,
+            0
+        },
+        swapChainExtent
+    };
+    vkCmdSetScissor(buffer, 0, 1, &scissor);
+    vkCmdBindVertexBuffers(buffer, 0, 1, (VkBuffer[1]){vertexBuffer}, (VkDeviceSize[1]){0});
+    vkCmdBindIndexBuffer(buffer, indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+    vkCmdBindDescriptorSets(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1,
+                            &descriptorSets[currentFrame], 0, NULL);
+    vkCmdDrawIndexed(buffer, indices.length, 1, 0, 0, 0);
+    vkCmdEndRenderPass(buffer);
+    VulkanTest_Internal(vkEndCommandBuffer(buffer), "Failed to record the Vulkan command buffer!",);
+}
+#pragma endregion drawingHelpers
 #pragma endregion helperFunctions
 /**
  * This function will create the Vulkan instance, set up for SDL.
@@ -1291,7 +1176,7 @@ static bool CreateTexturesImageView()
 {
     for (uint16_t textureIndex = 0; textureIndex < TEXTURE_ASSET_COUNT; textureIndex++)
     {
-        CreateImageView(&texturesImageView[textureIndex], textures[textureIndex].image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, "Failed to create Vulkan texture image view!");
+        if (!CreateImageView(&texturesImageView[textureIndex], textures[textureIndex].image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, "Failed to create Vulkan texture image view!")) return false;
     }
     return true;
 }
@@ -1537,90 +1422,8 @@ static bool CreateSyncObjects()
     }
     return true;
 }
-
-#pragma region drawingHelpers
-static bool RecreateSwapChain()
-{
-    vkDeviceWaitIdle(device);
-    CleanupSwapChain();
-
-    return CreateSwapChain() && CreateImageViews() && CreateFramebuffers();
-}
-
-static void UpdateUniformBuffer(const uint32_t currentFrame)
-{
-    UniformBufferObject bufferObject = {
-        GLM_MAT4_IDENTITY_INIT,
-        GLM_MAT4_IDENTITY_INIT,
-        GLM_MAT4_IDENTITY_INIT
-    };
-    glm_rotate(bufferObject.model, (float) SDL_GetTicks64() * PIf / 10000.0f, GLM_YUP);
-    glm_lookat((vec3){2.0f, 2.0f, 2.0f}, GLM_VEC3_ZERO, (vec3){0.0f, -1.0f, 0.0f}, bufferObject.view);
-    glm_perspective(PI / 4, (float) swapChainExtent.width / (float) swapChainExtent.height, 0.1f, 10.0f,
-                    bufferObject.proj);
-    memcpy(uniformBuffersMapped[currentFrame], &bufferObject, sizeof(bufferObject));
-}
-
-static void RecordCommandBuffer(const VkCommandBuffer buffer, const uint32_t imageIndex)
-{
-    const VkCommandBufferBeginInfo beginInfo = {
-        VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-        NULL,
-        0,
-        NULL
-    };
-    VulkanTest_Internal(vkBeginCommandBuffer(buffer, &beginInfo), "Failed to begin recording Vulkan command buffer!",);
-    VkClearValue clearColor = {{{0, 0, 0}}};
-    const VkRenderPassBeginInfo renderPassInfo = {
-        VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-        NULL,
-        renderPass,
-        swapChainFramebuffers[imageIndex],
-        {
-            {0, 0},
-            swapChainExtent
-        },
-        1,
-        &clearColor
-    };
-    vkCmdBeginRenderPass(buffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-    vkCmdBindPipeline(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
-    const VkViewport viewport = {
-        0,
-        0,
-        (float) swapChainExtent.width,
-        (float) swapChainExtent.height,
-        0,
-        1
-    };
-    vkCmdSetViewport(buffer, 0, 1, &viewport);
-    const VkRect2D scissor = {
-        {
-            0,
-            0
-        },
-        swapChainExtent
-    };
-    vkCmdSetScissor(buffer, 0, 1, &scissor);
-    vkCmdBindVertexBuffers(buffer, 0, 1, (VkBuffer[1]){vertexBuffer}, (VkDeviceSize[1]){0});
-    vkCmdBindIndexBuffer(buffer, indexBuffer, 0, VK_INDEX_TYPE_UINT16);
-    vkCmdBindDescriptorSets(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1,
-                            &descriptorSets[currentFrame], 0, NULL);
-    vkCmdDrawIndexed(buffer, indices.length, 1, 0, 0, 0);
-    vkCmdEndRenderPass(buffer);
-    VulkanTest_Internal(vkEndCommandBuffer(buffer), "Failed to record the Vulkan command buffer!",);
-}
-#pragma endregion drawingHelpers
 #pragma endregion internalFunctions
 
-/**
- * This function is used to create the Vulkan instance and surface, as well as configuring the environment properly.
- * This function (and the functions it calls) do NOT perform any drawing, though the framebuffers are initialized here.
- * @param window The window to initialize Vulkan for.
- * @see CreateInstance
- * @see PickPhysicalDevice
- * @see CreateLogicalDevice
- */
 bool VK_Init(SDL_Window *window)
 {
     vk_window = window;
@@ -1642,7 +1445,6 @@ bool VK_Init(SDL_Window *window)
     return false;
 }
 
-/// A function used to destroy the Vulkan objects when they are no longer needed.
 void VK_Cleanup()
 {
     if (device)
