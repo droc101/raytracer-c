@@ -13,7 +13,7 @@
 #include "../Core/DataReader.h"
 #include "../Core/Error.h"
 #include "../Core/Logging.h"
-#include "GL/glHelper.h"
+#include "GL/GLHelper.h"
 
 SDL_Window *window;
 

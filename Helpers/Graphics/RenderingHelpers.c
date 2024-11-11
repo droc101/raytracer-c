@@ -6,7 +6,7 @@
 #include "../CommonAssets.h"
 #include "../../Structs/GlobalState.h"
 #include "../Core/MathEx.h"
-#include "GL/glHelper.h"
+#include "GL/GLHelper.h"
 
 Renderer currentRenderer;
 
@@ -74,7 +74,6 @@ bool RenderInit()
             return false;
         case RENDERER_OPENGL:
             const bool gli = GL_Init(GetGameWindow());
-            GL_Disable3D(); // just to make sure we are in the correct state
             return gli;
         default:
             return false;

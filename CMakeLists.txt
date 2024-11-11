@@ -93,14 +93,13 @@ add_executable(
         Actor/Goal.h
         GameStates/GLogoSplashState.c
         GameStates/GLogoSplashState.h
-        Helpers/Graphics/GL/glHelper.c
-        Helpers/Graphics/GL/glHelper.h
+        Helpers/Graphics/GL/GLHelper.c
+        Helpers/Graphics/GL/GLHelper.h
         Structs/Camera.c
         Structs/Camera.h
         Helpers/Graphics/RenderingHelpers.c
         Helpers/Graphics/RenderingHelpers.h
-        Helpers/Graphics/GL/glDebug.c
-        Helpers/Graphics/GL/glDebug.h
+        Helpers/Graphics/GL/GLDebug.c
         Structs/UI/UiStack.c
         Structs/UI/UiStack.h
         Structs/UI/Controls/Button.c
@@ -122,6 +121,7 @@ add_executable(
         Actor/Door.h
         Helpers/PlatformHelpers.c
         Helpers/PlatformHelpers.h
+        Helpers/Graphics/GL/GLInternal.h
 )
 
 set(SDL2_PATH "${CMAKE_SOURCE_DIR}/lib/SDL2/x86_64-w64-mingw32")

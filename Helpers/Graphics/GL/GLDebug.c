@@ -5,7 +5,8 @@
 #include "../../Core/Logging.h"
 #ifndef NDEBUG
 
-#include "glDebug.h"
+#include <GL/glew.h>
+#include "GLInternal.h"
 
 void GL_DebugMessageCallback(const GLenum source, const GLenum type, const GLuint id,
                              const GLenum severity, GLsizei /*length*/,

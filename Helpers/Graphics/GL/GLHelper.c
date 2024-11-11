@@ -2,7 +2,8 @@
 // Created by droc101 on 9/30/2024.
 //
 
-#include "glHelper.h"
+#include "GLHelper.h"
+#include "GLInternal.h"
 #include <cglm/cglm.h>
 #include "../RenderingHelpers.h"
 #include "../../CommonAssets.h"
@@ -24,12 +25,6 @@ GL_Shader *floor_generic;
 GL_Shader *shadow;
 
 GL_Buffer *gl_buffer;
-
-#define MAX_TEXTURES 128
-
-#if MAX_TEXTURES < ASSET_COUNT
-#error MAX_TEXTURES must be greater than or equal to ASSET_COUNT
-#endif
 
 GLuint GL_Textures[MAX_TEXTURES];
 int GL_NextFreeSlot = 0;
@@ -119,6 +114,8 @@ bool GL_Init(SDL_Window *wnd)
     LogInfo("OpenGL Renderer: %s\n", renderer);
     LogInfo("OpenGL Version: %s\n", version);
     LogInfo("GLSL: %s\n", shading_language);
+
+    GL_Disable3D();
 
     return true;
 }
