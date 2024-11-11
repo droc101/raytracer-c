@@ -581,8 +581,6 @@ void GEditorStateRender(GlobalState */*State*/)
                 color = 0xFFFF0000;
                 break;
             case NODE_WALL_A:
-                color = 0xFF0000FF;
-                break;
             case NODE_WALL_B:
                 color = 0xFF0000FF;
                 break;
@@ -897,8 +895,8 @@ void GEditorStateSet()
     if (!EditorInitComplete)
     {
         // center the view to 0,0
-        EditorPanX = WindowWidth() / 2;
-        EditorPanY = WindowHeight() / 2;
+        EditorPanX = WindowWidth() / 2; // NOLINT(*-integer-division)
+        EditorPanY = WindowHeight() / 2; // NOLINT(*-integer-division)
 
         editorUiStack = CreateUiStack();
         EditorNodes = CreateList();

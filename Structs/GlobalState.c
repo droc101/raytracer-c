@@ -137,7 +137,7 @@ void SetRenderCallback(void (*RenderGame)(GlobalState *State))
     state.RenderGame = (void (*)(void *)) RenderGame;
 }
 
-const byte *music[MUSIC_COUNT] = {
+const byte *music[MUSIC_COUNT] = { // NOLINT(*-interfaces-global-init)
     gzmpg_audio_field
 };
 
