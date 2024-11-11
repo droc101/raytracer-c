@@ -18,6 +18,7 @@
 #include "../Helpers/Graphics/Font.h"
 #include "../Structs/GlobalState.h"
 #include "../Structs/Level.h"
+#include "../Structs/Vector2.h"
 
 void GMainStateUpdate(GlobalState *State)
 {

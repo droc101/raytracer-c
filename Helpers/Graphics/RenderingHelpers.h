@@ -7,7 +7,6 @@
 
 #include "../../defines.h"
 #include "cglm/cglm.h"
-#include "GL/glHelper.h"
 
 typedef struct BatchedQuadArray
 {

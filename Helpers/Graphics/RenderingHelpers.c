@@ -5,9 +5,8 @@
 #include "RenderingHelpers.h"
 #include "../CommonAssets.h"
 #include "../../Structs/GlobalState.h"
-#include "../Core/Logging.h"
-#include "GL/glHelper.h"
 #include "../Core/MathEx.h"
+#include "GL/glHelper.h"
 
 Renderer currentRenderer;
 
