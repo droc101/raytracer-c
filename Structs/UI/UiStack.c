@@ -55,6 +55,7 @@ void DestroyUiStack(UiStack *stack)
     }
     ListFreeWithData(stack->Controls);
     free(stack);
+    stack = NULLPTR;
 }
 
 bool ProcessUiStack(UiStack *stack)

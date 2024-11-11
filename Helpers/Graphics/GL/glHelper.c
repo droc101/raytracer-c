@@ -186,6 +186,7 @@ void GL_DestroyShader(GL_Shader *shd)
     glDeleteShader(shd->fsh);
     glDeleteProgram(shd->program);
     free(shd);
+    shd = NULLPTR;
 }
 
 GL_Buffer *GL_ConstructBuffer()

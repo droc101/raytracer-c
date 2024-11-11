@@ -57,6 +57,7 @@ void DestroyLevel(Level *l)
     ListFreeWithData(l->walls);
     ListFree(l->actors); // actors are freed above (FreeActor)
     free(l);
+    l = NULLPTR;
 }
 
 void BakeWallArray(Level *l)

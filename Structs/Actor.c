@@ -127,6 +127,7 @@ void FreeActor(Actor *actor)
 {
     actor->Destroy(actor);
     free(actor);
+    actor = NULLPTR;
 }
 
 bool GetTransformedWall(const Actor *actor, Wall *wall)
