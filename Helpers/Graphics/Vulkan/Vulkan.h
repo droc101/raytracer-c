@@ -5,6 +5,7 @@
 #ifndef GAME_VULKAN_H
 #define GAME_VULKAN_H
 
+#include <vulkan/vulkan.h>
 #include "../../../defines.h"
 
 /**
@@ -17,10 +18,10 @@
  */
 bool VK_Init(SDL_Window *window);
 
-void VK_DrawFrame();
+VkResult VK_DrawFrame();
 
 /// A function used to destroy the Vulkan objects when they are no longer needed.
-void VK_Cleanup();
+bool VK_Cleanup();
 
 void VK_Minimize();
 

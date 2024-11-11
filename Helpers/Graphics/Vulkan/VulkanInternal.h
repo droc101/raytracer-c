@@ -12,7 +12,6 @@
 #include <SDL_vulkan.h>
 #include <string.h>
 #include <cglm/cglm.h>
-#include <vulkan/vulkan.h>
 #include "Vulkan.h"
 #include "../../../Assets/AssetReader.h"
 #include "../../../Assets/Assets.h"
@@ -24,22 +23,39 @@
 #define VULKAN_VERSION VK_MAKE_VERSION(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH)
 #define MAX_FRAMES_IN_FLIGHT 2
 #define VulkanLogError(error) printf("\033[31m%s\033[0m\n", error); fflush(stdout)
-#define VulkanTest_Internal(function, error, returnValue) {const VkResult result=function; if (result != VK_SUCCESS) { printf("\033[31m%s\033[0m Error code %d\n", error, result); fflush(stdout); return returnValue; }}
-#define VulkanTest(function, error) VulkanTest_Internal(function, error, false)
+#define VulkanTestInternal(function, error, returnValue) {const VkResult result=function; if (result != VK_SUCCESS) { printf("\033[31m%s\033[0m Error code %d\n", error, result); if (result == VK_ERROR_DEVICE_LOST) {printf("See https://starflight.dev/media/VK_ERROR_DEVICE_LOST.png for more information\n");} fflush(stdout); return returnValue; }}
+#define VulkanTestWithReturn(function, error, returnValue)VulkanTestInternal(function, error, returnValue)
+#define VulkanTestReturnResult(function, error)VulkanTestInternal(function, error, result)
+#define VulkanTest(function, error) VulkanTestInternal(function, error, false)
 #define List(type) struct {uint64_t length;type* data;}
 #pragma endregion macros
 
 #pragma region typedefs
-typedef struct
+/// A struct to hold the indicies of the queue families for graphics, presentation, and transfer.
+/// This is used to find and store the indices, which allows for picking between unique and non-unique indices.
+typedef struct QueueFamilyIndices
 {
+    /// The index of the family on the GPU that will be used for graphics processing
     uint32_t graphicsFamily;
+    /** The index of the family on the GPU that will be used for presentation
+     * @note If the graphics family supports presentation, @c QueueFamilyIndices::presentFamily will contain the same value as @c QueueFamilyIndices::graphicsFamily
+     * @note Similarly, if the graphics family does not support presentation then @c QueueFamilyIndices::presentFamily will contain the same value as @c QueueFamilyIndices::uniquePresentFamily
+     */
     uint32_t presentFamily;
+    /// If the graphics family does not support presentation this will contain the same value as @c QueueFamilyIndices::presentFamily
     uint32_t uniquePresentFamily;
+    /// The index of the family on the GPU that will be used for transfer operations
     uint32_t transferFamily;
+    /** The total count of unique families
+     * @note If this is 1, then @c QueueFamilyIndices::graphicsFamily, @c QueueFamilyIndices::presentFamily, and @c QueueFamilyIndices::transferFamily will all have the same value. If this is the case, then @c QueueFamilyIndices::uniquePresentFamily will be @c UINT32_MAX
+     * @note If this is 2 and @code QueueFamilyIndices::presentFamily == QueueFamilyIndices::uniquePresentFamily @endcode, then @c QueueFamilyIndices::graphicsFamily and @c QueueFamilyIndices::transferFamily will have the same value.
+     * @note If this is 2 and @code QueueFamilyIndices::presentFamily != QueueFamilyIndices::uniquePresentFamily @endcode, then @c QueueFamilyIndices::graphicsFamily and @c QueueFamilyIndices::presentFamily will have the same value.
+     * @note If this is 3, then @c QueueFamilyIndices::graphicsFamily, @c QueueFamilyIndices::presentFamily, and @c QueueFamilyIndices::transferFamily will all have unique values. If this is the case, then @c QueueFamilyIndices::presentFamily will be equal to @c QueueFamilyIndices::uniquePresentFamily
+     */
     uint8_t familyCount;
 } QueueFamilyIndices;
 
-typedef struct
+typedef struct SwapChainSupportDetails
 {
     uint32_t formatCount;
     VkSurfaceFormatKHR *formats;
@@ -48,34 +64,28 @@ typedef struct
     VkSurfaceCapabilitiesKHR capabilities;
 } SwapChainSupportDetails;
 
-typedef struct
+typedef struct Vertex
 {
     vec3 pos;
     vec3 color;
     vec2 textureCoordinate;
 } Vertex;
 
-typedef struct
+typedef struct UniformBufferObject
 {
     mat4 model;
     mat4 view;
     mat4 proj;
 } UniformBufferObject;
 
-typedef struct
-{
-    VkSurfaceFormatKHR chosenFormat;
-    bool found;
-} SwapSurfaceFormatCheck;
-
-typedef struct
+typedef struct ImageAllocationInformation
 {
     VkImage image;
     VkMemoryRequirements memoryRequirements;
     VkDeviceSize offset;
 } ImageAllocationInformation;
 
-typedef struct
+typedef struct DataBufferObject
 {
     uint16_t textureIndex;
 } DataBufferObject;
@@ -88,22 +98,33 @@ bool minimized = false;
 const List(Vertex) vertices = {
     8,
     (Vertex[]){
-            {{-0.5f, 0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-            {{0.5f, 0.0f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-            {{0.5f, 0.0f, 0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-            {{-0.5f, 0.0f, 0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
+        {{-0.5f, 0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+        {{0.5f, 0.0f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+        {{0.5f, 0.0f, 0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+        {{-0.5f, 0.0f, 0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
 
-            {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-            {{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-            {{0.5f, -0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-            {{-0.5f, -0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
+        {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+        {{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+        {{0.5f, -0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+        {{-0.5f, -0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
     }
 };
 
 const List(uint16_t) indices = {
-    12, (uint16_t[]){
-        0, 1, 2, 2, 3, 0,
-        4, 5, 6, 6, 7, 4
+    12,
+    (uint16_t[]){
+        0,
+        1,
+        2,
+        2,
+        3,
+        0,
+        4,
+        5,
+        6,
+        6,
+        7,
+        4
     }
 };
 #pragma endregion variables
@@ -123,7 +144,7 @@ VkPhysicalDevice physicalDevice;
 /// @todo Document this along with the struct
 QueueFamilyIndices *queueFamilyIndices;
 /// @todo Document this along with the struct
-SwapChainSupportDetails swapChainSupport;
+SwapChainSupportDetails *swapChainSupport;
 /// The logical device is a connection to a physical device, and is used for interfacing with Vulkan.
 /// @see https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#devsandqueues-devices
 /// @see https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkDevice.html
@@ -190,44 +211,34 @@ VkImageView depthImageView;
  * @param pDevice The physical device to query for
  * @return A @c SwapChainSupportDetails struct
  */
-static void QuerySwapChainSupport(VkPhysicalDevice pDevice);
+static bool QuerySwapChainSupport(VkPhysicalDevice pDevice);
 
-/**
- * A helper function used in @c CreateSwapChain used to find the color format for the surface to use.
- * If found, the function will pick R8G8B8A8_SRGB, otherwise it will simply use the first format found.
- * @return A @c VkSurfaceFormatKHR struct that contains the format.
- */
-static SwapSurfaceFormatCheck GetSwapSurfaceFormat();
+static bool CreateImageView(VkImageView *imageView, VkImage image, VkFormat format, VkImageAspectFlagBits aspectMask,
+                            const char *errorMessage);
 
-/**
- * A helper function used in @c CreateSwapChain used to find the present mode for the surface to use.
- * @return The best present mode available
- */
-static VkPresentModeKHR GetSwapPresentMode();
+static VkShaderModule CreateShaderModule(const uint32_t *code, size_t size);
 
+static bool CreateImage(VkImage *image, VkFormat format, VkExtent3D extent, VkImageUsageFlags usageFlags,
+                        const char *errorMessage);
 
-static VkShaderModule CreateShaderModule(const uint32_t *code, const size_t size);
+static bool BeginCommandBuffer(const VkCommandBuffer *commandBuffer, VkCommandPool commandPool);
 
-static bool CreateImage(VkImage *image, VkFormat format, VkExtent3D extent, VkImageUsageFlags usageFlags, const char *errorMessage);
+static bool EndCommandBuffer(VkCommandBuffer commandBuffer, VkCommandPool commandPool, VkQueue queue);
 
-static bool CreateImageView(VkImageView *imageView, VkImage image, VkFormat format, VkImageAspectFlagBits aspectMask, const char *errorMessage);
+static bool CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags propertyFlags,
+                         VkBuffer *buffer, VkDeviceMemory *bufferMemory);
 
-static bool CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags propertyFlags, VkBuffer *buffer, VkDeviceMemory *bufferMemory);
-
-static VkCommandBuffer BeginCommandBuffer();
-
-static void EndCommandBuffer(VkCommandBuffer commandBuffer);
-
-static void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+static bool CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
 static void CleanupSwapChain();
 
-#pragma region drawingFunctions
-static bool RecreateSwapChain();
+static void CleanupDepthImage();
 
+static bool RecreateSwapChain();
+#pragma region drawingFunctions
 static void UpdateUniformBuffer(uint32_t currentFrame);
 
-static void RecordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex);
+static bool RecordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex);
 #pragma endregion drawingFunctions
 #pragma endregion helperFunctions
 /**
@@ -248,9 +259,7 @@ static bool CreateSurface();
  */
 static bool PickPhysicalDevice();
 
-/**
- * Creates the logical device that is used to interface with the physical device.
- */
+// TODO Use multiple queues from queue families, at least when sub-optimal family setups are in use
 static bool CreateLogicalDevice();
 
 static bool CreateSwapChain();
