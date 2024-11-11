@@ -11,9 +11,9 @@ You need Python 3 (as the command `python`) with PIL or Pillow installed to run 
 
 #### Setup - Windows
 Extract the following libraries into the `lib` directory (create it if it doesn't exist):
-- Download [SDL2 2.30.2 w64](https://github.com/libsdl-org/SDL/releases/download/release-2.30.2/SDL2-devel-2.30.2-mingw.zip)
+- Download [SDL2 2.X w64](https://github.com/libsdl-org/SDL/releases/) (look for SDL2-devel-2.X.X-mingw.zip)
 and extract it as `SDL2`.
-- Download [SDL2_Mixer 2.8.0 w64](https://github.com/libsdl-org/SDL_mixer/releases/download/release-2.8.0/SDL2_mixer-devel-2.8.0-mingw.zip) 
+- Download [SDL2_Mixer 2.X w64](https://github.com/libsdl-org/SDL_mixer/releases/) (look for SDL2_mixer-devel-2.X.X-mingw.zip)
 and extract it as `SDL2_Mixer`.
 - Download [GLEW 2.2.0 w64](https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0-win32.zip) and extract it as `glew`
 - Download [CGLM 0.9.4](https://github.com/recp/cglm/archive/refs/tags/v0.9.4.zip) and extract it as `cglm`
