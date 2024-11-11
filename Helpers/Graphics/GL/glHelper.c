@@ -91,6 +91,12 @@ bool GL_Init(SDL_Window *wnd)
     floor_generic = GL_ConstructShaderFromAssets(gzshd_GL_floor_f, gzshd_GL_floor_v);
     shadow = GL_ConstructShaderFromAssets(gzshd_GL_shadow_f, gzshd_GL_shadow_v);
 
+    if (!ui_textured || !ui_colored || !wall_generic || !floor_generic || !shadow)
+    {
+        GL_Error("Failed to compile shaders");
+        return false;
+    }
+
     gl_buffer = GL_ConstructBuffer();
 
     glEnable(GL_BLEND);
@@ -150,7 +156,9 @@ GL_Shader *GL_ConstructShader(const char *fsh, const char *vsh)
     {
         glGetShaderInfoLog(shd->fsh, sizeof(err_buf), NULL, err_buf);
         err_buf[sizeof(err_buf) - 1] = '\0';
-        Error(err_buf);
+        LogError(err_buf);
+        free(shd);
+        return NULLPTR;
     }
 
     shd->program = glCreateProgram();
@@ -164,7 +172,9 @@ GL_Shader *GL_ConstructShader(const char *fsh, const char *vsh)
     {
         glGetProgramInfoLog(shd->program, sizeof(err_buf), NULL, err_buf);
         err_buf[sizeof(err_buf) - 1] = '\0';
-        Error(err_buf);
+        LogError(err_buf);
+        free(shd);
+        return NULLPTR;
     }
 
     return shd;
