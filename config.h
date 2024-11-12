@@ -79,9 +79,9 @@
 #define PHYSICS_TARGET_TPS 60
 
 #define FOV 90 // Field of view
-#define NEAR_Z 0.01
-#define FAR_Z 1000
+#define NEAR_Z 0.01 // Near clipping plane
+#define FAR_Z 1000 // Far clipping plane
 
-#define MSAA_SAMPLES 4 // usually 2, 4, or 8
+#define MSAA_SAMPLES 4 // usually 2, 4, 8, or 16
 
 #endif //GAME_CONFIG_H
