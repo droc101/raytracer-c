@@ -90,6 +90,7 @@ void RenderDestroy()
         case RENDERER_OPENGL:
             GL_DestroyGL();
             break;
+        default: break;
     }
 }
 
@@ -103,6 +104,7 @@ void RenderLevel3D(const Level *l, const Camera *cam)
         case RENDERER_OPENGL:
             GL_RenderLevel(l, cam);
             break;
+        default: break;
     }
 }
 
@@ -121,6 +123,7 @@ inline void UpdateViewportSize()
         case RENDERER_OPENGL:
             GL_UpdateViewportSize();
             break;
+        default: break;
     }
 }
 
@@ -134,6 +137,7 @@ inline void DrawBatchedQuadsTextured(const BatchedQuadArray *batch, const unsign
         case RENDERER_OPENGL:
             GL_DrawTexturedArrays(batch->verts, batch->indices, batch->quad_count, imageData, color);
             break;
+        default: break;
     }
 }
 
@@ -147,6 +151,7 @@ inline void DrawBatchedQuadsColored(const BatchedQuadArray *batch, const uint co
         case RENDERER_OPENGL:
             GL_DrawColoredArrays(batch->verts, batch->indices, batch->quad_count, color);
             break;
+        default: break;
     }
 }
 

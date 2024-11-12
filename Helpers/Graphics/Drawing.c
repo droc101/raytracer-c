@@ -126,6 +126,7 @@ void SetTexParams(const unsigned char *imageData, const bool linear, const bool 
         case RENDERER_OPENGL:
             GL_SetTexParams(imageData, linear, repeat);
             break;
+        default: break;
     }
 }
 
@@ -139,6 +140,7 @@ inline void DrawLine(const Vector2 start, const Vector2 end, const float thickne
         case RENDERER_OPENGL:
             GL_DrawLine(start, end, drawColor, thickness * GetState()->uiScale);
             break;
+        default: break;
     }
 }
 
@@ -152,6 +154,7 @@ inline void DrawOutlineRect(const Vector2 pos, const Vector2 size, const float t
         case RENDERER_OPENGL:
             GL_DrawRectOutline(pos, size, drawColor, thickness * GetState()->uiScale);
             break;
+        default: break;
     }
 }
 
@@ -165,6 +168,7 @@ inline void DrawTexture(const Vector2 pos, const Vector2 size, const unsigned ch
         case RENDERER_OPENGL:
             GL_DrawTexture(pos, size, imageData);
             break;
+        default: break;
     }
 }
 
@@ -178,6 +182,7 @@ inline void DrawTextureMod(const Vector2 pos, const Vector2 size, const unsigned
         case RENDERER_OPENGL:
             GL_DrawTextureMod(pos, size, imageData, color);
             break;
+        default: break;
     }
 }
 
@@ -193,6 +198,7 @@ DrawTextureRegion(const Vector2 pos, const Vector2 size, const unsigned char *im
         case RENDERER_OPENGL:
             GL_DrawTextureRegion(pos, size, imageData, region_start, region_end);
             break;
+        default: break;
     }
 }
 
@@ -208,6 +214,7 @@ inline void DrawTextureRegionMod(const Vector2 pos, const Vector2 size, const un
         case RENDERER_OPENGL:
             GL_DrawTextureRegionMod(pos, size, imageData, region_start, region_end, color);
             break;
+        default: break;
     }
 }
 
@@ -221,6 +228,7 @@ inline void ClearColor(const uint color)
         case RENDERER_OPENGL:
             GL_ClearColor(color);
             break;
+        default: break;
     }
 }
 
@@ -234,6 +242,7 @@ inline void ClearScreen()
         case RENDERER_OPENGL:
             GL_ClearScreen();
             break;
+        default: break;
     }
 }
 
@@ -247,6 +256,7 @@ inline void ClearDepthOnly()
         case RENDERER_OPENGL:
             GL_ClearDepthOnly();
             break;
+        default: break;
     }
 }
 
@@ -260,6 +270,7 @@ inline void Swap()
         case RENDERER_OPENGL:
             GL_Swap();
             break;
+        default: break;
     }
 }
 
@@ -273,6 +284,7 @@ inline void DrawRect(const int x, const int y, const int w, const int h)
         case RENDERER_OPENGL:
             GL_DrawRect(v2(x, y), v2(w, h), drawColor);
             break;
+        default: break;
     }
 }
 
