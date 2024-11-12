@@ -3,8 +3,8 @@
 //
 
 #include "GLHelper.h"
-#include "GLInternal.h"
 #include <cglm/cglm.h>
+#include "GLInternal.h"
 #include "../RenderingHelpers.h"
 #include "../../CommonAssets.h"
 #include "../../../Assets/AssetReader.h"

@@ -12,7 +12,6 @@ void DefaultOptions(Options *options)
     options->musicVolume = 1.0;
     options->sfxVolume = 1.0;
     options->masterVolume = 1.0;
-    options->uiScale = 1;
     options->fullscreen = false;
     options->vsync = false;
     options->mouseSpeed = 1;

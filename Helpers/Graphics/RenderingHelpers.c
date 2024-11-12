@@ -112,7 +112,7 @@ inline void UpdateViewportSize()
     const float newScaleY = (float) ActualWindowSize().y / (float) DEF_HEIGHT;
     float newScale = newScaleX < newScaleY ? newScaleX : newScaleY;
     newScale = max(newScale, 1.0f);
-    GetState()->options.uiScale = newScale;
+    GetState()->uiScale = newScale;
     switch (currentRenderer)
     {
         case RENDERER_VULKAN:

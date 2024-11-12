@@ -122,7 +122,6 @@ typedef struct Options
     double musicVolume; // The volume of the music
     double sfxVolume; // The volume of the sound effects
     double masterVolume; // The master volume
-    double uiScale; // The scale of the UI. TODO: Move this to a GlobalState value as it is calculated at runtime.
     double mouseSpeed; // The look speed (it affects controller speed too)
     bool fullscreen; // Whether the game is fullscreen
     bool vsync; // Whether vsync is enabled
@@ -159,6 +158,8 @@ typedef struct GlobalState
     Options options; // Game options
 
     char executablePath[261]; // The path to the executable
+
+    double uiScale; // The scale of the UI.
 } GlobalState;
 
 // Actor (interactable/moving wall) struct

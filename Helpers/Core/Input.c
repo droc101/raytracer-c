@@ -196,7 +196,7 @@ bool IsMouseButtonJustReleased(const int button)
 
 Vector2 GetMousePos()
 {
-    return Vector2Scale(v2(mouseX, mouseY), 1.0 / GetState()->options.uiScale);
+    return Vector2Scale(v2(mouseX, mouseY), 1.0 / GetState()->uiScale);
 }
 
 Vector2 GetMouseRel()

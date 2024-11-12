@@ -33,7 +33,7 @@ inline int WindowWidth()
 {
     int w, h;
     SDL_GetWindowSize(window, &w, &h);
-    w /= GetState()->options.uiScale;
+    w /= GetState()->uiScale;
     return w;
 }
 
@@ -41,7 +41,7 @@ inline int WindowHeight()
 {
     int w, h;
     SDL_GetWindowSize(window, &w, &h);
-    h /= GetState()->options.uiScale;
+    h /= GetState()->uiScale;
     return h;
 }
 
@@ -137,7 +137,7 @@ inline void DrawLine(const Vector2 start, const Vector2 end, const float thickne
 
             break;
         case RENDERER_OPENGL:
-            GL_DrawLine(start, end, drawColor, thickness * GetState()->options.uiScale);
+            GL_DrawLine(start, end, drawColor, thickness * GetState()->uiScale);
             break;
     }
 }
@@ -150,7 +150,7 @@ inline void DrawOutlineRect(const Vector2 pos, const Vector2 size, const float t
 
             break;
         case RENDERER_OPENGL:
-            GL_DrawRectOutline(pos, size, drawColor, thickness * GetState()->options.uiScale);
+            GL_DrawRectOutline(pos, size, drawColor, thickness * GetState()->uiScale);
             break;
     }
 }
