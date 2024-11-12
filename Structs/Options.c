@@ -8,7 +8,7 @@
 
 void DefaultOptions(Options *options)
 {
-    options->renderer = 0;
+    options->renderer = RENDERER_OPENGL;
     options->musicVolume = 1.0;
     options->sfxVolume = 1.0;
     options->masterVolume = 1.0;
@@ -16,6 +16,16 @@ void DefaultOptions(Options *options)
     options->vsync = false;
     options->mouseSpeed = 1;
     options->controllerMode = false;
+}
+
+bool ValidateOptions(const Options *options)
+{
+    if (options->renderer >= RENDERER_MAX) return false;
+    if (options->musicVolume < 0 || options->musicVolume > 1) return false;
+    if (options->sfxVolume < 0 || options->sfxVolume > 1) return false;
+    if (options->masterVolume < 0 || options->masterVolume > 1) return false;
+    if (options->mouseSpeed < 0.01 || options->mouseSpeed > 2.00) return false;
+    return true;
 }
 
 ushort GetOptionsChecksum(Options *options)
@@ -73,6 +83,12 @@ void LoadOptions(Options *options)
         if (options->checksum != GetOptionsChecksum(options))
         {
             LogWarning("Options file checksum invalid, using defaults\n");
+            DefaultOptions(options);
+        }
+
+        if (!ValidateOptions(options))
+        {
+            LogWarning("Options file is invalid, using defaults\n");
             DefaultOptions(options);
         }
 

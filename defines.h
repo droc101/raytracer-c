@@ -112,7 +112,8 @@ typedef enum
 typedef enum Renderer
 {
     RENDERER_OPENGL,
-    RENDERER_VULKAN
+    RENDERER_VULKAN,
+    RENDERER_MAX
 } Renderer;
 
 typedef struct Options
