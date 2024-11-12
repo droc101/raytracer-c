@@ -31,7 +31,7 @@ _Noreturn void Error_Internal(char *error, const char *file, int line, const cha
 _Noreturn void FriendlyError(const char *title, const char *description);
 
 /**
- * Shows an error messsage saying that vk/gl failed to initialize and offers to switch to the other or exit
+ * Shows an error message saying that vk/gl failed to initialize and offers to switch to the other or exit
  */
 _Noreturn void RenderInitError();
 

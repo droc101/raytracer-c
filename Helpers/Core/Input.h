@@ -12,7 +12,7 @@
 #define INP_PRESSED 2
 #define INP_JUST_RELEASED 3
 
-void HandleControlerDisconnect(Sint32 which);
+void HandleControllerDisconnect(Sint32 which);
 
 void HandleControllerConnect();
 

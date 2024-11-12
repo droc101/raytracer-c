@@ -95,7 +95,7 @@ typedef struct TextBox
 
     int theme; // The theme of the text box
 
-    void (*Close)(void *tbox); // The function to call when the text box is closed
+    void (*Close)(void *textBox); // The function to call when the text box is closed
 } TextBox;
 
 typedef enum
@@ -143,7 +143,7 @@ typedef struct GlobalState
     int maxAmmo; // Player max ammo
     int coins; // The number of coins the player has
     int blueCoins; // The number of blue coins the player has
-    ulong physicsFrame; // The number of physics frames that have passed since the last gamestate change
+    ulong physicsFrame; // The number of physics frames that have passed since the last game state change
     bool requestExit; // Request to exit the game
     Mix_Music *music; // background music
     Mix_Chunk *channels[SFX_CHANNEL_COUNT]; // sound effects

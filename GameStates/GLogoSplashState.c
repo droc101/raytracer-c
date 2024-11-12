@@ -48,8 +48,8 @@ void GLogoSplashStateRender(GlobalState *State)
         return;
     }
 
-    const SDL_Rect dest = {WindowWidth() / 2 - 150, WindowHeight() / 2 - 150, 300, 300};
-    DrawTexture(v2(dest.x, dest.y), v2(dest.w, dest.h), gztex_interface_studio);
+    const SDL_Rect destRect = {WindowWidth() / 2 - 150, WindowHeight() / 2 - 150, 300, 300};
+    DrawTexture(v2(destRect.x, destRect.y), v2(destRect.w, destRect.h), gztex_interface_studio);
 }
 
 void GLogoSplashStateSet()

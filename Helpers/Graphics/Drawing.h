@@ -170,7 +170,7 @@ void Swap();
 Vector2 GetTextureSize(const unsigned char *imageData);
 
 /**
- * Draw a ninepatch image to the screen
+ * Draw a nine patch image to the screen
  * @param pos The position to draw at
  * @param size The size of the output
  * @param output_margins_px The 9patch margins of the output

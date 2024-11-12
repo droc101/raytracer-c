@@ -135,7 +135,7 @@ int main(const int argc, char *argv[])
                     HandleControllerConnect();
                     break;
                 case SDL_CONTROLLERDEVICEREMOVED:
-                    HandleControlerDisconnect(e.cdevice.which);
+                    HandleControllerDisconnect(e.cdevice.which);
                     break;
                 case SDL_CONTROLLERBUTTONDOWN:
                     HandleControllerButtonDown(e.cbutton.button);

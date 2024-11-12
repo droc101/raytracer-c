@@ -29,7 +29,7 @@ SDL_GameController *FindGameController() {
     return NULLPTR;
 }
 
-void HandleControlerDisconnect(const Sint32 which)
+void HandleControllerDisconnect(const Sint32 which)
 {
     if (controller == NULLPTR) return;
     if (SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(controller)) != which) return;

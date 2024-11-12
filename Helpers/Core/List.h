@@ -34,7 +34,7 @@ Node *CreateListNode(void *data);
 
 /**
  * Create a new list
- * @return brand new list just for you
+ * @return brand-new list just for you
  */
 List *CreateList();
 
