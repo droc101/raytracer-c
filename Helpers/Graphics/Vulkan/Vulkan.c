@@ -296,14 +296,26 @@ static void CleanupDepthImage()
     vkFreeMemory(device, depthImageMemory, NULL);
 }
 
+static void CleanupSyncObjects()
+{
+    for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
+        vkDestroySemaphore(device, imageAvailableSemaphores[i], NULL);
+        vkDestroySemaphore(device, renderFinishedSemaphores[i], NULL);
+
+        vkDestroyFence(device, inFlightFences[i], NULL);
+    }
+}
+
 static bool RecreateSwapChain()
 {
     VulkanTest(vkDeviceWaitIdle(device), "Failed to wait for Vulkan device to become idle!");
 
     CleanupSwapChain();
     CleanupDepthImage();
+    CleanupSyncObjects();
 
-    return CreateSwapChain() && CreateImageViews() && CreateDepthImage() && CreateFramebuffers();
+    return CreateSwapChain() && CreateImageViews() && CreateDepthImage() && CreateFramebuffers() && CreateSyncObjects();
 }
 #pragma region drawingHelpers
 static void UpdateUniformBuffer(const uint32_t currentFrame)
@@ -1928,13 +1940,7 @@ bool VK_Cleanup()
         vkDestroyBuffer(device, vertexBuffer, NULL);
         vkFreeMemory(device, vertexBufferMemory, NULL);
 
-        for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-        {
-            vkDestroySemaphore(device, imageAvailableSemaphores[i], NULL);
-            vkDestroySemaphore(device, renderFinishedSemaphores[i], NULL);
-
-            vkDestroyFence(device, inFlightFences[i], NULL);
-        }
+        CleanupSyncObjects();
 
         vkDestroyCommandPool(device, graphicsCommandPool, NULL);
         vkDestroyCommandPool(device, transferCommandPool, NULL);
