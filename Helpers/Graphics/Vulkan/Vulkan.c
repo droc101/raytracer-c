@@ -570,7 +570,7 @@ static bool PickPhysicalDevice()
                 }
             }
 
-            if (queueFamilyIndices->graphicsFamily == -1 ||
+            if (queueFamilyIndices->graphicsFamily == -1 || queueFamilyIndices->transferFamily == -1 ||
                 (queueFamilyIndices->presentFamily == -1 && queueFamilyIndices->uniquePresentFamily == -1))
             {
                 continue;
@@ -1283,7 +1283,7 @@ static bool CreateDepthImage()
     }
 
     const VkCommandBuffer commandBuffer;
-    if (!BeginCommandBuffer(&commandBuffer, transferCommandPool)) return false;
+    if (!BeginCommandBuffer(&commandBuffer, graphicsCommandPool)) return false;
 
     const VkImageMemoryBarrier transferBarrier = {
         VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
@@ -1307,7 +1307,7 @@ static bool CreateDepthImage()
     vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
                          0, 0, NULL, 0, NULL, 1, &transferBarrier);
 
-    if (!EndCommandBuffer(commandBuffer, transferCommandPool, transferQueue)) return false;
+    if (!EndCommandBuffer(commandBuffer, graphicsCommandPool, graphicsQueue)) return false;
 
     return true;
 }
@@ -1464,7 +1464,7 @@ static bool LoadTextures()
 
         if (!EndCommandBuffer(commandBuffer, transferCommandPool, transferQueue)) return false;
 
-        if (!BeginCommandBuffer(&commandBuffer, transferCommandPool)) return false;
+        if (!BeginCommandBuffer(&commandBuffer, graphicsCommandPool)) return false;
 
         const VkImageMemoryBarrier secondTransferBarrier = {
             VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
@@ -1488,7 +1488,7 @@ static bool LoadTextures()
         vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0,
                              NULL, 0, NULL, 1, &secondTransferBarrier);
 
-        if (!EndCommandBuffer(commandBuffer, transferCommandPool, transferQueue)) return false;
+        if (!EndCommandBuffer(commandBuffer, graphicsCommandPool, graphicsQueue)) return false;
     }
 
     vkDestroyBuffer(device, stagingBuffer, NULL);
@@ -1838,6 +1838,8 @@ VkResult VK_DrawFrame()
     VulkanTestReturnResult(vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX),
                            "Failed to wait for Vulkan fences!");
 
+    VulkanTestReturnResult(vkResetFences(device, 1, &inFlightFences[currentFrame]), "Failed to reset Vulkan fences!");
+
     uint32_t imageIndex;
     const VkResult acquireNextImageResult = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 
@@ -1846,8 +1848,6 @@ VkResult VK_DrawFrame()
         if (RecreateSwapChain()) return VK_SUCCESS;
     }
     VulkanTestReturnResult(acquireNextImageResult, "Failed to acquire next Vulkan image index!");
-
-    VulkanTestReturnResult(vkResetFences(device, 1, &inFlightFences[currentFrame]), "Failed to reset Vulkan fences!");
 
     VulkanTestReturnResult(vkResetCommandBuffer(commandBuffers[currentFrame], 0),
                            "Failed to reset Vulkan command buffer!");
