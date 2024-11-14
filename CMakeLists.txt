@@ -3,11 +3,11 @@ project(game C)
 
 set(CMAKE_C_STANDARD 11)
 
-set(CMAKE_C_FLAGS "-Wno-discarded-qualifiers") # shut.
+set(CMAKE_C_FLAGS "-Wall -Wno-discarded-qualifiers") # shut.
 
-set(CMAKE_C_FLAGS_DEBUG "-g -O0 -Wall")
-set(CMAKE_C_FLAGS_RELEASE "-g0 -O3 -s -DNDEBUG -Wl,--gc-sections -fdata-sections -ffunction-sections -Wall")
-set(CMAKE_C_FLAGS_RELWITHDEBINFO "-g -O3 -Wl,--gc-sections -fdata-sections -ffunction-sections -Wall")
+set(CMAKE_C_FLAGS_DEBUG "-g -O0")
+set(CMAKE_C_FLAGS_RELEASE "-g0 -O3 -s -DNDEBUG -Wl,--gc-sections -fdata-sections -ffunction-sections")
+set(CMAKE_C_FLAGS_RELWITHDEBINFO "-g -O3 -Wl,--gc-sections -fdata-sections -ffunction-sections")
 
 # Add --static flag when building on Windows to include libwinpthread-1.dll
 if (WIN32)
@@ -106,7 +106,7 @@ add_executable(
         Structs/UI/Controls/Button.h
         Structs/UI/Controls/Slider.c
         Structs/UI/Controls/Slider.h
-        $<$<BOOL:${WIN32}>:game.rc>
+        $<$<BOOL:${WIN32}>:game.rc> # Add the Win32 resource file only on Windows
         Structs/Options.c
         Structs/Options.h
         GameStates/GOptionsState.c
@@ -138,21 +138,21 @@ find_package(ZLIB REQUIRED) # Decompression
 include_directories(${ZLIB_INCLUDE_DIRS})
 
 find_package(OpenGL REQUIRED) # Graphics
-target_include_directories(game PUBLIC ${OPENGL_INCLUDE_DIR})
+include_directories(${OPENGL_INCLUDE_DIR})
 
 if (UNIX)
     find_package(GLEW REQUIRED) # OpenGL Extension Wrangler
-    target_include_directories(game PUBLIC ${GLEW_INCLUDE_DIRS})
+    include_directories(${GLEW_INCLUDE_DIRS})
 
-    target_include_directories(game PUBLIC "/usr/include/cglm") # C OpenGL Mathematics Library
+    include_directories("/usr/include/cglm") # C OpenGL Mathematics Library
 elseif (WIN32) # Thank you Windows, I hate you.
-    target_include_directories(game PUBLIC "${CMAKE_SOURCE_DIR}/lib/cglm/include")
+    include_directories("${CMAKE_SOURCE_DIR}/lib/cglm/include") # C OpenGL Mathematics Library
 
-    list(APPEND CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/lib/glew")
+    list(APPEND CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/lib/glew") # OpenGL Extension Wrangler
     add_definitions(-DGLEW_STATIC)
     set(GLEW_LIBRARIES "${CMAKE_SOURCE_DIR}/lib/glew/lib/Release/x64/glew32s.lib")
     set(GLEW_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/lib/glew/include")
-    target_include_directories(game PUBLIC ${GLEW_INCLUDE_DIRS})
+    include_directories(${GLEW_INCLUDE_DIRS})
 endif ()
 
 if (UNIX)
