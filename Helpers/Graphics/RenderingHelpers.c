@@ -142,6 +142,7 @@ inline void WindowObscured()
         case RENDERER_OPENGL:
 
             break;
+        default: break;
     }
 }
 
@@ -156,6 +157,7 @@ inline void WindowRestored()
         case RENDERER_OPENGL:
 
             break;
+        default: break;
     }
 }
 
