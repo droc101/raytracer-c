@@ -2,8 +2,9 @@
 // Created by droc101 on 9/30/2024.
 //
 
-#include "glHelper.h"
+#include "GLHelper.h"
 #include <cglm/cglm.h>
+#include "GLInternal.h"
 #include "../RenderingHelpers.h"
 #include "../../CommonAssets.h"
 #include "../../../Assets/AssetReader.h"
@@ -24,12 +25,6 @@ GL_Shader *floor_generic;
 GL_Shader *shadow;
 
 GL_Buffer *gl_buffer;
-
-#define MAX_TEXTURES 128
-
-#if MAX_TEXTURES < ASSET_COUNT
-#error MAX_TEXTURES must be greater than or equal to ASSET_COUNT
-#endif
 
 GLuint GL_Textures[MAX_TEXTURES];
 int GL_NextFreeSlot = 0;
@@ -91,6 +86,12 @@ bool GL_Init(SDL_Window *wnd)
     floor_generic = GL_ConstructShaderFromAssets(gzshd_GL_floor_f, gzshd_GL_floor_v);
     shadow = GL_ConstructShaderFromAssets(gzshd_GL_shadow_f, gzshd_GL_shadow_v);
 
+    if (!ui_textured || !ui_colored || !wall_generic || !floor_generic || !shadow)
+    {
+        GL_Error("Failed to compile shaders");
+        return false;
+    }
+
     gl_buffer = GL_ConstructBuffer();
 
     glEnable(GL_BLEND);
@@ -113,6 +114,8 @@ bool GL_Init(SDL_Window *wnd)
     LogInfo("OpenGL Renderer: %s\n", renderer);
     LogInfo("OpenGL Version: %s\n", version);
     LogInfo("GLSL: %s\n", shading_language);
+
+    GL_Disable3D();
 
     return true;
 }
@@ -150,7 +153,9 @@ GL_Shader *GL_ConstructShader(const char *fsh, const char *vsh)
     {
         glGetShaderInfoLog(shd->fsh, sizeof(err_buf), NULL, err_buf);
         err_buf[sizeof(err_buf) - 1] = '\0';
-        Error(err_buf);
+        LogError(err_buf);
+        free(shd);
+        return NULLPTR;
     }
 
     shd->program = glCreateProgram();
@@ -164,7 +169,9 @@ GL_Shader *GL_ConstructShader(const char *fsh, const char *vsh)
     {
         glGetProgramInfoLog(shd->program, sizeof(err_buf), NULL, err_buf);
         err_buf[sizeof(err_buf) - 1] = '\0';
-        Error(err_buf);
+        LogError(err_buf);
+        free(shd);
+        return NULLPTR;
     }
 
     return shd;
@@ -176,6 +183,7 @@ void GL_DestroyShader(GL_Shader *shd)
     glDeleteShader(shd->fsh);
     glDeleteProgram(shd->program);
     free(shd);
+    shd = NULLPTR;
 }
 
 GL_Buffer *GL_ConstructBuffer()

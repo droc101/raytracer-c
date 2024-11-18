@@ -29,7 +29,7 @@ SDL_GameController *FindGameController() {
     return NULLPTR;
 }
 
-void HandleControlerDisconnect(const Sint32 which)
+void HandleControllerDisconnect(const Sint32 which)
 {
     if (controller == NULLPTR) return;
     if (SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(controller)) != which) return;
@@ -196,7 +196,7 @@ bool IsMouseButtonJustReleased(const int button)
 
 Vector2 GetMousePos()
 {
-    return Vector2Scale(v2(mouseX, mouseY), 1.0 / GetState()->options.uiScale);
+    return Vector2Scale(v2(mouseX, mouseY), 1.0 / GetState()->uiScale);
 }
 
 Vector2 GetMouseRel()

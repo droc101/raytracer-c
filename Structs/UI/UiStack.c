@@ -15,21 +15,21 @@
 #include "Controls/RadioButton.h"
 #include "Controls/Slider.h"
 
-void (*ControlDestroyFuncs[4])(const Control *) = {
+const void (*ControlDestroyFuncs[4])(const Control *) = {
     DestroyButton, // BUTTON
     DestroySlider, // SLIDER
     DestroyCheckbox, // CHECKBOX
     DestroyRadioButton, // RADIO_BUTTON
 };
 
-void (*ControlDrawFuncs[4])(const Control *, ControlState state, Vector2 position) = {
+const void (*ControlDrawFuncs[4])(const Control *, ControlState state, Vector2 position) = {
     DrawButton, // BUTTON
     DrawSlider, // SLIDER
     DrawCheckbox, // CHECKBOX
     DrawRadioButton, // RADIO_BUTTON
 };
 
-void (*ControlUpdateFuncs[4])(UiStack *stack, Control *, Vector2 localMousePos, uint ctlIndex) = {
+const void (*ControlUpdateFuncs[4])(UiStack *stack, Control *, Vector2 localMousePos, uint ctlIndex) = {
     UpdateButton, // BUTTON
     UpdateSlider, // SLIDER
     UpdateCheckbox, // CHECKBOX
@@ -55,6 +55,7 @@ void DestroyUiStack(UiStack *stack)
     }
     ListFreeWithData(stack->Controls);
     free(stack);
+    stack = NULLPTR;
 }
 
 bool ProcessUiStack(UiStack *stack)

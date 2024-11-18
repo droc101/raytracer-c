@@ -5,7 +5,7 @@
 #include "LevelEntries.h"
 #include "../Assets/Assets.h"
 
-LevelEntry gLevelEntries[LEVEL_COUNT] = {
+LevelEntry gLevelEntries[LEVEL_COUNT] = { // NOLINT(*-interfaces-global-init)
     DEFINE_LEVEL("stage1", test_level, "Test Level", true, 1),
     DEFINE_LEVEL("stage2", hallway, "Hallway", true, 2),
     DEFINE_LEVEL("indoor", hub, "Indoor Test", false, -1),

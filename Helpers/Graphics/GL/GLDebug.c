@@ -5,7 +5,8 @@
 #include "../../Core/Logging.h"
 #ifndef NDEBUG
 
-#include "glDebug.h"
+#include <GL/glew.h>
+#include "GLInternal.h"
 
 void GL_DebugMessageCallback(const GLenum source, const GLenum type, const GLuint id,
                              const GLenum severity, GLsizei /*length*/,
@@ -43,9 +44,6 @@ void GL_DebugMessageCallback(const GLenum source, const GLenum type, const GLuin
             break;
 
         case GL_DEBUG_SOURCE_OTHER:
-            _source = "UNKNOWN";
-            break;
-
         default:
             _source = "UNKNOWN";
             break;
@@ -62,7 +60,7 @@ void GL_DebugMessageCallback(const GLenum source, const GLenum type, const GLuin
             break;
 
         case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
-            _type = "UDEFINED BEHAVIOR";
+            _type = "UNDEFINED BEHAVIOR";
             break;
 
         case GL_DEBUG_TYPE_PORTABILITY:
@@ -100,6 +98,7 @@ void GL_DebugMessageCallback(const GLenum source, const GLenum type, const GLuin
             _severity = "LOW";
             break;
 
+        // ReSharper disable once CppDFAUnreachableCode
         case GL_DEBUG_SEVERITY_NOTIFICATION:
             _severity = "NOTIFICATION";
             break;

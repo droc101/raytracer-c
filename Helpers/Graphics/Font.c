@@ -5,10 +5,9 @@
 #include "Font.h"
 #include <ctype.h>
 #include <string.h>
-#include "Drawing.h"
 #include "RenderingHelpers.h"
-#include "SDL.h"
 #include "../../Assets/Assets.h"
+#include "../../Structs/Vector2.h"
 #include "../Core/MathEx.h"
 
 const char fontChars[] = "abcdefghijklmnopqrstuvwxyz0123456789.:-,/\\|[]{}();'\"<>`~!@#$%^*_=+?";

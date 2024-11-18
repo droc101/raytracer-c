@@ -2,40 +2,15 @@
 // Created by droc101 on 10/2/24.
 //
 
-#ifdef WIN32
-#include <dwmapi.h>
-#include <SDL_syswm.h>
-
-#define DWMWA_USE_IMMERSIVE_DARK_MODE 20
-#else
-#include "../Core/MathEx.h"
-#endif
-
 #include "RenderingHelpers.h"
 #include "../CommonAssets.h"
 #include "../../Structs/GlobalState.h"
-#include "../Core/Logging.h"
-#include "GL/glHelper.h"
+#include "../Core/MathEx.h"
+#include "GL/GLHelper.h"
 #include "Vulkan/Vulkan.h"
 
 Renderer currentRenderer;
 bool lowFPSMode;
-
-void DwmDarkMode(SDL_Window *window)
-{
-#ifdef WIN32
-    SDL_SysWMinfo info;
-    SDL_VERSION(&info.version);
-    SDL_GetWindowWMInfo(window, &info);
-    const HWND hWnd = info.info.win.window;
-    const BOOL enable = true;
-    const HRESULT res = DwmSetWindowAttribute(hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &enable, sizeof(BOOL));
-    if (res != S_OK)
-    {
-        LogWarning("Failed to enable dark mode: %lx\n", res);
-    }
-#endif
-}
 
 mat4 *GetMatrix(const Camera *cam)
 {
@@ -101,7 +76,6 @@ bool RenderInit()
             return VK_Init(GetGameWindow());
         case RENDERER_OPENGL:
             const bool gli = GL_Init(GetGameWindow());
-            GL_Disable3D(); // just to make sure we are in the correct state
             return gli;
         default:
             return false;
@@ -118,6 +92,7 @@ void RenderDestroy()
         case RENDERER_OPENGL:
             GL_DestroyGL();
             break;
+        default: break;
     }
 }
 
@@ -131,6 +106,7 @@ void RenderLevel3D(const Level *l, const Camera *cam)
         case RENDERER_OPENGL:
             GL_RenderLevel(l, cam);
             break;
+        default: break;
     }
 }
 
@@ -139,8 +115,8 @@ inline void UpdateViewportSize()
     const float newScaleX = (float) ActualWindowSize().x / (float) DEF_WIDTH;
     const float newScaleY = (float) ActualWindowSize().y / (float) DEF_HEIGHT;
     float newScale = newScaleX < newScaleY ? newScaleX : newScaleY;
-    newScale = newScale > 1.0f ? newScale : 1.0f;
-    GetState()->options.uiScale = newScale;
+    newScale = max(newScale, 1.0f);
+    GetState()->uiScale = newScale;
     switch (currentRenderer)
     {
         case RENDERER_VULKAN:
@@ -151,6 +127,7 @@ inline void UpdateViewportSize()
         case RENDERER_OPENGL:
             GL_UpdateViewportSize();
             break;
+        default: break;
     }
 }
 
@@ -202,6 +179,7 @@ inline void DrawBatchedQuadsTextured(const BatchedQuadArray *batch, const unsign
         case RENDERER_OPENGL:
             GL_DrawTexturedArrays(batch->verts, batch->indices, batch->quad_count, imageData, color);
             break;
+        default: break;
     }
 }
 
@@ -215,6 +193,7 @@ inline void DrawBatchedQuadsColored(const BatchedQuadArray *batch, const uint co
         case RENDERER_OPENGL:
             GL_DrawColoredArrays(batch->verts, batch->indices, batch->quad_count, color);
             break;
+        default: break;
     }
 }
 

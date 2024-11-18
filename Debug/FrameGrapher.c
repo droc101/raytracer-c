@@ -7,6 +7,7 @@
 #include "../Helpers/Graphics/Drawing.h"
 #include "../Helpers/Graphics/Font.h"
 #include "../Structs/GlobalState.h"
+#include "../Structs/Vector2.h"
 
 double framerates[FRAMEGRAPH_HISTORY_SIZE];
 

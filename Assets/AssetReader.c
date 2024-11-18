@@ -73,6 +73,7 @@ byte *DecompressAsset(const byte *asset)
     if (inflateInit2(&stream, MAX_WBITS | 16) != Z_OK)
     {
         free(decompressedData);
+        decompressedData = NULLPTR;
         LogError("Failed to initialize zlib stream: %s\n", stream.msg);
         Error("Failed to initialize zlib stream");
     }
@@ -85,6 +86,7 @@ byte *DecompressAsset(const byte *asset)
         if (ret != Z_OK && ret != Z_STREAM_END)
         {
             free(decompressedData);
+            decompressedData = NULLPTR;
             LogError("Failed to decompress zlib stream: %s\n", stream.msg);
             Error("Failed to decompress zlib stream");
         }

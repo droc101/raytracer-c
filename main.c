@@ -10,6 +10,7 @@
 #include "Debug/FrameGrapher.h"
 #include "GameStates/GLogoSplashState.h"
 #include "Helpers/CommonAssets.h"
+#include "Helpers/PlatformHelpers.h"
 #include "Helpers/Core/Error.h"
 #include "Helpers/Core/Input.h"
 #include "Helpers/Core/Logging.h"
@@ -158,7 +159,7 @@ int main(const int argc, char *argv[])
                     HandleControllerConnect();
                     break;
                 case SDL_CONTROLLERDEVICEREMOVED:
-                    HandleControlerDisconnect(e.cdevice.which);
+                    HandleControllerDisconnect(e.cdevice.which);
                     break;
                 case SDL_CONTROLLERBUTTONDOWN:
                     HandleControllerButtonDown(e.cbutton.button);

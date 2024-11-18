@@ -18,6 +18,7 @@
 #include "../Helpers/Graphics/Font.h"
 #include "../Structs/GlobalState.h"
 #include "../Structs/Level.h"
+#include "../Structs/Vector2.h"
 
 void GMainStateUpdate(GlobalState *State)
 {
@@ -137,7 +138,7 @@ uint GMainStateFixedUpdate(const uint interval, GlobalState *State)
     {
         if (isMoving)
         {
-            State->CameraY = (sin(State->physicsFrame / 7.0) * 0.005) - 0.1; // NOLINT(*-narrowing-conversions)
+            State->CameraY = sin(State->physicsFrame / 7.0) * 0.005 - 0.1; // NOLINT(*-narrowing-conversions)
         } else
         {
             State->CameraY = lerp(State->CameraY, -0.1, 0.1); // NOLINT(*-narrowing-conversions)

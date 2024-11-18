@@ -3,7 +3,6 @@
 /cmake-build-release
 /.vs
 /out
-/.idea
 
 # User-specific stuff
 .idea/**/workspace.xml
@@ -41,3 +40,12 @@ cmake-build-*/
 # This file is generated on build
 /Assets/Assets.c
 *.aps
+
+# CLion code style/config that should be included in the repository
+!/.idea/codeStyles
+!/.idea/inspectionProfiles
+!/.idea/scopes
+
+.idea/.name
+.idea/*.xml
+.idea/*.iml

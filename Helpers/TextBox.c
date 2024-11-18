@@ -36,7 +36,7 @@ void TextBoxRender(const TextBox *box, const int page)
 
     if (box->h_align == TEXT_BOX_H_ALIGN_CENTER)
     {
-        topLeft.x = (WindowWidth() - width) / 2;
+        topLeft.x = (WindowWidth() - width) / 2; // NOLINT(*-integer-division)
     } else if (box->h_align == TEXT_BOX_H_ALIGN_RIGHT)
     {
         topLeft.x = WindowWidth() - width;
@@ -47,7 +47,7 @@ void TextBoxRender(const TextBox *box, const int page)
 
     if (box->v_align == TEXT_BOX_V_ALIGN_CENTER)
     {
-        topLeft.y = (WindowHeight() - height) / 2;
+        topLeft.y = (WindowHeight() - height) / 2; // NOLINT(*-integer-division)
     } else if (box->v_align == TEXT_BOX_V_ALIGN_BOTTOM)
     {
         topLeft.y = WindowHeight() - height;

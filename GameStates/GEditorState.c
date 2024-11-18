@@ -23,16 +23,6 @@
 #include "../Structs/UI/Controls/RadioButton.h"
 #include "../Structs/UI/Controls/Slider.h"
 
-double EditorZoom = 20.0;
-double EditorPanX = 0.0;
-double EditorPanY = 0.0;
-bool EditorInitComplete = false;
-bool EditorSnapToGrid = true;
-
-int EditorSelectedNode = -1;
-
-int EditorBaseControlCount = -1;
-
 typedef enum
 {
     EDITOR_MODE_ADD, // click to add a node
@@ -41,10 +31,6 @@ typedef enum
     EDITOR_MODE_PROPERTIES, // edit node properties
     EDITOR_MODE_LEVEL // edit level properties
 } EditorMode;
-
-EditorMode CurrentEditorMode = EDITOR_MODE_MOVE;
-
-UiStack *editorUiStack;
 
 typedef enum
 {
@@ -64,10 +50,27 @@ typedef struct EditorNode
     uint extra2; // wall uv (float) or actor params (4 bytes)
 } EditorNode;
 
+#pragma region Editor State Variables
+double EditorZoom = 20.0;
+double EditorPanX = 0.0;
+double EditorPanY = 0.0;
+bool EditorInitComplete = false;
+bool EditorSnapToGrid = true;
+
+int EditorSelectedNode = -1;
+
+int EditorBaseControlCount = -1;
+
+EditorMode CurrentEditorMode = EDITOR_MODE_MOVE;
+
+UiStack *editorUiStack;
+
 List *EditorNodes;
 
 bool isAddModeDragging = false;
+#pragma endregion
 
+#pragma region Editor Level Variables
 byte level_fogR;
 byte level_fogG;
 byte level_fogB;
@@ -83,6 +86,7 @@ byte level_skyG;
 byte level_skyB;
 
 uint musicId;
+#pragma endregion
 
 char *SliderActorNameLabelCallback(const Control *slider)
 {
@@ -581,8 +585,6 @@ void GEditorStateRender(GlobalState */*State*/)
                 color = 0xFFFF0000;
                 break;
             case NODE_WALL_A:
-                color = 0xFF0000FF;
-                break;
             case NODE_WALL_B:
                 color = 0xFF0000FF;
                 break;
@@ -897,8 +899,8 @@ void GEditorStateSet()
     if (!EditorInitComplete)
     {
         // center the view to 0,0
-        EditorPanX = WindowWidth() / 2;
-        EditorPanY = WindowHeight() / 2;
+        EditorPanX = WindowWidth() / 2; // NOLINT(*-integer-division)
+        EditorPanY = WindowHeight() / 2; // NOLINT(*-integer-division)
 
         editorUiStack = CreateUiStack();
         EditorNodes = CreateList();

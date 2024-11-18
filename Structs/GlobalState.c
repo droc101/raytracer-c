@@ -16,6 +16,10 @@
 
 GlobalState state;
 
+const byte *music[MUSIC_COUNT] = { // NOLINT(*-interfaces-global-init)
+    gzmpg_audio_field
+};
+
 void ChannelFinished(const int channel)
 {
     // callback for when a channel finishes playing (so we can free it)
@@ -136,10 +140,6 @@ void SetRenderCallback(void (*RenderGame)(GlobalState *State))
 {
     state.RenderGame = (void (*)(void *)) RenderGame;
 }
-
-const byte *music[MUSIC_COUNT] = {
-    gzmpg_audio_field
-};
 
 void ChangeLevel(Level *l)
 {

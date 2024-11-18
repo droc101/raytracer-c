@@ -5,26 +5,9 @@
 #ifndef GAME_GLHELPER_H
 #define GAME_GLHELPER_H
 
-#include "glDebug.h"
+#include <cglm/cglm.h>
 #include "SDL.h"
 #include "../Drawing.h"
-#include "cglm/cglm.h"
-#include "GL/glew.h"
-
-typedef struct GL_Shader
-{
-    GLuint vsh;
-    GLuint fsh;
-    GLuint program;
-} GL_Shader;
-
-typedef struct GL_Buffer
-{
-    GLuint vao;
-    GLuint vbo;
-    GLuint ebo;
-} GL_Buffer;
-
 
 /**
  * Set SDL_GL flags (this must be done before the SDL window is created)
@@ -36,43 +19,10 @@ bool GL_PreInit();
  */
 bool GL_Init(SDL_Window *wnd);
 
-GL_Shader *GL_ConstructShaderFromAssets(const byte *fsh, const byte *vsh);
-
-/**
- * Create a shader program
- * @param fsh The fragment shader source
- * @param vsh The vertex shader source
- * @return The shader struct
- */
-GL_Shader *GL_ConstructShader(const char *fsh, const char *vsh);
-
-/**
- * Create a buffer object
- * @note This should be reused as much as possible
- * @return The buffer struct
- */
-GL_Buffer *GL_ConstructBuffer();
-
 /**
  * Clear the screen
  */
 void GL_ClearScreen();
-
-/**
- * Load and register a texture from an asset
- * @param imageData The asset data (not decompressed)
- * @return The slot the texture was registered in
- */
-GLuint GL_LoadTextureFromAsset(const unsigned char *imageData);
-
-/**
- * Register a texture from pixel data
- * @param pixelData The raw RGBA8 pixel data
- * @param width The width of the texture
- * @param height The height of the texture
- * @return The slot the texture was registered in
- */
-int GL_RegisterTexture(const unsigned char *pixelData, int width, int height);
 
 /**
  * Clear only the depth buffer
@@ -105,6 +55,13 @@ void GL_SetTexParams(const unsigned char *imageData, bool linear, bool repeat);
  */
 void GL_DrawRect(Vector2 pos, Vector2 size, uint color);
 
+/**
+ * Draw a rectangle outline
+ * @param pos The position in pixels
+ * @param size The size in pixels
+ * @param color The color to draw
+ * @param thickness The thickness of the outline
+ */
 void GL_DrawRectOutline(Vector2 pos, Vector2 size, uint color, float thickness);
 
 /**
@@ -163,8 +120,6 @@ void GL_DrawTextureRegionMod(Vector2 pos, Vector2 size, const unsigned char *ima
  */
 void GL_ClearColor(uint color);
 
-void GL_SetLevelParams(const mat4 *mvp, const Level *l);
-
 /**
  * Draw a wall in 3D
  * @param w The wall to draw
@@ -198,16 +153,6 @@ GL_DrawFloor(Vector2 vp1, Vector2 vp2, const mat4 *mvp, const Level *l, const un
  * @param l The level
  */
 void GL_DrawShadow(Vector2 vp1, Vector2 vp2, const mat4 *mvp, const mat4 *mdl, const Level *l);
-
-/**
- * Enable 3D mode
- */
-void GL_Enable3D();
-
-/**
- * Disable 3D mode
- */
-void GL_Disable3D();
 
 /**
  * Update the viewport size

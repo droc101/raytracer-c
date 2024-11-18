@@ -3,11 +3,11 @@ project(game C)
 
 set(CMAKE_C_STANDARD 11)
 
-set(CMAKE_C_FLAGS "-Wno-discarded-qualifiers") # shut.
+set(CMAKE_C_FLAGS "-Wall -Wno-discarded-qualifiers") # shut.
 
-set(CMAKE_C_FLAGS_DEBUG "-g -O0 -Wall")
-set(CMAKE_C_FLAGS_RELEASE "-g0 -O3 -s -DNDEBUG -Wl,--gc-sections -fdata-sections -ffunction-sections -Wall")
-set(CMAKE_C_FLAGS_RELWITHDEBINFO "-g -O3 -Wl,--gc-sections -fdata-sections -ffunction-sections -Wall")
+set(CMAKE_C_FLAGS_DEBUG "-g -O0")
+set(CMAKE_C_FLAGS_RELEASE "-g0 -O3 -s -DNDEBUG -Wl,--gc-sections -fdata-sections -ffunction-sections")
+set(CMAKE_C_FLAGS_RELWITHDEBINFO "-g -O3 -Wl,--gc-sections -fdata-sections -ffunction-sections")
 
 # Add --static flag when building on Windows to include libwinpthread-1.dll
 if (WIN32)
@@ -93,21 +93,20 @@ add_executable(
         Actor/Goal.h
         GameStates/GLogoSplashState.c
         GameStates/GLogoSplashState.h
-        Helpers/Graphics/GL/glHelper.c
-        Helpers/Graphics/GL/glHelper.h
+        Helpers/Graphics/GL/GLHelper.c
+        Helpers/Graphics/GL/GLHelper.h
         Structs/Camera.c
         Structs/Camera.h
         Helpers/Graphics/RenderingHelpers.c
         Helpers/Graphics/RenderingHelpers.h
-        Helpers/Graphics/GL/glDebug.c
-        Helpers/Graphics/GL/glDebug.h
+        Helpers/Graphics/GL/GLDebug.c
         Structs/UI/UiStack.c
         Structs/UI/UiStack.h
         Structs/UI/Controls/Button.c
         Structs/UI/Controls/Button.h
         Structs/UI/Controls/Slider.c
         Structs/UI/Controls/Slider.h
-        $<$<BOOL:${WIN32}>:game.rc>
+        $<$<BOOL:${WIN32}>:game.rc> # Add the Win32 resource file only on Windows
         Structs/Options.c
         Structs/Options.h
         GameStates/GOptionsState.c
@@ -120,6 +119,9 @@ add_executable(
         Helpers/Core/Logging.h
         Actor/Door.c
         Actor/Door.h
+        Helpers/PlatformHelpers.c
+        Helpers/PlatformHelpers.h
+        Helpers/Graphics/GL/GLInternal.h
         Helpers/Graphics/Vulkan/Vulkan.c
         Helpers/Graphics/Vulkan/Vulkan.h
         Helpers/Graphics/Vulkan/VulkanInternal.h
@@ -139,24 +141,24 @@ find_package(ZLIB REQUIRED) # Decompression
 include_directories(${ZLIB_INCLUDE_DIRS})
 
 find_package(OpenGL REQUIRED) # Graphics
-target_include_directories(game PUBLIC ${OPENGL_INCLUDE_DIR})
+include_directories(${OPENGL_INCLUDE_DIR})
 
 find_package(Vulkan REQUIRED) # 3d
 include_directories(${Vulkan_INCLUDE_DIRS})
 
 if (UNIX)
     find_package(GLEW REQUIRED) # OpenGL Extension Wrangler
-    target_include_directories(game PUBLIC ${GLEW_INCLUDE_DIRS})
+    include_directories(${GLEW_INCLUDE_DIRS})
 
-    target_include_directories(game PUBLIC "/usr/include/cglm") # C OpenGL Mathematics Library
+    include_directories("/usr/include/cglm") # C OpenGL Mathematics Library
 elseif (WIN32) # Thank you Windows, I hate you.
-    target_include_directories(game PUBLIC "${CMAKE_SOURCE_DIR}/lib/cglm/include")
+    include_directories("${CMAKE_SOURCE_DIR}/lib/cglm/include") # C OpenGL Mathematics Library
 
-    list(APPEND CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/lib/glew")
+    list(APPEND CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/lib/glew") # OpenGL Extension Wrangler
     add_definitions(-DGLEW_STATIC)
     set(GLEW_LIBRARIES "${CMAKE_SOURCE_DIR}/lib/glew/lib/Release/x64/glew32s.lib")
     set(GLEW_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/lib/glew/include")
-    target_include_directories(game PUBLIC ${GLEW_INCLUDE_DIRS})
+    include_directories(${GLEW_INCLUDE_DIRS})
 endif ()
 
 if (UNIX)
@@ -166,11 +168,11 @@ elseif (WIN32)
 endif ()
 
 add_custom_target( # Python script for generating assets code
-        run ALL
+        genassets ALL
         COMMAND "python" ${CMAKE_CURRENT_SOURCE_DIR}/Assets/genassets.py ${CMAKE_CURRENT_SOURCE_DIR}/Assets/
         COMMENT "Generating assets"
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Assets/
         BYPRODUCTS ${CMAKE_CURRENT_SOURCE_DIR}/Assets/Assets.h ${CMAKE_CURRENT_SOURCE_DIR}/Assets/Assets.c
 )
 
-add_dependencies(game run)
+add_dependencies(game genassets)

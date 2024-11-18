@@ -74,6 +74,7 @@ void ListRemove(List *list, Node *node)
     }
     list->size--;
     free(node);
+    node = NULLPTR;
 }
 
 void ListRemoveAt(List *list, const int index)
@@ -139,6 +140,7 @@ void ListFree(List *list)
         current = next;
     }
     free(list);
+    list = NULLPTR;
 }
 
 void ListFreeWithData(List *list)
@@ -152,6 +154,7 @@ void ListFreeWithData(List *list)
         current = next;
     }
     free(list);
+    list = NULLPTR;
 }
 
 inline int ListGetSize(const List *list)
@@ -193,6 +196,7 @@ void DestroySizedArray(SizedArray *array)
 {
     free(array->elements);
     free(array);
+    array = NULLPTR;
 }
 
 void ListClear(List *list)

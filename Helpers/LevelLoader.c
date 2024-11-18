@@ -161,7 +161,7 @@ LevelBytecode *GenerateBytecode(const Level *l)
     data[i] = LEVEL_CMD_FINISH;
     i++;
 
-    data = realloc(data, i);
+    data = realloc(data, i); // NOLINT(*-suspicious-realloc-usage)
 
     LevelBytecode *lb = malloc(sizeof(LevelBytecode));
     lb->data = data;
