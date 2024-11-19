@@ -95,6 +95,8 @@ typedef struct UniformBufferObject
 typedef struct ImageAllocationInformation
 {
     VkImage image;
+    VkExtent3D extent;
+    uint8_t mipmapLevels;
     VkMemoryRequirements memoryRequirements;
     VkDeviceSize offset;
 } ImageAllocationInformation;
@@ -231,19 +233,20 @@ VkImageView colorImageView;
 static bool QuerySwapChainSupport(VkPhysicalDevice pDevice);
 
 static bool CreateImageView(VkImageView *imageView, VkImage image, VkFormat format, VkImageAspectFlagBits aspectMask,
-                            const char *errorMessage);
+                            uint8_t mipmapLevels, const char *errorMessage);
 
 static VkShaderModule CreateShaderModule(const uint32_t *code, size_t size);
 
 static bool CreateImage(VkImage *image, VkDeviceMemory *imageMemory, VkFormat format, VkExtent3D extent,
-                        VkSampleCountFlags samples, VkImageUsageFlags usageFlags, const char *imageType);
+                        uint8_t mipmapLevels, VkSampleCountFlags samples,
+                        VkImageUsageFlags usageFlags, const char *imageType);
 
 static bool BeginCommandBuffer(const VkCommandBuffer *commandBuffer, VkCommandPool commandPool);
 
 static bool EndCommandBuffer(VkCommandBuffer commandBuffer, VkCommandPool commandPool, VkQueue queue);
 
-static bool CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags propertyFlags,
-                         VkBuffer *buffer, VkDeviceMemory *bufferMemory);
+static bool CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usageFlags,
+                         VkMemoryPropertyFlags propertyFlags, VkBuffer *buffer, VkDeviceMemory *bufferMemory);
 
 static bool CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 

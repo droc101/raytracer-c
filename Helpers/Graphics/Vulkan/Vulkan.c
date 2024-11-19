@@ -38,7 +38,8 @@ static bool QuerySwapChainSupport(const VkPhysicalDevice pDevice)
 }
 
 static bool CreateImageView(VkImageView *imageView, const VkImage image, const VkFormat format,
-                            const VkImageAspectFlagBits aspectMask, const char *errorMessage)
+                            const VkImageAspectFlagBits aspectMask, const uint8_t mipmapLevels,
+                            const char *errorMessage)
 {
     const VkImageViewCreateInfo createInfo = {
         VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
@@ -56,7 +57,7 @@ static bool CreateImageView(VkImageView *imageView, const VkImage image, const V
         {
             aspectMask,
             0,
-            1,
+            mipmapLevels,
             0,
             1
         }
@@ -86,7 +87,8 @@ static VkShaderModule CreateShaderModule(const uint32_t *code, const size_t size
 }
 
 static bool CreateImage(VkImage *image, VkDeviceMemory *imageMemory, const VkFormat format, const VkExtent3D extent,
-                        const VkSampleCountFlags samples, const VkImageUsageFlags usageFlags, const char *imageType)
+                        const uint8_t mipmapLevels, const VkSampleCountFlags samples,
+                        const VkImageUsageFlags usageFlags, const char *imageType)
 {
     uint32_t pQueueFamilyIndices[queueFamilyIndices->familyCount];
     switch (queueFamilyIndices->familyCount)
@@ -122,7 +124,7 @@ static bool CreateImage(VkImage *image, VkDeviceMemory *imageMemory, const VkFor
         VK_IMAGE_TYPE_2D,
         format,
         extent,
-        1,
+        mipmapLevels,
         1,
         samples,
         VK_IMAGE_TILING_OPTIMAL,
@@ -220,8 +222,7 @@ static bool EndCommandBuffer(VkCommandBuffer commandBuffer, const VkCommandPool 
 }
 
 static bool CreateBuffer(const VkDeviceSize size, const VkBufferUsageFlags usageFlags,
-                         const VkMemoryPropertyFlags propertyFlags,
-                         VkBuffer *buffer, VkDeviceMemory *bufferMemory)
+                         const VkMemoryPropertyFlags propertyFlags, VkBuffer *buffer, VkDeviceMemory *bufferMemory)
 {
     uint32_t pQueueFamilyIndices[queueFamilyIndices->familyCount];
     switch (queueFamilyIndices->familyCount)
@@ -901,7 +902,7 @@ static bool CreateImageViews()
     for (uint32_t i = 0; i < swapChainCount; i++)
     {
         if (!CreateImageView(&swapChainImageViews[i], swapChainImages[i], swapChainImageFormat,
-                             VK_IMAGE_ASPECT_COLOR_BIT, "Failed to create Vulkan swap chain image view!"))
+                             VK_IMAGE_ASPECT_COLOR_BIT, 1, "Failed to create Vulkan swap chain image view!"))
         {
             return false;
         }
@@ -1298,14 +1299,15 @@ static bool CreateCommandPools()
 static bool CreateColorImage()
 {
     if (!CreateImage(&colorImage, &colorImageMemory, swapChainImageFormat,
-                     (VkExtent3D){swapChainExtent.width, swapChainExtent.height, 1}, MSAA_SAMPLES,
-                     VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, "color"))
+                     (VkExtent3D){swapChainExtent.width, swapChainExtent.height, 1}, 1,
+                     MSAA_SAMPLES, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+                     "color"))
     {
         return false;
     }
 
     if (!CreateImageView(&colorImageView, colorImage, swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT,
-                         "Failed to create Vulkan color image view!"))
+                         1, "Failed to create Vulkan color image view!"))
     {
         return false;
     }
@@ -1316,15 +1318,15 @@ static bool CreateColorImage()
 static bool CreateDepthImage()
 {
     if (!CreateImage(&depthImage, &depthImageMemory, depthImageFormat,
-                     (VkExtent3D){swapChainExtent.width, swapChainExtent.height, 1}, MSAA_SAMPLES,
-                     VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, "depth test"))
+                     (VkExtent3D){swapChainExtent.width, swapChainExtent.height, 1}, 1,
+                     MSAA_SAMPLES, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, "depth test"))
     {
         return false;
     }
 
     if (!CreateImageView(&depthImageView, depthImage, depthImageFormat,
                          VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT,
-                         "Failed to create Vulkan depth image view!"))
+                         1, "Failed to create Vulkan depth image view!"))
     {
         return false;
     }
@@ -1394,10 +1396,23 @@ static bool LoadTextures()
     VkDeviceSize memorySize = 0;
     for (uint16_t textureIndex = 0; textureIndex < TEXTURE_ASSET_COUNT; textureIndex++)
     {
-        const byte *decompressed = DecompressAsset(texture_assets[textureIndex]);
-        if (!CreateImage(&textures[textureIndex].image, NULL, VK_FORMAT_R8G8B8A8_SRGB,
-                         (VkExtent3D){ReadUintA(decompressed, 4), ReadUintA(decompressed, 8), 1}, VK_SAMPLE_COUNT_1_BIT,
-                         VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, "texture"))
+        const uint8_t *decompressed = DecompressAsset(texture_assets[textureIndex]);
+
+        const VkFormat format = VK_FORMAT_R8G8B8A8_SRGB;
+        VkFormatProperties formatProperties;
+        vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &formatProperties);
+        if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
+        {
+            VulkanLogError("Vulkan texture image format does not support linear blitting!");
+            return false;
+        }
+
+        const VkExtent3D extent = {ReadUintA(decompressed, 4), ReadUintA(decompressed, 8), 1};
+        textures[textureIndex].mipmapLevels = (uint8_t) log2(max(extent.width, extent.height)) + 1;
+        if (!CreateImage(&textures[textureIndex].image, NULL, format, extent, textures[textureIndex].mipmapLevels,
+                         VK_SAMPLE_COUNT_1_BIT,
+                         VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+                         "texture"))
         {
             return false;
         }
@@ -1447,7 +1462,9 @@ static bool LoadTextures()
             vkBindImageMemory(device, textures[textureIndex].image, textureMemory, textures[textureIndex].offset),
             "Failed to bind Vulkan texture memory!");
 
-        const byte *decompressed = DecompressAsset(texture_assets[textureIndex]);
+        const uint8_t *decompressed = DecompressAsset(texture_assets[textureIndex]);
+        uint32_t width = ReadUintA(decompressed, 4);
+        uint32_t height = ReadUintA(decompressed, 8);
         void *data;
         data = calloc(1, textures[textureIndex].memoryRequirements.size);
 
@@ -1455,13 +1472,13 @@ static bool LoadTextures()
             vkMapMemory(device, stagingBufferMemory, textures[textureIndex].offset, textures[textureIndex].
                 memoryRequirements.size, 0, &data), "Failed to map Vulkan texture staging buffer memory!");
 
-        memcpy(data, decompressed + sizeof(uint) * 4, ReadUintA(decompressed, 0) * 4);
+        memcpy(data, decompressed + sizeof(uint32_t) * 4, ReadUintA(decompressed, 0) * 4);
         vkUnmapMemory(device, stagingBufferMemory);
 
         const VkCommandBuffer commandBuffer;
         if (!BeginCommandBuffer(&commandBuffer, transferCommandPool)) return false;
 
-        const VkImageMemoryBarrier firstTransferBarrier = {
+        const VkImageMemoryBarrier transferBarrier = {
             VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
             NULL,
             0,
@@ -1474,20 +1491,20 @@ static bool LoadTextures()
             {
                 VK_IMAGE_ASPECT_COLOR_BIT,
                 0,
-                1,
+                textures[textureIndex].mipmapLevels,
                 0,
                 1
             }
         };
 
         vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0,
-                             NULL, 0, NULL, 1, &firstTransferBarrier);
+                             NULL, 0, NULL, 1, &transferBarrier);
 
         if (!EndCommandBuffer(commandBuffer, transferCommandPool, transferQueue)) return false;
 
         if (!BeginCommandBuffer(&commandBuffer, transferCommandPool)) return false;
 
-        const VkBufferImageCopy copy = {
+        const VkBufferImageCopy bufferCopyInfo = {
             textures[textureIndex].offset,
             0,
             0,
@@ -1499,20 +1516,97 @@ static bool LoadTextures()
             },
             {0, 0, 0},
             {
-                ReadUintA(decompressed, 4),
-                ReadUintA(decompressed, 8),
+                width,
+                height,
                 1
             }
         };
 
         vkCmdCopyBufferToImage(commandBuffer, stagingBuffer, textures[textureIndex].image,
-                               VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copy);
+                               VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &bufferCopyInfo);
 
         if (!EndCommandBuffer(commandBuffer, transferCommandPool, transferQueue)) return false;
 
         if (!BeginCommandBuffer(&commandBuffer, graphicsCommandPool)) return false;
 
-        const VkImageMemoryBarrier secondTransferBarrier = {
+        for (uint8_t level = 0; level < textures[textureIndex].mipmapLevels - 1; level++)
+        {
+            const VkImageMemoryBarrier blitBarrier = {
+                VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+                NULL,
+                VK_ACCESS_TRANSFER_WRITE_BIT,
+                VK_ACCESS_TRANSFER_READ_BIT,
+                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                VK_QUEUE_FAMILY_IGNORED,
+                VK_QUEUE_FAMILY_IGNORED,
+                textures[textureIndex].image,
+                {
+                    VK_IMAGE_ASPECT_COLOR_BIT,
+                    level,
+                    1,
+                    0,
+                    1
+                }
+            };
+
+            vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0,
+                                 NULL, 0, NULL, 1, &blitBarrier);
+
+            VkImageBlit blit = {
+                {
+                    VK_IMAGE_ASPECT_COLOR_BIT,
+                    level,
+                    0,
+                    1
+                },
+                {
+                    {0, 0, 0},
+                    {(int32_t) width, (int32_t) height, 1}
+                },
+                {
+                    VK_IMAGE_ASPECT_COLOR_BIT,
+                    level + 1,
+                    0,
+                    1
+                },
+                {
+                    {0, 0, 0},
+                    {width > 1 ? (int32_t) width / 2 : 1, height > 1 ? (int32_t) height / 2 : 1, 1}
+                }
+            };
+
+            vkCmdBlitImage(commandBuffer, textures[textureIndex].image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                           textures[textureIndex].image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit,
+                           VK_FILTER_LINEAR);
+
+            const VkImageMemoryBarrier mipmapBarrier = {
+                VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+                NULL,
+                VK_ACCESS_TRANSFER_READ_BIT,
+                VK_ACCESS_SHADER_READ_BIT,
+                VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                VK_QUEUE_FAMILY_IGNORED,
+                VK_QUEUE_FAMILY_IGNORED,
+                textures[textureIndex].image,
+                {
+                    VK_IMAGE_ASPECT_COLOR_BIT,
+                    level,
+                    1,
+                    0,
+                    1
+                }
+            };
+
+            vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                                 0, 0, NULL, 0, NULL, 1, &mipmapBarrier);
+
+            if (width > 1) width /= 2;
+            if (height > 1) height /= 2;
+        }
+
+        const VkImageMemoryBarrier mipmapBarrier = {
             VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
             NULL,
             VK_ACCESS_TRANSFER_WRITE_BIT,
@@ -1524,15 +1618,15 @@ static bool LoadTextures()
             textures[textureIndex].image,
             {
                 VK_IMAGE_ASPECT_COLOR_BIT,
-                0,
+                textures[textureIndex].mipmapLevels - 1,
                 1,
                 0,
                 1
             }
         };
 
-        vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0,
-                             NULL, 0, NULL, 1, &secondTransferBarrier);
+        vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                             0, 0, NULL, 0, NULL, 1, &mipmapBarrier);
 
         if (!EndCommandBuffer(commandBuffer, graphicsCommandPool, graphicsQueue)) return false;
     }
@@ -1548,7 +1642,8 @@ static bool CreateTexturesImageView()
     for (uint16_t textureIndex = 0; textureIndex < TEXTURE_ASSET_COUNT; textureIndex++)
     {
         if (!CreateImageView(&texturesImageView[textureIndex], textures[textureIndex].image, VK_FORMAT_R8G8B8A8_SRGB,
-                             VK_IMAGE_ASPECT_COLOR_BIT, "Failed to create Vulkan texture image view!"))
+                             VK_IMAGE_ASPECT_COLOR_BIT, textures[textureIndex].mipmapLevels,
+                             "Failed to create Vulkan texture image view!"))
         {
             return false;
         }
@@ -1575,7 +1670,7 @@ static bool CreateTextureSampler()
         VK_FALSE,
         VK_COMPARE_OP_ALWAYS,
         0,
-        0,
+        VK_LOD_CLAMP_NONE,
         VK_BORDER_COLOR_INT_OPAQUE_BLACK,
         VK_FALSE
     };
