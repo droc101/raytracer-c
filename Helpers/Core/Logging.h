@@ -12,30 +12,30 @@
 
 /**
  * Log an info message
- * @param str Format string
+ * @param message Format string
  * @param ... Format arguments
  */
-void LogInfo(const char *str, ...);
+void LogInfo(const char *message, ...);
 
 /**
  * Log an info message, but only in debug builds
- * @param str Format string
+ * @param message Format string
  * @param ... Format arguments
  */
-void LogDebug(const char *str, ...);
+void LogDebug(const char *message, ...);
 
 /**
  * Log a warning message
- * @param str Format string
+ * @param message Format string
  * @param ... Format arguments
  */
-void LogWarning(const char *str, ...);
+void LogWarning(const char *message, ...);
 
 /**
  * Log an error message
- * @param str Format string
+ * @param message Format string
  * @param ... Format arguments
  */
-void LogError(const char *str, ...);
+void LogError(const char *message, ...);
 
 #endif //GAME_LOGGING_H

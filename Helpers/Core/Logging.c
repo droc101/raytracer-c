@@ -5,57 +5,53 @@
 #include "Logging.h"
 #include <stdarg.h>
 #include <stdio.h>
+#include "../../defines.h"
 
-void LogInfo(const char *str, ...)
-{
-    printf("\x1b[37;49m[INFO]  ");
-    va_list args;
-    va_start(args, str);
-    vprintf(str, args);
-    va_end(args);
-    printf("\x1b[39;49m");
-#ifdef FLUSH_ON_INFO
-    fflush(stdout);
-#endif
-}
+/// The length of the longest value passed to the type argument of the LogInternal function, plus one
+#define longestType 7
 
-void LogDebug(const char *str, ...)
+void LogInternal(const char *type, const int color, const char *message, const va_list args)
 {
-#ifndef NDEBUG
-    printf("\x1b[37;49m[DEBUG] ");
-    va_list args;
-    va_start(args, str);
-    vprintf(str, args);
-    va_end(args);
-    printf("\x1b[39;49m");
-#ifdef FLUSH_ON_DEBUG
-    fflush(stdout);
-#endif
-#endif
-}
-
-void LogWarning(const char *str, ...)
-{
-    printf("\x1b[33;49m[WARN]  ");
-    va_list args;
-    va_start(args, str);
-    vprintf(str, args);
-    va_end(args);
-    printf("\x1b[39;49m");
-#ifdef FLUSH_ON_WARNING
-    fflush(stdout);
-#endif
-}
-
-void LogError(const char *str, ...)
-{
-    printf("\x1b[31;49m[ERROR] ");
-    va_list args;
-    va_start(args, str);
-    vprintf(str, args);
-    va_end(args);
-    printf("\x1b[39;49m");
+    char buf[9 + longestType];
+    sprintf(buf, "\x1b[%02d;49m[%s]", color, type);
+    printf("%-1"TO_STR(longestType)"s", buf);
+    vprintf(message, args);
+    printf("\x1b[0m");
 #ifdef FLUSH_ON_ERROR
     fflush(stdout);
 #endif
+}
+
+void LogInfo(const char *message, ...)
+{
+    va_list args;
+    va_start(args, message);
+    LogInternal("INFO", 37, message, args);
+    va_end(args);
+}
+
+void LogDebug(const char *message, ...)
+{
+#ifndef NDEBUG
+    va_list args;
+    va_start(args, message);
+    LogInternal("DEBUG", 37, message, args);
+    va_end(args);
+#endif
+}
+
+void LogWarning(const char *message, ...)
+{
+    va_list args;
+    va_start(args, message);
+    LogInternal("INFO", 33, message, args);
+    va_end(args);
+}
+
+void LogError(const char *message, ...)
+{
+    va_list args;
+    va_start(args, message);
+    LogInternal("ERROR", 31, message, args);
+    va_end(args);
 }

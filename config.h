@@ -70,8 +70,6 @@
 #define COPYRIGHT "2024 Droc101 Development"
 #define GAME_TITLE "Game." // Used for window title
 
-#define STR(x) #x
-#define TO_STR(x) STR(x)
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 0
 #define VERSION_PATCH 1
