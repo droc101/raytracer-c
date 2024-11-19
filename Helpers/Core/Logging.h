@@ -17,7 +17,6 @@ void LogInternal(const char *type, int color, bool flush, const char *message, .
 
 /**
  * Log an info message
- * @param message Format string
  * @param ... Format arguments
  */
 #define LogInfo(...) LogInternal("INFO", 37, FLUSH_ON_INFO, __VA_ARGS__)
@@ -25,7 +24,6 @@ void LogInternal(const char *type, int color, bool flush, const char *message, .
 #ifndef NDEBUG
 /**
  * Log an info message, but only in debug builds
- * @param message Format string
  * @param ... Format arguments
  */
 #define LogDebug(...) LogInternal("DEBUG", 37, FLUSH_ON_DEBUG, __VA_ARGS__)
@@ -33,14 +31,12 @@ void LogInternal(const char *type, int color, bool flush, const char *message, .
 
 /**
  * Log a warning message
- * @param message Format string
  * @param ... Format arguments
  */
 #define LogWarning(...) LogInternal("INFO", 33, FLUSH_ON_WARNING, __VA_ARGS__)
 
 /**
  * Log an error message
- * @param message Format string
  * @param ... Format arguments
  */
 #define LogError(...) LogInternal("ERROR", 31, FLUSH_ON_ERROR, __VA_ARGS__)
