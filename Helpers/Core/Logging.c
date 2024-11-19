@@ -8,7 +8,7 @@
 #include "../../defines.h"
 
 /// The length of the longest value passed to the type argument of the LogInternal function, plus one
-#define longestType 7
+#define longestType 6
 
 void LogInternal(const char *type, const int color, const char *message, const va_list args)
 {
