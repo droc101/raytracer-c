@@ -19,6 +19,9 @@
 
 #define NULLPTR NULL
 
+#define STR(x) #x
+#define TO_STR(x) STR(x)
+
 // Utility functions are in Structs/Vector2.h
 typedef struct Vector2
 {
