@@ -615,32 +615,33 @@ static bool PickPhysicalDevice()
                 continue;
             }
 
-            if (queueFamilyIndices->presentFamily == -1)
-            {
-                queueFamilyIndices->presentFamily = queueFamilyIndices->uniquePresentFamily;
-            }
-            if (queueFamilyIndices->transferFamily == -1)
-            {
-                queueFamilyIndices->transferFamily = queueFamilyIndices->graphicsFamily;
-            }
+            break;
+        }
 
-            if (queueFamilyIndices->graphicsFamily == queueFamilyIndices->presentFamily ||
-                queueFamilyIndices->graphicsFamily == queueFamilyIndices->transferFamily)
+        if (queueFamilyIndices->presentFamily == -1)
+        {
+            queueFamilyIndices->presentFamily = queueFamilyIndices->uniquePresentFamily;
+        }
+        if (queueFamilyIndices->transferFamily == -1)
+        {
+            queueFamilyIndices->transferFamily = queueFamilyIndices->graphicsFamily;
+        }
+
+        if (queueFamilyIndices->graphicsFamily == queueFamilyIndices->presentFamily ||
+            queueFamilyIndices->graphicsFamily == queueFamilyIndices->transferFamily)
+        {
+            if (queueFamilyIndices->presentFamily == queueFamilyIndices->transferFamily)
             {
-                if (queueFamilyIndices->presentFamily == queueFamilyIndices->transferFamily)
-                {
-                    queueFamilyIndices->familyCount = 1;
-                }
-                else
-                {
-                    queueFamilyIndices->familyCount = 2;
-                }
+                queueFamilyIndices->familyCount = 1;
             }
             else
             {
-                queueFamilyIndices->familyCount = 3;
+                queueFamilyIndices->familyCount = 2;
             }
-            break;
+        }
+        else
+        {
+            queueFamilyIndices->familyCount = 3;
         }
 
         uint32_t extensionCount;
