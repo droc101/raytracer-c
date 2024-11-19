@@ -10,7 +10,7 @@
 
 void LogInternal(const char *type, const int color, const bool flush, const char *message, const va_list args)
 {
-    char buf[9 + longestType];
+    char buf[10 + longestType];
     sprintf(buf, "\x1b[%02d;49m[%s]", color, type);
     printf("%-1"TO_STR(longestType)"s", buf);
     vprintf(message, args);
