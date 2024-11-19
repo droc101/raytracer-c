@@ -27,4 +27,6 @@ void VK_Minimize();
 
 void VK_Restore();
 
+VkSampleCountFlags VK_MaxSampleCount();
+
 #endif //GAME_VULKAN_H

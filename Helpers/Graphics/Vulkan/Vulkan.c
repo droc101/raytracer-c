@@ -79,14 +79,14 @@ static VkShaderModule CreateShaderModule(const uint32_t *code, const size_t size
         code
     };
 
-    VulkanTestWithReturn(vkCreateShaderModule(device, &createInfo, NULL, &shaderModule),
-                         "Failed to create shader module!", NULL);
+    VulkanTestWithReturn(vkCreateShaderModule(device, &createInfo, NULL, &shaderModule), NULL,
+                         "Failed to create shader module!");
 
     return shaderModule;
 }
 
-static bool CreateImage(VkImage *image, const VkFormat format, const VkExtent3D extent,
-                        const VkImageUsageFlags usageFlags, const char *errorMessage)
+static bool CreateImage(VkImage *image, VkDeviceMemory *imageMemory, const VkFormat format, const VkExtent3D extent,
+                        const VkSampleCountFlags samples, const VkImageUsageFlags usageFlags, const char *imageType)
 {
     uint32_t pQueueFamilyIndices[queueFamilyIndices->familyCount];
     switch (queueFamilyIndices->familyCount)
@@ -104,14 +104,14 @@ static bool CreateImage(VkImage *image, const VkFormat format, const VkExtent3D 
             }
             else
             {
-                VulkanLogError("Failed to create VkSwapchainCreateInfoKHR due to invalid queueFamilyIndices!");
+                VulkanLogError("Failed to create VkImageCreateInfoKHR due to invalid queueFamilyIndices!");
                 return false;
             }
         case 1:
             pQueueFamilyIndices[0] = queueFamilyIndices->graphicsFamily;
             break;
         default:
-            VulkanLogError("Failed to create VkSwapchainCreateInfoKHR due to invalid queueFamilyIndices!");
+            VulkanLogError("Failed to create VkImageCreateInfoKHR due to invalid queueFamilyIndices!");
             return false;
     }
 
@@ -124,7 +124,7 @@ static bool CreateImage(VkImage *image, const VkFormat format, const VkExtent3D 
         extent,
         1,
         1,
-        VK_SAMPLE_COUNT_1_BIT,
+        samples,
         VK_IMAGE_TILING_OPTIMAL,
         usageFlags,
         queueFamilyIndices->familyCount == 1 ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_CONCURRENT,
@@ -133,7 +133,37 @@ static bool CreateImage(VkImage *image, const VkFormat format, const VkExtent3D 
         VK_IMAGE_LAYOUT_UNDEFINED
     };
 
-    VulkanTest(vkCreateImage(device, &imageInfo, NULL, image), errorMessage);
+    VulkanTest(vkCreateImage(device, &imageInfo, NULL, image), "Failed to create Vulkan %s image!", imageType);
+
+    if (!imageMemory) return true; // If image memory is NULL, then allocation will be handled by the calling function
+    // Otherwise, allocate the memory for the image
+
+    VkMemoryRequirements memoryRequirements;
+    vkGetImageMemoryRequirements(device, *image, &memoryRequirements);
+    VkPhysicalDeviceMemoryProperties memoryProperties;
+    vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
+    for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++)
+    {
+        if (memoryRequirements.memoryTypeBits & 1 << i &&
+            (memoryProperties.memoryTypes[i].propertyFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) ==
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
+        {
+            const VkDeviceSize size = memoryRequirements.alignment * (VkDeviceSize) ceil(
+                                          (double) memoryRequirements.size / (double) memoryRequirements.alignment);
+            const VkMemoryAllocateInfo allocateInfo = {
+                VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+                NULL,
+                size,
+                i
+            };
+
+            VulkanTest(vkAllocateMemory(device, &allocateInfo, NULL, imageMemory),
+                       "Failed to allocate Vulkan %s image memory!", imageType);
+            break;
+        }
+    }
+
+    VulkanTest(vkBindImageMemory(device, *image, *imageMemory, 0), "Failed to bind Vulkan %s image memory!", imageType);
 
     return true;
 }
@@ -209,14 +239,14 @@ static bool CreateBuffer(const VkDeviceSize size, const VkBufferUsageFlags usage
             }
             else
             {
-                VulkanLogError("Failed to create VkSwapchainCreateInfoKHR due to invalid queueFamilyIndices!");
+                VulkanLogError("Failed to create VkBufferCreateInfo due to invalid queueFamilyIndices!");
                 return false;
             }
         case 1:
             pQueueFamilyIndices[0] = queueFamilyIndices->graphicsFamily;
             break;
         default:
-            VulkanLogError("Failed to create VkSwapchainCreateInfoKHR due to invalid queueFamilyIndices!");
+            VulkanLogError("Failed to create VkBufferCreateInfo due to invalid queueFamilyIndices!");
             return false;
     }
 
@@ -289,6 +319,13 @@ static void CleanupSwapChain()
     vkDestroySwapchainKHR(device, swapChain, NULL);
 }
 
+static void CleanupColorImage()
+{
+    vkDestroyImageView(device, colorImageView, NULL);
+    vkDestroyImage(device, colorImage, NULL);
+    vkFreeMemory(device, colorImageMemory, NULL);
+}
+
 static void CleanupDepthImage()
 {
     vkDestroyImageView(device, depthImageView, NULL);
@@ -312,10 +349,12 @@ static bool RecreateSwapChain()
     VulkanTest(vkDeviceWaitIdle(device), "Failed to wait for Vulkan device to become idle!");
 
     CleanupSwapChain();
+    CleanupColorImage();
     CleanupDepthImage();
     CleanupSyncObjects();
 
-    return CreateSwapChain() && CreateImageViews() && CreateDepthImage() && CreateFramebuffers() && CreateSyncObjects();
+    return CreateSwapChain() && CreateImageViews() && CreateColorImage() && CreateDepthImage() && CreateFramebuffers()
+           && CreateSyncObjects();
 }
 #pragma region drawingHelpers
 static void UpdateUniformBuffer(const uint32_t currentFrame)
@@ -894,29 +933,40 @@ static bool CreateRenderPass()
     }
 
     const List(VkAttachmentDescription) attachments = {
-        2,
+        3,
         (VkAttachmentDescription[]){
             {
                 0,
                 swapChainImageFormat,
-                VK_SAMPLE_COUNT_1_BIT,
+                MSAA_SAMPLES,
                 VK_ATTACHMENT_LOAD_OP_CLEAR,
                 VK_ATTACHMENT_STORE_OP_STORE,
                 VK_ATTACHMENT_LOAD_OP_DONT_CARE,
                 VK_ATTACHMENT_STORE_OP_DONT_CARE,
                 VK_IMAGE_LAYOUT_UNDEFINED,
-                VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
             },
             {
                 0,
                 depthImageFormat,
-                VK_SAMPLE_COUNT_1_BIT,
+                MSAA_SAMPLES,
                 VK_ATTACHMENT_LOAD_OP_CLEAR,
                 VK_ATTACHMENT_STORE_OP_DONT_CARE,
                 VK_ATTACHMENT_LOAD_OP_DONT_CARE,
                 VK_ATTACHMENT_STORE_OP_DONT_CARE,
                 VK_IMAGE_LAYOUT_UNDEFINED,
                 VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+            },
+            {
+                0,
+                swapChainImageFormat,
+                VK_SAMPLE_COUNT_1_BIT,
+                VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+                VK_ATTACHMENT_STORE_OP_STORE,
+                VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+                VK_ATTACHMENT_STORE_OP_DONT_CARE,
+                VK_IMAGE_LAYOUT_UNDEFINED,
+                VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
             }
         }
     };
@@ -929,6 +979,10 @@ static bool CreateRenderPass()
         1,
         VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
     };
+    VkAttachmentReference colorAttachmentResolveRef = {
+        2,
+        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+    };
     VkSubpassDescription subpass = {
         0,
         VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -936,7 +990,7 @@ static bool CreateRenderPass()
         NULL,
         1,
         &colorAttachmentRef,
-        NULL,
+        &colorAttachmentResolveRef,
         &depthAttachmentReference,
         0,
         NULL
@@ -947,7 +1001,7 @@ static bool CreateRenderPass()
         0,
         VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
         VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
-        VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+        VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
         VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
         0
     };
@@ -1119,7 +1173,7 @@ static bool CreateGraphicsPipeline()
         VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
         NULL,
         0,
-        VK_SAMPLE_COUNT_1_BIT,
+        MSAA_SAMPLES,
         VK_FALSE,
         1,
         NULL,
@@ -1240,40 +1294,32 @@ static bool CreateCommandPools()
     return true;
 }
 
-static bool CreateDepthImage()
+static bool CreateColorImage()
 {
-    if (!CreateImage(&depthImage, depthImageFormat, (VkExtent3D){swapChainExtent.width, swapChainExtent.height, 1},
-                     VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, "Failed to create Vulkan depth test image!"))
+    if (!CreateImage(&colorImage, &colorImageMemory, swapChainImageFormat,
+                     (VkExtent3D){swapChainExtent.width, swapChainExtent.height, 1}, MSAA_SAMPLES,
+                     VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, "color"))
     {
         return false;
     }
 
-    VkMemoryRequirements memoryRequirements;
-    vkGetImageMemoryRequirements(device, depthImage, &memoryRequirements);
-    VkPhysicalDeviceMemoryProperties memoryProperties;
-    vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
-    for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++)
+    if (!CreateImageView(&colorImageView, colorImage, swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT,
+                         "Failed to create Vulkan color image view!"))
     {
-        if (memoryRequirements.memoryTypeBits & 1 << i &&
-            (memoryProperties.memoryTypes[i].propertyFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) ==
-            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
-        {
-            const VkDeviceSize size = memoryRequirements.alignment * (VkDeviceSize) ceil(
-                                          (double) memoryRequirements.size / (double) memoryRequirements.alignment);
-            const VkMemoryAllocateInfo allocateInfo = {
-                VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-                NULL,
-                size,
-                i
-            };
-
-            VulkanTest(vkAllocateMemory(device, &allocateInfo, NULL, &depthImageMemory),
-                       "Failed to allocate Vulkan depth test image memory!");
-            break;
-        }
+        return false;
     }
 
-    VulkanTest(vkBindImageMemory(device, depthImage, depthImageMemory, 0), "Failed to bind Vulkan depth image memory!");
+    return true;
+}
+
+static bool CreateDepthImage()
+{
+    if (!CreateImage(&depthImage, &depthImageMemory, depthImageFormat,
+                     (VkExtent3D){swapChainExtent.width, swapChainExtent.height, 1}, MSAA_SAMPLES,
+                     VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, "depth test"))
+    {
+        return false;
+    }
 
     if (!CreateImageView(&depthImageView, depthImage, depthImageFormat,
                          VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT,
@@ -1319,8 +1365,8 @@ static bool CreateFramebuffers()
     for (uint32_t i = 0; i < swapChainCount; i++)
     {
         const List(VkImageView) attachments = {
-            2,
-            (VkImageView[]){swapChainImageViews[i], depthImageView}
+            3,
+            (VkImageView[]){colorImageView, depthImageView, swapChainImageViews[i]}
         };
 
         VkFramebufferCreateInfo framebufferInfo = {
@@ -1348,10 +1394,9 @@ static bool LoadTextures()
     for (uint16_t textureIndex = 0; textureIndex < TEXTURE_ASSET_COUNT; textureIndex++)
     {
         const byte *decompressed = DecompressAsset(texture_assets[textureIndex]);
-        if (!CreateImage(&textures[textureIndex].image, VK_FORMAT_R8G8B8A8_SRGB,
-                         (VkExtent3D){ReadUintA(decompressed, 4), ReadUintA(decompressed, 8), 1},
-                         VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-                         "Failed to create textures for Vulkan!"))
+        if (!CreateImage(&textures[textureIndex].image, NULL, VK_FORMAT_R8G8B8A8_SRGB,
+                         (VkExtent3D){ReadUintA(decompressed, 4), ReadUintA(decompressed, 8), 1}, VK_SAMPLE_COUNT_1_BIT,
+                         VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, "texture"))
         {
             return false;
         }
@@ -1813,7 +1858,7 @@ bool VK_Init(SDL_Window *window)
     vk_window = window;
     if (CreateInstance() && CreateSurface() && PickPhysicalDevice() && CreateLogicalDevice() && CreateSwapChain() &&
         CreateImageViews() && CreateRenderPass() && CreateDescriptorSetLayout() && CreateGraphicsPipeline() &&
-        CreateCommandPools() && CreateDepthImage() && CreateFramebuffers() && LoadTextures() &&
+        CreateCommandPools() && CreateColorImage() && CreateDepthImage() && CreateFramebuffers() && LoadTextures() &&
         CreateTexturesImageView() && CreateTextureSampler() && CreateVertexBuffer() && CreateIndexBuffer() &&
         CreateUniformBuffers() && CreateDescriptorPool() && CreateDescriptorSets() && CreateCommandBuffers() &&
         CreateSyncObjects())
@@ -1841,7 +1886,9 @@ VkResult VK_DrawFrame()
     VulkanTestReturnResult(vkResetFences(device, 1, &inFlightFences[currentFrame]), "Failed to reset Vulkan fences!");
 
     uint32_t imageIndex;
-    const VkResult acquireNextImageResult = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+    const VkResult acquireNextImageResult = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX,
+                                                                  imageAvailableSemaphores[currentFrame],
+                                                                  VK_NULL_HANDLE, &imageIndex);
 
     if (acquireNextImageResult == VK_ERROR_OUT_OF_DATE_KHR || acquireNextImageResult == VK_SUBOPTIMAL_KHR)
     {
@@ -1915,6 +1962,7 @@ bool VK_Cleanup()
         }
         vkFreeMemory(device, textureMemory, NULL);
 
+        CleanupColorImage();
         CleanupDepthImage();
 
         vkDestroyPipeline(device, graphicsPipeline, NULL);
@@ -1963,4 +2011,12 @@ inline void VK_Minimize()
 inline void VK_Restore()
 {
     minimized = false;
+}
+
+inline VkSampleCountFlags VK_MaxSampleCount()
+{
+    VkPhysicalDeviceProperties properties;
+    vkGetPhysicalDeviceProperties(physicalDevice, &properties);
+
+    return properties.limits.framebufferColorSampleCounts & properties.limits.framebufferDepthSampleCounts;
 }

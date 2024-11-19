@@ -17,16 +17,30 @@
 #include "../../../Assets/Assets.h"
 #include "../../Core/DataReader.h"
 #include "../../Core/Error.h"
+#include "../../Core/Logging.h"
 #include "../../Core/MathEx.h"
 
 #pragma region macros
 #define VULKAN_VERSION VK_MAKE_VERSION(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH)
 #define MAX_FRAMES_IN_FLIGHT 2
-#define VulkanLogError(error) printf("\033[31m%s\033[0m\n", error); fflush(stdout)
-#define VulkanTestInternal(function, error, returnValue) {const VkResult result=function; if (result != VK_SUCCESS) { printf("\033[31m%s\033[0m Error code %d\n", error, result); if (result == VK_ERROR_DEVICE_LOST) {printf("See https://starflight.dev/media/VK_ERROR_DEVICE_LOST.png for more information\n");} fflush(stdout); return returnValue; }}
-#define VulkanTestWithReturn(function, error, returnValue)VulkanTestInternal(function, error, returnValue)
-#define VulkanTestReturnResult(function, error)VulkanTestInternal(function, error, result)
-#define VulkanTest(function, error) VulkanTestInternal(function, error, false)
+#define VulkanLogError(message, ...) LogInternal("VULKAN", 31, true, message, __VA_OPT__(__VA_ARGS__, ) "")
+// TODO Use LogInternal
+#define VulkanTestInternal(function, returnValue, ...) { \
+    const VkResult result=function; \
+    if (result != VK_SUCCESS) { \
+        printf("\033[31m"); \
+        printf(__VA_ARGS__); \
+        printf("\033[0m Error code %d\n", result); \
+        if (result == VK_ERROR_DEVICE_LOST) { \
+            printf("See https://starflight.dev/media/VK_ERROR_DEVICE_LOST.png for more information\n"); \
+        } \
+        fflush(stdout); \
+        return returnValue; \
+    } \
+}
+#define VulkanTestWithReturn(function, returnValue, ...) VulkanTestInternal(function, returnValue, __VA_ARGS__)
+#define VulkanTestReturnResult(function, ...) VulkanTestInternal(function, result, __VA_ARGS__)
+#define VulkanTest(function, ...) VulkanTestInternal(function, false, __VA_ARGS__)
 #define List(type) struct {uint64_t length;type* data;}
 #pragma endregion macros
 
@@ -202,6 +216,9 @@ VkFormat depthImageFormat;
 VkImage depthImage;
 VkDeviceMemory depthImageMemory;
 VkImageView depthImageView;
+VkImage colorImage;
+VkDeviceMemory colorImageMemory;
+VkImageView colorImageView;
 #pragma endregion vulkanVariables
 
 #pragma region internalFunctions
@@ -218,8 +235,8 @@ static bool CreateImageView(VkImageView *imageView, VkImage image, VkFormat form
 
 static VkShaderModule CreateShaderModule(const uint32_t *code, size_t size);
 
-static bool CreateImage(VkImage *image, VkFormat format, VkExtent3D extent, VkImageUsageFlags usageFlags,
-                        const char *errorMessage);
+static bool CreateImage(VkImage *image, VkDeviceMemory *imageMemory, VkFormat format, VkExtent3D extent,
+                        VkSampleCountFlags samples, VkImageUsageFlags usageFlags, const char *imageType);
 
 static bool BeginCommandBuffer(const VkCommandBuffer *commandBuffer, VkCommandPool commandPool);
 
@@ -231,6 +248,8 @@ static bool CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usageFlags, VkMem
 static bool CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
 static void CleanupSwapChain();
+
+static void CleanupColorImage();
 
 static void CleanupDepthImage();
 
@@ -273,6 +292,8 @@ static bool CreateDescriptorSetLayout();
 static bool CreateGraphicsPipeline();
 
 static bool CreateCommandPools();
+
+static bool CreateColorImage();
 
 static bool CreateDepthImage();
 
