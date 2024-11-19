@@ -5,10 +5,16 @@
 #ifndef GAME_LOGGING_H
 #define GAME_LOGGING_H
 
-//#define FLUSH_ON_INFO
-#define FLUSH_ON_DEBUG
-#define FLUSH_ON_WARNING
-#define FLUSH_ON_ERROR
+#include <stdarg.h>
+#include "../../defines.h"
+
+#define FLUSH_ON_INFO false
+#define FLUSH_ON_DEBUG true
+#define FLUSH_ON_WARNING true
+#define FLUSH_ON_ERROR true
+
+
+void LogInternal(const char *type, int color, bool flush, const char *message, va_list args);
 
 /**
  * Log an info message
