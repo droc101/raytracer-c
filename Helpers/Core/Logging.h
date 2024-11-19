@@ -20,7 +20,7 @@ void LogInternal(const char *type, int color, bool flush, const char *message, .
  * @param message Format string
  * @param ... Format arguments
  */
-#define LogInfo(message, ...) LogInternal("INFO", 37, FLUSH_ON_INFO, message __VA_OPT__(, __VA_ARGS__))
+#define LogInfo(...) LogInternal("INFO", 37, FLUSH_ON_INFO, __VA_ARGS__)
 
 #ifndef NDEBUG
 /**
@@ -28,7 +28,7 @@ void LogInternal(const char *type, int color, bool flush, const char *message, .
  * @param message Format string
  * @param ... Format arguments
  */
-#define LogDebug(message, ...) LogInternal("DEBUG", 37, FLUSH_ON_DEBUG, message __VA_OPT__(, __VA_ARGS__))
+#define LogDebug(...) LogInternal("DEBUG", 37, FLUSH_ON_DEBUG, __VA_ARGS__)
 #endif
 
 /**
@@ -36,13 +36,13 @@ void LogInternal(const char *type, int color, bool flush, const char *message, .
  * @param message Format string
  * @param ... Format arguments
  */
-#define LogWarning(message, ...) LogInternal("INFO", 33, FLUSH_ON_WARNING, message __VA_OPT__(, __VA_ARGS__))
+#define LogWarning(...) LogInternal("INFO", 33, FLUSH_ON_WARNING, __VA_ARGS__)
 
 /**
  * Log an error message
  * @param message Format string
  * @param ... Format arguments
  */
-#define LogError(message, ...) LogInternal("ERROR", 31, FLUSH_ON_ERROR, message __VA_OPT__(, __VA_ARGS__))
+#define LogError(...) LogInternal("ERROR", 31, FLUSH_ON_ERROR, __VA_ARGS__)
 
 #endif //GAME_LOGGING_H
