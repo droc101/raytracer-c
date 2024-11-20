@@ -1794,7 +1794,7 @@ static bool CreateDescriptorPool()
             },
             {
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                2
+                MAX_FRAMES_IN_FLIGHT
             }
         }
     };
