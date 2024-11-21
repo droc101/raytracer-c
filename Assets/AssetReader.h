@@ -44,5 +44,7 @@ byte *DecompressAsset(const byte *asset);
 #define ASSET_TYPE_GLSL 4
 #define ASSET_TYPE_SPIRV_FRAG 5
 #define ASSET_TYPE_SPIRV_VERT 6
+#define ASSET_TYPE_SPIRV_TESS_CTRL 7
+#define ASSET_TYPE_SPIRV_TESS_EVAL 8
 
 #endif //GAME_ASSETREADER_H
