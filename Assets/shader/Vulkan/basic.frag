@@ -1,8 +1,8 @@
 #version 460
 #extension GL_EXT_nonuniform_qualifier : enable
 
-layout(set = 1, binding = 0) uniform sampler2D textureSampler[];
-layout(binding = 1) uniform DataBufferObject {
+layout(binding = 1) uniform sampler2D textureSampler[];
+layout(binding = 2) uniform DataBufferObject {
     uint textureIndex;
 } data;
 

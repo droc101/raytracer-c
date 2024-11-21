@@ -1025,16 +1025,23 @@ static bool CreateRenderPass()
     return true;
 }
 
-static bool CreateDescriptorSetLayouts()
+static bool CreateDescriptorSetLayout()
 {
-    const List(VkDescriptorSetLayoutBinding) set0Bindings = {
-        2,
+    const List(VkDescriptorSetLayoutBinding) bindings = {
+        3,
         (VkDescriptorSetLayoutBinding[]){
             {
                 0,
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                 1,
                 VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT,
+                NULL
+            },
+            {
+                1,
+                VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                TEXTURE_ASSET_COUNT,
+                VK_SHADER_STAGE_FRAGMENT_BIT,
                 NULL
             },
             {
@@ -1046,31 +1053,15 @@ static bool CreateDescriptorSetLayouts()
             }
         }
     };
-    const VkDescriptorSetLayoutCreateInfo set0LayoutInfo = {
+    const VkDescriptorSetLayoutCreateInfo layoutInfo = {
         VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
         NULL,
         0,
-        set0Bindings.length,
-        set0Bindings.data
+        bindings.length,
+        bindings.data
     };
-    VulkanTest(vkCreateDescriptorSetLayout(device, &set0LayoutInfo, NULL, descriptorSetLayouts),
-               "Failed to create Vulkan descriptor set layout!");
 
-    VkDescriptorSetLayoutBinding set1Bindings = {
-        1,
-        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-        TEXTURE_ASSET_COUNT,
-        VK_SHADER_STAGE_FRAGMENT_BIT,
-        NULL
-    };
-    const VkDescriptorSetLayoutCreateInfo set1LayoutInfo = {
-        VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-        NULL,
-        0,
-        1,
-        &set1Bindings
-    };
-    VulkanTest(vkCreateDescriptorSetLayout(device, &set1LayoutInfo, NULL, &descriptorSetLayouts[1]),
+    VulkanTest(vkCreateDescriptorSetLayout(device, &layoutInfo, NULL, &descriptorSetLayout),
                "Failed to create Vulkan descriptor set layout!");
 
     return true;
@@ -1271,8 +1262,8 @@ static bool CreateGraphicsPipeline()
         VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
         NULL,
         0,
-        2,
-        descriptorSetLayouts,
+        1,
+        &descriptorSetLayout,
         0,
         NULL
     };
@@ -1757,6 +1748,41 @@ static bool CreateVertexBuffer()
     return true;
 }
 
+static bool CreateIndexBuffer()
+{
+    VkBuffer stagingBuffer;
+    VkDeviceMemory stagingBufferMemory;
+    void *data;
+
+    const VkDeviceSize bufferSize = sizeof(indices.data[0]) * indices.length;
+
+    if (!CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &stagingBuffer,
+                      &stagingBufferMemory))
+    {
+        return false;
+    }
+
+    VulkanTest(vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data),
+               "Failed to map Vulkan index staging buffer memory!");
+
+    memcpy(data, indices.data, bufferSize);
+    vkUnmapMemory(device, stagingBufferMemory);
+
+    if (!CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+                      VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &indexBuffer, &indexBufferMemory))
+    {
+        return false;
+    }
+
+    if (!CopyBuffer(stagingBuffer, indexBuffer, bufferSize)) return false;
+
+    vkDestroyBuffer(device, stagingBuffer, NULL);
+    vkFreeMemory(device, stagingBufferMemory, NULL);
+
+    return true;
+}
+
 static bool CreateUniformBuffers()
 {
     for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
@@ -1787,12 +1813,16 @@ static bool CreateUniformBuffers()
 
 static bool CreateDescriptorPool()
 {
-    const List(VkDescriptorPoolSize) pool0Sizes = {
-        2,
+    const List(VkDescriptorPoolSize) poolSizes = {
+        3,
         (VkDescriptorPoolSize[]){
             {
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                 MAX_FRAMES_IN_FLIGHT * MAX_FRAMES_IN_FLIGHT
+            },
+            {
+                VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                MAX_FRAMES_IN_FLIGHT * TEXTURE_ASSET_COUNT
             },
             {
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
@@ -1801,32 +1831,16 @@ static bool CreateDescriptorPool()
         }
     };
 
-    const VkDescriptorPoolCreateInfo pool0CreateInfo = {
+    const VkDescriptorPoolCreateInfo poolCreateInfo = {
         VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
         NULL,
         0,
         MAX_FRAMES_IN_FLIGHT,
-        pool0Sizes.length,
-        pool0Sizes.data
+        poolSizes.length,
+        poolSizes.data
     };
 
-    VulkanTest(vkCreateDescriptorPool(device, &pool0CreateInfo, NULL, descriptorPools),
-               "Failed to create Vulkan descriptor pool!");
-
-
-    const VkDescriptorPoolSize pool1Size = {
-        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-        TEXTURE_ASSET_COUNT
-    };
-    const VkDescriptorPoolCreateInfo pool1CreateInfo = {
-        VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
-        NULL,
-        0,
-        1,
-        1,
-        &pool1Size
-    };
-    VulkanTest(vkCreateDescriptorPool(device, &pool1CreateInfo, NULL, &descriptorPools[1]),
+    VulkanTest(vkCreateDescriptorPool(device, &poolCreateInfo, NULL, &descriptorPool),
                "Failed to create Vulkan descriptor pool!");
 
     return true;
@@ -1834,32 +1848,21 @@ static bool CreateDescriptorPool()
 
 static bool CreateDescriptorSets()
 {
-    VkDescriptorSetLayout layouts[MAX_FRAMES_IN_FLIGHT + 1];
+    VkDescriptorSetLayout layouts[MAX_FRAMES_IN_FLIGHT];
     for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
-        layouts[i] = descriptorSetLayouts[0];
+        layouts[i] = descriptorSetLayout;
     }
 
-    const VkDescriptorSetAllocateInfo set0AllocateInfo = {
+    const VkDescriptorSetAllocateInfo allocateInfo = {
         VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
         NULL,
-        descriptorPools[0],
+        descriptorPool,
         MAX_FRAMES_IN_FLIGHT,
         layouts
     };
 
-    VulkanTest(vkAllocateDescriptorSets(device, &set0AllocateInfo, descriptorSets),
-    "Failed to allocate Vulkan descriptor sets!");
-
-    const VkDescriptorSetAllocateInfo set1AllocateInfo = {
-        VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-        NULL,
-        descriptorPools[1],
-        1,
-        &descriptorSetLayouts[1]
-    };
-
-    VulkanTest(vkAllocateDescriptorSets(device, &set1AllocateInfo, &descriptorSets[1]),
+    VulkanTest(vkAllocateDescriptorSets(device, &allocateInfo, descriptorSets),
                "Failed to allocate Vulkan descriptor sets!");
 
     for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
@@ -1982,7 +1985,7 @@ bool VK_Init(SDL_Window *window)
 {
     vk_window = window;
     if (CreateInstance() && CreateSurface() && PickPhysicalDevice() && CreateLogicalDevice() && CreateSwapChain() &&
-        CreateImageViews() && CreateRenderPass() && CreateDescriptorSetLayouts() && CreateGraphicsPipeline() &&
+        CreateImageViews() && CreateRenderPass() && CreateDescriptorSetLayout() && CreateGraphicsPipeline() &&
         CreateCommandPools() && CreateColorImage() && CreateDepthImage() && CreateFramebuffers() && LoadTextures() &&
         CreateTexturesImageView() && CreateTextureSampler() && CreateVertexBuffer() && CreateUniformBuffers() &&
         CreateDescriptorPool() && CreateDescriptorSets() && CreateCommandBuffers() && CreateSyncObjects())
@@ -2103,10 +2106,8 @@ bool VK_Cleanup()
         vkDestroyBuffer(device, dataBuffer, NULL);
         vkFreeMemory(device, dataBufferMemory, NULL);
 
-        vkDestroyDescriptorPool(device, descriptorPools[0], NULL);
-        vkDestroyDescriptorPool(device, descriptorPools[1], NULL);
-        vkDestroyDescriptorSetLayout(device, descriptorSetLayouts[0], NULL);
-        vkDestroyDescriptorSetLayout(device, descriptorSetLayouts[1], NULL);
+        vkDestroyDescriptorPool(device, descriptorPool, NULL);
+        vkDestroyDescriptorSetLayout(device, descriptorSetLayout, NULL);
 
         vkDestroyBuffer(device, indexBuffer, NULL);
         vkFreeMemory(device, indexBufferMemory, NULL);
