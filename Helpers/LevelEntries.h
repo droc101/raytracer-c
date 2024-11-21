@@ -18,7 +18,7 @@ typedef struct LevelEntry
 
 #define DEFINE_LEVEL(internal, data, display, canExit, courseNum) {internal, gzbin_leveldata_##data, display, canExit, courseNum}
 
-#define STUB_LEVEL() {" ", NULLPTR, " ", false, 0}
+#define STUB_LEVEL() {" ", NULL, " ", false, 0}
 
 #define LEVEL_COUNT 10
 

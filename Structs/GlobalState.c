@@ -23,7 +23,7 @@ const byte *music[MUSIC_COUNT] = { // NOLINT(*-interfaces-global-init)
 void ChannelFinished(const int channel)
 {
     // callback for when a channel finishes playing (so we can free it)
-    state.channels[channel] = NULLPTR;
+    state.channels[channel] = NULL;
 }
 
 void InitState()
@@ -37,10 +37,10 @@ void InitState()
     state.physicsFrame = 0;
     state.level = CreateLevel(); // empty level so we don't segfault
     state.requestExit = false;
-    state.music = NULLPTR;
+    state.music = NULL;
     for (int i = 0; i < SFX_CHANNEL_COUNT; i++)
     {
-        state.channels[i] = NULLPTR;
+        state.channels[i] = NULL;
     }
     state.CameraY = 0;
     state.textBoxActive = false;
@@ -159,7 +159,7 @@ void ChangeLevel(Level *l)
         WallBake(w);
     }
 
-    if (l->staticWalls != NULLPTR)
+    if (l->staticWalls != NULL)
     {
         DestroySizedArray(l->staticWalls);
     }
@@ -179,7 +179,7 @@ void ChangeMusic(const byte *asset)
     const byte *mp3 = DecompressAsset(asset);
     const uint mp3Size = AssetGetSize(asset);
     Mix_Music *mus = Mix_LoadMUS_RW(SDL_RWFromConstMem(mp3, mp3Size), 1);
-    if (mus == NULLPTR)
+    if (mus == NULL)
     {
         printf("Mix_LoadMUS_RW Error: %s\n", Mix_GetError());
         return;
@@ -190,12 +190,12 @@ void ChangeMusic(const byte *asset)
 
 void StopMusic()
 {
-    if (state.music != NULLPTR)
+    if (state.music != NULL)
     {
         // stop and free the current music
         Mix_HaltMusic();
         Mix_FreeMusic(state.music);
-        state.music = NULLPTR; // set to NULL, so we don't free it again if this function fails
+        state.music = NULL; // set to NULL, so we don't free it again if this function fails
     }
 }
 
@@ -210,14 +210,14 @@ void PlaySoundEffect(const byte *asset)
     const byte *wav = DecompressAsset(asset);
     const uint wavSize = AssetGetSize(asset);
     Mix_Chunk *chunk = Mix_LoadWAV_RW(SDL_RWFromConstMem(wav, wavSize), 1);
-    if (chunk == NULLPTR)
+    if (chunk == NULL)
     {
         LogError("Mix_LoadWAV_RW Error: %s\n", Mix_GetError());
         return;
     }
     for (int i = 0; i < SFX_CHANNEL_COUNT; i++)
     {
-        if (state.channels[i] == NULLPTR)
+        if (state.channels[i] == NULL)
         {
             state.channels[i] = chunk;
             Mix_PlayChannel(i, chunk, 0);
@@ -234,7 +234,7 @@ void DestroyGlobalState()
     SDL_RemoveTimer(state.FixedFramerateUpdate);
     DestroyLevel(state.level);
     free(state.cam);
-    if (state.music != NULLPTR)
+    if (state.music != NULL)
     {
         Mix_HaltMusic();
         Mix_FreeMusic(state.music);
@@ -242,7 +242,7 @@ void DestroyGlobalState()
     // free sound effects
     for (int i = 0; i < SFX_CHANNEL_COUNT; i++)
     {
-        if (state.channels[i] != NULLPTR)
+        if (state.channels[i] != NULL)
         {
             Mix_FreeChunk(state.channels[i]);
         }

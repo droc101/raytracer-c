@@ -11,25 +11,25 @@
 Node *CreateListNode(void *data)
 {
     Node *newNode = malloc(sizeof(Node));
-    if (newNode == NULLPTR)
+    if (newNode == NULL)
     {
         Error("Node: malloc fail");
     }
     newNode->data = data;
-    newNode->prev = NULLPTR;
-    newNode->next = NULLPTR;
+    newNode->prev = NULL;
+    newNode->next = NULL;
     return newNode;
 }
 
 List *CreateList()
 {
     List *newList = malloc(sizeof(List));
-    if (newList == NULLPTR)
+    if (newList == NULL)
     {
         Error("List: malloc fail");
     }
-    newList->head = NULLPTR;
-    newList->tail = NULLPTR;
+    newList->head = NULL;
+    newList->tail = NULL;
     newList->size = 0;
     return newList;
 }
@@ -37,7 +37,7 @@ List *CreateList()
 void ListAdd(List *list, void *data)
 {
     Node *newNode = CreateListNode(data);
-    if (list->head == NULLPTR)
+    if (list->head == NULL)
     {
         list->head = newNode;
         list->tail = newNode;
@@ -52,12 +52,12 @@ void ListAdd(List *list, void *data)
 
 void ListRemove(List *list, Node *node)
 {
-    if (node == NULLPTR)
+    if (node == NULL)
     {
         return;
     }
 
-    if (node->prev != NULLPTR)
+    if (node->prev != NULL)
     {
         node->prev->next = node->next;
     } else
@@ -65,7 +65,7 @@ void ListRemove(List *list, Node *node)
         list->head = node->next;
     }
 
-    if (node->next != NULLPTR)
+    if (node->next != NULL)
     {
         node->next->prev = node->prev;
     } else
@@ -74,19 +74,19 @@ void ListRemove(List *list, Node *node)
     }
     list->size--;
     free(node);
-    node = NULLPTR;
+    node = NULL;
 }
 
 void ListRemoveAt(List *list, const int index)
 {
     Node *current = list->head;
     int i = 0;
-    while (current != NULLPTR && i < index)
+    while (current != NULL && i < index)
     {
         current = current->next;
         i++;
     }
-    if (current == NULLPTR)
+    if (current == NULL)
     {
         Error("List: Index out of bounds");
     }
@@ -95,7 +95,7 @@ void ListRemoveAt(List *list, const int index)
 
 void ListInsertAfter(List *list, Node *prevNode, void *data)
 {
-    if (prevNode == NULLPTR)
+    if (prevNode == NULL)
     {
         Error("List: Previous node is NULL");
     }
@@ -103,7 +103,7 @@ void ListInsertAfter(List *list, Node *prevNode, void *data)
     Node *newNode = CreateListNode(data);
     newNode->next = prevNode->next;
     newNode->prev = prevNode;
-    if (prevNode->next != NULLPTR)
+    if (prevNode->next != NULL)
     {
         prevNode->next->prev = newNode;
     } else
@@ -118,12 +118,12 @@ void *ListGet(const List *list, const int index)
 {
     const Node *current = list->head;
     int i = 0;
-    while (current != NULLPTR && i < index)
+    while (current != NULL && i < index)
     {
         current = current->next;
         i++;
     }
-    if (current == NULLPTR)
+    if (current == NULL)
     {
         Error("List: Index out of bounds");
     }
@@ -133,20 +133,20 @@ void *ListGet(const List *list, const int index)
 void ListFree(List *list)
 {
     Node *current = list->head;
-    while (current != NULLPTR)
+    while (current != NULL)
     {
         Node *next = current->next;
         free(current);
         current = next;
     }
     free(list);
-    list = NULLPTR;
+    list = NULL;
 }
 
 void ListFreeWithData(List *list)
 {
     Node *current = list->head;
-    while (current != NULLPTR)
+    while (current != NULL)
     {
         Node *next = current->next;
         free(current->data); // free the node's data too
@@ -154,7 +154,7 @@ void ListFreeWithData(List *list)
         current = next;
     }
     free(list);
-    list = NULLPTR;
+    list = NULL;
 }
 
 inline int ListGetSize(const List *list)
@@ -166,7 +166,7 @@ int ListFind(const List *list, const void *data)
 {
     const Node *current = list->head;
     int i = 0;
-    while (current != NULLPTR)
+    while (current != NULL)
     {
         if (current->data == data)
         {
@@ -196,19 +196,19 @@ void DestroySizedArray(SizedArray *array)
 {
     free(array->elements);
     free(array);
-    array = NULLPTR;
+    array = NULL;
 }
 
 void ListClear(List *list)
 {
     Node *current = list->head;
-    while (current != NULLPTR)
+    while (current != NULL)
     {
         Node *next = current->next;
         free(current);
         current = next;
     }
-    list->head = NULLPTR;
-    list->tail = NULLPTR;
+    list->head = NULL;
+    list->tail = NULL;
     list->size = 0;
 }

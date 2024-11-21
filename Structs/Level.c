@@ -26,8 +26,8 @@ Level *CreateLevel()
     l->FogColor = 0xff000000;
     l->FogStart = 10;
     l->FogEnd = 30;
-    l->staticWalls = NULLPTR;
-    l->staticActors = NULLPTR;
+    l->staticWalls = NULL;
+    l->staticActors = NULL;
     return l;
 }
 
@@ -57,7 +57,7 @@ void DestroyLevel(Level *l)
     ListFreeWithData(l->walls);
     ListFree(l->actors); // actors are freed above (FreeActor)
     free(l);
-    l = NULLPTR;
+    l = NULL;
 }
 
 void BakeWallArray(Level *l)

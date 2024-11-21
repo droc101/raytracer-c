@@ -34,7 +34,7 @@ void GLevelSelectStateUpdate(GlobalState */*State*/)
     } else if (IsKeyJustPressed(SDL_SCANCODE_SPACE) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_A))
     {
         // check if the level is a stub
-        if (gLevelEntries[GLevelSelectState_SelectedLevel].levelData == NULLPTR)
+        if (gLevelEntries[GLevelSelectState_SelectedLevel].levelData == NULL)
         {
             GMenuStateSet();
             return;

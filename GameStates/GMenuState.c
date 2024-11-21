@@ -75,7 +75,7 @@ void GMenuStateRender(GlobalState */*State*/)
 
 void GMenuStateSet()
 {
-    if (menuStack == NULLPTR)
+    if (menuStack == NULL)
     {
         menuStack = CreateUiStack();
         UiStackPush(menuStack, CreateButtonControl(v2(0, 80), v2(480, 40), "Start", StartGame, MIDDLE_CENTER));

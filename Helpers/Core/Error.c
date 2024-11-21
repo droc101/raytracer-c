@@ -131,7 +131,7 @@ _Noreturn void RenderInitError()
 
     mb.colorScheme = &mbColorScheme;
     mb.buttons = buttons;
-    mb.window = NULLPTR;
+    mb.window = NULL;
     mb.flags = SDL_MESSAGEBOX_ERROR;
 
     int buttonid;
