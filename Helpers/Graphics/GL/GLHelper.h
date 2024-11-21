@@ -184,14 +184,14 @@ void GL_DrawColoredArrays(const float *vertices, const uint *indices, int quad_c
  * @param x X position in pixels
  * @return The NDC position
  */
-float GL_X_TO_NDC(float x);
+#define GL_X_TO_NDC(x) ((float) (x) / WindowWidth() * 2.0f - 1.0f)
 
 /**
  * Convert screen Y to NDC
  * @param y Y position in pixels
  * @return The NDC position
  */
-float GL_Y_TO_NDC(float y);
+#define GL_Y_TO_NDC(y) (1.0f - (float) (y) / WindowHeight() * 2.0f)
 
 /**
  * OpenGL code to render the 3D portion of a level

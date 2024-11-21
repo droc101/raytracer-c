@@ -49,6 +49,16 @@ bool RenderInit();
 void RenderDestroy();
 
 /**
+ * Run tasks that need to be run before any drawing can be done
+ */
+void FrameStart();
+
+/**
+ * Run tasks needed to present the frame to the screen, as well as swapping the framebuffers
+ */
+void FrameEnd();
+
+/**
  * Render the 3D portion of a level
  * @param l The level to render
  * @param cam The camera to render with
@@ -68,6 +78,11 @@ void UpdateViewportSize();
 void WindowObscured();
 
 /**
+ * Handle restoring the window from minimized state
+ */
+void WindowRestored();
+
+/**
  * Enable or disable low FPS mode
  * @param val A boolean representing if low FPS mode should be enabled
  */
@@ -78,11 +93,6 @@ void SetLowFPS(bool val);
  * @return A boolean representing if low FPS is enabled
  */
 bool IsLowFPSModeEnabled();
-
-/**
- * Handle restoring the window from minimized state
- */
-void WindowRestored();
 
 /**
  * Draw a `BatchedQuadArray` to the screen using the textured shader. This is faster than multiple draw calls, but harder to use.

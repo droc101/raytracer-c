@@ -96,12 +96,40 @@ void RenderDestroy()
     }
 }
 
+void FrameStart()
+{
+    switch (currentRenderer)
+    {
+        case RENDERER_VULKAN:
+            VK_FrameStart();
+            break;
+        case RENDERER_OPENGL: // NOLINT(*-branch-clone)
+
+            break;
+        default: break;
+    }
+}
+
+void FrameEnd()
+{
+    switch (currentRenderer)
+    {
+        case RENDERER_VULKAN:
+            VK_FrameEnd();
+            break;
+        case RENDERER_OPENGL:
+            GL_Swap();
+            break;
+        default: break;
+    }
+}
+
 void RenderLevel3D(const Level *l, const Camera *cam)
 {
     switch (currentRenderer)
     {
         case RENDERER_VULKAN:
-            VK_DrawFrame();
+            VK_RenderLevel();
             break;
         case RENDERER_OPENGL:
             GL_RenderLevel(l, cam);
@@ -117,6 +145,7 @@ inline void UpdateViewportSize()
     float newScale = newScaleX < newScaleY ? newScaleX : newScaleY;
     newScale = max(newScale, 1.0f);
     GetState()->uiScale = newScale;
+    UpdateWindowSize();
     switch (currentRenderer)
     {
         case RENDERER_VULKAN:
@@ -153,7 +182,7 @@ inline void WindowRestored()
     {
         case RENDERER_VULKAN:
             VK_Restore();
-        break;
+            break;
         case RENDERER_OPENGL:
 
             break;
@@ -203,8 +232,8 @@ inline float X_TO_NDC(const float x)
 {
     switch (currentRenderer)
     {
-        case RENDERER_VULKAN:
-            return 0;
+        case RENDERER_VULKAN: // NOLINT(*-branch-clone)
+            return VK_X_TO_NDC(x);
         case RENDERER_OPENGL:
             return GL_X_TO_NDC(x);
         default:
@@ -217,7 +246,7 @@ inline float Y_TO_NDC(const float y)
     switch (currentRenderer)
     {
         case RENDERER_VULKAN:
-            return 0;
+            return VK_Y_TO_NDC(y);
         case RENDERER_OPENGL:
             return GL_Y_TO_NDC(y);
         default:

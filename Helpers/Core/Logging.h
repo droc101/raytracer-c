@@ -27,6 +27,8 @@ void LogInternal(const char *type, int color, bool flush, const char *message, .
  * @param ... Format arguments
  */
 #define LogDebug(...) LogInternal("DEBUG", 37, FLUSH_ON_DEBUG, __VA_ARGS__)
+#else
+#define LogDebug(...)
 #endif
 
 /**

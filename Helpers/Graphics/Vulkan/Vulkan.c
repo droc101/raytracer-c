@@ -365,13 +365,17 @@ static void UpdateUniformBuffer(const uint32_t currentFrame)
         GLM_MAT4_IDENTITY_INIT,
         GLM_MAT4_IDENTITY_INIT
     };
+    mat4 ubo = GLM_MAT4_IDENTITY_INIT;
 
     glm_rotate(bufferObject.model, (float) SDL_GetTicks64() * PIf / 10000.0f, GLM_YUP);
     glm_lookat((vec3){2.0f, 2.0f, 2.0f}, GLM_VEC3_ZERO, (vec3){0.0f, -1.0f, 0.0f}, bufferObject.view);
     glm_perspective(PI / 4, (float) swapChainExtent.width / (float) swapChainExtent.height, 0.1f, 10.0f,
                     bufferObject.proj);
 
-    memcpy(uniformBuffersMapped[currentFrame], &bufferObject, sizeof(bufferObject));
+    glm_mat4_mul(bufferObject.proj, bufferObject.view, ubo);
+    glm_mat4_mul(ubo, bufferObject.model, ubo);
+
+    memcpy(uniformBuffersMapped[currentFrame], &ubo, sizeof(ubo));
 }
 
 static bool RecordCommandBuffer(const VkCommandBuffer buffer, const uint32_t imageIndex)
@@ -1034,7 +1038,7 @@ static bool CreateDescriptorSetLayout()
                 0,
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                 1,
-                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT,
+                VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT,
                 NULL
             },
             {
@@ -1696,7 +1700,7 @@ static bool CreateTextureSampler()
         VK_SAMPLER_ADDRESS_MODE_REPEAT,
         VK_SAMPLER_ADDRESS_MODE_REPEAT,
         VK_SAMPLER_ADDRESS_MODE_REPEAT,
-        0,
+        -1.5f,
         VK_FALSE,
         1,
         VK_FALSE,
@@ -1748,46 +1752,11 @@ static bool CreateVertexBuffer()
     return true;
 }
 
-static bool CreateIndexBuffer()
-{
-    VkBuffer stagingBuffer;
-    VkDeviceMemory stagingBufferMemory;
-    void *data;
-
-    const VkDeviceSize bufferSize = sizeof(indices.data[0]) * indices.length;
-
-    if (!CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &stagingBuffer,
-                      &stagingBufferMemory))
-    {
-        return false;
-    }
-
-    VulkanTest(vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data),
-               "Failed to map Vulkan index staging buffer memory!");
-
-    memcpy(data, indices.data, bufferSize);
-    vkUnmapMemory(device, stagingBufferMemory);
-
-    if (!CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
-                      VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &indexBuffer, &indexBufferMemory))
-    {
-        return false;
-    }
-
-    if (!CopyBuffer(stagingBuffer, indexBuffer, bufferSize)) return false;
-
-    vkDestroyBuffer(device, stagingBuffer, NULL);
-    vkFreeMemory(device, stagingBufferMemory, NULL);
-
-    return true;
-}
-
 static bool CreateUniformBuffers()
 {
     for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
-        const VkDeviceSize uniformBufferSize = sizeof(UniformBufferObject);
+        const VkDeviceSize uniformBufferSize = sizeof(mat4);
 
         if (!CreateBuffer(uniformBufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                           VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -1870,7 +1839,7 @@ static bool CreateDescriptorSets()
         VkDescriptorBufferInfo uniformBufferInfo = {
             uniformBuffers[i],
             0,
-            sizeof(UniformBufferObject)
+            sizeof(mat4)
         };
 
         VkDescriptorImageInfo imageInfo[TEXTURE_ASSET_COUNT];
@@ -1991,7 +1960,7 @@ bool VK_Init(SDL_Window *window)
         CreateDescriptorPool() && CreateDescriptorSets() && CreateCommandBuffers() && CreateSyncObjects())
     {
         const DataBufferObject dataBufferObject = {
-            texturesAssetIDMap[ReadUintA(DecompressAsset(gztex_level_uvtest), 12)]
+            texturesAssetIDMap[ReadUintA(DecompressAsset(gztex_actor_coin), 12)]
         };
 
         memcpy(mappedDataBuffer, &dataBufferObject, sizeof(dataBufferObject));
@@ -2003,7 +1972,7 @@ bool VK_Init(SDL_Window *window)
     return false;
 }
 
-VkResult VK_DrawFrame()
+VkResult VK_FrameStart()
 {
     if (minimized) return VK_SUCCESS;
 
@@ -2012,10 +1981,9 @@ VkResult VK_DrawFrame()
 
     VulkanTestReturnResult(vkResetFences(device, 1, &inFlightFences[currentFrame]), "Failed to reset Vulkan fences!");
 
-    uint32_t imageIndex;
     const VkResult acquireNextImageResult = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX,
                                                                   imageAvailableSemaphores[currentFrame],
-                                                                  VK_NULL_HANDLE, &imageIndex);
+                                                                  VK_NULL_HANDLE, &swapchainImageIndex);
 
     if (acquireNextImageResult == VK_ERROR_OUT_OF_DATE_KHR || acquireNextImageResult == VK_SUBOPTIMAL_KHR)
     {
@@ -2026,9 +1994,12 @@ VkResult VK_DrawFrame()
     VulkanTestReturnResult(vkResetCommandBuffer(commandBuffers[currentFrame], 0),
                            "Failed to reset Vulkan command buffer!");
 
-    UpdateUniformBuffer(currentFrame);
+    return VK_SUCCESS;
+}
 
-    if (!RecordCommandBuffer(commandBuffers[currentFrame], imageIndex)) return VK_ERROR_UNKNOWN;
+VkResult VK_FrameEnd()
+{
+    if (!RecordCommandBuffer(commandBuffers[currentFrame], swapchainImageIndex)) return VK_ERROR_UNKNOWN;
 
     const VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]};
     const VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
@@ -2056,7 +2027,7 @@ VkResult VK_DrawFrame()
         signalSemaphores,
         1,
         swapChains,
-        &imageIndex,
+        &swapchainImageIndex,
         NULL
     };
 
@@ -2070,6 +2041,12 @@ VkResult VK_DrawFrame()
 
     currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 
+    return VK_SUCCESS;
+}
+
+VkResult VK_RenderLevel()
+{
+    UpdateUniformBuffer(currentFrame);
     return VK_SUCCESS;
 }
 

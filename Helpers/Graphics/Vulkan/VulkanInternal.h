@@ -125,24 +125,6 @@ const List(Vertex) vertices = {
         {{-0.5f, -0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
     }
 };
-
-const List(uint16_t) indices = {
-    12,
-    (uint16_t[]){
-        0,
-        1,
-        2,
-        2,
-        3,
-        0,
-        4,
-        5,
-        6,
-        6,
-        7,
-        4
-    }
-};
 #pragma endregion variables
 
 #pragma region vulkanVariables
@@ -197,6 +179,7 @@ VkSemaphore renderFinishedSemaphores[MAX_FRAMES_IN_FLIGHT] = {VK_NULL_HANDLE};
 VkFence inFlightFences[MAX_FRAMES_IN_FLIGHT] = {VK_NULL_HANDLE};
 bool framebufferResized = false;
 uint8_t currentFrame = 0;
+uint32_t swapchainImageIndex;
 VkBuffer vertexBuffer = VK_NULL_HANDLE;
 VkDeviceMemory vertexBufferMemory = VK_NULL_HANDLE;
 VkBuffer indexBuffer = VK_NULL_HANDLE;
@@ -309,8 +292,6 @@ static bool CreateTexturesImageView();
 static bool CreateTextureSampler();
 
 static bool CreateVertexBuffer();
-
-static bool CreateIndexBuffer();
 
 static bool CreateUniformBuffers();
 

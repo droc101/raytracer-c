@@ -8,6 +8,10 @@
 #include <vulkan/vulkan.h>
 #include "../../../defines.h"
 
+#define VK_X_TO_NDC(x) ((float) x / WindowWidth() * 2.0f - 1.0f)
+
+#define VK_Y_TO_NDC(y) ((float) y / WindowHeight() * 2.0f - 1.0f)
+
 /**
  * This function is used to create the Vulkan instance and surface, as well as configuring the environment properly.
  * This function (and the functions it calls) do NOT perform any drawing, though the framebuffers are initialized here.
@@ -18,7 +22,14 @@
  */
 bool VK_Init(SDL_Window *window);
 
-VkResult VK_DrawFrame();
+//TODO document me
+VkResult VK_FrameStart();
+
+//TODO document me
+VkResult VK_FrameEnd();
+
+//TODO document me
+VkResult VK_RenderLevel();
 
 /// A function used to destroy the Vulkan objects when they are no longer needed.
 bool VK_Cleanup();

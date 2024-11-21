@@ -174,6 +174,8 @@ int main(const int argc, char *argv[])
                     break;
             }
         }
+        FrameStart();
+
         ClearDepthOnly();
 
         ResetDPrintYPos();
@@ -199,7 +201,7 @@ int main(const int argc, char *argv[])
 
         FrameGraphDraw();
 
-        Swap();
+        FrameEnd();
 
         UpdateInputStates();
 

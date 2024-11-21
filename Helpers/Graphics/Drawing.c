@@ -16,6 +16,8 @@
 #include "GL/GLHelper.h"
 
 SDL_Window *window;
+int windowWidth;
+int windowHeight;
 
 uint drawColor = 0xFFFFFFFF;
 
@@ -31,18 +33,19 @@ inline SDL_Window *GetGameWindow()
 
 inline int WindowWidth()
 {
-    int w, h;
-    SDL_GetWindowSize(window, &w, &h);
-    w /= GetState()->uiScale;
-    return w;
+    return windowWidth;
 }
 
 inline int WindowHeight()
 {
-    int w, h;
-    SDL_GetWindowSize(window, &w, &h);
-    h /= GetState()->uiScale;
-    return h;
+    return windowHeight;
+}
+
+inline void UpdateWindowSize()
+{
+    SDL_GetWindowSize(window, &windowWidth, &windowHeight);
+    windowWidth /= GetState()->uiScale;
+    windowHeight /= GetState()->uiScale;
 }
 
 inline Vector2 ActualWindowSize()
@@ -255,20 +258,6 @@ inline void ClearDepthOnly()
             break;
         case RENDERER_OPENGL:
             GL_ClearDepthOnly();
-            break;
-        default: break;
-    }
-}
-
-inline void Swap()
-{
-    switch (currentRenderer)
-    {
-        case RENDERER_VULKAN:
-
-            break;
-        case RENDERER_OPENGL:
-            GL_Swap();
             break;
         default: break;
     }

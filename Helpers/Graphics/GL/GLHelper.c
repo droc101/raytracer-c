@@ -245,16 +245,6 @@ void GL_DestroyGL()
     SDL_GL_DeleteContext(ctx);
 }
 
-inline float GL_X_TO_NDC(const float x)
-{
-    return x / WindowWidth() * 2.0f - 1.0f;
-}
-
-inline float GL_Y_TO_NDC(const float y)
-{
-    return 1.0f - y / WindowHeight() * 2.0f;
-}
-
 void GL_DrawRect(const Vector2 pos, const Vector2 size, const uint color)
 {
     glUseProgram(ui_colored->program);
@@ -431,8 +421,7 @@ void GL_SetTexParams(const unsigned char *imageData, const bool linear, const bo
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, linear ? GL_LINEAR : GL_NEAREST);
 }
 
-void
-GL_DrawTexture_Internal(const Vector2 pos, const Vector2 size, const unsigned char *imageData, const uint color,
+void GL_DrawTexture_Internal(const Vector2 pos, const Vector2 size, const unsigned char *imageData, const uint color,
                         const Vector2 region_start,
                         const Vector2 region_end)
 {
@@ -630,8 +619,7 @@ void GL_DrawWall(const Wall *w, const mat4 *mdl, const Camera *cam, const Level 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 }
 
-void
-GL_DrawFloor(const Vector2 vp1, const Vector2 vp2, const mat4 *mvp, const Level *l, const unsigned char *texture,
+void GL_DrawFloor(const Vector2 vp1, const Vector2 vp2, const mat4 *mvp, const Level *l, const unsigned char *texture,
              const float height, const float shade)
 {
     glUseProgram(floor_generic->program);
