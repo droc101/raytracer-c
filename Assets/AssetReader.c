@@ -27,10 +27,10 @@ void InvalidateAssetCache()
 {
     for (int i = 0; i < ASSET_COUNT; i++)
     {
-        if (AssetCache[i] != NULLPTR)
+        if (AssetCache[i] != NULL)
         {
             free(AssetCache[i]);
-            AssetCache[i] = NULLPTR;
+            AssetCache[i] = NULL;
         }
     }
 }
@@ -51,7 +51,7 @@ byte *DecompressAsset(const byte *asset)
         Error("Asset ID out of range");
     }
 
-    if (AssetCache[assetId] != NULLPTR)
+    if (AssetCache[assetId] != NULL)
     {
         return AssetCache[assetId];
     }
@@ -73,7 +73,7 @@ byte *DecompressAsset(const byte *asset)
     if (inflateInit2(&stream, MAX_WBITS | 16) != Z_OK)
     {
         free(decompressedData);
-        decompressedData = NULLPTR;
+        decompressedData = NULL;
         LogError("Failed to initialize zlib stream: %s\n", stream.msg);
         Error("Failed to initialize zlib stream");
     }
@@ -86,7 +86,7 @@ byte *DecompressAsset(const byte *asset)
         if (ret != Z_OK && ret != Z_STREAM_END)
         {
             free(decompressedData);
-            decompressedData = NULLPTR;
+            decompressedData = NULL;
             LogError("Failed to decompress zlib stream: %s\n", stream.msg);
             Error("Failed to decompress zlib stream");
         }

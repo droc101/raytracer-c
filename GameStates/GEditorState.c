@@ -478,7 +478,7 @@ void GEditorStateUpdate(GlobalState */*State*/)
                 break;
             case NODE_ACTOR:
                 CreateSlider("ang", 0, 359, radToDeg(node->rotation), 1, 45, v2(10, 250), v2(200, 24),
-                             SetNodeRotationSlider, NULLPTR);
+                             SetNodeRotationSlider, NULL);
                 CreateSlider("Type", 0, GetActorTypeCount() - 1, node->extra, 1, 16, v2(10, 300), v2(200, 24),
                              SetNodeExtraSlider, SliderActorNameLabelCallback);
                 CreateSlider(GetActorParamName(node->extra, 0), 0, 255, node->extra2 >> 24 & 0xFF, 1, 16, v2(10, 350),
@@ -799,9 +799,9 @@ void SetEditorMode(bool /*c*/, byte /*g*/, const byte id)
         CreateSlider("Fog B", 0, 255, level_fogB, 1, 16, v2(10, sy), v2(200, 24), SetFogBSlider, SliderLabelInteger);
         sy += szy + sp;
         CreateSlider("Fog Start", -50, 200, level_fogStart, 1, 50, v2(10, sy), v2(200, 24), SetFogStartSlider,
-                     NULLPTR);
+                     NULL);
         sy += szy + sp;
-        CreateSlider("Fog End", 0, 300, level_fogEnd, 1, 50, v2(10, sy), v2(200, 24), SetFogEndSlider, NULLPTR);
+        CreateSlider("Fog End", 0, 300, level_fogEnd, 1, 50, v2(10, sy), v2(200, 24), SetFogEndSlider, NULL);
         sy += szy + sp;
         CreateSlider("Floor Tex", 0, WALL_TEXTURE_COUNT - 1, level_floor_tex, 1, 16, v2(10, sy), v2(200, 24),
                      SetFloorTexSlider, SliderLabelInteger);

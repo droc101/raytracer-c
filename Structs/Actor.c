@@ -103,7 +103,7 @@ Actor *CreateActor(const Vector2 position, const double rotation, const int acto
                    const byte paramB, const byte paramC, const byte paramD)
 {
     Actor *actor = malloc(sizeof(Actor));
-    actor->actorWall = NULLPTR;
+    actor->actorWall = NULL;
     actor->position = position;
     actor->rotation = rotation;
     actor->solid = false;
@@ -127,12 +127,12 @@ void FreeActor(Actor *actor)
 {
     actor->Destroy(actor);
     free(actor);
-    actor = NULLPTR;
+    actor = NULL;
 }
 
 bool GetTransformedWall(const Actor *actor, Wall *wall)
 {
-    if (actor->actorWall == NULLPTR)
+    if (actor->actorWall == NULL)
     {
         return false;
     }

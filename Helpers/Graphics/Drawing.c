@@ -91,7 +91,7 @@ SDL_Surface *ToSDLSurface(const unsigned char *imageData, const char *filterMode
 
     SDL_Surface *surface = SDL_CreateRGBSurfaceFrom((void *) pixelData, width, height, 32, width * 4, 0x00ff0000,
                                                     0x0000ff00, 0x000000ff, 0xff000000);
-    if (surface == NULLPTR)
+    if (surface == NULL)
     {
         LogError("Failed to create surface: %s\n", SDL_GetError());
         Error("ToSDLTexture: Failed to create surface");

@@ -155,7 +155,7 @@ GL_Shader *GL_ConstructShader(const char *fsh, const char *vsh)
         err_buf[sizeof(err_buf) - 1] = '\0';
         LogError(err_buf);
         free(shd);
-        return NULLPTR;
+        return NULL;
     }
 
     shd->program = glCreateProgram();
@@ -171,7 +171,7 @@ GL_Shader *GL_ConstructShader(const char *fsh, const char *vsh)
         err_buf[sizeof(err_buf) - 1] = '\0';
         LogError(err_buf);
         free(shd);
-        return NULLPTR;
+        return NULL;
     }
 
     return shd;
@@ -183,7 +183,7 @@ void GL_DestroyShader(GL_Shader *shd)
     glDeleteShader(shd->fsh);
     glDeleteProgram(shd->program);
     free(shd);
-    shd = NULLPTR;
+    shd = NULL;
 }
 
 GL_Buffer *GL_ConstructBuffer()
@@ -835,7 +835,7 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
     for (int i = 0; i < l->staticActors->size; i++)
     {
         const Actor *actor = SizedArrayGet(l->staticActors, i);
-        if (actor->actorWall == NULLPTR) continue;
+        if (actor->actorWall == NULL) continue;
         Wall w;
         memcpy(&w, actor->actorWall, sizeof(Wall));
         WallBake(&w);

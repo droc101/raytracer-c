@@ -17,7 +17,8 @@
 #define uint uint32_t // unsigned 32-bit integer
 #define ulong uint64_t // unsigned 64-bit integer
 
-#define NULLPTR NULL
+#define STR(x) #x
+#define TO_STR(x) STR(x)
 
 #define STR(x) #x
 #define TO_STR(x) STR(x)

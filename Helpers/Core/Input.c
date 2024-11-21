@@ -26,15 +26,15 @@ SDL_GameController *FindGameController() {
             return SDL_GameControllerOpen(i);
         }
     }
-    return NULLPTR;
+    return NULL;
 }
 
 void HandleControllerDisconnect(const Sint32 which)
 {
-    if (controller == NULLPTR) return;
+    if (controller == NULL) return;
     if (SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(controller)) != which) return;
     SDL_GameControllerClose(controller);
-    controller = NULLPTR;
+    controller = NULL;
     FindGameController(); // try to find another controller
 }
 
@@ -258,5 +258,5 @@ double GetAxis(const SDL_GameControllerAxis axis)
 
 bool UseController()
 {
-    return GetState()->options.controllerMode && controller != NULLPTR;
+    return GetState()->options.controllerMode && controller != NULL;
 }

@@ -98,7 +98,7 @@ void GOptionsStateRender(GlobalState */*State*/)
 
 void GOptionsStateSet()
 {
-    if (optionsStack == NULLPTR)
+    if (optionsStack == NULL)
     {
         optionsStack = CreateUiStack();
         int opy = 40;
