@@ -125,24 +125,6 @@ const List(Vertex) vertices = {
         {{-0.5f, -0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
     }
 };
-
-const List(uint16_t) indices = {
-    12,
-    (uint16_t[]){
-        0,
-        1,
-        2,
-        2,
-        3,
-        0,
-        4,
-        5,
-        6,
-        6,
-        7,
-        4
-    }
-};
 #pragma endregion variables
 
 #pragma region vulkanVariables
@@ -185,7 +167,7 @@ VkFormat swapChainImageFormat;
 VkExtent2D swapChainExtent;
 VkImageView *swapChainImageViews;
 VkRenderPass renderPass = VK_NULL_HANDLE;
-VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
+VkDescriptorSetLayout descriptorSetLayouts[2];
 VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
 VkPipeline graphicsPipeline = VK_NULL_HANDLE;
 VkFramebuffer *swapChainFramebuffers;
@@ -204,8 +186,8 @@ VkDeviceMemory indexBufferMemory = VK_NULL_HANDLE;
 VkBuffer uniformBuffers[MAX_FRAMES_IN_FLIGHT] = {VK_NULL_HANDLE};
 VkDeviceMemory uniformBuffersMemory[MAX_FRAMES_IN_FLIGHT] = {VK_NULL_HANDLE};
 void *uniformBuffersMapped[MAX_FRAMES_IN_FLIGHT];
-VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
-VkDescriptorSet descriptorSets[MAX_FRAMES_IN_FLIGHT];
+VkDescriptorPool descriptorPools[2];
+VkDescriptorSet descriptorSets[MAX_FRAMES_IN_FLIGHT + 1];
 ImageAllocationInformation textures[TEXTURE_ASSET_COUNT];
 VkDeviceMemory textureMemory;
 VkImageView texturesImageView[TEXTURE_ASSET_COUNT];
@@ -290,7 +272,7 @@ static bool CreateImageViews();
 
 static bool CreateRenderPass();
 
-static bool CreateDescriptorSetLayout();
+static bool CreateDescriptorSetLayouts();
 
 static bool CreateGraphicsPipeline();
 
