@@ -431,11 +431,10 @@ static bool RecordCommandBuffer(const VkCommandBuffer buffer, const uint32_t ima
     vkCmdSetScissor(buffer, 0, 1, &scissor);
 
     vkCmdBindVertexBuffers(buffer, 0, 1, (VkBuffer[1]){vertexBuffer}, (VkDeviceSize[1]){0});
-    vkCmdBindIndexBuffer(buffer, indexBuffer, 0, VK_INDEX_TYPE_UINT16);
     vkCmdBindDescriptorSets(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1,
                             &descriptorSets[currentFrame], 0, NULL);
 
-    vkCmdDrawIndexed(buffer, indices.length, 1, 0, 0, 0);
+    vkCmdDraw(buffer, vertices.length, 1, 0, 0);
 
     vkCmdEndRenderPass(buffer);
 
@@ -734,6 +733,7 @@ static bool CreateLogicalDevice()
     VkPhysicalDeviceFeatures deviceFeatures = {
         .logicOp = VK_TRUE,
         .samplerAnisotropy = VK_TRUE,
+        .tessellationShader = VK_TRUE,
     };
     VkPhysicalDeviceVulkan12Features vulkan12Features = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
@@ -1034,7 +1034,7 @@ static bool CreateDescriptorSetLayout()
                 0,
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                 1,
-                VK_SHADER_STAGE_VERTEX_BIT,
+                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT,
                 NULL
             },
             {
@@ -1073,12 +1073,17 @@ static bool CreateGraphicsPipeline()
                                                          AssetGetSize(gzvert_Vulkan_basic));
     VkShaderModule fragShaderModule = CreateShaderModule((uint32_t *) DecompressAsset(gzfrag_Vulkan_basic),
                                                          AssetGetSize(gzfrag_Vulkan_basic));
-    if (!vertShaderModule || !fragShaderModule)
+    VkShaderModule tescShaderModule = CreateShaderModule((uint32_t *) DecompressAsset(gztesc_Vulkan_test),
+                                                         AssetGetSize(gztesc_Vulkan_test));
+    VkShaderModule teseShaderModule = CreateShaderModule((uint32_t *) DecompressAsset(gztese_Vulkan_test),
+                                                         AssetGetSize(gztese_Vulkan_test));
+    if (!vertShaderModule || !fragShaderModule || !tescShaderModule || !teseShaderModule)
     {
+        VulkanLogError("Failed to load Vulkan shaders!");
         return false;
     }
 
-    VkPipelineShaderStageCreateInfo shaderStages[2] = {
+    VkPipelineShaderStageCreateInfo shaderStages[4] = {
         {
             VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
             NULL,
@@ -1094,6 +1099,24 @@ static bool CreateGraphicsPipeline()
             0,
             VK_SHADER_STAGE_FRAGMENT_BIT,
             fragShaderModule,
+            "main",
+            NULL
+        },
+        {
+            VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+            NULL,
+            0,
+            VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT,
+            tescShaderModule,
+            "main",
+            NULL
+        },
+    {
+            VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+            NULL,
+            0,
+            VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT,
+            teseShaderModule,
             "main",
             NULL
         }
@@ -1141,8 +1164,15 @@ static bool CreateGraphicsPipeline()
         VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
         NULL,
         0,
-        VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
+        VK_PRIMITIVE_TOPOLOGY_PATCH_LIST,
         VK_FALSE
+    };
+
+    VkPipelineTessellationStateCreateInfo tessellationState = {
+        VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO,
+        NULL,
+        0,
+        4
     };
 
     VkPipelineViewportStateCreateInfo viewportState = {
@@ -1244,11 +1274,11 @@ static bool CreateGraphicsPipeline()
         VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
         NULL,
         0,
-        2,
+        4,
         shaderStages,
         &vertexInputInfo,
         &inputAssembly,
-        NULL,
+        &tessellationState,
         &viewportState,
         &rasterizer,
         &multisampling,
@@ -1267,6 +1297,8 @@ static bool CreateGraphicsPipeline()
 
     vkDestroyShaderModule(device, vertShaderModule, NULL);
     vkDestroyShaderModule(device, fragShaderModule, NULL);
+    vkDestroyShaderModule(device, tescShaderModule, NULL);
+    vkDestroyShaderModule(device, teseShaderModule, NULL);
 
     return true;
 }
@@ -1955,9 +1987,8 @@ bool VK_Init(SDL_Window *window)
     if (CreateInstance() && CreateSurface() && PickPhysicalDevice() && CreateLogicalDevice() && CreateSwapChain() &&
         CreateImageViews() && CreateRenderPass() && CreateDescriptorSetLayout() && CreateGraphicsPipeline() &&
         CreateCommandPools() && CreateColorImage() && CreateDepthImage() && CreateFramebuffers() && LoadTextures() &&
-        CreateTexturesImageView() && CreateTextureSampler() && CreateVertexBuffer() && CreateIndexBuffer() &&
-        CreateUniformBuffers() && CreateDescriptorPool() && CreateDescriptorSets() && CreateCommandBuffers() &&
-        CreateSyncObjects())
+        CreateTexturesImageView() && CreateTextureSampler() && CreateVertexBuffer() && CreateUniformBuffers() &&
+        CreateDescriptorPool() && CreateDescriptorSets() && CreateCommandBuffers() && CreateSyncObjects())
     {
         const DataBufferObject dataBufferObject = {
             texturesAssetIDMap[ReadUintA(DecompressAsset(gztex_level_uvtest), 12)]

@@ -238,7 +238,7 @@ def vert_to_bytes(path):
     data += int_to_bytes(aid)  # Padding
     for i in range(0, len(data)):
         if data[i] < 0 or data[i] > 255:
-            print("Error: FRAG-SPV data out of range")
+            print("Error: VERT-SPV data out of range")
             sys.exit(1)
 
     decompressed_len = len(data)
@@ -250,6 +250,76 @@ def vert_to_bytes(path):
     header.extend(int_to_bytes(decompressed_len))  # Decompressed length
     header.extend(int_to_bytes(aid))  # Asset ID
     header.extend(int_to_bytes(6))  # Asset Type (6 = vertex)
+
+    header.extend(data)
+
+    header[19] = 1
+    header[20] = 2
+    header[21] = 3
+    header[22] = 4
+
+    aid += 1
+
+    return header
+
+def tesc_to_bytes(path):
+    global aid
+
+    data = list(glsl_to_spv(path))
+
+    data += int_to_bytes(len(data))  # array size (excluding header)
+    data += int_to_bytes(0)  # unused
+    data += int_to_bytes(0)  # unused
+    data += int_to_bytes(aid)  # Padding
+    for i in range(0, len(data)):
+        if data[i] < 0 or data[i] > 255:
+            print("Error: TESC-SPV data out of range")
+            sys.exit(1)
+
+    decompressed_len = len(data)
+
+    data = gzip.compress(bytes(data))
+
+    header = bytearray()
+    header.extend(int_to_bytes(len(data)))  # Compressed length
+    header.extend(int_to_bytes(decompressed_len))  # Decompressed length
+    header.extend(int_to_bytes(aid))  # Asset ID
+    header.extend(int_to_bytes(7))  # Asset Type (7 = tessellation control)
+
+    header.extend(data)
+
+    header[19] = 1
+    header[20] = 2
+    header[21] = 3
+    header[22] = 4
+
+    aid += 1
+
+    return header
+
+def tese_to_bytes(path):
+    global aid
+
+    data = list(glsl_to_spv(path))
+
+    data += int_to_bytes(len(data))  # array size (excluding header)
+    data += int_to_bytes(0)  # unused
+    data += int_to_bytes(0)  # unused
+    data += int_to_bytes(aid)  # Padding
+    for i in range(0, len(data)):
+        if data[i] < 0 or data[i] > 255:
+            print("Error: TESE-SPV data out of range")
+            sys.exit(1)
+
+    decompressed_len = len(data)
+
+    data = gzip.compress(bytes(data))
+
+    header = bytearray()
+    header.extend(int_to_bytes(len(data)))  # Compressed length
+    header.extend(int_to_bytes(decompressed_len))  # Decompressed length
+    header.extend(int_to_bytes(aid))  # Asset ID
+    header.extend(int_to_bytes(8))  # Asset Type (8 = tessellation evaluation)
 
     header.extend(data)
 
@@ -356,6 +426,20 @@ def recursive_search(path):
                 print("Converting " + path_from_assets + file)
                 data = vert_to_bytes(path + file)
                 name = "gzvert_" + foldername + "_" + file.split(".")[0]
+                assets_c += bytes_to_c_array(data, name)
+                assets_h += c_header_array(name, len(data))
+            elif file.endswith(".tesc"):
+                count += 1
+                print("Converting " + path_from_assets + file)
+                data = tesc_to_bytes(path + file)
+                name = "gztesc_" + foldername + "_" + file.split(".")[0]
+                assets_c += bytes_to_c_array(data, name)
+                assets_h += c_header_array(name, len(data))
+            elif file.endswith(".tese"):
+                count += 1
+                print("Converting " + path_from_assets + file)
+                data = tese_to_bytes(path + file)
+                name = "gztese_" + foldername + "_" + file.split(".")[0]
                 assets_c += bytes_to_c_array(data, name)
                 assets_h += c_header_array(name, len(data))
             else:
