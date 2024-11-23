@@ -11,8 +11,6 @@
 #include "../../Structs/GlobalState.h"
 #include "../../Structs/UI/UiStack.h"
 #include "../../Structs/UI/Controls/Button.h"
-#include "../../Structs/UI/Controls/CheckBox.h"
-#include "../../Structs/UI/Controls/RadioButton.h"
 #include "../../Structs/UI/Controls/Slider.h"
 
 UiStack *soundOptionsStack;

@@ -39,9 +39,9 @@ void GL_Error(const char *error)
 
 bool GL_PreInit()
 {
-    bool msaa = GetState()->options.msaa != MSAA_NONE;
-    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, msaa);
-    if (msaa)
+    const bool msaa_enabled = GetState()->options.msaa != MSAA_NONE;
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, msaa_enabled);
+    if (msaa_enabled)
     {
         int mssa_val = 0;
         switch (GetState()->options.msaa)
