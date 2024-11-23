@@ -60,7 +60,7 @@ void GMainStateUpdate(GlobalState *State)
         ShowTextBox(tb);
     }
 
-    State->level->rotation += GetMouseRel().x * (State->options.mouseSpeed / 120.0);
+    State->level->player.angle += GetMouseRel().x * (State->options.mouseSpeed / 120.0);
 }
 
 uint GMainStateFixedUpdate(const uint interval, GlobalState *State)
@@ -120,16 +120,16 @@ uint GMainStateFixedUpdate(const uint interval, GlobalState *State)
     }
 
     moveVec = Vector2Scale(moveVec, spd);
-    moveVec = Vector2Rotate(moveVec, l->rotation);
+    moveVec = Vector2Rotate(moveVec, l->player.angle);
 
-    l->position = Move(l->position, moveVec, NULL);
+    l->player.pos = Move(l->player.pos, moveVec, NULL);
 
     if (UseController())
     {
         const double cx = GetAxis(SDL_CONTROLLER_AXIS_RIGHTX);
         if (fabs(cx) > 0.1)
         {
-            l->rotation += cx * (State->options.mouseSpeed / 11.25);
+            l->player.angle += cx * (State->options.mouseSpeed / 11.25);
         }
     }
 
@@ -154,7 +154,7 @@ uint GMainStateFixedUpdate(const uint interval, GlobalState *State)
         }
     }
 
-    l->rotation = wrap(l->rotation, 0, 2 * PI);
+    l->player.angle = wrap(l->player.angle, 0, 2 * PI);
 
     for (int i = 0; i < l->staticActors->size; i++)
     {
@@ -192,8 +192,8 @@ void GMainStateRender(GlobalState *State)
     {
         TextBoxRender(&State->textBox, State->textBoxPage);
     }
-    DPrintF("Position: (%.2f, %.2f)\nRotation: %.4f (%.2fdeg)", 0xFFFFFFFF, false, l->position.x, l->position.y,
-            l->rotation, radToDeg(l->rotation));
+    DPrintF("Position: (%.2f, %.2f)\nRotation: %.4f (%.2fdeg)", 0xFFFFFFFF, false, l->player.pos.x, l->player.pos.y,
+            l->player.angle, radToDeg(l->player.angle));
 
     DPrintF("Walls: %d", 0xFFFFFFFF, false, l->staticWalls->size);
     DPrintF("Actors: %d", 0xFFFFFFFF, false, l->staticActors->size);

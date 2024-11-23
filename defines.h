@@ -40,6 +40,12 @@ typedef struct Camera
     float fov;
 } Camera;
 
+typedef struct Player
+{
+    Vector2 pos;
+    double angle;
+} Player;
+
 // Utility functions are in Structs/wall.h
 typedef struct Wall
 {
@@ -61,8 +67,6 @@ typedef struct Level
 {
     List *actors; // The list of actors in the level. You must bake this into staticActors before it is used.
     List *walls; // The list of walls in the level. You must bake this into staticWalls before it is used.
-    Vector2 position; // The player's position
-    double rotation; // The player's rotation
     uint SkyColor; // The color of the sky
     uint FloorTexture; // The texture index of the floor
     uint CeilingTexture; // The texture index + 1 of the ceiling. 0 is no ceiling
@@ -72,6 +76,7 @@ typedef struct Level
     double FogEnd; // The end of the fog
     SizedArray *staticWalls; // The static array of walls in the level
     SizedArray *staticActors; // The static array of actors in the level
+    Player player;
 } Level;
 
 // Utility functions are in Structs/ray.h

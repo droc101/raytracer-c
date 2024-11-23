@@ -828,8 +828,8 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
     mat4 *IDENTITY = malloc(sizeof(mat4));
     glm_mat4_identity(*IDENTITY);
 
-    const Vector2 floor_start = v2(l->position.x - 100, l->position.y - 100);
-    const Vector2 floor_end = v2(l->position.x + 100, l->position.y + 100);
+    const Vector2 floor_start = v2(l->player.pos.x - 100, l->player.pos.y - 100);
+    const Vector2 floor_end = v2(l->player.pos.x + 100, l->player.pos.y + 100);
 
     GL_SetLevelParams(WORLD_VIEW_MATRIX, l);
 

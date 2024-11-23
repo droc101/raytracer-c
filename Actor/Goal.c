@@ -20,11 +20,11 @@ void GoalInit(Actor *this)
 
 void GoalUpdate(Actor *this)
 {
-    const Vector2 dir = Vector2Sub(GetState()->level->position, this->position);
+    const Vector2 dir = Vector2Sub(GetState()->level->player.pos, this->position);
     this->rotation = atan2(dir.y, dir.x);
     this->rotation += PI;
 
-    if (CollideActorCylinder(this, GetState()->level->position))
+    if (CollideActorCylinder(this, GetState()->level->player.pos))
     {
         RemoveActor(this);
         const TextBox tb = DEFINE_TEXT("Goal!", 2, 20, 0, 70, TEXT_BOX_H_ALIGN_CENTER, TEXT_BOX_V_ALIGN_TOP,
