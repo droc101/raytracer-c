@@ -518,17 +518,17 @@ void GEditorStateRender(GlobalState */*State*/)
     SetColorUint(0xFF808080);
     for (int x = gridOffsetX; x < WindowWidth(); x += gridSpacing)
     {
-        DrawRect(x, 0, 1, WindowHeight());
+        DrawLine(v2(x, 0), v2(x, WindowHeight()), 1.0f);
     }
     for (int y = gridOffsetY; y < WindowHeight(); y += gridSpacing)
     {
-        DrawRect(0, y, WindowWidth(), 1);
+        DrawLine(v2(0, y), v2(WindowWidth(), y), 1.0f);
     }
 
     SetColorUint(0xFF0000FF);
-    DrawRect((int) EditorPanX, 0, 1, WindowHeight());
+    DrawLine(v2(EditorPanX, 0), v2(EditorPanX, WindowHeight()), 2.0f);
     SetColorUint(0xFFFF0000);
-    DrawRect(0, (int) EditorPanY, WindowWidth(), 1);
+    DrawLine(v2(0, EditorPanY), v2(WindowWidth(), EditorPanY), 2.0f);
 
     // draw world space numbers along bottom and right
     char buf[32];
