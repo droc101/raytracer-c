@@ -5,12 +5,13 @@
 #ifndef GAME_VULKAN_H
 #define GAME_VULKAN_H
 
+#include <SDL_vulkan.h>
+#include <stdbool.h>
 #include <vulkan/vulkan.h>
-#include "../../../defines.h"
 
-#define VK_X_TO_NDC(x) ((float) x / WindowWidth() * 2.0f - 1.0f)
+#define VK_X_TO_NDC(x) ((float) (x) / WindowWidth() * 2.0f - 1.0f)
 
-#define VK_Y_TO_NDC(y) ((float) y / WindowHeight() * 2.0f - 1.0f)
+#define VK_Y_TO_NDC(y) ((float) (y) / WindowHeight() * 2.0f - 1.0f)
 
 /**
  * This function is used to create the Vulkan instance and surface, as well as configuring the environment properly.
@@ -38,6 +39,8 @@ void VK_Minimize();
 
 void VK_Restore();
 
-VkSampleCountFlags VK_MaxSampleCount();
+VkSampleCountFlags VK_GetSampleCount();
+
+bool VK_DrawRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t color);
 
 #endif //GAME_VULKAN_H

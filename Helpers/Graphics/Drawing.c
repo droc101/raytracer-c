@@ -14,6 +14,7 @@
 #include "../Core/Error.h"
 #include "../Core/Logging.h"
 #include "GL/GLHelper.h"
+#include "Vulkan/Vulkan.h"
 
 SDL_Window *window;
 int windowWidth;
@@ -268,7 +269,7 @@ inline void DrawRect(const int x, const int y, const int w, const int h)
     switch (currentRenderer)
     {
         case RENDERER_VULKAN:
-
+            VK_DrawRect(x, y, w, h, drawColor);
             break;
         case RENDERER_OPENGL:
             GL_DrawRect(v2(x, y), v2(w, h), drawColor);

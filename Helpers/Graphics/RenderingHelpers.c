@@ -149,9 +149,7 @@ inline void UpdateViewportSize()
     switch (currentRenderer)
     {
         case RENDERER_VULKAN:
-            int w, h;
-            SDL_GetWindowSize(GetGameWindow(), &w, &h);
-
+            // Unused
             break;
         case RENDERER_OPENGL:
             GL_UpdateViewportSize();
