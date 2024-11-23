@@ -122,6 +122,12 @@ add_executable(
         Helpers/PlatformHelpers.c
         Helpers/PlatformHelpers.h
         Helpers/Graphics/GL/GLInternal.h
+        GameStates/Options/GVideoOptionsState.c
+        GameStates/Options/GVideoOptionsState.h
+        GameStates/Options/GSoundOptionsState.c
+        GameStates/Options/GSoundOptionsState.h
+        GameStates/Options/GInputOptionsState.c
+        GameStates/Options/GInputOptionsState.h
 )
 
 set(SDL2_PATH "${CMAKE_SOURCE_DIR}/lib/SDL2/x86_64-w64-mingw32")

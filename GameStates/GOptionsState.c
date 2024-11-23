@@ -14,6 +14,9 @@
 #include "../Structs/UI/Controls/CheckBox.h"
 #include "../Structs/UI/Controls/RadioButton.h"
 #include "../Structs/UI/Controls/Slider.h"
+#include "Options/GInputOptionsState.h"
+#include "Options/GSoundOptionsState.h"
+#include "Options/GVideoOptionsState.h"
 
 UiStack *optionsStack;
 
@@ -22,58 +25,12 @@ void BtnOptionsBack()
     GMenuStateSet();
 }
 
-void SldOptionsMasterVolume(const double value)
-{
-    GetState()->options.masterVolume = value;
-    UpdateVolume();
-}
-
-void SldOptionsMusicVolume(const double value)
-{
-    GetState()->options.musicVolume = value;
-    UpdateVolume();
-}
-
-void SldOptionsSfxVolume(const double value)
-{
-    GetState()->options.sfxVolume = value;
-    UpdateVolume();
-}
-
-void CbOptionsFullscreen(const bool value)
-{
-    GetState()->options.fullscreen = value;
-    SDL_SetWindowFullscreen(GetGameWindow(), value ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
-}
-
-void RbOptionsRenderer(const bool /*value*/, const byte /*groupId*/, const byte id)
-{
-    GetState()->options.renderer = id;
-    // Renderer change will happen on next restart
-}
-
-void CbOptionsVsync(const bool value)
-{
-    GetState()->options.vsync = value;
-    // VSync change will happen on next restart
-}
-
 void GOptionsStateUpdate(GlobalState */*State*/)
 {
     if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_B))
     {
         BtnOptionsBack();
     }
-}
-
-void SldOptionsMouseSensitivity(const double value)
-{
-    GetState()->options.mouseSpeed = value;
-}
-
-void CbOptionsControllerMode(const bool value)
-{
-    GetState()->options.controllerMode = value;
 }
 
 void GOptionsStateRender(GlobalState */*State*/)
@@ -89,9 +46,6 @@ void GOptionsStateRender(GlobalState */*State*/)
     DrawTextAligned("Options", 32, 0xFFFFFFFF, v2s(0), v2(WindowWidth(), 100), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE,
                     false);
 
-    DrawTextAligned("Changing renderer requires a restart", 16, 0xFFa0a0a0, v2(0, 590), v2(WindowWidth(), 40),
-                    FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
-
     ProcessUiStack(optionsStack);
     DrawUiStack(optionsStack);
 }
@@ -103,43 +57,51 @@ void GOptionsStateSet()
         optionsStack = CreateUiStack();
         int opy = 40;
         const int ops = 25;
-        UiStackPush(optionsStack,
-                    CreateSliderControl(v2(0, opy), v2(480, 40), "Camera Sensitivity", SldOptionsMouseSensitivity,
-                                        TOP_CENTER, 0.01, 2.00,
-                                        GetState()->options.mouseSpeed, 0.01, 0.1, SliderLabelPercent));
-        opy += ops;
-        UiStackPush(optionsStack,
-                    CreateCheckboxControl(v2(0, opy), v2(480, 40), "Controller Mode", CbOptionsControllerMode, TOP_CENTER,
-                                          GetState()->options.controllerMode));
-        opy += ops * 1.5;
-        UiStackPush(optionsStack,
-                    CreateSliderControl(v2(0, opy), v2(480, 40), "Master Volume", SldOptionsMasterVolume, TOP_CENTER,
-                                        0.0, 1.0, GetState()->options.masterVolume, 0.01, 0.1, SliderLabelPercent));
-        opy += ops;
-        UiStackPush(optionsStack,
-                    CreateSliderControl(v2(0, opy), v2(480, 40), "Music Volume", SldOptionsMusicVolume, TOP_CENTER, 0.0,
-                                        1.0, GetState()->options.musicVolume, 0.01, 0.1, SliderLabelPercent));
-        opy += ops;
-        UiStackPush(optionsStack,
-                    CreateSliderControl(v2(0, opy), v2(480, 40), "SFX Volume", SldOptionsSfxVolume, TOP_CENTER, 0.0,
-                                        1.0,
-                                        GetState()->options.sfxVolume, 0.01, 0.1, SliderLabelPercent));
-        opy += ops * 1.5;
-        UiStackPush(optionsStack,
-                    CreateCheckboxControl(v2(0, opy), v2(480, 40), "Fullscreen", CbOptionsFullscreen, TOP_CENTER,
-                                          GetState()->options.fullscreen));
-        opy += ops;
-        UiStackPush(optionsStack, CreateCheckboxControl(v2(0, opy), v2(480, 40), "VSync", CbOptionsVsync, TOP_CENTER,
-                                                        GetState()->options.vsync));
-        opy += ops * 1.5;
-        UiStackPush(optionsStack,
-                    CreateRadioButtonControl(v2(0, opy), v2(480, 40), "Vulkan //todo", RbOptionsRenderer, TOP_CENTER,
-                                             GetState()->options.renderer == RENDERER_VULKAN, 0, RENDERER_VULKAN));
 
+        UiStackPush(optionsStack, CreateButtonControl(v2(0, opy), v2(480, 40), "Video Options", GVideoOptionsStateSet, TOP_CENTER));
         opy += ops;
-        UiStackPush(optionsStack,
-                    CreateRadioButtonControl(v2(0, opy), v2(480, 40), "OpenGL (Compatibility)", RbOptionsRenderer, TOP_CENTER,
-                                             GetState()->options.renderer == RENDERER_OPENGL, 0, RENDERER_OPENGL));
+        UiStackPush(optionsStack, CreateButtonControl(v2(0, opy), v2(480, 40), "Sound Options", GSoundOptionsStateSet, TOP_CENTER));
+        opy += ops;
+        UiStackPush(optionsStack, CreateButtonControl(v2(0, opy), v2(480, 40), "Input Options", GInputOptionsStateSet, TOP_CENTER));
+        opy += ops;
+
+        // UiStackPush(optionsStack,
+        //             CreateSliderControl(v2(0, opy), v2(480, 40), "Camera Sensitivity", SldOptionsMouseSensitivity,
+        //                                 TOP_CENTER, 0.01, 2.00,
+        //                                 GetState()->options.mouseSpeed, 0.01, 0.1, SliderLabelPercent));
+        // opy += ops;
+        // UiStackPush(optionsStack,
+        //             CreateCheckboxControl(v2(0, opy), v2(480, 40), "Controller Mode", CbOptionsControllerMode, TOP_CENTER,
+        //                                   GetState()->options.controllerMode));
+        // opy += ops * 1.5;
+        // UiStackPush(optionsStack,
+        //             CreateSliderControl(v2(0, opy), v2(480, 40), "Master Volume", SldOptionsMasterVolume, TOP_CENTER,
+        //                                 0.0, 1.0, GetState()->options.masterVolume, 0.01, 0.1, SliderLabelPercent));
+        // opy += ops;
+        // UiStackPush(optionsStack,
+        //             CreateSliderControl(v2(0, opy), v2(480, 40), "Music Volume", SldOptionsMusicVolume, TOP_CENTER, 0.0,
+        //                                 1.0, GetState()->options.musicVolume, 0.01, 0.1, SliderLabelPercent));
+        // opy += ops;
+        // UiStackPush(optionsStack,
+        //             CreateSliderControl(v2(0, opy), v2(480, 40), "SFX Volume", SldOptionsSfxVolume, TOP_CENTER, 0.0,
+        //                                 1.0,
+        //                                 GetState()->options.sfxVolume, 0.01, 0.1, SliderLabelPercent));
+        // opy += ops * 1.5;
+        // UiStackPush(optionsStack,
+        //             CreateCheckboxControl(v2(0, opy), v2(480, 40), "Fullscreen", CbOptionsFullscreen, TOP_CENTER,
+        //                                   GetState()->options.fullscreen));
+        // opy += ops;
+        // UiStackPush(optionsStack, CreateCheckboxControl(v2(0, opy), v2(480, 40), "VSync", CbOptionsVsync, TOP_CENTER,
+        //                                                 GetState()->options.vsync));
+        // opy += ops * 1.5;
+        // UiStackPush(optionsStack,
+        //             CreateRadioButtonControl(v2(0, opy), v2(480, 40), "Vulkan //todo", RbOptionsRenderer, TOP_CENTER,
+        //                                      GetState()->options.renderer == RENDERER_VULKAN, 0, RENDERER_VULKAN));
+        //
+        // opy += ops;
+        // UiStackPush(optionsStack,
+        //             CreateRadioButtonControl(v2(0, opy), v2(480, 40), "OpenGL (Compatibility)", RbOptionsRenderer, TOP_CENTER,
+        //                                      GetState()->options.renderer == RENDERER_OPENGL, 0, RENDERER_OPENGL));
         //opy += ops;
 
 

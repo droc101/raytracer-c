@@ -112,7 +112,10 @@ typedef enum
     MAIN_STATE,
     MENU_STATE,
     PAUSE_STATE,
-    OPTIONS_STATE
+    OPTIONS_STATE,
+    VIDEO_OPTIONS_STATE,
+    SOUND_OPTIONS_STATE,
+    INPUT_OPTIONS_STATE
 } CurrentState;
 
 typedef enum Renderer
@@ -122,17 +125,34 @@ typedef enum Renderer
     RENDERER_MAX
 } Renderer;
 
+typedef enum OptionsMsaa
+{
+    MSAA_NONE = 0,
+    MSAA_2X = 1,
+    MSAA_4X = 2,
+    MSAA_8X = 3,
+    MSAA_16X = 4
+} OptionsMsaa;
+
 typedef struct Options
 {
     ushort checksum; // Checksum of the options struct (helps prevent corruption)
+
+    // Controls
+    bool controllerMode; // Whether the game is in controller mode
+    double mouseSpeed; // The look speed (it affects controller speed too)
+
+    // Video
     Renderer renderer; // The renderer to use
+    bool fullscreen; // Whether the game is fullscreen
+    bool vsync; // Whether vsync is enabled
+    OptionsMsaa msaa;
+    bool mipmaps;
+
+    // Sound
     double musicVolume; // The volume of the music
     double sfxVolume; // The volume of the sound effects
     double masterVolume; // The master volume
-    double mouseSpeed; // The look speed (it affects controller speed too)
-    bool fullscreen; // Whether the game is fullscreen
-    bool vsync; // Whether vsync is enabled
-    bool controllerMode; // Whether the game is in controller mode
 } __attribute__((packed)) Options; // This is packed because it is saved to disk
 
 // Global state of the game
