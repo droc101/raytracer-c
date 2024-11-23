@@ -133,12 +133,13 @@ void GOptionsStateSet()
                                                         GetState()->options.vsync));
         opy += ops * 1.5;
         UiStackPush(optionsStack,
-                    CreateRadioButtonControl(v2(0, opy), v2(480, 40), "OpenGL", RbOptionsRenderer, TOP_CENTER,
-                                             GetState()->options.renderer == RENDERER_OPENGL, 0, RENDERER_OPENGL));
-        opy += ops;
-        UiStackPush(optionsStack,
                     CreateRadioButtonControl(v2(0, opy), v2(480, 40), "Vulkan //todo", RbOptionsRenderer, TOP_CENTER,
                                              GetState()->options.renderer == RENDERER_VULKAN, 0, RENDERER_VULKAN));
+
+        opy += ops;
+        UiStackPush(optionsStack,
+                    CreateRadioButtonControl(v2(0, opy), v2(480, 40), "OpenGL (Compatibility)", RbOptionsRenderer, TOP_CENTER,
+                                             GetState()->options.renderer == RENDERER_OPENGL, 0, RENDERER_OPENGL));
         //opy += ops;
 
 
