@@ -192,10 +192,10 @@ int main(const int argc, char *argv[])
 
         if (g->UpdateGame) g->UpdateGame(g);
 
-        g->cam->x = (float) g->level->position.x;
+        g->cam->x = (float) g->level->player.pos.x;
         g->cam->y = (float) g->CameraY;
-        g->cam->z = (float) g->level->position.y;
-        g->cam->yaw = (float) g->level->rotation;
+        g->cam->z = (float) g->level->player.pos.y;
+        g->cam->yaw = (float) g->level->player.angle;
 
         g->RenderGame(g);
 

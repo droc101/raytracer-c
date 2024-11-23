@@ -42,8 +42,8 @@ Level *LoadLevel(const byte *data)
                 const double x = ReadDouble(data, &i);
                 const double y = ReadDouble(data, &i);
                 const double r = ReadDouble(data, &i);
-                l->position = v2(x, y);
-                l->rotation = r;
+                l->player.pos = v2(x, y);
+                l->player.angle = r;
                 break;
             }
             case LEVEL_CMD_COLORS:
@@ -139,9 +139,9 @@ LevelBytecode *GenerateBytecode(const Level *l)
     }
     data[i] = LEVEL_CMD_PLAYER;
     i++;
-    WriteDouble(data, &i, l->position.x);
-    WriteDouble(data, &i, l->position.y);
-    WriteDouble(data, &i, l->rotation);
+    WriteDouble(data, &i, l->player.pos.x);
+    WriteDouble(data, &i, l->player.pos.y);
+    WriteDouble(data, &i, l->player.angle);
     data[i] = LEVEL_CMD_COLORS;
     i++;
     WriteUint(data, &i, l->SkyColor);

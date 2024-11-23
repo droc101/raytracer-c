@@ -17,8 +17,8 @@ Level *CreateLevel()
     Level *l = malloc(sizeof(Level));
     l->actors = CreateList();
     l->walls = CreateList();
-    l->position = v2s(0);
-    l->rotation = 0;
+    l->player.pos = v2s(0);
+    l->player.angle = 0;
     l->SkyColor = 0xff82c5ff;
     l->FloorTexture = 0;
     l->CeilingTexture = 0;

@@ -34,11 +34,11 @@ void CoinUpdate(Actor *this)
         this->actorWall->uvOffset = uvo;
     }
 
-    const Vector2 dir = Vector2Sub(GetState()->level->position, this->position);
+    const Vector2 dir = Vector2Sub(GetState()->level->player.pos, this->position);
     this->rotation = atan2(dir.y, dir.x);
     this->rotation += PI;
 
-    if (CollideCylinder(this->position, 0.5, GetState()->level->position))
+    if (CollideCylinder(this->position, 0.5, GetState()->level->player.pos))
     {
         if (this->paramB == 0)
         {

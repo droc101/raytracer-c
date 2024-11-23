@@ -64,7 +64,7 @@ void DoorUpdate(Actor *this)
     Wall transformedWall;
     GetTransformedWall(this, &transformedWall);
     const Vector2 wallCenter = Vector2Scale(Vector2Add(transformedWall.a, transformedWall.b), 0.5);
-    const bool playerCollide = CollideCylinder(wallCenter, 1.0, GetState()->level->position);
+    const bool playerCollide = CollideCylinder(wallCenter, 1.0, GetState()->level->player.pos);
 
     switch (data->state)
     {
