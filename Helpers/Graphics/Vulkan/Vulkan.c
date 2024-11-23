@@ -40,7 +40,7 @@ bool VK_Init(SDL_Window *window)
 
 VkResult VK_FrameStart()
 {
-    if (minimized) return VK_SUCCESS;
+    if (minimized) return VK_NOT_READY;
 
     VulkanTestReturnResult(vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX),
                            "Failed to wait for Vulkan fences!");
@@ -53,7 +53,7 @@ VkResult VK_FrameStart()
 
     if (acquireNextImageResult == VK_ERROR_OUT_OF_DATE_KHR || acquireNextImageResult == VK_SUBOPTIMAL_KHR)
     {
-        if (RecreateSwapChain()) return VK_SUCCESS;
+        if (RecreateSwapChain()) return acquireNextImageResult;
     }
     VulkanTestReturnResult(acquireNextImageResult, "Failed to acquire next Vulkan image index!");
 
@@ -143,7 +143,7 @@ VkResult VK_FrameEnd()
 
     if (queuePresentResult == VK_ERROR_OUT_OF_DATE_KHR || queuePresentResult == VK_SUBOPTIMAL_KHR)
     {
-        if (RecreateSwapChain()) return VK_SUCCESS;
+        if (RecreateSwapChain()) return queuePresentResult;
     }
     VulkanTestReturnResult(queuePresentResult, "Failed to queue frame for presentation!");
 
@@ -160,8 +160,6 @@ VkResult VK_RenderLevel()
 
 bool VK_Cleanup()
 {
-    free(vertexBuffers.ui.vertices);
-
     if (device)
     {
         VulkanTest(vkDeviceWaitIdle(device), "Failed to wait for Vulkan device to become idle!");

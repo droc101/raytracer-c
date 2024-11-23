@@ -7,6 +7,7 @@
 
 #include "../../defines.h"
 #include "cglm/cglm.h"
+#include "Vulkan/Vulkan.h"
 
 typedef struct BatchedQuadArray
 {
@@ -51,7 +52,7 @@ void RenderDestroy();
 /**
  * Run tasks that need to be run before any drawing can be done
  */
-void FrameStart();
+VkResult FrameStart();
 
 /**
  * Run tasks needed to present the frame to the screen, as well as swapping the framebuffers

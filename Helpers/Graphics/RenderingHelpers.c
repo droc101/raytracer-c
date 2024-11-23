@@ -7,7 +7,6 @@
 #include "../../Structs/GlobalState.h"
 #include "../Core/MathEx.h"
 #include "GL/GLHelper.h"
-#include "Vulkan/Vulkan.h"
 
 Renderer currentRenderer;
 bool lowFPSMode;
@@ -96,17 +95,16 @@ void RenderDestroy()
     }
 }
 
-void FrameStart()
+VkResult FrameStart()
 {
     switch (currentRenderer)
     {
         case RENDERER_VULKAN:
-            VK_FrameStart();
-            break;
+            return VK_FrameStart();
         case RENDERER_OPENGL: // NOLINT(*-branch-clone)
 
-            break;
-        default: break;
+            return VK_SUCCESS;
+        default: return VK_SUCCESS;
     }
 }
 

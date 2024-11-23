@@ -2,6 +2,8 @@
 #include <SDL_mixer.h>
 #include <stdio.h>
 #include <string.h>
+#include <vulkan/vulkan_core.h>
+
 #include "config.h"
 #include "defines.h"
 #include "Assets/AssetReader.h"
@@ -174,13 +176,18 @@ int main(const int argc, char *argv[])
                     break;
             }
         }
-        FrameStart();
+        GlobalState *g = GetState();
+
+        if (FrameStart() != VK_SUCCESS)
+        {
+            if (g->UpdateGame) g->UpdateGame(g);
+            if (IsLowFPSModeEnabled()) SDL_Delay(33);
+            continue;
+        }
 
         ClearDepthOnly();
 
         ResetDPrintYPos();
-
-        GlobalState *g = GetState();
 
         SDL_SetRelativeMouseMode(g->currentState == MAIN_STATE ? SDL_TRUE : SDL_FALSE);
         // warp the mouse to the center of the screen if we are in the main game state
