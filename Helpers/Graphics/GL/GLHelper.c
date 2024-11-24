@@ -879,7 +879,7 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
     glm_mat4_identity(*IDENTITY);
     mat4 *SKY_MODEL_WORLD = malloc(sizeof(mat4));
     glm_mat4_identity(*SKY_MODEL_WORLD);
-    glm_translated(SKY_MODEL_WORLD, (vec3){l->player.pos.x, 0, l->player.pos.y});
+    glm_translated(*SKY_MODEL_WORLD, (vec3){l->player.pos.x, 0, l->player.pos.y});
 
     const Vector2 floor_start = v2(l->player.pos.x - 100, l->player.pos.y - 100);
     const Vector2 floor_end = v2(l->player.pos.x + 100, l->player.pos.y + 100);
