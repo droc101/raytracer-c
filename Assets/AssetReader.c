@@ -102,7 +102,7 @@ byte *DecompressAsset(const byte *asset)
 
 Model *LoadModel(const byte *asset)
 {
-    size_t size = AssetGetSize(asset);
+    const size_t size = AssetGetSize(asset);
     if (size < sizeof(ModelHeader))
     {
         LogError("Failed to load model from asset, size was too small!");
@@ -135,8 +135,7 @@ Model *LoadModel(const byte *asset)
     model->packedVertsUvs = malloc(vertsSizeBytes);
     model->packedIndices = malloc(indexSizeBytes);
 
-    byte *ptr = (byte *) assetData + sizeof(ModelHeader);
-    memcpy(model->packedVertsUvs, ptr, vertsSizeBytes);
+    memcpy(model->packedVertsUvs, (byte *) assetData + sizeof(ModelHeader), vertsSizeBytes);
 
     for (int i = 0; i < model->header.indexCount; i++)
     {

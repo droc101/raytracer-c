@@ -181,7 +181,7 @@ inline float Y_TO_NDC(const float y)
     }
 }
 
-void RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const byte *texture, ModelShader shd)
+void RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const byte *texture, const ModelShader shd)
 {
     switch (currentRenderer)
     {

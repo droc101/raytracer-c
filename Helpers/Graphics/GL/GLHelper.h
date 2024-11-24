@@ -209,6 +209,6 @@ void GL_RenderLevel(const Level *l, const Camera *cam);
  * @param texture The texture to use
  * @param shader The shader to use
  */
-void GL_RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const byte *texture, const ModelShader shader);
+void GL_RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const byte *texture, ModelShader shader);
 
 #endif //GAME_GLHELPER_H

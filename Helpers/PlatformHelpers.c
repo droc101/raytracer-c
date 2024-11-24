@@ -20,7 +20,7 @@ void DwmDarkMode(SDL_Window *window)
     SDL_SysWMinfo info;
     SDL_VERSION(&info.version);
     SDL_GetWindowWMInfo(window, &info);
-    const HWND hWnd = info.info.win.window;
+    const HWND hWnd  = info.info.win.window; // NOLINT(*-misplaced-const)
     const BOOL enable = true;
     const HRESULT res = DwmSetWindowAttribute(hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &enable, sizeof(BOOL));
     if (res != S_OK)
