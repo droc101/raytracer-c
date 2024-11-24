@@ -215,7 +215,7 @@ inline void DrawBatchedQuadsColored(const BatchedQuadArray *batch, const uint co
     switch (currentRenderer)
     {
         case RENDERER_VULKAN:
-
+            VK_DrawRectBatched(batch->verts, batch->quad_count, color);
             break;
         case RENDERER_OPENGL:
             GL_DrawColoredArrays(batch->verts, batch->indices, batch->quad_count, color);

@@ -486,3 +486,71 @@ void DrawVertexBuffer(const VkCommandBuffer commandBuffer, const VkPipeline pipe
 
     vkCmdDraw(commandBuffer, vertexBuffer.vertexCount, 1, 0, 0);
 }
+
+bool DrawRectInternal(const float ndcStartX, const float ndcStartY, const float ndcEndX, const float ndcEndY, const uint32_t color)
+{
+    GetColor(color);
+
+    if (vertexBuffers.ui.vertexCount >= vertexBuffers.ui.maxVertices)
+    {
+        if (vertexBuffers.ui.vertexCount - vertexBuffers.ui.maxVertices >= vertexBuffers.ui.fallbackMaxVertices)
+        {
+            if (vertexBuffers.ui.fallbackMaxVertices)
+            {
+                vertexBuffers.ui.fallbackMaxVertices += 64;
+                UiVertex *newVertices = realloc(vertexBuffers.ui.fallback,
+                                                sizeof(UiVertex) * vertexBuffers.ui.fallbackMaxVertices);
+                if (!newVertices)
+                {
+                    free(newVertices);
+                    VulkanLogError("realloc of fallback UI vertex buffer failed!");
+                    return false;
+                }
+            } else
+            {
+                vertexBuffers.ui.fallbackMaxVertices = vertexBuffers.ui.maxVertices + 64;
+                vertexBuffers.ui.fallback = malloc(sizeof(UiVertex) * vertexBuffers.ui.fallbackMaxVertices);
+                memcpy(vertexBuffers.ui.fallback, vertexBuffers.ui.vertices,
+                       sizeof(UiVertex) * vertexBuffers.ui.maxVertices);
+                if (!vertexBuffers.ui.fallback)
+                {
+                    VulkanLogError("malloc of fallback UI vertex buffer failed!");
+                    return false;
+                }
+            }
+        }
+        vertexBuffers.ui.fallback[vertexBuffers.ui.vertexCount++] = (UiVertex){
+            {ndcStartX, ndcStartY, 0, 0},
+            {r, g, b, a},
+            0
+        };
+        vertexBuffers.ui.fallback[vertexBuffers.ui.vertexCount++] = (UiVertex){
+            {ndcEndX, ndcStartY, 0, 0},
+            {r, g, b, a},
+            0
+        };
+        vertexBuffers.ui.fallback[vertexBuffers.ui.vertexCount++] = (UiVertex){
+            {ndcEndX, ndcEndY, 0, 0},
+            {r, g, b, a},
+            0
+        };
+        vertexBuffers.ui.fallback[vertexBuffers.ui.vertexCount++] = (UiVertex){
+            {ndcStartX, ndcEndY, 0, 0},
+            {r, g, b, a},
+            0
+        };
+
+        return true;
+    }
+
+    vertexBuffers.ui.vertices[vertexBuffers.ui.vertexCount++] = (UiVertex){
+        {ndcStartX, ndcStartY, 0, 0},
+        {r, g, b, a},
+        0
+    };
+    vertexBuffers.ui.vertices[vertexBuffers.ui.vertexCount++] = (UiVertex){{ndcEndX, ndcStartY, 0, 0}, {r, g, b, a}, 0};
+    vertexBuffers.ui.vertices[vertexBuffers.ui.vertexCount++] = (UiVertex){{ndcEndX, ndcEndY, 0, 0}, {r, g, b, a}, 0};
+    vertexBuffers.ui.vertices[vertexBuffers.ui.vertexCount++] = (UiVertex){{ndcStartX, ndcEndY, 0, 0}, {r, g, b, a}, 0};
+
+    return true;
+}

@@ -41,6 +41,8 @@ void VK_Restore();
 
 VkSampleCountFlags VK_GetSampleCount();
 
-bool VK_DrawRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t color);
+bool VK_DrawRect(int x, int y, int w, int h, uint32_t color);
+
+bool VK_DrawRectBatched(const float *vertices, int quadCount, uint32_t color);
 
 #endif //GAME_VULKAN_H

@@ -258,6 +258,8 @@ VkResult BeginRenderPass(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 VkResult EndRenderPass(VkCommandBuffer commandBuffer);
 
 void DrawVertexBuffer(VkCommandBuffer commandBuffer, VkPipeline pipeline, VertexBuffer vertexBuffer);
+
+bool DrawRectInternal(float ndcStartX, float ndcStartY, float ndcEndX, float ndcEndY, uint32_t color);
 #pragma endregion drawingHelpers
 
 #endif //VULKANHELPERS_H
