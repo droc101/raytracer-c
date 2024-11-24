@@ -134,6 +134,11 @@ typedef enum OptionsMsaa
     MSAA_16X = 4
 } OptionsMsaa;
 
+typedef enum ModelShader
+{
+    SHADER_SKY
+} ModelShader;
+
 typedef struct Options
 {
     ushort checksum; // Checksum of the options struct (helps prevent corruption)
@@ -154,6 +159,23 @@ typedef struct Options
     double sfxVolume; // The volume of the sound effects
     double masterVolume; // The master volume
 } __attribute__((packed)) Options; // This is packed because it is saved to disk
+
+typedef struct ModelHeader
+{
+    char sig[4]; // "MESH"
+    uint indexCount;
+    char dataSig[4]; // "DATA"
+} __attribute__((packed)) ModelHeader;
+
+typedef struct Model
+{
+    ModelHeader header;
+
+    uint packedVertsUvsCount;
+    uint packedIndicesCount;
+    float *packedVertsUvs; // X Y Z U V, use for rendering
+    uint *packedIndices; // Just the vert index, use for rendering
+} Model;
 
 // Global state of the game
 typedef struct GlobalState

@@ -91,4 +91,13 @@ float X_TO_NDC(float x);
  */
 float Y_TO_NDC(float y);
 
+/**
+ * Render a 3D model
+ * @param m The model to render
+ * @param MODEL_WORLD_MATRIX The model -> world matrix
+ * @param texture The texture to use
+ * @param shd The shader to use
+ */
+void RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const byte *texture, ModelShader shd);
+
 #endif //GAME_RENDERINGHELPERS_H

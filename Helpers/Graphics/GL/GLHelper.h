@@ -202,4 +202,13 @@ float GL_Y_TO_NDC(float y);
  */
 void GL_RenderLevel(const Level *l, const Camera *cam);
 
+/**
+ * Render a 3D model
+ * @param m The model to render
+ * @param MODEL_WORLD_MATRIX The model -> world matrix
+ * @param texture The texture to use
+ * @param shader The shader to use
+ */
+void GL_RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const byte *texture, const ModelShader shader);
+
 #endif //GAME_GLHELPER_H

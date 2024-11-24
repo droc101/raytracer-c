@@ -180,3 +180,16 @@ inline float Y_TO_NDC(const float y)
             return 0;
     }
 }
+
+void RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const byte *texture, ModelShader shd)
+{
+    switch (currentRenderer)
+    {
+        case RENDERER_VULKAN:
+            return;
+        case RENDERER_OPENGL:
+            GL_RenderModel(m, MODEL_WORLD_MATRIX, texture, shd);
+        default:
+            return;
+    }
+}

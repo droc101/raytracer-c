@@ -46,12 +46,6 @@ void AddActor(Actor *actor);
 void RemoveActor(Actor *actor);
 
 /**
- * Render the level sky
- * @param cam The camera to render from
- */
-void RenderLevelSky(const Camera *cam);
-
-/**
  * Render the full level
  * @param g The global state
  */

@@ -37,12 +37,25 @@ void InvalidateAssetCache();
  */
 byte *DecompressAsset(const byte *asset);
 
+/**
+ * Load a model from an asset
+ * @param asset The asset to load the model from
+ * @return The loaded model, or NULL if it failed
+ */
+Model *LoadModel(const byte *asset);
+
+/**
+ * Free a model
+ * @param model The model to free
+ */
+void FreeModel(Model *model);
+
 #define ASSET_TYPE_TEXTURE 0
 #define ASSET_TYPE_MP3 1
 #define ASSET_TYPE_WAV 2
 #define ASSET_TYPE_LEVEL 3
 #define ASSET_TYPE_GLSL 4
-#define ASSET_TYPE_SPIRV_FRAG 5
-#define ASSET_TYPE_SPIRV_VERT 6
+// ... vulkan branch stuff 5 - 8
+#define ASSET_TYPE_MODEL 9
 
 #endif //GAME_ASSETREADER_H

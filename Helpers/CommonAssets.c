@@ -3,6 +3,8 @@
 //
 
 #include "CommonAssets.h"
+
+#include "../Assets/AssetReader.h"
 #include "../Assets/Assets.h"
 #include "Graphics/Drawing.h"
 
@@ -29,6 +31,8 @@ const byte *actorTextures[ACTOR_TEXTURE_COUNT] = { // NOLINT(*-interfaces-global
     gztex_actor_door
 };
 
+Model *skyModel;
+
 void InitCommonAssets()
 {
     SetTexParams(gztex_interface_menu_bg_tile, true, true);
@@ -44,6 +48,9 @@ void InitCommonAssets()
     SetTexParams(gztex_interface_radio_unchecked, true, false);
     SetTexParams(gztex_interface_slider_thumb, true, false);
     SetTexParams(gztex_interface_focus_rect, true, false);
+    SetTexParams(gztex_level_sky, true, true);
+
+    skyModel = LoadModel(gzobj_model_sky);
 }
 
 int FindWallTextureIndex(const byte *tex)
@@ -56,4 +63,9 @@ int FindWallTextureIndex(const byte *tex)
         }
     }
     return -1;
+}
+
+void DestroyCommonAssets()
+{
+    FreeModel(skyModel);
 }

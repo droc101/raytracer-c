@@ -14,6 +14,8 @@
 extern const byte *wallTextures[WALL_TEXTURE_COUNT];
 extern const byte *actorTextures[ACTOR_TEXTURE_COUNT];
 
+extern Model *skyModel;
+
 /**
  * Initialize common assets
  */
@@ -25,5 +27,10 @@ void InitCommonAssets();
  * @return The index of the texture
  */
 int FindWallTextureIndex(const byte *tex);
+
+/**
+ * Free any common assets that were allocated
+ */
+void DestroyCommonAssets();
 
 #endif //GAME_COMMONASSETS_H

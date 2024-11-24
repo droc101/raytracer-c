@@ -4,277 +4,377 @@ from PIL import Image
 import gzip
 import subprocess
 import tempfile
+import struct
 
 aid = 0
 
 
 def int_to_bytes(i):  # Convert an integer to bytes big endian, 4 bytes
-    return [(i >> 24) & 0xFF, (i >> 16) & 0xFF, (i >> 8) & 0xFF, i & 0xFF]
+	return [(i >> 24) & 0xFF, (i >> 16) & 0xFF, (i >> 8) & 0xFF, i & 0xFF]
+
+def int_to_bytes_le(i):  # Convert an integer to bytes little endian, 4 bytes
+	return [i & 0xFF, (i >> 8) & 0xFF, (i >> 16) & 0xFF, (i >> 24) & 0xFF]
 
 # Convert a PNG file to bytes
 def png_to_bytes(path):
-    global aid
-    global texture_asset_total_size
-    img = Image.open(path)
-    img = img.convert("RGBA")
-    img_dta = img.getdata()
-    data = []
+	global aid
+	global texture_asset_total_size
+	img = Image.open(path)
+	img = img.convert("RGBA")
+	img_dta = img.getdata()
+	data = []
 
-    data += int_to_bytes(img.width * img.height)  # array size (excluding header)
-    data += int_to_bytes(img.width)  # width
-    data += int_to_bytes(img.height)  # height
-    data += int_to_bytes(aid)  # Padding
+	data += int_to_bytes(img.width * img.height)  # array size (excluding header)
+	data += int_to_bytes(img.width)  # width
+	data += int_to_bytes(img.height)  # height
+	data += int_to_bytes(aid)  # Padding
 
-    for pixel in img_dta:
-        data.append(pixel[0])
-        data.append(pixel[1])
-        data.append(pixel[2])
-        data.append(pixel[3])
+	for pixel in img_dta:
+		data.append(pixel[0])
+		data.append(pixel[1])
+		data.append(pixel[2])
+		data.append(pixel[3])
 
-    for i in range(0, len(data)):
-        if data[i] < 0 or data[i] > 255:
-            print("Error: Pixel data out of range")
-            sys.exit(1)
+	for i in range(0, len(data)):
+		if data[i] < 0 or data[i] > 255:
+			print("Error: Pixel data out of range")
+			sys.exit(1)
 
-    decompressed_len = len(data)
+	decompressed_len = len(data)
 
-    data = gzip.compress(bytes(data))
+	data = gzip.compress(bytes(data))
 
-    header = bytearray()
-    header.extend(int_to_bytes(len(data)))  # Compressed length
-    header.extend(int_to_bytes(decompressed_len))  # Decompressed length
-    header.extend(int_to_bytes(aid))  # Asset ID
-    header.extend(int_to_bytes(0))  # Asset Type (0 = Texture)
+	header = bytearray()
+	header.extend(int_to_bytes(len(data)))  # Compressed length
+	header.extend(int_to_bytes(decompressed_len))  # Decompressed length
+	header.extend(int_to_bytes(aid))  # Asset ID
+	header.extend(int_to_bytes(0))  # Asset Type (0 = Texture)
 
-    header.extend(data)
+	header.extend(data)
 
-    # gzip timestamp is 18 bytes in
-    # we overwrite this in order to get deterministic output
-    header[19] = 1
-    header[20] = 2
-    header[21] = 3
-    header[22] = 4
-    
-    texture_asset_total_size += img.width * img.height * 4
+	# gzip timestamp is 18 bytes in
+	# we overwrite this in order to get deterministic output
+	header[19] = 1
+	header[20] = 2
+	header[21] = 3
+	header[22] = 4
+	
+	texture_asset_total_size += img.width * img.height * 4
 
-    aid += 1
+	aid += 1
 
-    return header
+	return header
 
 # Convert an MP3 file to bytes
 def mp3_to_bytes(path):
-    global aid
+	global aid
 
-    file = open(path, "rb")
-    data = list(file.read())
+	file = open(path, "rb")
+	data = list(file.read())
 
-    data += int_to_bytes(len(data))  # array size (excluding header)
-    data += int_to_bytes(0)  # unused
-    data += int_to_bytes(0)  # unused
-    data += int_to_bytes(aid)  # Padding
+	data += int_to_bytes(len(data))  # array size (excluding header)
+	data += int_to_bytes(0)  # unused
+	data += int_to_bytes(0)  # unused
+	data += int_to_bytes(aid)  # Padding
 
-    for i in range(0, len(data)):
-        if data[i] < 0 or data[i] > 255:
-            print("Error: MP3 data out of range")
-            sys.exit(1)
+	for i in range(0, len(data)):
+		if data[i] < 0 or data[i] > 255:
+			print("Error: MP3 data out of range")
+			sys.exit(1)
 
-    decompressed_len = len(data)
+	decompressed_len = len(data)
 
-    data = gzip.compress(bytes(data))
+	data = gzip.compress(bytes(data))
 
-    header = bytearray()
-    header.extend(int_to_bytes(len(data)))  # Compressed length
-    header.extend(int_to_bytes(decompressed_len))  # Decompressed length
-    header.extend(int_to_bytes(aid))  # Asset ID
-    header.extend(int_to_bytes(1))  # Asset Type (1 = mp3)
+	header = bytearray()
+	header.extend(int_to_bytes(len(data)))  # Compressed length
+	header.extend(int_to_bytes(decompressed_len))  # Decompressed length
+	header.extend(int_to_bytes(aid))  # Asset ID
+	header.extend(int_to_bytes(1))  # Asset Type (1 = mp3)
 
-    header.extend(data)
+	header.extend(data)
 
-    aid += 1
-    header[19] = 1
-    header[20] = 2
-    header[21] = 3
-    header[22] = 4
+	aid += 1
+	header[19] = 1
+	header[20] = 2
+	header[21] = 3
+	header[22] = 4
 
-    return header
+	return header
 
 # Convert an WAV file to bytes
 def wav_to_bytes(path):
-    global aid
+	global aid
 
-    file = open(path, "rb")
-    data = list(file.read())
+	file = open(path, "rb")
+	data = list(file.read())
 
-    data += int_to_bytes(len(data))  # array size (excluding header)
-    data += int_to_bytes(0)  # unused
-    data += int_to_bytes(0)  # unused
-    data += int_to_bytes(aid)  # Padding
-    for i in range(0, len(data)):
-        if data[i] < 0 or data[i] > 255:
-            print("Error: WAV data out of range")
-            sys.exit(1)
+	data += int_to_bytes(len(data))  # array size (excluding header)
+	data += int_to_bytes(0)  # unused
+	data += int_to_bytes(0)  # unused
+	data += int_to_bytes(aid)  # Padding
+	for i in range(0, len(data)):
+		if data[i] < 0 or data[i] > 255:
+			print("Error: WAV data out of range")
+			sys.exit(1)
 
-    decompressed_len = len(data)
+	decompressed_len = len(data)
 
-    data = gzip.compress(bytes(data))
+	data = gzip.compress(bytes(data))
 
-    header = bytearray()
-    header.extend(int_to_bytes(len(data)))  # Compressed length
-    header.extend(int_to_bytes(decompressed_len))  # Decompressed length
-    header.extend(int_to_bytes(aid))  # Asset ID
-    header.extend(int_to_bytes(2))  # Asset Type (2 = wav)
+	header = bytearray()
+	header.extend(int_to_bytes(len(data)))  # Compressed length
+	header.extend(int_to_bytes(decompressed_len))  # Decompressed length
+	header.extend(int_to_bytes(aid))  # Asset ID
+	header.extend(int_to_bytes(2))  # Asset Type (2 = wav)
 
-    header.extend(data)
-    header[19] = 1
-    header[20] = 2
-    header[21] = 3
-    header[22] = 4
+	header.extend(data)
+	header[19] = 1
+	header[20] = 2
+	header[21] = 3
+	header[22] = 4
 
-    aid += 1
+	aid += 1
 
-    return header
+	return header
 
 # Convert a file to bytes (raw)
 def file_to_bytes(path, type):
-    global aid
+	global aid
 
-    file = open(path, "rb")
-    data = list(file.read())
+	file = open(path, "rb")
+	data = list(file.read())
 
-    data += int_to_bytes(len(data))  # array size (excluding header)
-    data += int_to_bytes(0)  # unused
-    data += int_to_bytes(0)  # unused
-    data += int_to_bytes(aid)  # Padding
-    for i in range(0, len(data)):
-        if data[i] < 0 or data[i] > 255:
-            print("Error: BIN data out of range")
-            sys.exit(1)
+	data += int_to_bytes(len(data))  # array size (excluding header)
+	data += int_to_bytes(0)  # unused
+	data += int_to_bytes(0)  # unused
+	data += int_to_bytes(aid)  # Padding
+	for i in range(0, len(data)):
+		if data[i] < 0 or data[i] > 255:
+			print("Error: BIN data out of range")
+			sys.exit(1)
 
-    decompressed_len = len(data)
+	decompressed_len = len(data)
 
-    data = gzip.compress(bytes(data))
+	data = gzip.compress(bytes(data))
 
-    header = bytearray()
-    header.extend(int_to_bytes(len(data)))  # Compressed length
-    header.extend(int_to_bytes(decompressed_len))  # Decompressed length
-    header.extend(int_to_bytes(aid))  # Asset ID
-    header.extend(int_to_bytes(type))  # Asset Type
+	header = bytearray()
+	header.extend(int_to_bytes(len(data)))  # Compressed length
+	header.extend(int_to_bytes(decompressed_len))  # Decompressed length
+	header.extend(int_to_bytes(aid))  # Asset ID
+	header.extend(int_to_bytes(type))  # Asset Type
 
-    header.extend(data)
+	header.extend(data)
 
-    header[19] = 1
-    header[20] = 2
-    header[21] = 3
-    header[22] = 4
+	header[19] = 1
+	header[20] = 2
+	header[21] = 3
+	header[22] = 4
 
-    aid += 1
+	aid += 1
 
-    return header
+	return header
 
 def glsl_to_spv(glsl_path):
-    tmpf = tempfile.mktemp(suffix=".spv")
-    # check if windows or linux
-    glslc = "glslc"
-    if os.name == 'nt':
-        glslc = "C:\\VulkanSDK\\1.3.283.0\\Bin\\glslc.exe"
-    args = [glslc, glsl_path, "-o", tmpf]
+	tmpf = tempfile.mktemp(suffix=".spv")
+	# check if windows or linux
+	glslc = "glslc"
+	if os.name == 'nt':
+		glslc = "C:\\VulkanSDK\\1.3.283.0\\Bin\\glslc.exe"
+	args = [glslc, glsl_path, "-o", tmpf]
 
-    try:
-        subprocess.check_output(args)
-    except subprocess.CalledProcessError as e:
-        print(e.output)
-        sys.exit(1)
+	try:
+		subprocess.check_output(args)
+	except subprocess.CalledProcessError as e:
+		print(e.output)
+		sys.exit(1)
 
-    with open(tmpf, "rb") as f:
-        data = f.read()
+	with open(tmpf, "rb") as f:
+		data = f.read()
 
-    os.remove(tmpf)
+	os.remove(tmpf)
 
-    return data
+	return data
 
 def frag_to_bytes(path):
-    global aid
+	global aid
 
-    data = list(glsl_to_spv(path))
+	data = list(glsl_to_spv(path))
 
-    data += int_to_bytes(len(data))  # array size (excluding header)
-    data += int_to_bytes(0)  # unused
-    data += int_to_bytes(0)  # unused
-    data += int_to_bytes(aid)  # Padding
-    for i in range(0, len(data)):
-        if data[i] < 0 or data[i] > 255:
-            print("Error: FRAG-SPV data out of range")
-            sys.exit(1)
+	data += int_to_bytes(len(data))  # array size (excluding header)
+	data += int_to_bytes(0)  # unused
+	data += int_to_bytes(0)  # unused
+	data += int_to_bytes(aid)  # Padding
+	for i in range(0, len(data)):
+		if data[i] < 0 or data[i] > 255:
+			print("Error: FRAG-SPV data out of range")
+			sys.exit(1)
 
-    decompressed_len = len(data)
+	decompressed_len = len(data)
 
-    data = gzip.compress(bytes(data))
+	data = gzip.compress(bytes(data))
 
-    header = bytearray()
-    header.extend(int_to_bytes(len(data)))  # Compressed length
-    header.extend(int_to_bytes(decompressed_len))  # Decompressed length
-    header.extend(int_to_bytes(aid))  # Asset ID
-    header.extend(int_to_bytes(5))  # Asset Type (5 = fragment)
+	header = bytearray()
+	header.extend(int_to_bytes(len(data)))  # Compressed length
+	header.extend(int_to_bytes(decompressed_len))  # Decompressed length
+	header.extend(int_to_bytes(aid))  # Asset ID
+	header.extend(int_to_bytes(5))  # Asset Type (5 = fragment)
 
-    header.extend(data)
+	header.extend(data)
 
-    header[19] = 1
-    header[20] = 2
-    header[21] = 3
-    header[22] = 4
+	header[19] = 1
+	header[20] = 2
+	header[21] = 3
+	header[22] = 4
 
-    aid += 1
+	aid += 1
 
-    return header
+	return header
 
 def vert_to_bytes(path):
-    global aid
+	global aid
 
-    data = list(glsl_to_spv(path))
+	data = list(glsl_to_spv(path))
 
-    data += int_to_bytes(len(data))  # array size (excluding header)
-    data += int_to_bytes(0)  # unused
-    data += int_to_bytes(0)  # unused
-    data += int_to_bytes(aid)  # Padding
-    for i in range(0, len(data)):
-        if data[i] < 0 or data[i] > 255:
-            print("Error: FRAG-SPV data out of range")
-            sys.exit(1)
+	data += int_to_bytes(len(data))  # array size (excluding header)
+	data += int_to_bytes(0)  # unused
+	data += int_to_bytes(0)  # unused
+	data += int_to_bytes(aid)  # Padding
+	for i in range(0, len(data)):
+		if data[i] < 0 or data[i] > 255:
+			print("Error: FRAG-SPV data out of range")
+			sys.exit(1)
 
-    decompressed_len = len(data)
+	decompressed_len = len(data)
 
-    data = gzip.compress(bytes(data))
+	data = gzip.compress(bytes(data))
 
-    header = bytearray()
-    header.extend(int_to_bytes(len(data)))  # Compressed length
-    header.extend(int_to_bytes(decompressed_len))  # Decompressed length
-    header.extend(int_to_bytes(aid))  # Asset ID
-    header.extend(int_to_bytes(6))  # Asset Type (6 = vertex)
+	header = bytearray()
+	header.extend(int_to_bytes(len(data)))  # Compressed length
+	header.extend(int_to_bytes(decompressed_len))  # Decompressed length
+	header.extend(int_to_bytes(aid))  # Asset ID
+	header.extend(int_to_bytes(6))  # Asset Type (6 = vertex)
 
-    header.extend(data)
+	header.extend(data)
 
-    header[19] = 1
-    header[20] = 2
-    header[21] = 3
-    header[22] = 4
+	header[19] = 1
+	header[20] = 2
+	header[21] = 3
+	header[22] = 4
 
-    aid += 1
+	aid += 1
 
-    return header
+	return header
 
 # Convert the bytes to a C array (for the .c file)
 def bytes_to_c_array(data, name):
-    output = "const unsigned char " + name + "[] = {\n"
-    for i in range(0, len(data)):
-        output += "0x{:02x}".format(data[i]) + ", "
-        if i % 16 == 15:
-            output += "\n"
-    output += "};\n"
-    return output
+	output = "const unsigned char " + name + "[] = {\n"
+	for i in range(0, len(data)):
+		output += "0x{:02x}".format(data[i]) + ", "
+		if i % 16 == 15:
+			output += "\n"
+	output += "};\n"
+	return output
+
+def parse_obj_file(file_path):
+	verts = []
+	uvs = []
+	
+	with open(file_path, 'r') as f:
+		for line in f:
+			if line.startswith('v '):
+				verts.append(list(map(float, line.split()[1:])))
+			elif line.startswith('vt '):
+				uvs.append(list(map(float, line.split()[1:])))
+	
+	# Create a bytearray to store the vertex data as a list of doubles
+	vertex_data = bytearray()
+	for v in verts:
+		vertex_data += struct.pack('3d', *v)
+  
+	# Create a bytearray to store the uv data as a list of doubles
+	uv_data = bytearray()
+	for uv in uvs:
+		uv_data += struct.pack('2d', *uv)
+
+	vert_data = []
+	idx_val = 0
+	# Loop through the file a second time to get the face data
+	with open(file_path, 'r') as f:
+		for line in f:
+			if line.startswith('f '):
+				# Get the vertex and uv indices for each face
+				face = line.split()[1:]
+	
+				for v in face:
+					# Add the vertex and uv data into the face data array as X Y Z U V (double)
+					v_idx, vt_idx = v.split('/')
+					vertex = verts[int(v_idx) - 1]
+					uv = uvs[int(vt_idx) - 1]
+					vert_data.extend(vertex)
+					vert_data.extend(uv)
+
+					idx_val += 1
+	
+	# Pack the vertex and index data into a bytearray with the format: X Y Z U V (double)
+	vtx_bin_data = bytearray()
+	for v in vert_data:
+		vtx_bin_data += struct.pack('f', v)
+	
+  
+	# Pack the vertex and index data into a bytearray with the format:
+	# signature (4 bytes, "MESH")
+ 	# vertex count
+	# separator (4 bytes, "DATA")
+	# vertex data
+	# index data
+ 
+	bin_data = bytearray()
+	bin_data += struct.pack('4s', b'MSH\0')
+	bin_data.extend(int_to_bytes_le(idx_val))
+	bin_data += struct.pack('4s', b'DAT\0')
+	bin_data += vtx_bin_data
+ 
+	return bin_data
+
+def obj_to_bytes(path):
+	global aid
+
+	data = list(parse_obj_file(path))
+
+	data += int_to_bytes(len(data))  # array size (excluding header)
+	data += int_to_bytes(0)  # unused
+	data += int_to_bytes(0)  # unused
+	data += int_to_bytes(aid)  # Padding
+	for i in range(0, len(data)):
+		if data[i] < 0 or data[i] > 255:
+			print("Error: BIN data out of range")
+			sys.exit(1)
+
+	decompressed_len = len(data)
+
+	data = gzip.compress(bytes(data))
+
+	header = bytearray()
+	header.extend(int_to_bytes(len(data)))  # Compressed length
+	header.extend(int_to_bytes(decompressed_len))  # Decompressed length
+	header.extend(int_to_bytes(aid))  # Asset ID
+	header.extend(int_to_bytes(9))  # Asset Type (9 = obj)
+
+	header.extend(data)
+
+	header[19] = 1
+	header[20] = 2
+	header[21] = 3
+	header[22] = 4
+
+	aid += 1
+
+	return header
 
 # Generate the header for the array (the actual array is in the .c file)
 def c_header_array(name, size):
-    return "extern const unsigned char " + name + "[];\n"
+	return "extern const unsigned char " + name + "[];\n"
 
 
 path = sys.argv[1]
@@ -288,78 +388,85 @@ texture_asset_total_size = 0
 
 
 def recursive_search(path):
-    global count
-    global assets_c
-    global assets_h
-    global texture_asset_names
-    assets_c += "\n"
-    assets_h += "\n"
+	global count
+	global assets_c
+	global assets_h
+	global texture_asset_names
+	assets_c += "\n"
+	assets_h += "\n"
 
-    foldername = path.split("/")[-2]
-    files = os.listdir(path)
-    
-    # Sort the files so that the order is deterministic
-    files.sort()
-    
-    for file in files:
-        if os.path.isdir(path + file):
-            recursive_search(path + file + "/")
-        else:
-            path_from_assets = path.split("Assets/")[1]
-            if file.endswith(".c") or file.endswith(".h") or file.endswith(".py"):
-                pass
-            elif file.endswith(".png"):
-                count += 1
-                print("Converting " + path_from_assets + file)
-                data = png_to_bytes(path + file)
-                name = "gztex_" + foldername + "_" + file.split(".")[0]
-                assets_c += bytes_to_c_array(data, name)
-                assets_h += c_header_array(name, len(data))
-                texture_asset_names.append(name)
-            elif file.endswith(".mp3"):
-                count += 1
-                print("Converting " + path_from_assets + file)
-                data = mp3_to_bytes(path + file)
-                name = "gzmpg_" + foldername + "_" + file.split(".")[0]
-                assets_c += bytes_to_c_array(data, name)
-                assets_h += c_header_array(name, len(data))
-            elif file.endswith(".wav"):
-                count += 1
-                print("Converting " + path_from_assets + file)
-                data = wav_to_bytes(path + file)
-                name = "gzwav_" + foldername + "_" + file.split(".")[0]
-                assets_c += bytes_to_c_array(data, name)
-                assets_h += c_header_array(name, len(data))
-            elif file.endswith(".bin"):
-                count += 1
-                print("Converting " + path_from_assets + file)
-                data = file_to_bytes(path + file, 3)
-                name = "gzbin_" + foldername + "_" + file.split(".")[0]
-                assets_c += bytes_to_c_array(data, name)
-                assets_h += c_header_array(name, len(data))
-            elif file.endswith(".glsl"):
-                count += 1
-                print("Converting " + path_from_assets + file)
-                data = file_to_bytes(path + file, 4)
-                name = "gzshd_" + foldername + "_" + file.split(".")[0]
-                assets_c += bytes_to_c_array(data, name)
-                assets_h += c_header_array(name, len(data))
-            elif file.endswith(".frag"):
-                count += 1
-                print("Converting " + path_from_assets + file)
-                data = frag_to_bytes(path + file)
-                name = "gzfrag_" + foldername + "_" + file.split(".")[0]
-                assets_c += bytes_to_c_array(data, name)
-                assets_h += c_header_array(name, len(data))
-            elif file.endswith(".vert"):
-                count += 1
-                print("Converting " + path_from_assets + file)
-                data = vert_to_bytes(path + file)
-                name = "gzvert_" + foldername + "_" + file.split(".")[0]
-                assets_c += bytes_to_c_array(data, name)
-                assets_h += c_header_array(name, len(data))
-            else:
-                print("Unrecognized file type: " + file)
+	foldername = path.split("/")[-2]
+	files = os.listdir(path)
+	
+	# Sort the files so that the order is deterministic
+	files.sort()
+	
+	for file in files:
+		if os.path.isdir(path + file):
+			recursive_search(path + file + "/")
+		else:
+			path_from_assets = path.split("Assets/")[1]
+			if file.endswith(".c") or file.endswith(".h") or file.endswith(".py"):
+				pass
+			elif file.endswith(".png"):
+				count += 1
+				print("Converting " + path_from_assets + file)
+				data = png_to_bytes(path + file)
+				name = "gztex_" + foldername + "_" + file.split(".")[0]
+				assets_c += bytes_to_c_array(data, name)
+				assets_h += c_header_array(name, len(data))
+				texture_asset_names.append(name)
+			elif file.endswith(".mp3"):
+				count += 1
+				print("Converting " + path_from_assets + file)
+				data = mp3_to_bytes(path + file)
+				name = "gzmpg_" + foldername + "_" + file.split(".")[0]
+				assets_c += bytes_to_c_array(data, name)
+				assets_h += c_header_array(name, len(data))
+			elif file.endswith(".wav"):
+				count += 1
+				print("Converting " + path_from_assets + file)
+				data = wav_to_bytes(path + file)
+				name = "gzwav_" + foldername + "_" + file.split(".")[0]
+				assets_c += bytes_to_c_array(data, name)
+				assets_h += c_header_array(name, len(data))
+			elif file.endswith(".bin"):
+				count += 1
+				print("Converting " + path_from_assets + file)
+				data = file_to_bytes(path + file, 3)
+				name = "gzbin_" + foldername + "_" + file.split(".")[0]
+				assets_c += bytes_to_c_array(data, name)
+				assets_h += c_header_array(name, len(data))
+			elif file.endswith(".glsl"):
+				count += 1
+				print("Converting " + path_from_assets + file)
+				data = file_to_bytes(path + file, 4)
+				name = "gzshd_" + foldername + "_" + file.split(".")[0]
+				assets_c += bytes_to_c_array(data, name)
+				assets_h += c_header_array(name, len(data))
+			elif file.endswith(".frag"):
+				count += 1
+				print("Converting " + path_from_assets + file)
+				data = frag_to_bytes(path + file)
+				name = "gzfrag_" + foldername + "_" + file.split(".")[0]
+				assets_c += bytes_to_c_array(data, name)
+				assets_h += c_header_array(name, len(data))
+			elif file.endswith(".vert"):
+				count += 1
+				print("Converting " + path_from_assets + file)
+				data = vert_to_bytes(path + file)
+				name = "gzvert_" + foldername + "_" + file.split(".")[0]
+				assets_c += bytes_to_c_array(data, name)
+				assets_h += c_header_array(name, len(data))
+			elif file.endswith(".obj"):
+				count += 1
+				print("Converting " + path_from_assets + file)
+				data = obj_to_bytes(path + file)
+				name = "gzobj_" + foldername + "_" + file.split(".")[0]
+				assets_c += bytes_to_c_array(data, name)
+				assets_h += c_header_array(name, len(data))
+			else:
+				print("Unrecognized file type: " + file)
 
 
 recursive_search(path)
@@ -376,28 +483,28 @@ assets_c_header = '#include "Assets.h"'
 assets_h_header = "#ifndef ASSETS_H\n#define ASSETS_H"
 assets_c_footer = "// Automatically generated by genassets.py\n"
 assets_h_footer = (
-    "\n\n#define ASSET_COUNT "
-    + str(aid)
-    + "\n\n#endif\n// Automatically generated by genassets.py\n"
+	"\n\n#define ASSET_COUNT "
+	+ str(aid)
+	+ "\n\n#endif\n// Automatically generated by genassets.py\n"
 )
 
 final_assets_c = assets_c_header + assets_c + texture_asset_array + assets_c_footer
 final_assets_h = assets_h_header + assets_h + texture_asset_array_header + assets_h_footer
 
 if os.path.isfile(path + "Assets.c") and os.path.isfile(path + "Assets.h"):
-    # Compare the generated files with the existing files
-    with open(path + "Assets.c", "r") as f:
-        existing_assets_c = f.read()
+	# Compare the generated files with the existing files
+	with open(path + "Assets.c", "r") as f:
+		existing_assets_c = f.read()
 
-    with open(path + "Assets.h", "r") as f:
-        existing_assets_h = f.read()
-        
-    if existing_assets_c == final_assets_c and existing_assets_h == final_assets_h:
-        print("No changes detected")
-        sys.exit(0)
+	with open(path + "Assets.h", "r") as f:
+		existing_assets_h = f.read()
+		
+	if existing_assets_c == final_assets_c and existing_assets_h == final_assets_h:
+		print("No changes detected")
+		sys.exit(0)
 
 with open(path + "Assets.c", "w") as f:
-    f.write(final_assets_c)
+	f.write(final_assets_c)
 
 with open(path + "Assets.h", "w") as f:
-    f.write(final_assets_h)
+	f.write(final_assets_h)

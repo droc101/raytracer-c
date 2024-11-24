@@ -190,6 +190,7 @@ int main(const int argc, char *argv[])
     DestroyGlobalState();
     SDL_DestroyWindow(GetGameWindow());
     SDL_FreeSurface(icon);
+    DestroyCommonAssets();
     InvalidateAssetCache(); // Free all assets
     RenderDestroy();
     Mix_CloseAudio();

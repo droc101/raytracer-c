@@ -99,3 +99,61 @@ byte *DecompressAsset(const byte *asset)
 
     return decompressedData;
 }
+
+Model *LoadModel(const byte *asset)
+{
+    size_t size = AssetGetSize(asset);
+    if (size < sizeof(ModelHeader))
+    {
+        LogError("Failed to load model from asset, size was too small!");
+        return NULL;
+    }
+    Model *model = malloc(sizeof(Model));
+    const byte *assetData = DecompressAsset(asset);
+    memcpy(&model->header, assetData, sizeof(ModelHeader));
+
+    if (strcmp(model->header.sig, "MSH") != 0)
+    {
+        LogError("Tried to load a model, but its first magic was incorrect (got %s)!", model->header.sig);
+        free(model);
+        return NULL;
+    }
+
+    if (strcmp(model->header.dataSig, "DAT") != 0)
+    {
+        LogError("Tried to load a model, but its second magic was incorrect (got %s)!", model->header.dataSig);
+        free(model);
+        return NULL;
+    }
+
+    const size_t vertsSizeBytes = model->header.indexCount * (sizeof(float) * 5);
+    const size_t indexSizeBytes = model->header.indexCount * sizeof(uint);
+
+    model->packedVertsUvsCount = model->header.indexCount;
+    model->packedIndicesCount = model->header.indexCount;
+
+    model->packedVertsUvs = malloc(vertsSizeBytes);
+    model->packedIndices = malloc(indexSizeBytes);
+
+    byte *ptr = (byte *) assetData + sizeof(ModelHeader);
+    memcpy(model->packedVertsUvs, ptr, vertsSizeBytes);
+
+    for (int i = 0; i < model->header.indexCount; i++)
+    {
+        model->packedIndices[i] = i;
+    }
+
+    return model;
+}
+
+void FreeModel(Model *model)
+{
+    if (model == NULL)
+    {
+        LogWarning("Tried to free NULL model!");
+        return;
+    }
+    free(model->packedVertsUvs);
+    free(model->packedIndices);
+    free(model);
+}
