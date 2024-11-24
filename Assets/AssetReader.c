@@ -126,7 +126,7 @@ Model *LoadModel(const byte *asset)
         return NULL;
     }
 
-    const size_t vertsSizeBytes = model->header.indexCount * (sizeof(float) * 5);
+    const size_t vertsSizeBytes = model->header.indexCount * (sizeof(float) * 8);
     const size_t indexSizeBytes = model->header.indexCount * sizeof(uint);
 
     model->packedVertsUvsCount = model->header.indexCount;

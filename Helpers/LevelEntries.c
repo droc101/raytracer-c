@@ -10,7 +10,7 @@ LevelEntry gLevelEntries[LEVEL_COUNT] = { // NOLINT(*-interfaces-global-init)
     DEFINE_LEVEL("stage2", hallway, "Hallway", true, 2),
     DEFINE_LEVEL("indoor", hub, "Indoor Test", false, -1),
     DEFINE_LEVEL("benchmark", benchmark, "two thousand walls.", true, 3),
-    STUB_LEVEL(),
+    DEFINE_LEVEL("gfjfdjfhdfhgs", gfjfdjfhdfhgs, "gfjfdjfhdfhgs", true, 4),
     STUB_LEVEL(),
     STUB_LEVEL(),
     STUB_LEVEL(),

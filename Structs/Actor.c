@@ -115,6 +115,8 @@ Actor *CreateActor(const Vector2 position, const double rotation, const int acto
     actor->yPosition = 0.0f;
     actor->showShadow = true;
     actor->shadowSize = 1.0f;
+    actor->actorModel = NULL;
+    actor->actorModelTexture = NULL;
     actor->Init = (void (*)(void *)) ActorInitFuncs[actorType];
     actor->Update = (void (*)(void *)) ActorUpdateFuncs[actorType];
     actor->Destroy = (void (*)(void *)) ActorDestroyFuncs[actorType];

@@ -136,7 +136,9 @@ typedef enum OptionsMsaa
 
 typedef enum ModelShader
 {
-    SHADER_SKY
+    SHADER_SKY,
+    SHADER_UNSHADED,
+    SHADER_SHADED
 } ModelShader;
 
 typedef struct Options
@@ -231,6 +233,8 @@ typedef struct Actor
     float yPosition; // y position for rendering. Does not affect collision
     bool showShadow; // should the actor cast a shadow?
     float shadowSize; // size of the shadow
+    Model *actorModel; // Optional model for the actor, if not NULL, will be rendered instead of the wall
+    byte *actorModelTexture; // Texture for the model
 } Actor;
 
 // pi 🥧

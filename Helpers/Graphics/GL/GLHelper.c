@@ -24,6 +24,8 @@ GL_Shader *wall_generic;
 GL_Shader *floor_generic;
 GL_Shader *shadow;
 GL_Shader *sky;
+GL_Shader *model_unshaded;
+GL_Shader *model_shaded;
 
 GL_Buffer *gl_buffer;
 
@@ -110,8 +112,11 @@ bool GL_Init(SDL_Window *wnd)
     floor_generic = GL_ConstructShaderFromAssets(gzshd_GL_floor_f, gzshd_GL_floor_v);
     shadow = GL_ConstructShaderFromAssets(gzshd_GL_shadow_f, gzshd_GL_shadow_v);
     sky = GL_ConstructShaderFromAssets(gzshd_GL_sky_f, gzshd_GL_sky_v);
+    model_shaded = GL_ConstructShaderFromAssets(gzshd_GL_model_shaded_f, gzshd_GL_model_shaded_v);
+    model_unshaded = GL_ConstructShaderFromAssets(gzshd_GL_model_unshaded_f, gzshd_GL_model_unshaded_v);
 
-    if (!ui_textured || !ui_colored || !wall_generic || !floor_generic || !shadow)
+    if (!ui_textured || !ui_colored || !wall_generic || !floor_generic || !shadow || !sky || !model_shaded ||
+        !model_unshaded)
     {
         GL_Error("Failed to compile shaders");
         return false;
@@ -265,6 +270,8 @@ void GL_DestroyGL()
     GL_DestroyShader(floor_generic);
     GL_DestroyShader(shadow);
     GL_DestroyShader(sky);
+    GL_DestroyShader(model_shaded);
+    GL_DestroyShader(model_unshaded);
     glUseProgram(0);
     glDisableVertexAttribArray(0);
     GL_DestroyBuffer(gl_buffer);
@@ -624,6 +631,14 @@ void GL_SetLevelParams(const mat4 *mvp, const Level *l)
     const float sg = (scolor >> 8 & 0xFF) / 255.0f;
     const float sb = (scolor & 0xFF) / 255.0f;
     glUniform4f(glGetUniformLocation(sky->program, "col"), sr, sg, sb, 1.0f);
+
+    glUseProgram(model_shaded->program);
+    glUniformMatrix4fv(glGetUniformLocation(model_shaded->program, "WORLD_VIEW_MATRIX"), 1, GL_FALSE,
+                       mvp[0][0]); // world -> screen
+
+    glUseProgram(model_unshaded->program);
+    glUniformMatrix4fv(glGetUniformLocation(model_unshaded->program, "WORLD_VIEW_MATRIX"), 1, GL_FALSE,
+                       mvp[0][0]); // world -> screen
 }
 
 void GL_DrawWall(const Wall *w, const mat4 *mdl, const Camera *cam, const Level */*l*/)
@@ -902,13 +917,19 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
     for (int i = 0; i < l->staticActors->size; i++)
     {
         const Actor *actor = SizedArrayGet(l->staticActors, i);
-        if (actor->actorWall == NULL) continue;
-        Wall w;
-        memcpy(&w, actor->actorWall, sizeof(Wall));
-        WallBake(&w);
-        w.Angle += actor->rotation;
         mat4 *actor_xfm = ActorTransformMatrix(actor);
-        GL_DrawWall(&w, actor_xfm, cam, l);
+        if (actor->actorModel == NULL)
+        {
+            if (actor->actorWall == NULL) continue;
+            Wall w;
+            memcpy(&w, actor->actorWall, sizeof(Wall));
+            WallBake(&w);
+            w.Angle += actor->rotation;
+            GL_DrawWall(&w, actor_xfm, cam, l);
+        } else
+        {
+            GL_RenderModel(actor->actorModel, actor_xfm, actor->actorModelTexture, SHADER_SHADED);
+        }
 
         if (actor->showShadow)
         {
@@ -937,6 +958,12 @@ void GL_RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const byte *
         case SHADER_SKY:
             shd = sky;
             break;
+        case SHADER_SHADED:
+            shd = model_shaded;
+            break;
+        case SHADER_UNSHADED:
+            shd = model_unshaded;
+            break;
         default:
             Error("Invalid shader for model drawing");
     }
@@ -953,18 +980,25 @@ void GL_RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const byte *
     glBindVertexArray(gl_buffer->vao);
 
     glBindBuffer(GL_ARRAY_BUFFER, gl_buffer->vbo);
-    glBufferData(GL_ARRAY_BUFFER, m->packedVertsUvsCount * sizeof(float) * 5, m->packedVertsUvs, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, m->packedVertsUvsCount * sizeof(float) * 8, m->packedVertsUvs, GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_buffer->ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, m->packedIndicesCount * sizeof(uint), m->packedIndices, GL_STATIC_DRAW);
 
     const GLint pos_attr_loc = glGetAttribLocation(shd->program, "VERTEX");
-    glVertexAttribPointer(pos_attr_loc, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void *) 0);
+    glVertexAttribPointer(pos_attr_loc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void *) 0);
     glEnableVertexAttribArray(pos_attr_loc);
 
     const GLint tex_attr_loc = glGetAttribLocation(shd->program, "VERTEX_UV");
-    glVertexAttribPointer(tex_attr_loc, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void *) (3 * sizeof(GLfloat)));
+    glVertexAttribPointer(tex_attr_loc, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void *) (3 * sizeof(GLfloat)));
     glEnableVertexAttribArray(tex_attr_loc);
+
+    if (shader == SHADER_SHADED) // other shaders do not take normals
+    {
+        const GLint norm_attr_loc = glGetAttribLocation(shd->program, "VERTEX_NORMAL");
+        glVertexAttribPointer(norm_attr_loc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void *) (5 * sizeof(GLfloat)));
+        glEnableVertexAttribArray(norm_attr_loc);
+    }
 
     glDrawElements(GL_TRIANGLES, m->packedIndicesCount, GL_UNSIGNED_INT, NULL);
 }
