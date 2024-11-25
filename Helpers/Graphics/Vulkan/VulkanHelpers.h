@@ -34,8 +34,8 @@ return returnValue; \
 #define VulkanTestWithReturn(function, returnValue, ...) VulkanTestInternal(function, returnValue, __VA_ARGS__)
 #define VulkanTestReturnResult(function, ...) VulkanTestInternal(function, result, __VA_ARGS__)
 #define VulkanTest(function, ...) VulkanTestInternal(function, false, __VA_ARGS__)
-#define GetColor(color) const float r = (color >> 16 & 0xFF) / 255.0f; const float g = (color >> 8 & 0xFF) / 255.0f; const float b = (color & 0xFF) / 255.0f; const float a = (color >> 24 & 0xFF) / 255.0f
-
+#define GET_COLOR(color) const float r = (color >> 16 & 0xFF) / 255.0f; const float g = (color >> 8 & 0xFF) / 255.0f; const float b = (color & 0xFF) / 255.0f; const float a = (color >> 24 & 0xFF) / 255.0f
+#define TextureIndex(texture) texturesAssetIDMap[ReadUintA(DecompressAsset(texture), 12)]
 #pragma endregion macros
 
 #pragma region typedefs
@@ -103,7 +103,7 @@ typedef struct ImageAllocationInformation
 
 typedef struct DataBufferObject
 {
-    uint16_t textureIndex;
+    uint32_t textureIndex;
 } DataBufferObject;
 
 typedef struct VertexBuffer
@@ -130,6 +130,14 @@ typedef struct Pipelines
     VkPipeline walls;
     VkPipeline ui;
 } Pipelines;
+
+typedef struct TextureSamplers
+{
+    VkSampler linearRepeat;
+    VkSampler nearestRepeat;
+    VkSampler linearNoRepeat;
+    VkSampler nearestNoRepeat;
+} TextureSamplers;
 #pragma endregion typedefs
 
 #pragma region variables
@@ -199,8 +207,8 @@ extern VkDescriptorSet descriptorSets[MAX_FRAMES_IN_FLIGHT];
 extern ImageAllocationInformation textures[TEXTURE_ASSET_COUNT];
 extern VkDeviceMemory textureMemory;
 extern VkImageView texturesImageView[TEXTURE_ASSET_COUNT];
-extern uint16_t texturesAssetIDMap[ASSET_COUNT];
-extern VkSampler textureSampler;
+extern uint32_t texturesAssetIDMap[ASSET_COUNT];
+extern TextureSamplers textureSamplers;
 extern VkBuffer dataBuffer;
 extern VkDeviceMemory dataBufferMemory;
 extern void *mappedDataBuffer;
@@ -211,6 +219,8 @@ extern VkImageView depthImageView;
 extern VkImage colorImage;
 extern VkDeviceMemory colorImageMemory;
 extern VkImageView colorImageView;
+extern VkClearValue *clearValues;
+extern uint8_t clearValueCount;
 #pragma endregion variables
 
 #pragma region helperFunctions
@@ -221,21 +231,33 @@ extern VkImageView colorImageView;
  */
 bool QuerySwapChainSupport(VkPhysicalDevice pDevice);
 
-bool CreateImageView(VkImageView *imageView, VkImage image, VkFormat format, VkImageAspectFlagBits aspectMask,
-                            uint8_t mipmapLevels, const char *errorMessage);
+bool CreateImageView(VkImageView *imageView,
+                     VkImage image,
+                     VkFormat format,
+                     VkImageAspectFlagBits aspectMask,
+                     uint8_t mipmapLevels,
+                     const char *errorMessage);
 
 VkShaderModule CreateShaderModule(const uint32_t *code, size_t size);
 
-bool CreateImage(VkImage *image, VkDeviceMemory *imageMemory, VkFormat format, VkExtent3D extent,
-                        uint8_t mipmapLevels, VkSampleCountFlags samples,
-                        VkImageUsageFlags usageFlags, const char *imageType);
+bool CreateImage(VkImage *image,
+                 VkDeviceMemory *imageMemory,
+                 VkFormat format,
+                 VkExtent3D extent,
+                 uint8_t mipmapLevels,
+                 VkSampleCountFlags samples,
+                 VkImageUsageFlags usageFlags,
+                 const char *imageType);
 
 bool BeginCommandBuffer(const VkCommandBuffer *commandBuffer, VkCommandPool commandPool);
 
 bool EndCommandBuffer(VkCommandBuffer commandBuffer, VkCommandPool commandPool, VkQueue queue);
 
-bool CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags propertyFlags,
-                         VkBuffer *buffer, VkDeviceMemory *bufferMemory);
+bool CreateBuffer(VkBuffer *buffer,
+                  VkDeviceMemory *bufferMemory,
+                  VkDeviceSize size,
+                  VkBufferUsageFlags usageFlags,
+                  VkMemoryPropertyFlags propertyFlags);
 
 bool CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
@@ -259,7 +281,20 @@ VkResult EndRenderPass(VkCommandBuffer commandBuffer);
 
 void DrawVertexBuffer(VkCommandBuffer commandBuffer, VkPipeline pipeline, VertexBuffer vertexBuffer);
 
-bool DrawRectInternal(float ndcStartX, float ndcStartY, float ndcEndX, float ndcEndY, uint32_t color);
+bool DrawRectInternal(float ndcStartX,
+                      float ndcStartY,
+                      float ndcEndX,
+                      float ndcEndY,
+                      float startU,
+                      float startV,
+                      float endU,
+                      float endV,
+                      uint32_t color,
+                      uint32_t textureIndex);
+
+bool DrawQuadInternal(const mat4 vertices_posXY_uvZW,
+                      uint32_t color,
+                      uint32_t textureIndex);
 #pragma endregion drawingHelpers
 
 #endif //VULKANHELPERS_H

@@ -32,7 +32,7 @@
 #pragma region Debug
 
 // Skip the splash screen
-#define DEBUG_NOSPLASH
+// #define DEBUG_NOSPLASH
 
 // See /Debug/FrameGrapher.h for physicsFrame grapher settings
 

@@ -48,8 +48,8 @@ VkDescriptorSet descriptorSets[MAX_FRAMES_IN_FLIGHT];
 ImageAllocationInformation textures[TEXTURE_ASSET_COUNT];
 VkDeviceMemory textureMemory;
 VkImageView texturesImageView[TEXTURE_ASSET_COUNT];
-uint16_t texturesAssetIDMap[ASSET_COUNT];
-VkSampler textureSampler;
+uint32_t texturesAssetIDMap[ASSET_COUNT];
+TextureSamplers textureSamplers;
 VkBuffer dataBuffer = VK_NULL_HANDLE;
 VkDeviceMemory dataBufferMemory = VK_NULL_HANDLE;
 void *mappedDataBuffer;
@@ -60,6 +60,8 @@ VkImageView depthImageView;
 VkImage colorImage;
 VkDeviceMemory colorImageMemory;
 VkImageView colorImageView;
+VkClearValue *clearValues = (VkClearValue[]){{.color = {{0.0f, 0.64f, 0.91f, 1.0f}}}, {.depthStencil = {1, 0}}};
+uint8_t clearValueCount = 2;
 #pragma endregion variables
 
 bool QuerySwapChainSupport(const VkPhysicalDevice pDevice)
@@ -93,9 +95,12 @@ bool QuerySwapChainSupport(const VkPhysicalDevice pDevice)
     return true;
 }
 
-bool CreateImageView(VkImageView *imageView, const VkImage image, const VkFormat format,
-                            const VkImageAspectFlagBits aspectMask, const uint8_t mipmapLevels,
-                            const char *errorMessage)
+bool CreateImageView(VkImageView *imageView,
+                     const VkImage image,
+                     const VkFormat format,
+                     const VkImageAspectFlagBits aspectMask,
+                     const uint8_t mipmapLevels,
+                     const char *errorMessage)
 {
     const VkImageViewCreateInfo createInfo = {
         VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
@@ -142,31 +147,31 @@ VkShaderModule CreateShaderModule(const uint32_t *code, const size_t size)
     return shaderModule;
 }
 
-bool CreateImage(VkImage *image, VkDeviceMemory *imageMemory, const VkFormat format, const VkExtent3D extent,
-                        const uint8_t mipmapLevels, const VkSampleCountFlags samples,
-                        const VkImageUsageFlags usageFlags, const char *imageType)
+bool CreateImage(VkImage *image,
+                 VkDeviceMemory *imageMemory,
+                 const VkFormat format,
+                 const VkExtent3D extent,
+                 const uint8_t mipmapLevels,
+                 const VkSampleCountFlags samples,
+                 const VkImageUsageFlags usageFlags,
+                 const char *imageType)
 {
     uint32_t pQueueFamilyIndices[queueFamilyIndices->familyCount];
     switch (queueFamilyIndices->familyCount)
     {
-        case 3:
-            pQueueFamilyIndices[2] = queueFamilyIndices->graphicsFamily;
-        case 2:
-            if (queueFamilyIndices->presentFamily == queueFamilyIndices->graphicsFamily)
+        case 3: pQueueFamilyIndices[2] = queueFamilyIndices->graphicsFamily;
+        case 2: if (queueFamilyIndices->presentFamily == queueFamilyIndices->graphicsFamily)
             {
                 pQueueFamilyIndices[1] = queueFamilyIndices->transferFamily;
-            }
-            else if (queueFamilyIndices->transferFamily == queueFamilyIndices->graphicsFamily)
+            } else if (queueFamilyIndices->transferFamily == queueFamilyIndices->graphicsFamily)
             {
                 pQueueFamilyIndices[1] = queueFamilyIndices->presentFamily;
-            }
-            else
+            } else
             {
                 VulkanLogError("Failed to create VkImageCreateInfoKHR due to invalid queueFamilyIndices!");
                 return false;
             }
-        case 1:
-            pQueueFamilyIndices[0] = queueFamilyIndices->graphicsFamily;
+        case 1: pQueueFamilyIndices[0] = queueFamilyIndices->graphicsFamily;
             break;
         default:
             VulkanLogError("Failed to create VkImageCreateInfoKHR due to invalid queueFamilyIndices!");
@@ -206,8 +211,8 @@ bool CreateImage(VkImage *image, VkDeviceMemory *imageMemory, const VkFormat for
             (memoryProperties.memoryTypes[i].propertyFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) ==
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
         {
-            const VkDeviceSize size = memoryRequirements.alignment * (VkDeviceSize) ceil(
-                                          (double) memoryRequirements.size / (double) memoryRequirements.alignment);
+            const VkDeviceSize size = memoryRequirements.alignment * (VkDeviceSize)ceil(
+                                          (double)memoryRequirements.size / (double)memoryRequirements.alignment);
             const VkMemoryAllocateInfo allocateInfo = {
                 VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
                 NULL,
@@ -277,30 +282,28 @@ bool EndCommandBuffer(VkCommandBuffer commandBuffer, const VkCommandPool command
     return true;
 }
 
-bool CreateBuffer(const VkDeviceSize size, const VkBufferUsageFlags usageFlags,
-                         const VkMemoryPropertyFlags propertyFlags, VkBuffer *buffer, VkDeviceMemory *bufferMemory)
+bool CreateBuffer(VkBuffer *buffer,
+                  VkDeviceMemory *bufferMemory,
+                  const VkDeviceSize size,
+                  const VkBufferUsageFlags usageFlags,
+                  const VkMemoryPropertyFlags propertyFlags)
 {
     uint32_t pQueueFamilyIndices[queueFamilyIndices->familyCount];
     switch (queueFamilyIndices->familyCount)
     {
-        case 3:
-            pQueueFamilyIndices[2] = queueFamilyIndices->graphicsFamily;
-        case 2:
-            if (queueFamilyIndices->presentFamily == queueFamilyIndices->graphicsFamily)
+        case 3: pQueueFamilyIndices[2] = queueFamilyIndices->graphicsFamily;
+        case 2: if (queueFamilyIndices->presentFamily == queueFamilyIndices->graphicsFamily)
             {
                 pQueueFamilyIndices[1] = queueFamilyIndices->transferFamily;
-            }
-            else if (queueFamilyIndices->transferFamily == queueFamilyIndices->graphicsFamily)
+            } else if (queueFamilyIndices->transferFamily == queueFamilyIndices->graphicsFamily)
             {
                 pQueueFamilyIndices[1] = queueFamilyIndices->presentFamily;
-            }
-            else
+            } else
             {
                 VulkanLogError("Failed to create VkBufferCreateInfo due to invalid queueFamilyIndices!");
                 return false;
             }
-        case 1:
-            pQueueFamilyIndices[0] = queueFamilyIndices->graphicsFamily;
+        case 1: pQueueFamilyIndices[0] = queueFamilyIndices->graphicsFamily;
             break;
         default:
             VulkanLogError("Failed to create VkBufferCreateInfo due to invalid queueFamilyIndices!");
@@ -419,9 +422,9 @@ void UpdateUniformBuffer(const uint32_t currentFrame)
     };
     mat4 ubo = GLM_MAT4_IDENTITY_INIT;
 
-    glm_rotate(bufferObject.model, (float) SDL_GetTicks64() * PIf / 10000.0f, GLM_YUP);
+    glm_rotate(bufferObject.model, (float)SDL_GetTicks64() * PIf / 10000.0f, GLM_YUP);
     glm_lookat((vec3){2.0f, 2.0f, 2.0f}, GLM_VEC3_ZERO, (vec3){0.0f, -1.0f, 0.0f}, bufferObject.view);
-    glm_perspective(PI / 4, (float) swapChainExtent.width / (float) swapChainExtent.height, 0.1f, 10.0f,
+    glm_perspective(PI / 4, (float)swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 10.0f,
                     bufferObject.proj);
 
     glm_mat4_mul(bufferObject.proj, bufferObject.view, ubo);
@@ -442,11 +445,6 @@ VkResult BeginRenderPass(const VkCommandBuffer commandBuffer, const uint32_t ima
     VulkanTestReturnResult(vkBeginCommandBuffer(commandBuffer, &beginInfo),
                            "Failed to begin recording Vulkan command buffer!");
 
-    const VkClearValue clearColor[2] = {
-        {.color = {{0.0f, 0.64f, 0.91f, 1.0f}}},
-        {.depthStencil = {1, 0}}
-    };
-
     const VkRenderPassBeginInfo renderPassInfo = {
         VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
         NULL,
@@ -456,8 +454,8 @@ VkResult BeginRenderPass(const VkCommandBuffer commandBuffer, const uint32_t ima
             {0, 0},
             swapChainExtent
         },
-        2,
-        clearColor
+        clearValueCount,
+        clearValues
     };
 
     vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
@@ -474,8 +472,9 @@ VkResult EndRenderPass(const VkCommandBuffer commandBuffer)
     return VK_SUCCESS;
 }
 
-void DrawVertexBuffer(const VkCommandBuffer commandBuffer, const VkPipeline pipeline,
-                             const VertexBuffer vertexBuffer)
+void DrawVertexBuffer(const VkCommandBuffer commandBuffer,
+                      const VkPipeline pipeline,
+                      const VertexBuffer vertexBuffer)
 {
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
@@ -487,13 +486,34 @@ void DrawVertexBuffer(const VkCommandBuffer commandBuffer, const VkPipeline pipe
     vkCmdDraw(commandBuffer, vertexBuffer.vertexCount, 1, 0, 0);
 }
 
-bool DrawRectInternal(const float ndcStartX, const float ndcStartY, const float ndcEndX, const float ndcEndY, const uint32_t color)
+bool DrawRectInternal(const float ndcStartX,
+                      const float ndcStartY,
+                      const float ndcEndX,
+                      const float ndcEndY,
+                      const float startU,
+                      const float startV,
+                      const float endU,
+                      const float endV,
+                      const uint32_t color,
+                      const uint32_t textureIndex)
 {
-    GetColor(color);
+    return DrawQuadInternal((mat4){
+                         {ndcStartX, ndcStartY, startU, startV},
+                         {ndcEndX, ndcStartY, endU, startV},
+                         {ndcEndX, ndcEndY, endU, endV},
+                         {ndcStartX, ndcEndY, startU, endV}
+                     }, color, textureIndex);
+}
+
+bool DrawQuadInternal(const mat4 vertices_posXY_uvZW,
+                      const uint32_t color,
+                      const uint32_t textureIndex)
+{
+    GET_COLOR(color);
 
     if (vertexBuffers.ui.vertexCount >= vertexBuffers.ui.maxVertices)
     {
-        if (vertexBuffers.ui.vertexCount - vertexBuffers.ui.maxVertices >= vertexBuffers.ui.fallbackMaxVertices)
+        if (vertexBuffers.ui.vertexCount >= vertexBuffers.ui.fallbackMaxVertices)
         {
             if (vertexBuffers.ui.fallbackMaxVertices)
             {
@@ -503,9 +523,11 @@ bool DrawRectInternal(const float ndcStartX, const float ndcStartY, const float 
                 if (!newVertices)
                 {
                     free(newVertices);
+                    free(vertexBuffers.ui.fallback);
                     VulkanLogError("realloc of fallback UI vertex buffer failed!");
                     return false;
                 }
+                vertexBuffers.ui.fallback = newVertices;
             } else
             {
                 vertexBuffers.ui.fallbackMaxVertices = vertexBuffers.ui.maxVertices + 64;
@@ -520,37 +542,89 @@ bool DrawRectInternal(const float ndcStartX, const float ndcStartY, const float 
             }
         }
         vertexBuffers.ui.fallback[vertexBuffers.ui.vertexCount++] = (UiVertex){
-            {ndcStartX, ndcStartY, 0, 0},
+            {
+                vertices_posXY_uvZW[0][0],
+                vertices_posXY_uvZW[0][1],
+                vertices_posXY_uvZW[0][2],
+                vertices_posXY_uvZW[0][3]
+            },
             {r, g, b, a},
-            0
+            textureIndex
         };
         vertexBuffers.ui.fallback[vertexBuffers.ui.vertexCount++] = (UiVertex){
-            {ndcEndX, ndcStartY, 0, 0},
+            {
+                vertices_posXY_uvZW[1][0],
+                vertices_posXY_uvZW[1][1],
+                vertices_posXY_uvZW[1][2],
+                vertices_posXY_uvZW[1][3]
+            },
             {r, g, b, a},
-            0
+            textureIndex
         };
         vertexBuffers.ui.fallback[vertexBuffers.ui.vertexCount++] = (UiVertex){
-            {ndcEndX, ndcEndY, 0, 0},
+            {
+                vertices_posXY_uvZW[2][0],
+                vertices_posXY_uvZW[2][1],
+                vertices_posXY_uvZW[2][2],
+                vertices_posXY_uvZW[2][3]
+            },
             {r, g, b, a},
-            0
+            textureIndex
         };
         vertexBuffers.ui.fallback[vertexBuffers.ui.vertexCount++] = (UiVertex){
-            {ndcStartX, ndcEndY, 0, 0},
+            {
+                vertices_posXY_uvZW[3][0],
+                vertices_posXY_uvZW[3][1],
+                vertices_posXY_uvZW[3][2],
+                vertices_posXY_uvZW[3][3]
+            },
             {r, g, b, a},
-            0
+            textureIndex
         };
 
         return true;
     }
 
     vertexBuffers.ui.vertices[vertexBuffers.ui.vertexCount++] = (UiVertex){
-        {ndcStartX, ndcStartY, 0, 0},
+        {
+            vertices_posXY_uvZW[0][0],
+            vertices_posXY_uvZW[0][1],
+            vertices_posXY_uvZW[0][2],
+            vertices_posXY_uvZW[0][3]
+        },
         {r, g, b, a},
-        0
+        textureIndex
     };
-    vertexBuffers.ui.vertices[vertexBuffers.ui.vertexCount++] = (UiVertex){{ndcEndX, ndcStartY, 0, 0}, {r, g, b, a}, 0};
-    vertexBuffers.ui.vertices[vertexBuffers.ui.vertexCount++] = (UiVertex){{ndcEndX, ndcEndY, 0, 0}, {r, g, b, a}, 0};
-    vertexBuffers.ui.vertices[vertexBuffers.ui.vertexCount++] = (UiVertex){{ndcStartX, ndcEndY, 0, 0}, {r, g, b, a}, 0};
+    vertexBuffers.ui.vertices[vertexBuffers.ui.vertexCount++] = (UiVertex){
+        {
+            vertices_posXY_uvZW[1][0],
+            vertices_posXY_uvZW[1][1],
+            vertices_posXY_uvZW[1][2],
+            vertices_posXY_uvZW[1][3]
+        },
+        {r, g, b, a},
+        textureIndex
+    };
+    vertexBuffers.ui.vertices[vertexBuffers.ui.vertexCount++] = (UiVertex){
+        {
+            vertices_posXY_uvZW[2][0],
+            vertices_posXY_uvZW[2][1],
+            vertices_posXY_uvZW[2][2],
+            vertices_posXY_uvZW[2][3]
+        },
+        {r, g, b, a},
+        textureIndex
+    };
+    vertexBuffers.ui.vertices[vertexBuffers.ui.vertexCount++] = (UiVertex){
+        {
+            vertices_posXY_uvZW[3][0],
+            vertices_posXY_uvZW[3][1],
+            vertices_posXY_uvZW[3][2],
+            vertices_posXY_uvZW[3][3]
+        },
+        {r, g, b, a},
+        textureIndex
+    };
 
     return true;
 }

@@ -29,10 +29,8 @@ int FontFindChar(const char target)
 Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, const uint color, const bool small)
 {
     const int str_len = strlen(str);
-    float *verts = malloc(sizeof(float[4][4]) * str_len);
-    uint *indices = malloc(sizeof(uint[6]) * str_len);
-    memset(verts, 0, sizeof(float[4][4]) * str_len);
-    memset(indices, 0, sizeof(uint[6]) * str_len);
+    float *verts = calloc(str_len, sizeof(float[4][4]));
+    uint *indices = calloc(str_len, sizeof(uint[6]));
 
     int x = pos.x;
     int y = pos.y;

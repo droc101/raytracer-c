@@ -90,7 +90,7 @@ SDL_Surface *ToSDLSurface(const unsigned char *imageData, const char *filterMode
 
     const byte *pixelData = Decompressed + sizeof(uint) * 4; // Skip the first 4 bytes
 
-    SDL_Surface *surface = SDL_CreateRGBSurfaceFrom((void *) pixelData, width, height, 32, width * 4, 0x00ff0000,
+    SDL_Surface *surface = SDL_CreateRGBSurfaceFrom((void *)pixelData, width, height, 32, width * 4, 0x00ff0000,
                                                     0x0000ff00, 0x000000ff, 0xff000000);
     if (surface == NULL)
     {
@@ -125,7 +125,7 @@ void SetTexParams(const unsigned char *imageData, const bool linear, const bool 
     switch (currentRenderer)
     {
         case RENDERER_VULKAN:
-
+            VK_SetTexParams(imageData, linear, repeat);
             break;
         case RENDERER_OPENGL:
             GL_SetTexParams(imageData, linear, repeat);
@@ -139,7 +139,8 @@ inline void DrawLine(const Vector2 start, const Vector2 end, const float thickne
     switch (currentRenderer)
     {
         case RENDERER_VULKAN:
-
+            VK_DrawLine((int)start.x, (int)start.y, (int)end.x, (int)end.y,
+                        thickness * (float)GetState()->uiScale, drawColor);
             break;
         case RENDERER_OPENGL:
             GL_DrawLine(start, end, drawColor, thickness * GetState()->uiScale);
@@ -167,7 +168,7 @@ inline void DrawTexture(const Vector2 pos, const Vector2 size, const unsigned ch
     switch (currentRenderer)
     {
         case RENDERER_VULKAN:
-
+            VK_DrawTexturedQuad((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, imageData);
             break;
         case RENDERER_OPENGL:
             GL_DrawTexture(pos, size, imageData);
@@ -181,7 +182,7 @@ inline void DrawTextureMod(const Vector2 pos, const Vector2 size, const unsigned
     switch (currentRenderer)
     {
         case RENDERER_VULKAN:
-
+            VK_DrawTexturedQuadMod((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, imageData, color);
             break;
         case RENDERER_OPENGL:
             GL_DrawTextureMod(pos, size, imageData, color);
@@ -190,14 +191,18 @@ inline void DrawTextureMod(const Vector2 pos, const Vector2 size, const unsigned
     }
 }
 
-inline void
-DrawTextureRegion(const Vector2 pos, const Vector2 size, const unsigned char *imageData, const Vector2 region_start,
-                  const Vector2 region_end)
+inline void DrawTextureRegion(const Vector2 pos,
+                              const Vector2 size,
+                              const unsigned char *imageData,
+                              const Vector2 region_start,
+                              const Vector2 region_end)
 {
     switch (currentRenderer)
     {
         case RENDERER_VULKAN:
-
+            VK_DrawTexturedQuadRegion((int)pos.x, (int)pos.y, (int)size.x, (int)size.y,
+                                      (int)region_start.x, (int)region_start.y,
+                                      (int)region_end.x, (int)region_end.y, imageData);
             break;
         case RENDERER_OPENGL:
             GL_DrawTextureRegion(pos, size, imageData, region_start, region_end);
@@ -206,14 +211,19 @@ DrawTextureRegion(const Vector2 pos, const Vector2 size, const unsigned char *im
     }
 }
 
-inline void DrawTextureRegionMod(const Vector2 pos, const Vector2 size, const unsigned char *imageData,
+inline void DrawTextureRegionMod(const Vector2 pos,
+                                 const Vector2 size,
+                                 const unsigned char *imageData,
                                  const Vector2 region_start,
-                                 const Vector2 region_end, const uint color)
+                                 const Vector2 region_end,
+                                 const uint color)
 {
     switch (currentRenderer)
     {
         case RENDERER_VULKAN:
-
+            VK_DrawTexturedQuadRegionMod((int)pos.x, (int)pos.y, (int)size.x, (int)size.y,
+                                         (int)region_start.x, (int)region_start.y,
+                                         (int)region_end.x, (int)region_end.y, imageData, color);
             break;
         case RENDERER_OPENGL:
             GL_DrawTextureRegionMod(pos, size, imageData, region_start, region_end, color);
@@ -227,7 +237,7 @@ inline void ClearColor(const uint color)
     switch (currentRenderer)
     {
         case RENDERER_VULKAN:
-
+            VK_SetClearColor(color);
             break;
         case RENDERER_OPENGL:
             GL_ClearColor(color);
@@ -269,7 +279,7 @@ inline void DrawRect(const int x, const int y, const int w, const int h)
     switch (currentRenderer)
     {
         case RENDERER_VULKAN:
-            VK_DrawRect(x, y, w, h, drawColor);
+            VK_DrawColoredQuad(x, y, w, h, drawColor);
             break;
         case RENDERER_OPENGL:
             GL_DrawRect(v2(x, y), v2(w, h), drawColor);
@@ -288,8 +298,11 @@ Vector2 GetTextureSize(const unsigned char *imageData)
     return v2(width, height);
 }
 
-void DrawNinePatchTexture(const Vector2 pos, const Vector2 size, const int output_margins_px, const int texture_margins_px,
-                    const byte *imageData)
+void DrawNinePatchTexture(const Vector2 pos,
+                          const Vector2 size,
+                          const int output_margins_px,
+                          const int texture_margins_px,
+                          const byte *imageData)
 {
     const Vector2 ts = GetTextureSize(imageData);
     DrawTextureRegion(pos, v2s(output_margins_px), imageData, v2s(0), v2s(texture_margins_px)); // top left

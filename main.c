@@ -11,6 +11,8 @@
 #include "Debug/DPrint.h"
 #include "Debug/FrameGrapher.h"
 #include "GameStates/GLogoSplashState.h"
+#include "GameStates/GMainState.h"
+#include "GameStates/GMenuState.h"
 #include "Helpers/CommonAssets.h"
 #include "Helpers/PlatformHelpers.h"
 #include "Helpers/Core/Error.h"
@@ -98,9 +100,7 @@ int main(const int argc, char *argv[])
 
     ChangeLevelByID(STARTING_LEVEL);
 
-    // GLogoSplashStateSet();
-    ChangeLevelByID(1);
-    GPauseStateSet();
+    GLogoSplashStateSet();
 
     InitTimers();
 

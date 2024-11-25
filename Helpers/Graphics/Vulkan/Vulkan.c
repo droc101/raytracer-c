@@ -7,6 +7,7 @@
 #include "VulkanInternal.h"
 #include "../Drawing.h"
 #include "../../../Assets/AssetReader.h"
+#include "../../../Structs/GlobalState.h"
 #include "../../Core/DataReader.h"
 
 bool VK_Init(SDL_Window *window)
@@ -23,8 +24,6 @@ bool VK_Init(SDL_Window *window)
         };
 
         memcpy(mappedDataBuffer, &dataBufferObject, sizeof(dataBufferObject));
-
-        vertexBuffers.ui.vertices = calloc(vertexBuffers.ui.maxVertices, sizeof(UiVertex));
 
         VulkanTest(
             vkMapMemory(device, vertexBuffers.sharedMemory, 0, sizeof(*vertexBuffers.ui.vertices) * vertexBuffers.ui.
@@ -70,34 +69,33 @@ VkResult VK_FrameEnd()
     VulkanTestReturnResult(BeginRenderPass(commandBuffers[currentFrame], swapchainImageIndex),
                            "Failed to begin render pass!");
 
-    DrawVertexBuffer(commandBuffers[currentFrame], pipelines.walls, vertexBuffers.walls);
+    const GlobalState *g = GetState();
+    if (g->currentState == MAIN_STATE || g->currentState == PAUSE_STATE)
+    {
+        DrawVertexBuffer(commandBuffers[currentFrame], pipelines.walls, vertexBuffers.walls);
+    }
 
     vkCmdNextSubpass(commandBuffers[currentFrame], VK_SUBPASS_CONTENTS_INLINE);
 
     if (vertexBuffers.ui.fallbackMaxVertices > 0)
     {
-        VulkanLogError("UI Buffer Resized!!"); // TODO remove me when buffer size figured out
+        VulkanLogError("UI Buffer Resized!!\n"); // TODO remove me when buffer size figured out
 
         vkUnmapMemory(device, vertexBuffers.sharedMemory);
         vkDestroyBuffer(device, vertexBuffers.ui.buffer, NULL);
         vkFreeMemory(device, vertexBuffers.sharedMemory, NULL);
 
-        CreateBuffer(sizeof(UiVertex) * vertexBuffers.ui.fallbackMaxVertices,
+        CreateBuffer(&vertexBuffers.ui.buffer,
+                     &vertexBuffers.sharedMemory,
+                     sizeof(UiVertex) * vertexBuffers.ui.fallbackMaxVertices,
                      VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                     &vertexBuffers.ui.buffer, &vertexBuffers.sharedMemory);
+                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-        vertexBuffers.ui.vertices = malloc(sizeof(UiVertex) * vertexBuffers.ui.fallbackMaxVertices);
-        if (!vertexBuffers.ui.vertices)
-        {
-            VulkanLogError("malloc of UI vertex buffer failed!");
-            return false;
-        }
         VulkanTest(vkMapMemory(device, vertexBuffers.sharedMemory, 0,
                        sizeof(*vertexBuffers.ui.vertices) * vertexBuffers.ui.fallbackMaxVertices, 0,
                        (void**)&vertexBuffers.ui.vertices), "Failed to map ui vertex buffer memory!");
 
-        memcpy(&vertexBuffers.ui.vertices[vertexBuffers.ui.maxVertices], vertexBuffers.ui.fallback,
+        memcpy(vertexBuffers.ui.vertices, vertexBuffers.ui.fallback,
                sizeof(UiVertex) * vertexBuffers.ui.fallbackMaxVertices);
 
         vertexBuffers.ui.maxVertices = vertexBuffers.ui.fallbackMaxVertices;
@@ -168,7 +166,10 @@ bool VK_Cleanup()
 
         CleanupSwapChain();
 
-        vkDestroySampler(device, textureSampler, NULL);
+        vkDestroySampler(device, textureSamplers.linearRepeat, NULL);
+        vkDestroySampler(device, textureSamplers.nearestRepeat, NULL);
+        vkDestroySampler(device, textureSamplers.linearNoRepeat, NULL);
+        vkDestroySampler(device, textureSamplers.nearestNoRepeat, NULL);
         for (uint16_t textureIndex = 0; textureIndex < TEXTURE_ASSET_COUNT; textureIndex++)
         {
             vkDestroyImageView(device, texturesImageView[textureIndex], NULL);
@@ -237,18 +238,199 @@ inline VkSampleCountFlags VK_GetSampleCount()
     return properties.limits.framebufferColorSampleCounts & properties.limits.framebufferDepthSampleCounts;
 }
 
-bool VK_DrawRect(const int32_t x, const int32_t y, const int32_t w, const int32_t h, const uint32_t color)
+bool VK_DrawColoredQuad(const int32_t x, const int32_t y, const int32_t w, const int32_t h, const uint32_t color)
 {
-    return DrawRectInternal(VK_X_TO_NDC(x), VK_Y_TO_NDC(y), VK_X_TO_NDC(x + w), VK_Y_TO_NDC(y + h), color);
+    return DrawRectInternal(VK_X_TO_NDC(x), VK_Y_TO_NDC(y), VK_X_TO_NDC(x + w), VK_Y_TO_NDC(y + h), 0, 0, 0, 0, color,
+                            -1);
 }
 
-bool VK_DrawRectBatched(const float *vertices, const int32_t quadCount, const uint32_t color)
+bool VK_DrawColoredQuadsBatched(const float *vertices, const int32_t quadCount, const uint32_t color)
 {
     for (int i = 0; i < quadCount; i++)
     {
-        const uint32_t index = i * 4;
-        if (!DrawRectInternal(vertices[index], vertices[index + 1], vertices[index + 2], vertices[index + 3], color)) return false;
+        const uint32_t index = i * 8;
+        if (!DrawQuadInternal((mat4){
+                                  {vertices[index + 0], vertices[index + 1], 0, 0},
+                                  {vertices[index + 2], vertices[index + 3], 0, 0},
+                                  {vertices[index + 4], vertices[index + 5], 0, 0},
+                                  {vertices[index + 6], vertices[index + 7], 0, 0}
+                              }, color, -1))
+        {
+            return false;
+        }
     }
 
     return true;
+}
+
+bool VK_DrawTexturedQuad(const int32_t x, const int32_t y, const int32_t w, const int32_t h, const uint8_t *texture)
+{
+    return DrawRectInternal(VK_X_TO_NDC(x), VK_Y_TO_NDC(y), VK_X_TO_NDC(x + w), VK_Y_TO_NDC(y + h), 0, 0, 1, 1,
+                            0xFFFFFFFF, TextureIndex(texture));
+}
+
+bool VK_DrawTexturedQuadMod(const int32_t x,
+                            const int32_t y,
+                            const int32_t w,
+                            const int32_t h,
+                            const uint8_t *texture,
+                            const uint32_t color)
+{
+    return DrawRectInternal(VK_X_TO_NDC(x), VK_Y_TO_NDC(y), VK_X_TO_NDC(x + w), VK_Y_TO_NDC(y + h), 0, 0, 1, 1, color,
+                            TextureIndex(texture));
+}
+
+bool VK_DrawTexturedQuadRegion(const int32_t x,
+                               const int32_t y,
+                               const int32_t w,
+                               const int32_t h,
+                               const int32_t regionX,
+                               const int32_t regionY,
+                               const int32_t regionW,
+                               const int32_t regionH,
+                               const uint8_t *texture)
+{
+    const uint8_t *decompressed = DecompressAsset(texture);
+
+    const uint32_t width = ReadUintA(decompressed, 4);
+    const uint32_t height = ReadUintA(decompressed, 8);
+
+    const float startU = (float)regionX / (float)width;
+    const float startV = (float)regionY / (float)height;
+
+    return DrawRectInternal(VK_X_TO_NDC(x), VK_Y_TO_NDC(y), VK_X_TO_NDC(x + w), VK_Y_TO_NDC(y + h), startU, startV,
+                            startU + (float)regionW / (float)width, startV + (float)regionH / (float)height, 0xFFFFFFFF,
+                            texturesAssetIDMap[ReadUintA(decompressed, 12)]);
+}
+
+bool VK_DrawTexturedQuadRegionMod(const int32_t x,
+                                  const int32_t y,
+                                  const int32_t w,
+                                  const int32_t h,
+                                  const int32_t regionX,
+                                  const int32_t regionY,
+                                  const int32_t regionW,
+                                  const int32_t regionH,
+                                  const uint8_t *texture,
+                                  const uint32_t color)
+{
+    const uint8_t *decompressed = DecompressAsset(texture);
+
+    const uint32_t width = ReadUintA(decompressed, 4);
+    const uint32_t height = ReadUintA(decompressed, 8);
+
+    const float startU = (float)regionX / (float)width;
+    const float startV = (float)regionY / (float)height;
+
+    return DrawRectInternal(VK_X_TO_NDC(x), VK_Y_TO_NDC(y), VK_X_TO_NDC(x + w), VK_Y_TO_NDC(y + h), startU, startV,
+                            startU + (float)regionW / (float)width, startV + (float)regionH / (float)height, color,
+                            texturesAssetIDMap[ReadUintA(decompressed, 12)]);
+}
+
+bool VK_DrawTexturedQuadsBatched(const float *vertices,
+                                 const int quadCount,
+                                 const uint8_t *texture,
+                                 const uint32_t color)
+{
+    for (int i = 0; i < quadCount; i++)
+    {
+        const uint32_t index = i * 16;
+        if (!DrawQuadInternal((mat4){
+                                  {vertices[index + 0], vertices[index + 1], vertices[index + 2], vertices[index + 3]},
+                                  {vertices[index + 4], vertices[index + 5], vertices[index + 6], vertices[index + 7]},
+                                  {
+                                      vertices[index + 8],
+                                      vertices[index + 9],
+                                      vertices[index + 10],
+                                      vertices[index + 11]
+                                  },
+                                  {
+                                      vertices[index + 12],
+                                      vertices[index + 13],
+                                      vertices[index + 14],
+                                      vertices[index + 15]
+                                  }
+                              }, color, TextureIndex(texture)))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+void VK_SetClearColor(const uint32_t color)
+{
+    GET_COLOR(color);
+
+    clearValues[0] = (VkClearValue){.color = {{r, g, b, a}}};
+    clearValues[1] = (VkClearValue){.depthStencil = {1, 0}};
+}
+
+bool VK_DrawLine(const int32_t startX,
+                 const int32_t startY,
+                 const int32_t endX,
+                 const int32_t endY,
+                 const float thickness,
+                 const uint32_t color)
+{
+    const float dx = (float)endX - (float)startX;
+    const float dy = (float)endY - (float)startY;
+    const float distance = sqrtf(dx * dx + dy * dy);
+
+    if (thickness == 1)
+    {
+        const mat4 matrix = {
+            {VK_X_TO_NDC(-dy / distance + (float)startX), VK_Y_TO_NDC(dx / distance + (float)startY), 0, 0},
+            {VK_X_TO_NDC(-dy / distance + (float)endX), VK_Y_TO_NDC(dx / distance + (float)endY), 0, 0},
+            {VK_X_TO_NDC(endX), VK_Y_TO_NDC(endY), 0, 0},
+            {VK_X_TO_NDC(startX), VK_Y_TO_NDC(startY), 0, 0}
+        };
+
+        return DrawQuadInternal(matrix, color, -1);
+    }
+
+    const float size = thickness / 2;
+
+    const mat4 matrix = {
+        {VK_X_TO_NDC(-size * dy / distance + (float)startX), VK_Y_TO_NDC(size * dx / distance + (float)startY), 0, 0},
+        {VK_X_TO_NDC(-size * dy / distance + (float)endX), VK_Y_TO_NDC(size * dx / distance + (float)endY), 0, 0},
+        {VK_X_TO_NDC(size * dy / distance + (float)endX), VK_Y_TO_NDC(-size * dx / distance + (float)endY), 0, 0},
+        {VK_X_TO_NDC(size * dy / distance + (float)startX), VK_Y_TO_NDC(-size * dx / distance + (float)startY), 0, 0}
+    };
+
+    return DrawQuadInternal(matrix, color, -1);
+}
+
+void VK_SetTexParams(const uint8_t *texture, const bool linear, const bool repeat)
+{
+    const uint32_t textureIndex = TextureIndex(texture);
+    for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
+        VkDescriptorImageInfo imageInfo = {
+            linear
+                ? repeat
+                      ? textureSamplers.linearRepeat
+                      : textureSamplers.linearNoRepeat
+                : repeat
+                      ? textureSamplers.nearestRepeat
+                      : textureSamplers.nearestNoRepeat,
+            texturesImageView[textureIndex],
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+        };
+
+        const VkWriteDescriptorSet writeDescriptor = {
+            VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+            NULL,
+            descriptorSets[i],
+            1,
+            textureIndex,
+            1,
+            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+            &imageInfo,
+            NULL,
+            NULL
+        };
+        vkUpdateDescriptorSets(device, 1, &writeDescriptor, 0, NULL);
+    }
 }

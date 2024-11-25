@@ -201,7 +201,7 @@ inline void DrawBatchedQuadsTextured(const BatchedQuadArray *batch, const unsign
     switch (currentRenderer)
     {
         case RENDERER_VULKAN:
-
+            VK_DrawTexturedQuadsBatched(batch->verts, batch->quad_count, imageData, color);
             break;
         case RENDERER_OPENGL:
             GL_DrawTexturedArrays(batch->verts, batch->indices, batch->quad_count, imageData, color);
@@ -215,7 +215,7 @@ inline void DrawBatchedQuadsColored(const BatchedQuadArray *batch, const uint co
     switch (currentRenderer)
     {
         case RENDERER_VULKAN:
-            VK_DrawRectBatched(batch->verts, batch->quad_count, color);
+            VK_DrawColoredQuadsBatched(batch->verts, batch->quad_count, color);
             break;
         case RENDERER_OPENGL:
             GL_DrawColoredArrays(batch->verts, batch->indices, batch->quad_count, color);

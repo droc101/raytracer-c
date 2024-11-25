@@ -945,7 +945,7 @@ bool CreateGraphicsPipelines()
         sizeof(UiVertex),
         VK_VERTEX_INPUT_RATE_VERTEX
     };
-    const VkVertexInputAttributeDescription coloredQuadsAttributeDescriptions[2] = {
+    const VkVertexInputAttributeDescription coloredQuadsAttributeDescriptions[3] = {
         {
             0,
             0,
@@ -958,6 +958,12 @@ bool CreateGraphicsPipelines()
             VK_FORMAT_R32G32B32A32_SFLOAT,
             offsetof(UiVertex, color)
         },
+        {
+            2,
+            0,
+            VK_FORMAT_R32_UINT,
+            offsetof(UiVertex, textureIndex)
+        },
     };
     const VkPipelineVertexInputStateCreateInfo coloredQuadsVertexInputInfo = {
         VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
@@ -965,7 +971,7 @@ bool CreateGraphicsPipelines()
         0,
         1,
         &coloredQuadsBindingDescription,
-        2,
+        3,
         coloredQuadsAttributeDescriptions
     };
 
@@ -1156,7 +1162,7 @@ bool LoadTextures()
     {
         const uint8_t *decompressed = DecompressAsset(texture_assets[textureIndex]);
 
-        const VkFormat format = VK_FORMAT_R8G8B8A8_SRGB;
+        const VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
         VkFormatProperties formatProperties;
         vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &formatProperties);
         if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
@@ -1207,9 +1213,9 @@ bool LoadTextures()
 
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
-    if (!CreateBuffer(memorySize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &stagingBuffer,
-                      &stagingBufferMemory))
+    if (!CreateBuffer(&stagingBuffer, &stagingBufferMemory,
+                      memorySize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))
     {
         return false;
     }
@@ -1224,7 +1230,6 @@ bool LoadTextures()
         uint32_t width = ReadUintA(decompressed, 4);
         uint32_t height = ReadUintA(decompressed, 8);
         void *data;
-        data = calloc(1, textures[textureIndex].memoryRequirements.size);
 
         VulkanTest(
             vkMapMemory(device, stagingBufferMemory, textures[textureIndex].offset, textures[textureIndex].
@@ -1399,7 +1404,7 @@ bool CreateTexturesImageView()
 {
     for (uint16_t textureIndex = 0; textureIndex < TEXTURE_ASSET_COUNT; textureIndex++)
     {
-        if (!CreateImageView(&texturesImageView[textureIndex], textures[textureIndex].image, VK_FORMAT_R8G8B8A8_SRGB,
+        if (!CreateImageView(&texturesImageView[textureIndex], textures[textureIndex].image, VK_FORMAT_R8G8B8A8_UNORM,
                              VK_IMAGE_ASPECT_COLOR_BIT, textures[textureIndex].mipmapLevels,
                              "Failed to create Vulkan texture image view!"))
         {
@@ -1412,12 +1417,12 @@ bool CreateTexturesImageView()
 
 bool CreateTextureSampler()
 {
-    const VkSamplerCreateInfo samplerCreateInfo = {
+    const VkSamplerCreateInfo linearRepeatSamplerCreateInfo = {
         VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
         NULL,
         0,
-        VK_FILTER_NEAREST,
-        VK_FILTER_NEAREST,
+        VK_FILTER_LINEAR,
+        VK_FILTER_LINEAR,
         VK_SAMPLER_MIPMAP_MODE_LINEAR,
         VK_SAMPLER_ADDRESS_MODE_REPEAT,
         VK_SAMPLER_ADDRESS_MODE_REPEAT,
@@ -1432,9 +1437,71 @@ bool CreateTextureSampler()
         VK_BORDER_COLOR_INT_OPAQUE_BLACK,
         VK_FALSE
     };
+    const VkSamplerCreateInfo nearestRepeatSamplerCreateInfo = {
+        VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+        NULL,
+        0,
+        VK_FILTER_NEAREST,
+        VK_FILTER_LINEAR,
+        VK_SAMPLER_MIPMAP_MODE_LINEAR,
+        VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        -1.5f,
+        VK_FALSE,
+        1,
+        VK_FALSE,
+        VK_COMPARE_OP_ALWAYS,
+        0,
+        VK_LOD_CLAMP_NONE,
+        VK_BORDER_COLOR_INT_OPAQUE_BLACK,
+        VK_FALSE
+    };
+    const VkSamplerCreateInfo linearNoRepeatSamplerCreateInfo = {
+        VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+        NULL,
+        0,
+        VK_FILTER_LINEAR,
+        VK_FILTER_LINEAR,
+        VK_SAMPLER_MIPMAP_MODE_LINEAR,
+        VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+        VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+        VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+        -1.5f,
+        VK_FALSE,
+        1,
+        VK_FALSE,
+        VK_COMPARE_OP_ALWAYS,
+        0,
+        VK_LOD_CLAMP_NONE,
+        VK_BORDER_COLOR_INT_OPAQUE_BLACK,
+        VK_FALSE
+    };
+    const VkSamplerCreateInfo nearestNoRepeatSamplerCreateInfo = {
+        VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+        NULL,
+        0,
+        VK_FILTER_NEAREST,
+        VK_FILTER_LINEAR,
+        VK_SAMPLER_MIPMAP_MODE_LINEAR,
+        VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+        VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+        VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+        -1.5f,
+        VK_FALSE,
+        1,
+        VK_FALSE,
+        VK_COMPARE_OP_ALWAYS,
+        0,
+        VK_LOD_CLAMP_NONE,
+        VK_BORDER_COLOR_INT_OPAQUE_BLACK,
+        VK_FALSE
+    };
 
-    VulkanTest(vkCreateSampler(device, &samplerCreateInfo, NULL, &textureSampler),
-               "Failed to create Vulkan texture sampler!");
+    VulkanTest(vkCreateSampler(device, &linearRepeatSamplerCreateInfo, NULL, &textureSamplers.linearRepeat), "Failed to create linear repeating texture sampler!");
+    VulkanTest(vkCreateSampler(device, &nearestRepeatSamplerCreateInfo, NULL, &textureSamplers.nearestRepeat), "Failed to create nearest repeating texture sampler!");
+    VulkanTest(vkCreateSampler(device, &linearNoRepeatSamplerCreateInfo, NULL, &textureSamplers.linearNoRepeat), "Failed to create linear non-repeating texture sampler!");
+    VulkanTest(vkCreateSampler(device, &nearestNoRepeatSamplerCreateInfo, NULL, &textureSamplers.nearestNoRepeat), "Failed to create nearest non-repeating texture sampler!");
 
     return true;
 }
@@ -1458,9 +1525,9 @@ bool CreateVertexBuffers()
 
     const VkDeviceSize bufferSize = sizeof(*vertices) * 8;
 
-    if (!CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &stagingBuffer,
-                      &stagingBufferMemory))
+    if (!CreateBuffer(&stagingBuffer, &stagingBufferMemory,
+                      bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))
     {
         return false;
     }
@@ -1471,9 +1538,9 @@ bool CreateVertexBuffers()
     memcpy(data, vertices, bufferSize);
     vkUnmapMemory(device, stagingBufferMemory);
 
-    if (!CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-                      VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &vertexBuffers.walls.buffer,
-                      &vertexBuffers.localMemory))
+    if (!CreateBuffer(&vertexBuffers.walls.buffer, &vertexBuffers.localMemory,
+                      bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                      VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT))
     {
         return false;
     }
@@ -1485,10 +1552,10 @@ bool CreateVertexBuffers()
 
 
     vertexBuffers.ui.maxVertices = UI_PRIMITIVES * 4;
-    return CreateBuffer(sizeof(UiVertex) * vertexBuffers.ui.maxVertices,
-                        VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-                        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                        &vertexBuffers.ui.buffer, &vertexBuffers.sharedMemory);
+    return CreateBuffer(&vertexBuffers.ui.buffer,
+                        &vertexBuffers.sharedMemory,
+                        sizeof(UiVertex) * vertexBuffers.ui.maxVertices,
+                        VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 }
 
 bool CreateUniformBuffers()
@@ -1497,9 +1564,9 @@ bool CreateUniformBuffers()
     {
         const VkDeviceSize uniformBufferSize = sizeof(mat4);
 
-        if (!CreateBuffer(uniformBufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                          VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                          &uniformBuffers[i], &uniformBuffersMemory[i]))
+        if (!CreateBuffer(&uniformBuffers[i], &uniformBuffersMemory[i],
+                          uniformBufferSize,
+                          VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))
             return false;
 
         VulkanTest(vkMapMemory(device, uniformBuffersMemory[i], 0, uniformBufferSize, 0, &uniformBuffersMapped[i]),
@@ -1508,9 +1575,9 @@ bool CreateUniformBuffers()
 
     const VkDeviceSize dataBufferSize = sizeof(DataBufferObject);
 
-    if (!CreateBuffer(dataBufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &dataBuffer,
-                      &dataBufferMemory))
+    if (!CreateBuffer(&dataBuffer, &dataBufferMemory,
+                      dataBufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))
         return false;
 
     VulkanTest(vkMapMemory(device, dataBufferMemory, 0, dataBufferSize, 0, &mappedDataBuffer),
@@ -1581,7 +1648,7 @@ bool CreateDescriptorSets()
         for (uint16_t textureIndex = 0; textureIndex < TEXTURE_ASSET_COUNT; textureIndex++)
         {
             imageInfo[textureIndex] = (VkDescriptorImageInfo){
-                textureSampler,
+                textureSamplers.nearestRepeat,
                 texturesImageView[textureIndex],
                 VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
             };

@@ -11,10 +11,13 @@
 
 typedef struct BatchedQuadArray
 {
+    /// If used in a textured quad, @c verts takes the form of a @c float[quad_count * 4] holding values for X, Y, U, and V for each vertex.
+    /// If used in a colored quad, @c verts takes the form of a @c float[quad_count * 2] holding values for X and Y for each vertex.
     float *verts;
-    // float[quad_count][4] with X,Y,U,V for textured quads, float[quad_count][2] with X,Y for untextured quads
-    uint *indices; // uint[6*quad_count] with indices
-    int quad_count; // Number of quads in the array
+    /// uint[quad_count * 6] with indices
+    uint *indices;
+    /// Number of quads in the array
+    int quad_count;
 } BatchedQuadArray;
 
 extern Renderer currentRenderer;
