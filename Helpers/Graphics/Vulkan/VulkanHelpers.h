@@ -14,6 +14,7 @@
 #pragma region macros
 #define VULKAN_VERSION VK_MAKE_VERSION(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH)
 #define MAX_FRAMES_IN_FLIGHT 2
+// TODO Verify start size
 #define UI_PRIMITIVES 2048
 
 #define VulkanLogError(...) LogInternal("VULKAN", 31, true, __VA_ARGS__)
@@ -34,7 +35,7 @@ return returnValue; \
 #define VulkanTestWithReturn(function, returnValue, ...) VulkanTestInternal(function, returnValue, __VA_ARGS__)
 #define VulkanTestReturnResult(function, ...) VulkanTestInternal(function, result, __VA_ARGS__)
 #define VulkanTest(function, ...) VulkanTestInternal(function, false, __VA_ARGS__)
-#define GET_COLOR(color) const float r = (color >> 16 & 0xFF) / 255.0f; const float g = (color >> 8 & 0xFF) / 255.0f; const float b = (color & 0xFF) / 255.0f; const float a = (color >> 24 & 0xFF) / 255.0f
+#define GET_COLOR(color) const float r = ((color) >> 16 & 0xFF) / 255.0f; const float g = ((color) >> 8 & 0xFF) / 255.0f; const float b = ((color) & 0xFF) / 255.0f; const float a = ((color) >> 24 & 0xFF) / 255.0f
 #define TextureIndex(texture) texturesAssetIDMap[ReadUintA(DecompressAsset(texture), 12)]
 #pragma endregion macros
 
@@ -66,11 +67,33 @@ typedef struct QueueFamilyIndices
 typedef struct SwapChainSupportDetails
 {
     uint32_t formatCount;
-    VkSurfaceFormatKHR *formats;
     uint32_t presentModeCount;
+    VkSurfaceFormatKHR *formats;
     VkPresentModeKHR *presentMode;
     VkSurfaceCapabilitiesKHR capabilities;
 } SwapChainSupportDetails;
+
+typedef struct MemoryInfo
+{
+    VkDeviceSize size;
+    void *mappedMemory;
+    VkDeviceMemory memory;
+    uint32_t memoryTypeBits;
+    VkMemoryPropertyFlags type;
+} MemoryInfo;
+
+typedef struct MemoryAllocationInfo
+{
+    VkDeviceSize offset;
+    MemoryInfo *memoryInfo;
+    VkMemoryRequirements memoryRequirements;
+} MemoryAllocationInfo;
+
+typedef struct MemoryPools
+{
+    MemoryInfo localMemory;
+    MemoryInfo sharedMemory;
+} MemoryPools;
 
 typedef struct UiVertex
 {
@@ -85,45 +108,59 @@ typedef struct WallVertex
     vec2 uv;
 } WallVertex;
 
-typedef struct UniformBufferObject
-{
-    mat4 model;
-    mat4 view;
-    mat4 proj;
-} UniformBufferObject;
-
-typedef struct ImageAllocationInformation
+typedef struct Image
 {
     VkImage image;
     VkExtent3D extent;
     uint8_t mipmapLevels;
-    VkMemoryRequirements memoryRequirements;
-    VkDeviceSize offset;
-} ImageAllocationInformation;
+    MemoryAllocationInfo allocationInfo;
+} Image;
 
-typedef struct DataBufferObject
+typedef struct TranslationUniformBuffer
+{
+    mat4 *data;
+    mat4 *fallback;
+    VkBuffer buffer;
+    uint32_t maxInstances;
+    uint32_t instanceCount;
+    uint32_t fallbackMaxInstances;
+    MemoryAllocationInfo memoryAllocationInfo;
+} TranslationUniformBuffer;
+
+typedef struct DataUniformBufferObject
 {
     uint32_t textureIndex;
-} DataBufferObject;
+} DataUniformBufferObject;
+
+typedef struct DataUniformBuffer
+{
+    VkBuffer buffer;
+    uint32_t maxInstances;
+    uint32_t instanceCount;
+    uint32_t fallbackMaxInstances;
+    DataUniformBufferObject *data;
+    DataUniformBufferObject *fallback;
+    MemoryAllocationInfo memoryAllocationInfo;
+} DataUniformBuffer;
 
 typedef struct VertexBuffer
 {
     VkBuffer buffer;
-    UiVertex *vertices; // TODO Verify start size
+    UiVertex *vertices;
     UiVertex *fallback;
     uint32_t vertexCount;
     uint32_t maxVertices;
     uint32_t fallbackMaxVertices;
+    MemoryAllocationInfo memoryAllocationInfo;
 } VertexBuffer;
 
-typedef struct VertexBuffers
+typedef struct Buffers
 {
-    VertexBuffer walls;
-    VkDeviceMemory localMemory;
-
     VertexBuffer ui;
-    VkDeviceMemory sharedMemory;
-} VertexBuffers;
+    VertexBuffer walls;
+    DataUniformBuffer data;
+    TranslationUniformBuffer translation[MAX_FRAMES_IN_FLIGHT];
+} Buffers;
 
 typedef struct Pipelines
 {
@@ -138,6 +175,12 @@ typedef struct TextureSamplers
     VkSampler linearNoRepeat;
     VkSampler nearestNoRepeat;
 } TextureSamplers;
+
+typedef struct BuffersToClear
+{
+    bool color: 1;
+    bool depth: 1;
+} BuffersToClear;
 #pragma endregion typedefs
 
 #pragma region variables
@@ -196,22 +239,15 @@ extern VkFence inFlightFences[MAX_FRAMES_IN_FLIGHT];
 extern bool framebufferResized;
 extern uint8_t currentFrame;
 extern uint32_t swapchainImageIndex;
-extern VertexBuffers vertexBuffers;
-extern VkBuffer indexBuffer;
-extern VkDeviceMemory indexBufferMemory;
-extern VkBuffer uniformBuffers[MAX_FRAMES_IN_FLIGHT];
-extern VkDeviceMemory uniformBuffersMemory[MAX_FRAMES_IN_FLIGHT];
-extern void *uniformBuffersMapped[MAX_FRAMES_IN_FLIGHT];
+extern MemoryPools memoryPools;
+extern Buffers buffers;
 extern VkDescriptorPool descriptorPool;
 extern VkDescriptorSet descriptorSets[MAX_FRAMES_IN_FLIGHT];
-extern ImageAllocationInformation textures[TEXTURE_ASSET_COUNT];
+extern Image textures[TEXTURE_ASSET_COUNT];
 extern VkDeviceMemory textureMemory;
 extern VkImageView texturesImageView[TEXTURE_ASSET_COUNT];
 extern uint32_t texturesAssetIDMap[ASSET_COUNT];
 extern TextureSamplers textureSamplers;
-extern VkBuffer dataBuffer;
-extern VkDeviceMemory dataBufferMemory;
-extern void *mappedDataBuffer;
 extern VkFormat depthImageFormat;
 extern VkImage depthImage;
 extern VkDeviceMemory depthImageMemory;
@@ -219,8 +255,8 @@ extern VkImageView depthImageView;
 extern VkImage colorImage;
 extern VkDeviceMemory colorImageMemory;
 extern VkImageView colorImageView;
-extern VkClearValue *clearValues;
-extern uint8_t clearValueCount;
+extern VkClearColorValue clearColor;
+extern BuffersToClear buffersToClear;
 #pragma endregion variables
 
 #pragma region helperFunctions
@@ -254,12 +290,14 @@ bool BeginCommandBuffer(const VkCommandBuffer *commandBuffer, VkCommandPool comm
 bool EndCommandBuffer(VkCommandBuffer commandBuffer, VkCommandPool commandPool, VkQueue queue);
 
 bool CreateBuffer(VkBuffer *buffer,
-                  VkDeviceMemory *bufferMemory,
                   VkDeviceSize size,
                   VkBufferUsageFlags usageFlags,
-                  VkMemoryPropertyFlags propertyFlags);
+                  bool newAllocation,
+                  MemoryAllocationInfo *allocationInfo);
 
 bool CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+
+bool AllocateMemory();
 
 void CleanupSwapChain();
 

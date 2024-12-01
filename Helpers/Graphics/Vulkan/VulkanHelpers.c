@@ -37,22 +37,30 @@ VkFence inFlightFences[MAX_FRAMES_IN_FLIGHT] = {VK_NULL_HANDLE};
 bool framebufferResized = false;
 uint8_t currentFrame = 0;
 uint32_t swapchainImageIndex;
-VertexBuffers vertexBuffers = {NULL};
-VkBuffer indexBuffer = VK_NULL_HANDLE;
-VkDeviceMemory indexBufferMemory = VK_NULL_HANDLE;
-VkBuffer uniformBuffers[MAX_FRAMES_IN_FLIGHT] = {VK_NULL_HANDLE};
-VkDeviceMemory uniformBuffersMemory[MAX_FRAMES_IN_FLIGHT] = {VK_NULL_HANDLE};
-void *uniformBuffersMapped[MAX_FRAMES_IN_FLIGHT];
+MemoryPools memoryPools = {
+    {
+        0,
+        VK_NULL_HANDLE,
+        0,
+        0,
+        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+    },
+    {
+        0,
+        VK_NULL_HANDLE,
+        0,
+        0,
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+    }
+};
+Buffers buffers = {0};
 VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
 VkDescriptorSet descriptorSets[MAX_FRAMES_IN_FLIGHT];
-ImageAllocationInformation textures[TEXTURE_ASSET_COUNT];
+Image textures[TEXTURE_ASSET_COUNT];
 VkDeviceMemory textureMemory;
 VkImageView texturesImageView[TEXTURE_ASSET_COUNT];
 uint32_t texturesAssetIDMap[ASSET_COUNT];
 TextureSamplers textureSamplers;
-VkBuffer dataBuffer = VK_NULL_HANDLE;
-VkDeviceMemory dataBufferMemory = VK_NULL_HANDLE;
-void *mappedDataBuffer;
 VkFormat depthImageFormat;
 VkImage depthImage;
 VkDeviceMemory depthImageMemory;
@@ -60,14 +68,14 @@ VkImageView depthImageView;
 VkImage colorImage;
 VkDeviceMemory colorImageMemory;
 VkImageView colorImageView;
-VkClearValue *clearValues = (VkClearValue[]){{.color = {{0.0f, 0.64f, 0.91f, 1.0f}}}, {.depthStencil = {1, 0}}};
-uint8_t clearValueCount = 2;
+VkClearColorValue clearColor = {{0.0f, 0.64f, 0.91f, 1.0f}};
+BuffersToClear buffersToClear = {0};
 #pragma endregion variables
 
 bool QuerySwapChainSupport(const VkPhysicalDevice pDevice)
 {
     swapChainSupport = malloc(sizeof(*swapChainSupport));
-    SwapChainSupportDetails details = {0, NULL, 0, NULL, {}};
+    SwapChainSupportDetails details = {0, 0, NULL, NULL, {}};
 
     VulkanTest(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(pDevice, surface, &details.capabilities),
                "Failed to query Vulkan surface capabilities!");
@@ -283,10 +291,10 @@ bool EndCommandBuffer(VkCommandBuffer commandBuffer, const VkCommandPool command
 }
 
 bool CreateBuffer(VkBuffer *buffer,
-                  VkDeviceMemory *bufferMemory,
                   const VkDeviceSize size,
                   const VkBufferUsageFlags usageFlags,
-                  const VkMemoryPropertyFlags propertyFlags)
+                  const bool newAllocation,
+                  MemoryAllocationInfo *allocationInfo)
 {
     uint32_t pQueueFamilyIndices[queueFamilyIndices->familyCount];
     switch (queueFamilyIndices->familyCount)
@@ -323,28 +331,37 @@ bool CreateBuffer(VkBuffer *buffer,
 
     VulkanTest(vkCreateBuffer(device, &bufferInfo, NULL, buffer), "Failed to create Vulkan buffer!");
 
-    if (!bufferMemory) return true; // Allocation and binding will be handled by the calling function
+    vkGetBufferMemoryRequirements(device, *buffer, &allocationInfo->memoryRequirements);
+    const VkDeviceSize memorySize = allocationInfo->memoryRequirements.alignment * (VkDeviceSize)ceil(
+                                        (double)allocationInfo->memoryRequirements.size / (double)allocationInfo->
+                                        memoryRequirements.alignment);
 
-    VkMemoryRequirements memRequirements;
-    vkGetBufferMemoryRequirements(device, *buffer, &memRequirements);
+    allocationInfo->offset = allocationInfo->memoryInfo->size;
+    allocationInfo->memoryInfo->size += memorySize;
+    allocationInfo->memoryInfo->memoryTypeBits |= allocationInfo->memoryRequirements.memoryTypeBits;
+
+    if (!newAllocation) return true; // Allocation and binding will be handled elsewhere
+
     VkPhysicalDeviceMemoryProperties memoryProperties;
     vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
     for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++)
     {
-        if (memRequirements.memoryTypeBits & 1 << i &&
-            (memoryProperties.memoryTypes[i].propertyFlags & propertyFlags) == propertyFlags)
+        if (allocationInfo->memoryRequirements.memoryTypeBits & 1 << i &&
+            (memoryProperties.memoryTypes[i].propertyFlags & allocationInfo->memoryInfo->type) == allocationInfo->
+            memoryInfo->type)
         {
             const VkMemoryAllocateInfo allocInfo = {
                 VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
                 NULL,
-                memRequirements.size,
+                memorySize,
                 i
             };
 
-            VulkanTest(vkAllocateMemory(device, &allocInfo, NULL, bufferMemory),
+            VulkanTest(vkAllocateMemory(device, &allocInfo, NULL, &allocationInfo->memoryInfo->memory),
                        "Failed to allocate Vulkan buffer memory!");
 
-            VulkanTest(vkBindBufferMemory(device, *buffer, *bufferMemory, 0), "Failed to bind Vulkan buffer memory!");
+            VulkanTest(vkBindBufferMemory(device, *buffer, allocationInfo->memoryInfo->memory, 0),
+                       "Failed to bind Vulkan buffer memory!");
 
             return true;
         }
@@ -364,6 +381,146 @@ bool CopyBuffer(const VkBuffer srcBuffer, const VkBuffer dstBuffer, const VkDevi
     vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
 
     if (!EndCommandBuffer(commandBuffer, transferCommandPool, transferQueue)) return false;
+
+    return true;
+}
+
+bool AllocateMemory()
+{
+    bool allocated = false;
+
+    VkPhysicalDeviceMemoryProperties memoryProperties;
+    vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
+    for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++)
+    {
+        if (memoryPools.localMemory.memoryTypeBits & 1 << i &&
+            (memoryProperties.memoryTypes[i].propertyFlags & memoryPools.localMemory.type) == memoryPools.localMemory.
+            type)
+        {
+            const VkMemoryAllocateInfo allocInfo = {
+                VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+                NULL,
+                memoryPools.localMemory.size,
+                i
+            };
+
+            VulkanTest(vkAllocateMemory(device, &allocInfo, NULL, &memoryPools.localMemory.memory),
+                       "Failed to allocate device local buffer memory!");
+
+            allocated = true;
+            break;
+        }
+    }
+    if (!allocated)
+    {
+        VulkanLogError("Failed to allocate device local buffer memory!");
+
+        return false;
+    }
+
+    allocated = false;
+    for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++)
+    {
+        if (memoryPools.sharedMemory.memoryTypeBits & 1 << i &&
+            (memoryProperties.memoryTypes[i].propertyFlags & memoryPools.sharedMemory.type) == memoryPools.sharedMemory.
+            type)
+        {
+            const VkMemoryAllocateInfo allocInfo = {
+                VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+                NULL,
+                memoryPools.sharedMemory.size,
+                i
+            };
+
+            VulkanTest(vkAllocateMemory(device, &allocInfo, NULL, &memoryPools.sharedMemory.memory),
+                       "Failed to allocate device shared buffer memory!");
+
+            allocated = true;
+            break;
+        }
+    }
+    if (!allocated)
+    {
+        VulkanLogError("Failed to allocate device shared buffer memory!");
+
+        return false;
+    }
+
+    VulkanTest(
+        vkBindBufferMemory(device, buffers.ui.buffer, memoryPools.sharedMemory.memory, buffers.ui.memoryAllocationInfo.
+            offset), "Failed to bind UI vertex buffer memory!");
+    VulkanTest(
+        vkBindBufferMemory(device, buffers.data.buffer, memoryPools.sharedMemory.memory, buffers.data.
+            memoryAllocationInfo.offset), "Failed to bind data uniform buffer memory!");
+    for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
+        VulkanTest(
+            vkBindBufferMemory(device, buffers.translation[i].buffer, memoryPools.sharedMemory.memory, buffers.
+                translation[i].memoryAllocationInfo.offset), "Failed to bind translation uniform buffer memory!");
+    }
+
+    VulkanTest(
+        vkBindBufferMemory(device, buffers.walls.buffer, memoryPools.localMemory.memory, buffers.walls.
+            memoryAllocationInfo.offset), "Failed to bind Vulkan buffer memory!");
+
+    VulkanTest(
+        vkMapMemory(device, memoryPools.sharedMemory.memory, 0, VK_WHOLE_SIZE, 0, &memoryPools.sharedMemory.mappedMemory
+        ), "Failed to map Vulkan buffer memory!");
+
+    buffers.ui.vertices = memoryPools.sharedMemory.mappedMemory + buffers.ui.memoryAllocationInfo.offset;
+    buffers.data.data = memoryPools.sharedMemory.mappedMemory + buffers.data.memoryAllocationInfo.offset;
+    for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
+        buffers.translation[i].data = memoryPools.sharedMemory.mappedMemory + buffers.translation[i].
+                                                                              memoryAllocationInfo.offset;
+    }
+
+    VkBuffer stagingBuffer;
+    void *data;
+    const WallVertex vertices[8] = {
+        {{-0.5f, 0.0f, -0.5f}, {0.0f, 0.0f}},
+        {{0.5f, 0.0f, -0.5f}, {1.0f, 0.0f}},
+        {{0.5f, 0.0f, 0.5f}, {1.0f, 1.0f}},
+        {{-0.5f, 0.0f, 0.5f}, {0.0f, 1.0f}},
+
+        {{-0.5f, -0.5f, -0.5f}, {0.0f, 0.0f}},
+        {{0.5f, -0.5f, -0.5f}, {1.0f, 0.0f}},
+        {{0.5f, -0.5f, 0.5f}, {1.0f, 1.0f}},
+        {{-0.5f, -0.5f, 0.5f}, {0.0f, 1.0f}}
+    };
+
+    const VkDeviceSize bufferSize = sizeof(*vertices) * 8;
+
+    MemoryInfo memoryInfo = {
+        0,
+        NULL,
+        0,
+        0,
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+    };
+    MemoryAllocationInfo allocationInfo = {
+        0,
+        &memoryInfo,
+        {0}
+    };
+
+    if (!CreateBuffer(&stagingBuffer, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, true, &allocationInfo))
+    {
+        return false;
+    }
+
+    VulkanTest(vkMapMemory(device, memoryInfo.memory, 0, bufferSize, 0, &data),
+               "Failed to map Vulkan vertex staging buffer memory!");
+
+    memcpy(data, vertices, bufferSize);
+    vkUnmapMemory(device, memoryInfo.memory);
+
+
+    if (!CopyBuffer(stagingBuffer, buffers.walls.buffer, bufferSize)) return false;
+    buffers.walls.vertexCount = 8;
+
+    vkDestroyBuffer(device, stagingBuffer, NULL);
+    vkFreeMemory(device, memoryInfo.memory, NULL);
 
     return true;
 }
@@ -415,22 +572,19 @@ void CleanupSyncObjects()
 
 void UpdateUniformBuffer(const uint32_t currentFrame)
 {
-    UniformBufferObject bufferObject = {
-        GLM_MAT4_IDENTITY_INIT,
-        GLM_MAT4_IDENTITY_INIT,
-        GLM_MAT4_IDENTITY_INIT
-    };
+    mat4 model = GLM_MAT4_IDENTITY_INIT;
+    mat4 view = GLM_MAT4_IDENTITY_INIT;
+    mat4 proj = GLM_MAT4_IDENTITY_INIT;
     mat4 ubo = GLM_MAT4_IDENTITY_INIT;
 
-    glm_rotate(bufferObject.model, (float)SDL_GetTicks64() * PIf / 10000.0f, GLM_YUP);
-    glm_lookat((vec3){2.0f, 2.0f, 2.0f}, GLM_VEC3_ZERO, (vec3){0.0f, -1.0f, 0.0f}, bufferObject.view);
-    glm_perspective(PI / 4, (float)swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 10.0f,
-                    bufferObject.proj);
+    glm_rotate(model, (float)SDL_GetTicks64() * PIf / 10000.0f, GLM_YUP);
+    glm_lookat((vec3){2.0f, 2.0f, 2.0f}, GLM_VEC3_ZERO, (vec3){0.0f, -1.0f, 0.0f}, view);
+    glm_perspective(PI / 4, (float)swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 10.0f, proj);
 
-    glm_mat4_mul(bufferObject.proj, bufferObject.view, ubo);
-    glm_mat4_mul(ubo, bufferObject.model, ubo);
+    glm_mat4_mul(proj, view, ubo);
+    glm_mat4_mul(ubo, model, ubo);
 
-    memcpy(uniformBuffersMapped[currentFrame], &ubo, sizeof(ubo));
+    memcpy(buffers.translation[currentFrame].data, &ubo, sizeof(ubo));
 }
 
 VkResult BeginRenderPass(const VkCommandBuffer commandBuffer, const uint32_t imageIndex)
@@ -445,6 +599,31 @@ VkResult BeginRenderPass(const VkCommandBuffer commandBuffer, const uint32_t ima
     VulkanTestReturnResult(vkBeginCommandBuffer(commandBuffer, &beginInfo),
                            "Failed to begin recording Vulkan command buffer!");
 
+    if (buffersToClear.color)
+    {
+        const VkImageSubresourceRange colorImageSubresourceRange = {
+            VK_IMAGE_ASPECT_COLOR_BIT,
+            0,
+            1,
+            0,
+            1
+        };
+        vkCmdClearColorImage(commandBuffers[currentFrame], colorImage, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &colorImageSubresourceRange);
+        buffersToClear.color = false;
+    }
+    if (buffersToClear.depth)
+    {
+        const VkImageSubresourceRange depthImageSubresourceRange = {
+            VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT,
+            0,
+            1,
+            0,
+            1
+        };
+        vkCmdClearDepthStencilImage(commandBuffers[currentFrame], depthImage, VK_IMAGE_LAYOUT_GENERAL, (VkClearDepthStencilValue[1]){{1, 0}}, 1, &depthImageSubresourceRange);
+        buffersToClear.depth = false;
+    }
+
     const VkRenderPassBeginInfo renderPassInfo = {
         VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
         NULL,
@@ -454,8 +633,8 @@ VkResult BeginRenderPass(const VkCommandBuffer commandBuffer, const uint32_t ima
             {0, 0},
             swapChainExtent
         },
-        clearValueCount,
-        clearValues
+        2,
+        (VkClearValue[]){{.color = clearColor}, {.depthStencil = {1, 0}}}
     };
 
     vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
@@ -498,11 +677,11 @@ bool DrawRectInternal(const float ndcStartX,
                       const uint32_t textureIndex)
 {
     return DrawQuadInternal((mat4){
-                         {ndcStartX, ndcStartY, startU, startV},
-                         {ndcEndX, ndcStartY, endU, startV},
-                         {ndcEndX, ndcEndY, endU, endV},
-                         {ndcStartX, ndcEndY, startU, endV}
-                     }, color, textureIndex);
+                                {ndcStartX, ndcStartY, startU, startV},
+                                {ndcEndX, ndcStartY, endU, startV},
+                                {ndcEndX, ndcEndY, endU, endV},
+                                {ndcStartX, ndcEndY, startU, endV}
+                            }, color, textureIndex);
 }
 
 bool DrawQuadInternal(const mat4 vertices_posXY_uvZW,
@@ -511,37 +690,37 @@ bool DrawQuadInternal(const mat4 vertices_posXY_uvZW,
 {
     GET_COLOR(color);
 
-    if (vertexBuffers.ui.vertexCount >= vertexBuffers.ui.maxVertices)
+    if (buffers.ui.vertexCount >= buffers.ui.maxVertices)
     {
-        if (vertexBuffers.ui.vertexCount >= vertexBuffers.ui.fallbackMaxVertices)
+        if (buffers.ui.vertexCount >= buffers.ui.fallbackMaxVertices)
         {
-            if (vertexBuffers.ui.fallbackMaxVertices)
+            if (buffers.ui.fallbackMaxVertices)
             {
-                vertexBuffers.ui.fallbackMaxVertices += 64;
-                UiVertex *newVertices = realloc(vertexBuffers.ui.fallback,
-                                                sizeof(UiVertex) * vertexBuffers.ui.fallbackMaxVertices);
+                buffers.ui.fallbackMaxVertices += 64;
+                UiVertex *newVertices = realloc(buffers.ui.fallback,
+                                                sizeof(UiVertex) * buffers.ui.fallbackMaxVertices);
                 if (!newVertices)
                 {
                     free(newVertices);
-                    free(vertexBuffers.ui.fallback);
+                    free(buffers.ui.fallback);
                     VulkanLogError("realloc of fallback UI vertex buffer failed!");
                     return false;
                 }
-                vertexBuffers.ui.fallback = newVertices;
+                buffers.ui.fallback = newVertices;
             } else
             {
-                vertexBuffers.ui.fallbackMaxVertices = vertexBuffers.ui.maxVertices + 64;
-                vertexBuffers.ui.fallback = malloc(sizeof(UiVertex) * vertexBuffers.ui.fallbackMaxVertices);
-                memcpy(vertexBuffers.ui.fallback, vertexBuffers.ui.vertices,
-                       sizeof(UiVertex) * vertexBuffers.ui.maxVertices);
-                if (!vertexBuffers.ui.fallback)
+                buffers.ui.fallbackMaxVertices = buffers.ui.maxVertices + 64;
+                buffers.ui.fallback = malloc(sizeof(UiVertex) * buffers.ui.fallbackMaxVertices);
+                memcpy(buffers.ui.fallback, buffers.ui.vertices,
+                       sizeof(UiVertex) * buffers.ui.maxVertices);
+                if (!buffers.ui.fallback)
                 {
                     VulkanLogError("malloc of fallback UI vertex buffer failed!");
                     return false;
                 }
             }
         }
-        vertexBuffers.ui.fallback[vertexBuffers.ui.vertexCount++] = (UiVertex){
+        buffers.ui.fallback[buffers.ui.vertexCount++] = (UiVertex){
             {
                 vertices_posXY_uvZW[0][0],
                 vertices_posXY_uvZW[0][1],
@@ -551,7 +730,7 @@ bool DrawQuadInternal(const mat4 vertices_posXY_uvZW,
             {r, g, b, a},
             textureIndex
         };
-        vertexBuffers.ui.fallback[vertexBuffers.ui.vertexCount++] = (UiVertex){
+        buffers.ui.fallback[buffers.ui.vertexCount++] = (UiVertex){
             {
                 vertices_posXY_uvZW[1][0],
                 vertices_posXY_uvZW[1][1],
@@ -561,7 +740,7 @@ bool DrawQuadInternal(const mat4 vertices_posXY_uvZW,
             {r, g, b, a},
             textureIndex
         };
-        vertexBuffers.ui.fallback[vertexBuffers.ui.vertexCount++] = (UiVertex){
+        buffers.ui.fallback[buffers.ui.vertexCount++] = (UiVertex){
             {
                 vertices_posXY_uvZW[2][0],
                 vertices_posXY_uvZW[2][1],
@@ -571,7 +750,7 @@ bool DrawQuadInternal(const mat4 vertices_posXY_uvZW,
             {r, g, b, a},
             textureIndex
         };
-        vertexBuffers.ui.fallback[vertexBuffers.ui.vertexCount++] = (UiVertex){
+        buffers.ui.fallback[buffers.ui.vertexCount++] = (UiVertex){
             {
                 vertices_posXY_uvZW[3][0],
                 vertices_posXY_uvZW[3][1],
@@ -585,7 +764,7 @@ bool DrawQuadInternal(const mat4 vertices_posXY_uvZW,
         return true;
     }
 
-    vertexBuffers.ui.vertices[vertexBuffers.ui.vertexCount++] = (UiVertex){
+    buffers.ui.vertices[buffers.ui.vertexCount++] = (UiVertex){
         {
             vertices_posXY_uvZW[0][0],
             vertices_posXY_uvZW[0][1],
@@ -595,7 +774,7 @@ bool DrawQuadInternal(const mat4 vertices_posXY_uvZW,
         {r, g, b, a},
         textureIndex
     };
-    vertexBuffers.ui.vertices[vertexBuffers.ui.vertexCount++] = (UiVertex){
+    buffers.ui.vertices[buffers.ui.vertexCount++] = (UiVertex){
         {
             vertices_posXY_uvZW[1][0],
             vertices_posXY_uvZW[1][1],
@@ -605,7 +784,7 @@ bool DrawQuadInternal(const mat4 vertices_posXY_uvZW,
         {r, g, b, a},
         textureIndex
     };
-    vertexBuffers.ui.vertices[vertexBuffers.ui.vertexCount++] = (UiVertex){
+    buffers.ui.vertices[buffers.ui.vertexCount++] = (UiVertex){
         {
             vertices_posXY_uvZW[2][0],
             vertices_posXY_uvZW[2][1],
@@ -615,7 +794,7 @@ bool DrawQuadInternal(const mat4 vertices_posXY_uvZW,
         {r, g, b, a},
         textureIndex
     };
-    vertexBuffers.ui.vertices[vertexBuffers.ui.vertexCount++] = (UiVertex){
+    buffers.ui.vertices[buffers.ui.vertexCount++] = (UiVertex){
         {
             vertices_posXY_uvZW[3][0],
             vertices_posXY_uvZW[3][1],

@@ -154,7 +154,8 @@ inline void DrawOutlineRect(const Vector2 pos, const Vector2 size, const float t
     switch (currentRenderer)
     {
         case RENDERER_VULKAN:
-
+            VK_DrawRectOutline((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, thickness * (float)GetState()->uiScale,
+                               drawColor);
             break;
         case RENDERER_OPENGL:
             GL_DrawRectOutline(pos, size, drawColor, thickness * GetState()->uiScale);
@@ -237,7 +238,7 @@ inline void ClearColor(const uint color)
     switch (currentRenderer)
     {
         case RENDERER_VULKAN:
-            VK_SetClearColor(color);
+            VK_ClearColor(color);
             break;
         case RENDERER_OPENGL:
             GL_ClearColor(color);
@@ -251,7 +252,7 @@ inline void ClearScreen()
     switch (currentRenderer)
     {
         case RENDERER_VULKAN:
-
+            VK_ClearScreen();
             break;
         case RENDERER_OPENGL:
             GL_ClearScreen();
@@ -265,7 +266,7 @@ inline void ClearDepthOnly()
     switch (currentRenderer)
     {
         case RENDERER_VULKAN:
-
+            VK_ClearDepthOnly();
             break;
         case RENDERER_OPENGL:
             GL_ClearDepthOnly();

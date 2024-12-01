@@ -108,7 +108,6 @@
       <option name="/Default/CodeStyle/CodeFormatting/CppFormatting/EMPTY_BLOCK_STYLE/@EntryValue" value="TOGETHER_SAME_LINE" type="string" />
       <option name="/Default/CodeStyle/CodeFormatting/CppFormatting/BLANK_LINES_AROUND_SINGLE_LINE_FUNCTION_DEFINITION/@EntryValue" value="1" type="long" />
       <option name="/Default/CodeStyle/CodeFormatting/CppFormatting/PLACE_ELSE_ON_NEW_LINE/@EntryValue" value="false" type="bool" />
-      <option name="/Default/CodeStyle/CodeFormatting/CppFormatting/SIMPLE_CASE_STATEMENT_STYLE/@EntryValue" />
       <option name="/Default/CodeStyle/CodeFormatting/CppFormatting/WRAP_PARAMETERS_STYLE/@EntryValue" value="CHOP_IF_LONG" type="string" />
       <option name="/Default/CodeStyle/CodeFormatting/CppFormatting/MAX_ENUM_MEMBERS_ON_LINE/@EntryValue" value="1" type="long" />
       <option name="/Default/CodeStyle/CodeFormatting/CppFormatting/INDENT_GOTO_LABELS/@EntryValue" value="false" type="bool" />

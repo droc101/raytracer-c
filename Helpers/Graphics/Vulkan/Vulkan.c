@@ -5,7 +5,6 @@
 #include "Vulkan.h"
 #include "VulkanHelpers.h"
 #include "VulkanInternal.h"
-#include "../Drawing.h"
 #include "../../../Assets/AssetReader.h"
 #include "../../../Structs/GlobalState.h"
 #include "../../Core/DataReader.h"
@@ -19,16 +18,11 @@ bool VK_Init(SDL_Window *window)
         CreateTexturesImageView() && CreateTextureSampler() && CreateVertexBuffers() && CreateUniformBuffers() &&
         CreateDescriptorPool() && CreateDescriptorSets() && CreateCommandBuffers() && CreateSyncObjects())
     {
-        const DataBufferObject dataBufferObject = {
+        const DataUniformBufferObject dataBufferObject = {
             texturesAssetIDMap[ReadUintA(DecompressAsset(gztex_actor_iq), 12)]
         };
 
-        memcpy(mappedDataBuffer, &dataBufferObject, sizeof(dataBufferObject));
-
-        VulkanTest(
-            vkMapMemory(device, vertexBuffers.sharedMemory, 0, sizeof(*vertexBuffers.ui.vertices) * vertexBuffers.ui.
-                maxVertices, 0, (void**)&vertexBuffers.ui.vertices),
-            "Failed to map ui vertex buffer memory!");
+        memcpy(buffers.data.data, &dataBufferObject, sizeof(dataBufferObject));
 
         return true;
     }
@@ -59,7 +53,7 @@ VkResult VK_FrameStart()
     VulkanTestReturnResult(vkResetCommandBuffer(commandBuffers[currentFrame], 0),
                            "Failed to reset Vulkan command buffer!");
 
-    vertexBuffers.ui.vertexCount = 0;
+    buffers.ui.vertexCount = 0;
 
     return VK_SUCCESS;
 }
@@ -72,38 +66,38 @@ VkResult VK_FrameEnd()
     const GlobalState *g = GetState();
     if (g->currentState == MAIN_STATE || g->currentState == PAUSE_STATE)
     {
-        DrawVertexBuffer(commandBuffers[currentFrame], pipelines.walls, vertexBuffers.walls);
+        DrawVertexBuffer(commandBuffers[currentFrame], pipelines.walls, buffers.walls);
     }
 
     vkCmdNextSubpass(commandBuffers[currentFrame], VK_SUBPASS_CONTENTS_INLINE);
 
-    if (vertexBuffers.ui.fallbackMaxVertices > 0)
+    if (buffers.ui.fallbackMaxVertices > 0)
     {
         VulkanLogError("UI Buffer Resized!!\n"); // TODO remove me when buffer size figured out
 
-        vkUnmapMemory(device, vertexBuffers.sharedMemory);
-        vkDestroyBuffer(device, vertexBuffers.ui.buffer, NULL);
-        vkFreeMemory(device, vertexBuffers.sharedMemory, NULL);
+        vkUnmapMemory(device, memoryPools.sharedMemory.memory);
+        vkDestroyBuffer(device, buffers.ui.buffer, NULL);
+        vkFreeMemory(device, memoryPools.sharedMemory.memory, NULL);
 
-        CreateBuffer(&vertexBuffers.ui.buffer,
-                     &vertexBuffers.sharedMemory,
-                     sizeof(UiVertex) * vertexBuffers.ui.fallbackMaxVertices,
-                     VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+        buffers.ui.memoryAllocationInfo.memoryInfo = &memoryPools.sharedMemory;
+        CreateBuffer(&buffers.ui.buffer, sizeof(UiVertex) * buffers.ui.fallbackMaxVertices,
+                     VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, false,
+                     &buffers.ui.memoryAllocationInfo);
 
-        VulkanTest(vkMapMemory(device, vertexBuffers.sharedMemory, 0,
-                       sizeof(*vertexBuffers.ui.vertices) * vertexBuffers.ui.fallbackMaxVertices, 0,
-                       (void**)&vertexBuffers.ui.vertices), "Failed to map ui vertex buffer memory!");
+        // TODO Resizing the buffers does not work
+        VulkanTest(vkMapMemory(device, memoryPools.sharedMemory.memory, 0,
+                       sizeof(*buffers.ui.vertices) * buffers.ui.fallbackMaxVertices, 0,
+                       (void**)&buffers.ui.vertices), "Failed to map ui vertex buffer memory!");
 
-        memcpy(vertexBuffers.ui.vertices, vertexBuffers.ui.fallback,
-               sizeof(UiVertex) * vertexBuffers.ui.fallbackMaxVertices);
+        memcpy(buffers.ui.vertices, buffers.ui.fallback,
+               sizeof(UiVertex) * buffers.ui.fallbackMaxVertices);
 
-        vertexBuffers.ui.maxVertices = vertexBuffers.ui.fallbackMaxVertices;
-        vertexBuffers.ui.fallbackMaxVertices = 0;
-        free(vertexBuffers.ui.fallback);
+        buffers.ui.maxVertices = buffers.ui.fallbackMaxVertices;
+        buffers.ui.fallbackMaxVertices = 0;
+        free(buffers.ui.fallback);
     }
 
-    DrawVertexBuffer(commandBuffers[currentFrame], pipelines.ui, vertexBuffers.ui);
+    DrawVertexBuffer(commandBuffers[currentFrame], pipelines.ui, buffers.ui);
 
     VulkanTestReturnResult(EndRenderPass(commandBuffers[currentFrame]), "Failed to end render pass!");
 
@@ -162,7 +156,7 @@ bool VK_Cleanup()
     {
         VulkanTest(vkDeviceWaitIdle(device), "Failed to wait for Vulkan device to become idle!");
 
-        vkUnmapMemory(device, vertexBuffers.sharedMemory);
+        vkUnmapMemory(device, memoryPools.sharedMemory.memory);
 
         CleanupSwapChain();
 
@@ -184,26 +178,19 @@ bool VK_Cleanup()
 
         vkDestroyRenderPass(device, renderPass, NULL);
 
-        for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-        {
-            vkDestroyBuffer(device, uniformBuffers[i], NULL);
-            vkFreeMemory(device, uniformBuffersMemory[i], NULL);
-        }
-
-        vkDestroyBuffer(device, dataBuffer, NULL);
-        vkFreeMemory(device, dataBufferMemory, NULL);
-
         vkDestroyDescriptorPool(device, descriptorPool, NULL);
         vkDestroyDescriptorSetLayout(device, descriptorSetLayout, NULL);
 
-        vkDestroyBuffer(device, indexBuffer, NULL);
-        vkFreeMemory(device, indexBufferMemory, NULL);
+        vkDestroyBuffer(device, buffers.ui.buffer, NULL);
+        vkDestroyBuffer(device, buffers.data.buffer, NULL);
+        vkDestroyBuffer(device, buffers.walls.buffer, NULL);
+        for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+        {
+            vkDestroyBuffer(device, buffers.translation[i].buffer, NULL);
+        }
 
-        vkDestroyBuffer(device, vertexBuffers.walls.buffer, NULL);
-        vkFreeMemory(device, vertexBuffers.localMemory, NULL);
-
-        vkDestroyBuffer(device, vertexBuffers.ui.buffer, NULL);
-        vkFreeMemory(device, vertexBuffers.sharedMemory, NULL);
+        vkFreeMemory(device, memoryPools.localMemory.memory, NULL);
+        vkFreeMemory(device, memoryPools.sharedMemory.memory, NULL);
 
         CleanupSyncObjects();
 
@@ -359,14 +346,6 @@ bool VK_DrawTexturedQuadsBatched(const float *vertices,
     return true;
 }
 
-void VK_SetClearColor(const uint32_t color)
-{
-    GET_COLOR(color);
-
-    clearValues[0] = (VkClearValue){.color = {{r, g, b, a}}};
-    clearValues[1] = (VkClearValue){.depthStencil = {1, 0}};
-}
-
 bool VK_DrawLine(const int32_t startX,
                  const int32_t startY,
                  const int32_t endX,
@@ -400,6 +379,40 @@ bool VK_DrawLine(const int32_t startX,
     };
 
     return DrawQuadInternal(matrix, color, -1);
+}
+
+bool VK_DrawRectOutline(const int32_t x,
+                        const int32_t y,
+                        const int32_t w,
+                        const int32_t h,
+                        const float thickness,
+                        const uint32_t color)
+{
+    VK_DrawLine(x    , y    , x + w, y    , thickness, color);
+    VK_DrawLine(x + w, y    , x + w, y + h, thickness, color);
+    VK_DrawLine(x + w, y + h, x    , y + h, thickness, color);
+    VK_DrawLine(x    , y + h, x    , y    , thickness, color);
+
+    return true;
+}
+
+void VK_ClearColor(const uint32_t color)
+{
+    GET_COLOR(color);
+
+    clearColor = (VkClearColorValue){r, g, b, a};
+    VK_ClearScreen();
+}
+
+void VK_ClearScreen()
+{
+    buffersToClear.color = true;
+    buffersToClear.depth = true;
+}
+
+void VK_ClearDepthOnly()
+{
+    buffersToClear.depth = true;
 }
 
 void VK_SetTexParams(const uint8_t *texture, const bool linear, const bool repeat)

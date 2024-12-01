@@ -5,9 +5,9 @@
 #ifndef GAME_VULKAN_H
 #define GAME_VULKAN_H
 
-#include <SDL_vulkan.h>
 #include <stdbool.h>
 #include <vulkan/vulkan.h>
+#include "../Drawing.h"
 
 #define VK_X_TO_NDC(x) ((float) (x) / WindowWidth() * 2.0f - 1.0f)
 
@@ -72,9 +72,15 @@ bool VK_DrawTexturedQuadRegionMod(int x,
 
 bool VK_DrawTexturedQuadsBatched(const float *vertices, int quadCount, const uint8_t *texture, uint32_t color);
 
-void VK_SetClearColor(uint32_t color);
-
 bool VK_DrawLine(int startX, int startY, int endX, int endY, float thickness, uint32_t color);
+
+bool VK_DrawRectOutline(int x, int y, int w, int h, float thickness, uint32_t color);
+
+void VK_ClearColor(uint32_t color);
+
+void VK_ClearScreen();
+
+void VK_ClearDepthOnly();
 
 void VK_SetTexParams(const uint8_t *texture, bool linear, bool repeat);
 

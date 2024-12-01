@@ -66,10 +66,13 @@ bool CreateInstance()
         if (found == 1)
         {
             FriendlyError("Missing Vulkan Mesa layers!",
-                          "The Vulkan Mesa layers must be installed on your device to use the Mesa FPS overlay. If you wish to disable the Mesa FPS overlay, that can be done by removing the definition for VK_ENABLE_MESA_FPS_OVERLAY in config.h");
+                          "The Vulkan Mesa layers must be installed on your device to use the Mesa FPS overlay. "
+                          "If you wish to disable the Mesa FPS overlay, that can be done by removing the definition for VK_ENABLE_MESA_FPS_OVERLAY in config.h");
         }
         FriendlyError("Missing Vulkan validation layers!",
-                      "The Vulkan SDK must be installed on your device to use the Vulkan validation layer.\nYou can get the Vulkan SDK from https://vulkan.lunarg.com/sdk/home or by using the package manager of your choice.\nIf you wish to disable the validation layer, that can be done by removing the definition for VK_ENABLE_VALIDATION_LAYER in config.h");
+                      "The Vulkan SDK must be installed on your device to use the Vulkan validation layer.\n"
+                      "You can get the Vulkan SDK from https://vulkan.lunarg.com/sdk/home or by using the package manager of your choice.\n"
+                      "If you wish to disable the validation layer, that can be done by removing the definition for VK_ENABLE_VALIDATION_LAYER in config.h");
     }
     createInfo.enabledLayerCount = 2;
     createInfo.ppEnabledLayerNames = (const char *const[2]){"VK_LAYER_KHRONOS_validation", "VK_LAYER_MESA_overlay"};
@@ -77,7 +80,7 @@ bool CreateInstance()
     bool found = false;
     for (uint32_t i = 0; i < layerCount; i++)
     {
-        if (!strncmp(availableLayers[i].layerName, "VK_LAYER_KHRONOS_validation", 28))
+        if (!strncmp(availableLayers[i].layerName, "VK_LAYER_KHRONOS_validation", 27))
         {
             found = true;
             break;
@@ -86,7 +89,9 @@ bool CreateInstance()
     if (!found)
     {
         FriendlyError("Missing Vulkan validation layers!",
-                      "The Vulkan SDK must be installed on your device to use the Vulkan validation layer.\nYou can get the Vulkan SDK from https://vulkan.lunarg.com/sdk/home or by using the package manager of your choice.\nIf you wish to disable the validation layer, that can be done by removing the definition for VK_ENABLE_VALIDATION_LAYER in config.h");
+                      "The Vulkan SDK must be installed on your device to use the Vulkan validation layer.\n"
+                      "You can get the Vulkan SDK from https://vulkan.lunarg.com/sdk/home or by using the package manager of your choice.\n"
+                      "If you wish to disable the validation layer, that can be done by removing the definition for VK_ENABLE_VALIDATION_LAYER in config.h");
     }
     createInfo.enabledLayerCount = 1;
     createInfo.ppEnabledLayerNames = (const char *const[1]){"VK_LAYER_KHRONOS_validation"};
@@ -103,7 +108,8 @@ bool CreateInstance()
     if (!found)
     {
         FriendlyError("Missing Vulkan Mesa layers!",
-                      "The Vulkan Mesa layers must be installed on your device to use the Mesa FPS overlay.\nIf you wish to disable the Mesa FPS overlay, that can be done by removing the definition for VK_ENABLE_MESA_FPS_OVERLAY in config.h");
+                      "The Vulkan Mesa layers must be installed on your device to use the Mesa FPS overlay.\n"
+                      "If you wish to disable the Mesa FPS overlay, that can be done by removing the definition for VK_ENABLE_MESA_FPS_OVERLAY in config.h");
     }
     createInfo.enabledLayerCount = 1;
     createInfo.ppEnabledLayerNames = (const char *const[1]){"VK_LAYER_MESA_overlay"};
@@ -163,8 +169,7 @@ bool PickPhysicalDevice()
             {
                 queueFamilyIndices->graphicsFamily = index;
                 if (presentSupport) queueFamilyIndices->presentFamily = index;
-            }
-            else
+            } else
             {
                 if (families[index].queueFlags & VK_QUEUE_TRANSFER_BIT)
                 {
@@ -201,13 +206,11 @@ bool PickPhysicalDevice()
             if (queueFamilyIndices->presentFamily == queueFamilyIndices->transferFamily)
             {
                 queueFamilyIndices->familyCount = 1;
-            }
-            else
+            } else
             {
                 queueFamilyIndices->familyCount = 2;
             }
-        }
-        else
+        } else
         {
             queueFamilyIndices->familyCount = 3;
         }
@@ -232,7 +235,7 @@ bool PickPhysicalDevice()
 
                 VkPhysicalDeviceProperties deviceProperties;
                 vkGetPhysicalDeviceProperties(pDevice, &deviceProperties);
-                if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
+                if (deviceProperties.deviceType != VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
                 {
                     physicalDevice = devices[i];
                     return true;
@@ -277,8 +280,7 @@ bool CreateLogicalDevice()
             if (queueFamilyIndices->transferFamily == queueFamilyIndices->graphicsFamily)
             {
                 queueCreateInfo[1].queueFamilyIndex = queueFamilyIndices->presentFamily;
-            }
-            else if (queueFamilyIndices->presentFamily != queueFamilyIndices->graphicsFamily)
+            } else if (queueFamilyIndices->presentFamily != queueFamilyIndices->graphicsFamily)
             {
                 VulkanLogError("Failed to create VkDeviceQueueCreateInfo due to invalid queueFamilyIndices!");
                 return false;
@@ -362,8 +364,7 @@ bool CreateSwapChain()
             if (format.format == VK_FORMAT_B8G8R8A8_UNORM || surfaceFormat.format == VK_FORMAT_MAX_ENUM)
             {
                 surfaceFormat = format;
-            }
-            else if (format.format == VK_FORMAT_R8G8B8A8_UNORM)
+            } else if (format.format == VK_FORMAT_R8G8B8A8_UNORM)
             {
                 surfaceFormat = format;
                 break;
@@ -379,7 +380,8 @@ bool CreateSwapChain()
     VkExtent2D extent = swapChainSupport->capabilities.currentExtent;
     if (extent.width == UINT32_MAX || extent.height == UINT32_MAX)
     {
-        int32_t width, height;
+        int32_t width;
+        int32_t height;
         SDL_Vulkan_GetDrawableSize(vk_window, &width, &height);
         extent.width = clamp(width, swapChainSupport->capabilities.minImageExtent.width,
                              swapChainSupport->capabilities.maxImageExtent.width);
@@ -401,12 +403,10 @@ bool CreateSwapChain()
             if (queueFamilyIndices->presentFamily == queueFamilyIndices->graphicsFamily)
             {
                 pQueueFamilyIndices[1] = queueFamilyIndices->transferFamily;
-            }
-            else if (queueFamilyIndices->transferFamily == queueFamilyIndices->graphicsFamily)
+            } else if (queueFamilyIndices->transferFamily == queueFamilyIndices->graphicsFamily)
             {
                 pQueueFamilyIndices[1] = queueFamilyIndices->presentFamily;
-            }
-            else
+            } else
             {
                 VulkanLogError("Failed to create VkSwapchainCreateInfoKHR due to invalid queueFamilyIndices!");
                 return false;
@@ -453,7 +453,7 @@ bool CreateSwapChain()
     VulkanTest(vkCreateSwapchainKHR(device, &createInfo, NULL, &swapChain), "Failed to create Vulkan swap chain!");
 
     VulkanTest(vkGetSwapchainImagesKHR(device, swapChain, &imageCount, NULL), "Failed to get Vulkan swapchain images!");
-    swapChainImages = malloc(sizeof(*swapChainImages) * imageCount);
+    swapChainImages = (VkImage *)malloc(sizeof(*swapChainImages) * imageCount);
     swapChainCount = imageCount;
     VulkanTest(vkGetSwapchainImagesKHR(device, swapChain, &imageCount, swapChainImages),
                "Failed to get Vulkan swapchain images!");
@@ -465,7 +465,7 @@ bool CreateSwapChain()
 
 bool CreateImageViews()
 {
-    swapChainImageViews = malloc(sizeof(*swapChainImageViews) * swapChainCount);
+    swapChainImageViews = (VkImageView *)malloc(sizeof(*swapChainImageViews) * swapChainCount);
 
     for (uint32_t i = 0; i < swapChainCount; i++)
     {
@@ -487,15 +487,13 @@ bool CreateRenderPass()
     if (properties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
     {
         depthImageFormat = VK_FORMAT_D32_SFLOAT_S8_UINT;
-    }
-    else
+    } else
     {
         vkGetPhysicalDeviceFormatProperties(physicalDevice, VK_FORMAT_D24_UNORM_S8_UINT, &properties);
         if (properties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
         {
             depthImageFormat = VK_FORMAT_D24_UNORM_S8_UINT;
-        }
-        else
+        } else
         {
             VulkanLogError("Unable to find suitable format for Vulkan depth image!");
             return false;
@@ -507,12 +505,12 @@ bool CreateRenderPass()
             0,
             swapChainImageFormat,
             MSAA_SAMPLES,
-            VK_ATTACHMENT_LOAD_OP_CLEAR,
+            VK_ATTACHMENT_LOAD_OP_DONT_CARE,
             VK_ATTACHMENT_STORE_OP_STORE,
             VK_ATTACHMENT_LOAD_OP_DONT_CARE,
             VK_ATTACHMENT_STORE_OP_DONT_CARE,
             VK_IMAGE_LAYOUT_UNDEFINED,
-            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+            VK_IMAGE_LAYOUT_GENERAL
         },
         {
             0,
@@ -523,7 +521,7 @@ bool CreateRenderPass()
             VK_ATTACHMENT_LOAD_OP_DONT_CARE,
             VK_ATTACHMENT_STORE_OP_DONT_CARE,
             VK_IMAGE_LAYOUT_UNDEFINED,
-            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+            VK_IMAGE_LAYOUT_GENERAL
         },
         {
             0,
@@ -658,8 +656,8 @@ bool CreateGraphicsPipelines()
     const VkViewport viewport = {
         0,
         0,
-        (float) swapChainExtent.width,
-        (float) swapChainExtent.height,
+        (float)swapChainExtent.width,
+        (float)swapChainExtent.height,
         0,
         1
     };
@@ -766,13 +764,13 @@ bool CreateGraphicsPipelines()
 #pragma endregion shared
 
 #pragma region walls
-    const VkShaderModule wallVertShaderModule = CreateShaderModule((uint32_t *) DecompressAsset(gzvert_Vulkan_wall),
+    const VkShaderModule wallVertShaderModule = CreateShaderModule((uint32_t *)DecompressAsset(gzvert_Vulkan_wall),
                                                                    AssetGetSize(gzvert_Vulkan_wall));
-    const VkShaderModule wallFragShaderModule = CreateShaderModule((uint32_t *) DecompressAsset(gzfrag_Vulkan_wall),
+    const VkShaderModule wallFragShaderModule = CreateShaderModule((uint32_t *)DecompressAsset(gzfrag_Vulkan_wall),
                                                                    AssetGetSize(gzfrag_Vulkan_wall));
-    const VkShaderModule wallTescShaderModule = CreateShaderModule((uint32_t *) DecompressAsset(gztesc_Vulkan_wall),
+    const VkShaderModule wallTescShaderModule = CreateShaderModule((uint32_t *)DecompressAsset(gztesc_Vulkan_wall),
                                                                    AssetGetSize(gztesc_Vulkan_wall));
-    const VkShaderModule wallTeseShaderModule = CreateShaderModule((uint32_t *) DecompressAsset(gztese_Vulkan_wall),
+    const VkShaderModule wallTeseShaderModule = CreateShaderModule((uint32_t *)DecompressAsset(gztese_Vulkan_wall),
                                                                    AssetGetSize(gztese_Vulkan_wall));
     if (!wallVertShaderModule || !wallFragShaderModule || !wallTescShaderModule || !wallTeseShaderModule)
     {
@@ -887,27 +885,27 @@ bool CreateGraphicsPipelines()
 #pragma endregion walls
 
 #pragma region UI
-    const VkShaderModule coloredQuadsVertShaderModule = CreateShaderModule(
-        (uint32_t *) DecompressAsset(gzvert_Vulkan_ui), AssetGetSize(gzvert_Vulkan_ui));
-    const VkShaderModule coloredQuadsFragShaderModule = CreateShaderModule(
-        (uint32_t *) DecompressAsset(gzfrag_Vulkan_ui), AssetGetSize(gzfrag_Vulkan_ui));
-    const VkShaderModule coloredQuadsTescShaderModule = CreateShaderModule(
-        (uint32_t *) DecompressAsset(gztesc_Vulkan_ui), AssetGetSize(gztesc_Vulkan_ui));
-    const VkShaderModule coloredQuadsTeseShaderModule = CreateShaderModule(
-        (uint32_t *) DecompressAsset(gztese_Vulkan_ui), AssetGetSize(gztese_Vulkan_ui));
-    if (!coloredQuadsVertShaderModule || !coloredQuadsFragShaderModule)
+    const VkShaderModule uiVertShaderModule = CreateShaderModule(
+        (uint32_t *)DecompressAsset(gzvert_Vulkan_ui), AssetGetSize(gzvert_Vulkan_ui));
+    const VkShaderModule uiFragShaderModule = CreateShaderModule(
+        (uint32_t *)DecompressAsset(gzfrag_Vulkan_ui), AssetGetSize(gzfrag_Vulkan_ui));
+    const VkShaderModule uiTescShaderModule = CreateShaderModule(
+        (uint32_t *)DecompressAsset(gztesc_Vulkan_ui), AssetGetSize(gztesc_Vulkan_ui));
+    const VkShaderModule uiTeseShaderModule = CreateShaderModule(
+        (uint32_t *)DecompressAsset(gztese_Vulkan_ui), AssetGetSize(gztese_Vulkan_ui));
+    if (!uiVertShaderModule || !uiFragShaderModule)
     {
         VulkanLogError("Failed to load colored quad shaders!");
         return false;
     }
 
-    const VkPipelineShaderStageCreateInfo coloredQuadsShaderStages[4] = {
+    const VkPipelineShaderStageCreateInfo uiShaderStages[4] = {
         {
             VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
             NULL,
             0,
             VK_SHADER_STAGE_VERTEX_BIT,
-            coloredQuadsVertShaderModule,
+            uiVertShaderModule,
             "main",
             NULL
         },
@@ -916,7 +914,7 @@ bool CreateGraphicsPipelines()
             NULL,
             0,
             VK_SHADER_STAGE_FRAGMENT_BIT,
-            coloredQuadsFragShaderModule,
+            uiFragShaderModule,
             "main",
             NULL
         },
@@ -925,7 +923,7 @@ bool CreateGraphicsPipelines()
             NULL,
             0,
             VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT,
-            coloredQuadsTescShaderModule,
+            uiTescShaderModule,
             "main",
             NULL
         },
@@ -934,18 +932,18 @@ bool CreateGraphicsPipelines()
             NULL,
             0,
             VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT,
-            coloredQuadsTeseShaderModule,
+            uiTeseShaderModule,
             "main",
             NULL
         }
     };
 
-    const VkVertexInputBindingDescription coloredQuadsBindingDescription = {
+    const VkVertexInputBindingDescription uiBindingDescription = {
         0,
         sizeof(UiVertex),
         VK_VERTEX_INPUT_RATE_VERTEX
     };
-    const VkVertexInputAttributeDescription coloredQuadsAttributeDescriptions[3] = {
+    const VkVertexInputAttributeDescription uiAttributeDescriptions[3] = {
         {
             0,
             0,
@@ -965,17 +963,17 @@ bool CreateGraphicsPipelines()
             offsetof(UiVertex, textureIndex)
         },
     };
-    const VkPipelineVertexInputStateCreateInfo coloredQuadsVertexInputInfo = {
+    const VkPipelineVertexInputStateCreateInfo uiVertexInputInfo = {
         VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
         NULL,
         0,
         1,
-        &coloredQuadsBindingDescription,
+        &uiBindingDescription,
         3,
-        coloredQuadsAttributeDescriptions
+        uiAttributeDescriptions
     };
 
-    const VkPipelineInputAssemblyStateCreateInfo coloredQuadsInputAssembly = {
+    const VkPipelineInputAssemblyStateCreateInfo uiInputAssembly = {
         VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
         NULL,
         0,
@@ -983,22 +981,22 @@ bool CreateGraphicsPipelines()
         VK_FALSE
     };
 
-    const VkPipelineTessellationStateCreateInfo coloredQuadsTessellationState = {
+    const VkPipelineTessellationStateCreateInfo uiTessellationState = {
         VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO,
         NULL,
         0,
         4
     };
 
-    VkGraphicsPipelineCreateInfo coloredQuadsPipelineInfo = {
+    VkGraphicsPipelineCreateInfo uiPipelineInfo = {
         VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
         NULL,
         0,
         4,
-        coloredQuadsShaderStages,
-        &coloredQuadsVertexInputInfo,
-        &coloredQuadsInputAssembly,
-        &coloredQuadsTessellationState,
+        uiShaderStages,
+        &uiVertexInputInfo,
+        &uiInputAssembly,
+        &uiTessellationState,
         &viewportState,
         &rasterizer,
         &multisampling,
@@ -1016,7 +1014,7 @@ bool CreateGraphicsPipelines()
 
     VkGraphicsPipelineCreateInfo pipelinesCreateInfo[2] = {
         wallsPipelineInfo,
-        coloredQuadsPipelineInfo,
+        uiPipelineInfo,
     };
     VkPipeline pipelineList[2] = {0};
 
@@ -1032,10 +1030,10 @@ bool CreateGraphicsPipelines()
     vkDestroyShaderModule(device, wallTescShaderModule, NULL);
     vkDestroyShaderModule(device, wallTeseShaderModule, NULL);
 
-    vkDestroyShaderModule(device, coloredQuadsVertShaderModule, NULL);
-    vkDestroyShaderModule(device, coloredQuadsFragShaderModule, NULL);
-    vkDestroyShaderModule(device, coloredQuadsTescShaderModule, NULL);
-    vkDestroyShaderModule(device, coloredQuadsTeseShaderModule, NULL);
+    vkDestroyShaderModule(device, uiVertShaderModule, NULL);
+    vkDestroyShaderModule(device, uiFragShaderModule, NULL);
+    vkDestroyShaderModule(device, uiTescShaderModule, NULL);
+    vkDestroyShaderModule(device, uiTeseShaderModule, NULL);
 
     return true;
 }
@@ -1069,7 +1067,7 @@ bool CreateColorImage()
 {
     if (!CreateImage(&colorImage, &colorImageMemory, swapChainImageFormat,
                      (VkExtent3D){swapChainExtent.width, swapChainExtent.height, 1}, 1,
-                     MSAA_SAMPLES, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+                     MSAA_SAMPLES, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                      "color"))
     {
         return false;
@@ -1081,6 +1079,34 @@ bool CreateColorImage()
         return false;
     }
 
+    const VkCommandBuffer commandBuffer;
+    if (!BeginCommandBuffer(&commandBuffer, graphicsCommandPool)) return false;
+
+    const VkImageMemoryBarrier transferBarrier = {
+        VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+        NULL,
+        0,
+        VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+        VK_IMAGE_LAYOUT_UNDEFINED,
+        VK_IMAGE_LAYOUT_GENERAL,
+        VK_QUEUE_FAMILY_IGNORED,
+        VK_QUEUE_FAMILY_IGNORED,
+        colorImage,
+        {
+            VK_IMAGE_ASPECT_COLOR_BIT,
+            0,
+            1,
+            0,
+            1
+        }
+    };
+
+    vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+                         VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                         0, 0, NULL, 0, NULL, 1, &transferBarrier);
+
+    if (!EndCommandBuffer(commandBuffer, graphicsCommandPool, graphicsQueue)) return false;
+
     return true;
 }
 
@@ -1088,7 +1114,8 @@ bool CreateDepthImage()
 {
     if (!CreateImage(&depthImage, &depthImageMemory, depthImageFormat,
                      (VkExtent3D){swapChainExtent.width, swapChainExtent.height, 1}, 1,
-                     MSAA_SAMPLES, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, "depth test"))
+                     MSAA_SAMPLES, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
+                     "depth test"))
     {
         return false;
     }
@@ -1109,7 +1136,7 @@ bool CreateDepthImage()
         0,
         VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
         VK_IMAGE_LAYOUT_UNDEFINED,
-        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+        VK_IMAGE_LAYOUT_GENERAL,
         VK_QUEUE_FAMILY_IGNORED,
         VK_QUEUE_FAMILY_IGNORED,
         depthImage,
@@ -1132,7 +1159,7 @@ bool CreateDepthImage()
 
 bool CreateFramebuffers()
 {
-    swapChainFramebuffers = malloc(sizeof(*swapChainFramebuffers) * swapChainCount);
+    swapChainFramebuffers = (VkFramebuffer*)malloc(sizeof(*swapChainFramebuffers) * swapChainCount);
 
     for (uint32_t i = 0; i < swapChainCount; i++)
     {
@@ -1172,7 +1199,7 @@ bool LoadTextures()
         }
 
         const VkExtent3D extent = {ReadUintA(decompressed, 4), ReadUintA(decompressed, 8), 1};
-        textures[textureIndex].mipmapLevels = (uint8_t) log2(max(extent.width, extent.height)) + 1;
+        textures[textureIndex].mipmapLevels = (uint8_t)log2(max(extent.width, extent.height)) + 1;
         if (!CreateImage(&textures[textureIndex].image, NULL, format, extent, textures[textureIndex].mipmapLevels,
                          VK_SAMPLE_COUNT_1_BIT,
                          VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
@@ -1181,11 +1208,15 @@ bool LoadTextures()
             return false;
         }
 
-        vkGetImageMemoryRequirements(device, textures[textureIndex].image, &textures[textureIndex].memoryRequirements);
-        textures[textureIndex].offset = textures[textureIndex].memoryRequirements.alignment * (VkDeviceSize) ceil(
-                                            ((double) memorySize + (double) textures[textureIndex].memoryRequirements.
-                                             size) / (double) textures[textureIndex].memoryRequirements.alignment);
-        memorySize = textures[textureIndex].offset + textures[textureIndex].memoryRequirements.size;
+        vkGetImageMemoryRequirements(device, textures[textureIndex].image,
+                                     &textures[textureIndex].allocationInfo.memoryRequirements);
+        textures[textureIndex].allocationInfo.offset =
+                textures[textureIndex].allocationInfo.memoryRequirements.alignment * (VkDeviceSize)ceil(
+                    ((double)memorySize + (double)textures[textureIndex].allocationInfo.memoryRequirements.
+                                                                         size) / (double)textures[textureIndex].
+                    allocationInfo.memoryRequirements.alignment);
+        memorySize = textures[textureIndex].allocationInfo.offset + textures[textureIndex].allocationInfo.
+                     memoryRequirements.size;
 
         texturesAssetIDMap[ReadUintA(decompressed, 12)] = textureIndex;
     }
@@ -1194,7 +1225,7 @@ bool LoadTextures()
     vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
     for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++)
     {
-        if (textures[i].memoryRequirements.memoryTypeBits & 1 << i &&
+        if (textures[i].allocationInfo.memoryRequirements.memoryTypeBits & 1 << i &&
             (memoryProperties.memoryTypes[i].propertyFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) ==
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
         {
@@ -1212,10 +1243,19 @@ bool LoadTextures()
     }
 
     VkBuffer stagingBuffer;
-    VkDeviceMemory stagingBufferMemory;
-    if (!CreateBuffer(&stagingBuffer, &stagingBufferMemory,
-                      memorySize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))
+    MemoryInfo memoryInfo = {
+        0,
+        NULL,
+        0,
+        0,
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+    };
+    MemoryAllocationInfo allocationInfo = {
+        0,
+        &memoryInfo,
+        {0}
+    };
+    if (!CreateBuffer(&stagingBuffer, memorySize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, true, &allocationInfo))
     {
         return false;
     }
@@ -1223,20 +1263,20 @@ bool LoadTextures()
     for (uint16_t textureIndex = 0; textureIndex < TEXTURE_ASSET_COUNT; textureIndex++)
     {
         VulkanTest(
-            vkBindImageMemory(device, textures[textureIndex].image, textureMemory, textures[textureIndex].offset),
-            "Failed to bind Vulkan texture memory!");
+            vkBindImageMemory(device, textures[textureIndex].image, textureMemory,
+                textures[textureIndex].allocationInfo.offset), "Failed to bind Vulkan texture memory!");
 
         const uint8_t *decompressed = DecompressAsset(texture_assets[textureIndex]);
         uint32_t width = ReadUintA(decompressed, 4);
         uint32_t height = ReadUintA(decompressed, 8);
         void *data;
 
-        VulkanTest(
-            vkMapMemory(device, stagingBufferMemory, textures[textureIndex].offset, textures[textureIndex].
-                memoryRequirements.size, 0, &data), "Failed to map Vulkan texture staging buffer memory!");
+        VulkanTest(vkMapMemory(device, memoryInfo.memory, textures[textureIndex].allocationInfo.offset,
+                       textures[textureIndex].allocationInfo.memoryRequirements.size, 0, &data),
+                   "Failed to map Vulkan texture staging buffer memory!");
 
         memcpy(data, decompressed + sizeof(uint32_t) * 4, ReadUintA(decompressed, 0) * 4);
-        vkUnmapMemory(device, stagingBufferMemory);
+        vkUnmapMemory(device, memoryInfo.memory);
 
         const VkCommandBuffer commandBuffer;
         if (!BeginCommandBuffer(&commandBuffer, transferCommandPool)) return false;
@@ -1268,7 +1308,7 @@ bool LoadTextures()
         if (!BeginCommandBuffer(&commandBuffer, transferCommandPool)) return false;
 
         const VkBufferImageCopy bufferCopyInfo = {
-            textures[textureIndex].offset,
+            textures[textureIndex].allocationInfo.offset,
             0,
             0,
             {
@@ -1325,7 +1365,7 @@ bool LoadTextures()
                 },
                 {
                     {0, 0, 0},
-                    {(int32_t) width, (int32_t) height, 1}
+                    {(int32_t)width, (int32_t)height, 1}
                 },
                 {
                     VK_IMAGE_ASPECT_COLOR_BIT,
@@ -1335,7 +1375,7 @@ bool LoadTextures()
                 },
                 {
                     {0, 0, 0},
-                    {width > 1 ? (int32_t) width / 2 : 1, height > 1 ? (int32_t) height / 2 : 1, 1}
+                    {width > 1 ? (int32_t)width / 2 : 1, height > 1 ? (int32_t)height / 2 : 1, 1}
                 }
             };
 
@@ -1395,7 +1435,7 @@ bool LoadTextures()
     }
 
     vkDestroyBuffer(device, stagingBuffer, NULL);
-    vkFreeMemory(device, stagingBufferMemory, NULL);
+    vkFreeMemory(device, memoryInfo.memory, NULL);
 
     return true;
 }
@@ -1498,92 +1538,57 @@ bool CreateTextureSampler()
         VK_FALSE
     };
 
-    VulkanTest(vkCreateSampler(device, &linearRepeatSamplerCreateInfo, NULL, &textureSamplers.linearRepeat), "Failed to create linear repeating texture sampler!");
-    VulkanTest(vkCreateSampler(device, &nearestRepeatSamplerCreateInfo, NULL, &textureSamplers.nearestRepeat), "Failed to create nearest repeating texture sampler!");
-    VulkanTest(vkCreateSampler(device, &linearNoRepeatSamplerCreateInfo, NULL, &textureSamplers.linearNoRepeat), "Failed to create linear non-repeating texture sampler!");
-    VulkanTest(vkCreateSampler(device, &nearestNoRepeatSamplerCreateInfo, NULL, &textureSamplers.nearestNoRepeat), "Failed to create nearest non-repeating texture sampler!");
+    VulkanTest(vkCreateSampler(device, &linearRepeatSamplerCreateInfo, NULL, &textureSamplers.linearRepeat),
+               "Failed to create linear repeating texture sampler!");
+    VulkanTest(vkCreateSampler(device, &nearestRepeatSamplerCreateInfo, NULL, &textureSamplers.nearestRepeat),
+               "Failed to create nearest repeating texture sampler!");
+    VulkanTest(vkCreateSampler(device, &linearNoRepeatSamplerCreateInfo, NULL, &textureSamplers.linearNoRepeat),
+               "Failed to create linear non-repeating texture sampler!");
+    VulkanTest(vkCreateSampler(device, &nearestNoRepeatSamplerCreateInfo, NULL, &textureSamplers.nearestNoRepeat),
+               "Failed to create nearest non-repeating texture sampler!");
 
     return true;
 }
 
 bool CreateVertexBuffers()
 {
-    VkBuffer stagingBuffer;
-    VkDeviceMemory stagingBufferMemory;
-    void *data;
-    const WallVertex vertices[8] = {
-        {{-0.5f, 0.0f, -0.5f}, {0.0f, 0.0f}},
-        {{0.5f, 0.0f, -0.5f}, {1.0f, 0.0f}},
-        {{0.5f, 0.0f, 0.5f}, {1.0f, 1.0f}},
-        {{-0.5f, 0.0f, 0.5f}, {0.0f, 1.0f}},
-
-        {{-0.5f, -0.5f, -0.5f}, {0.0f, 0.0f}},
-        {{0.5f, -0.5f, -0.5f}, {1.0f, 0.0f}},
-        {{0.5f, -0.5f, 0.5f}, {1.0f, 1.0f}},
-        {{-0.5f, -0.5f, 0.5f}, {0.0f, 1.0f}}
-    };
-
-    const VkDeviceSize bufferSize = sizeof(*vertices) * 8;
-
-    if (!CreateBuffer(&stagingBuffer, &stagingBufferMemory,
-                      bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))
+    buffers.walls.memoryAllocationInfo.memoryInfo = &memoryPools.localMemory;
+    if (!CreateBuffer(&buffers.walls.buffer, sizeof(WallVertex) * 8,
+                      VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, false,
+                      &buffers.walls.memoryAllocationInfo))
     {
         return false;
     }
 
-    VulkanTest(vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data),
-               "Failed to map Vulkan vertex staging buffer memory!");
-
-    memcpy(data, vertices, bufferSize);
-    vkUnmapMemory(device, stagingBufferMemory);
-
-    if (!CreateBuffer(&vertexBuffers.walls.buffer, &vertexBuffers.localMemory,
-                      bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-                      VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT))
-    {
-        return false;
-    }
-    if (!CopyBuffer(stagingBuffer, vertexBuffers.walls.buffer, bufferSize)) return false;
-    vertexBuffers.walls.vertexCount = 8;
-
-    vkDestroyBuffer(device, stagingBuffer, NULL);
-    vkFreeMemory(device, stagingBufferMemory, NULL);
-
-
-    vertexBuffers.ui.maxVertices = UI_PRIMITIVES * 4;
-    return CreateBuffer(&vertexBuffers.ui.buffer,
-                        &vertexBuffers.sharedMemory,
-                        sizeof(UiVertex) * vertexBuffers.ui.maxVertices,
-                        VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    buffers.ui.maxVertices = UI_PRIMITIVES * 4;
+    buffers.ui.memoryAllocationInfo.memoryInfo = &memoryPools.sharedMemory;
+    return CreateBuffer(&buffers.ui.buffer, sizeof(UiVertex) * buffers.ui.maxVertices,
+                        VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, false,
+                        &buffers.ui.memoryAllocationInfo);
 }
 
 bool CreateUniformBuffers()
 {
     for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
-        const VkDeviceSize uniformBufferSize = sizeof(mat4);
-
-        if (!CreateBuffer(&uniformBuffers[i], &uniformBuffersMemory[i],
-                          uniformBufferSize,
-                          VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))
+        buffers.translation[i].memoryAllocationInfo.memoryInfo = &memoryPools.sharedMemory;
+        if (!CreateBuffer(&buffers.translation[i].buffer, sizeof(mat4), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, false,
+                          &buffers.translation[i].memoryAllocationInfo))
+        {
             return false;
-
-        VulkanTest(vkMapMemory(device, uniformBuffersMemory[i], 0, uniformBufferSize, 0, &uniformBuffersMapped[i]),
-                   "Failed to map Vulkan uniform buffer memory!");
+        }
     }
 
-    const VkDeviceSize dataBufferSize = sizeof(DataBufferObject);
-
-    if (!CreateBuffer(&dataBuffer, &dataBufferMemory,
-                      dataBufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))
+    buffers.data.memoryAllocationInfo.memoryInfo = &memoryPools.sharedMemory;
+    buffers.data.maxInstances = 1;
+    if (!CreateBuffer(&buffers.data.buffer, sizeof(DataUniformBufferObject) * buffers.data.maxInstances,
+                      VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, false,
+                      &buffers.data.memoryAllocationInfo))
+    {
         return false;
+    }
 
-    VulkanTest(vkMapMemory(device, dataBufferMemory, 0, dataBufferSize, 0, &mappedDataBuffer),
-               "Failed to map Vulkan data buffer memory!");
-
-    return true;
+    return AllocateMemory();
 }
 
 bool CreateDescriptorPool()
@@ -1639,7 +1644,7 @@ bool CreateDescriptorSets()
     for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
         VkDescriptorBufferInfo uniformBufferInfo = {
-            uniformBuffers[i],
+            buffers.translation[i].buffer,
             0,
             sizeof(mat4)
         };
@@ -1655,9 +1660,9 @@ bool CreateDescriptorSets()
         }
 
         VkDescriptorBufferInfo dataBufferInfo = {
-            dataBuffer,
+            buffers.data.buffer,
             0,
-            sizeof(DataBufferObject)
+            sizeof(DataUniformBufferObject)
         };
 
         const VkWriteDescriptorSet writeDescriptorList[3] = {
