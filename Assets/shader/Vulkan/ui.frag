@@ -11,5 +11,5 @@ layout(location = 0) out vec4 outColor;
 
 void main() {
     if (textureIndex == -1) outColor = inColor;
-    else outColor = texture(textureSampler[textureIndex], inUV) * inColor;
+    else outColor = texture(textureSampler[nonuniformEXT(textureIndex)], inUV) * inColor;
 }

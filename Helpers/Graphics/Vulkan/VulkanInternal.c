@@ -308,7 +308,8 @@ bool CreateLogicalDevice()
     VkPhysicalDeviceVulkan12Features vulkan12Features = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
         .pNext = NULL,
-        .runtimeDescriptorArray = VK_TRUE
+        .runtimeDescriptorArray = VK_TRUE,
+        .shaderSampledImageArrayNonUniformIndexing = VK_TRUE
     };
     VkDeviceCreateInfo createInfo = {
         VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
