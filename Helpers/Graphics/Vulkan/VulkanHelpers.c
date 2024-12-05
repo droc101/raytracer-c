@@ -11,12 +11,11 @@ bool minimized = false;
 VkInstance instance = VK_NULL_HANDLE;
 VkSurfaceKHR surface;
 VkPhysicalDevice physicalDevice;
-QueueFamilyIndices *queueFamilyIndices;
+QueueFamilyIndices queueFamilyIndices;
 SwapChainSupportDetails *swapChainSupport;
 VkDevice device = NULL;
 VkQueue graphicsQueue;
 VkQueue presentQueue;
-VkQueue transferQueue;
 VkSwapchainKHR swapChain = VK_NULL_HANDLE;
 VkImage *swapChainImages;
 uint32_t swapChainCount = 0;
@@ -29,7 +28,6 @@ VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
 Pipelines pipelines;
 VkFramebuffer *swapChainFramebuffers;
 VkCommandPool graphicsCommandPool = VK_NULL_HANDLE;
-VkCommandPool transferCommandPool = VK_NULL_HANDLE;
 VkCommandBuffer commandBuffers[MAX_FRAMES_IN_FLIGHT];
 VkSemaphore imageAvailableSemaphores[MAX_FRAMES_IN_FLIGHT] = {VK_NULL_HANDLE};
 VkSemaphore renderFinishedSemaphores[MAX_FRAMES_IN_FLIGHT] = {VK_NULL_HANDLE};
@@ -164,22 +162,15 @@ bool CreateImage(VkImage *image,
                  const VkImageUsageFlags usageFlags,
                  const char *imageType)
 {
-    uint32_t pQueueFamilyIndices[queueFamilyIndices->familyCount];
-    switch (queueFamilyIndices->familyCount)
+    uint32_t pQueueFamilyIndices[queueFamilyIndices.familyCount];
+    switch (queueFamilyIndices.familyCount)
     {
-        case 3: pQueueFamilyIndices[2] = queueFamilyIndices->graphicsFamily;
-        case 2: if (queueFamilyIndices->presentFamily == queueFamilyIndices->graphicsFamily)
-            {
-                pQueueFamilyIndices[1] = queueFamilyIndices->transferFamily;
-            } else if (queueFamilyIndices->transferFamily == queueFamilyIndices->graphicsFamily)
-            {
-                pQueueFamilyIndices[1] = queueFamilyIndices->presentFamily;
-            } else
-            {
-                VulkanLogError("Failed to create VkImageCreateInfoKHR due to invalid queueFamilyIndices!");
-                return false;
-            }
-        case 1: pQueueFamilyIndices[0] = queueFamilyIndices->graphicsFamily;
+        case 2:
+            pQueueFamilyIndices[0] = queueFamilyIndices.graphicsFamily;
+            pQueueFamilyIndices[1] = queueFamilyIndices.presentFamily;
+            break;
+        case 1:
+            pQueueFamilyIndices[0] = queueFamilyIndices.graphicsFamily;
             break;
         default:
             VulkanLogError("Failed to create VkImageCreateInfoKHR due to invalid queueFamilyIndices!");
@@ -198,8 +189,8 @@ bool CreateImage(VkImage *image,
         samples,
         VK_IMAGE_TILING_OPTIMAL,
         usageFlags,
-        queueFamilyIndices->familyCount == 1 ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_CONCURRENT,
-        queueFamilyIndices->familyCount,
+        queueFamilyIndices.familyCount == 1 ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_CONCURRENT,
+        queueFamilyIndices.familyCount,
         pQueueFamilyIndices,
         VK_IMAGE_LAYOUT_UNDEFINED
     };
@@ -296,22 +287,15 @@ bool CreateBuffer(VkBuffer *buffer,
                   const bool newAllocation,
                   MemoryAllocationInfo *allocationInfo)
 {
-    uint32_t pQueueFamilyIndices[queueFamilyIndices->familyCount];
-    switch (queueFamilyIndices->familyCount)
+    uint32_t pQueueFamilyIndices[queueFamilyIndices.familyCount];
+    switch (queueFamilyIndices.familyCount)
     {
-        case 3: pQueueFamilyIndices[2] = queueFamilyIndices->graphicsFamily;
-        case 2: if (queueFamilyIndices->presentFamily == queueFamilyIndices->graphicsFamily)
-            {
-                pQueueFamilyIndices[1] = queueFamilyIndices->transferFamily;
-            } else if (queueFamilyIndices->transferFamily == queueFamilyIndices->graphicsFamily)
-            {
-                pQueueFamilyIndices[1] = queueFamilyIndices->presentFamily;
-            } else
-            {
-                VulkanLogError("Failed to create VkBufferCreateInfo due to invalid queueFamilyIndices!");
-                return false;
-            }
-        case 1: pQueueFamilyIndices[0] = queueFamilyIndices->graphicsFamily;
+        case 2:
+            pQueueFamilyIndices[0] = queueFamilyIndices.graphicsFamily;
+            pQueueFamilyIndices[1] = queueFamilyIndices.presentFamily;
+            break;
+        case 1:
+            pQueueFamilyIndices[0] = queueFamilyIndices.graphicsFamily;
             break;
         default:
             VulkanLogError("Failed to create VkBufferCreateInfo due to invalid queueFamilyIndices!");
@@ -324,8 +308,8 @@ bool CreateBuffer(VkBuffer *buffer,
         0,
         size,
         usageFlags,
-        queueFamilyIndices->familyCount == 1 ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_CONCURRENT,
-        queueFamilyIndices->familyCount,
+        queueFamilyIndices.familyCount == 1 ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_CONCURRENT,
+        queueFamilyIndices.familyCount,
         pQueueFamilyIndices
     };
 
@@ -375,12 +359,12 @@ bool CreateBuffer(VkBuffer *buffer,
 bool CopyBuffer(const VkBuffer srcBuffer, const VkBuffer dstBuffer, const VkDeviceSize size)
 {
     const VkCommandBuffer commandBuffer;
-    if (!BeginCommandBuffer(&commandBuffer, transferCommandPool)) return false;
+    if (!BeginCommandBuffer(&commandBuffer, graphicsCommandPool)) return false;
 
     const VkBufferCopy copyRegion = {0, 0, size};
     vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
 
-    if (!EndCommandBuffer(commandBuffer, transferCommandPool, transferQueue)) return false;
+    if (!EndCommandBuffer(commandBuffer, graphicsCommandPool, graphicsQueue)) return false;
 
     return true;
 }
@@ -592,37 +576,12 @@ VkResult BeginRenderPass(const VkCommandBuffer commandBuffer, const uint32_t ima
     const VkCommandBufferBeginInfo beginInfo = {
         VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
         NULL,
-        0,
+        VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
         NULL
     };
 
     VulkanTestReturnResult(vkBeginCommandBuffer(commandBuffer, &beginInfo),
                            "Failed to begin recording Vulkan command buffer!");
-
-    if (buffersToClear.color)
-    {
-        const VkImageSubresourceRange colorImageSubresourceRange = {
-            VK_IMAGE_ASPECT_COLOR_BIT,
-            0,
-            1,
-            0,
-            1
-        };
-        vkCmdClearColorImage(commandBuffers[currentFrame], colorImage, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &colorImageSubresourceRange);
-        buffersToClear.color = false;
-    }
-    if (buffersToClear.depth)
-    {
-        const VkImageSubresourceRange depthImageSubresourceRange = {
-            VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT,
-            0,
-            1,
-            0,
-            1
-        };
-        vkCmdClearDepthStencilImage(commandBuffers[currentFrame], depthImage, VK_IMAGE_LAYOUT_GENERAL, (VkClearDepthStencilValue[1]){{1, 0}}, 1, &depthImageSubresourceRange);
-        buffersToClear.depth = false;
-    }
 
     const VkRenderPassBeginInfo renderPassInfo = {
         VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,

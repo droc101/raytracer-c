@@ -35,13 +35,14 @@ Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, cons
     int x = pos.x;
     int y = pos.y;
     int i = 0;
-    const int sizeX = small ? size * 0.75 : size;
+    const int width = (int)(small ? size * 0.75 : size);
+    const double uvPixel = 1.0 / GetTextureSize(small ? gztex_interface_small_fonts : gztex_interface_font).x;
     while (str[i] != '\0')
     {
         if (str[i] == ' ')
         {
             i++;
-            x += sizeX;
+            x += width;
         } else if (str[i] == '\n')
         {
             i++;
@@ -49,7 +50,7 @@ Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, cons
             y += size;
         }
 
-        const float uv_per_char = 1.0f / strlen(fontChars);
+        const double uv_per_char = 1.0 / strlen(fontChars);
         int index = FontFindChar(tolower(str[i]));
         if (index == -1)
         {
@@ -57,15 +58,15 @@ Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, cons
         }
 
         const Vector2 ndc_pos = v2(X_TO_NDC(x), Y_TO_NDC(y));
-        const Vector2 ndc_pos_end = v2(X_TO_NDC(x + sizeX), Y_TO_NDC(y + size));
-        const float charUV = uv_per_char * index;
-        const float charUVEnd = uv_per_char * (index + 1);
+        const Vector2 ndc_pos_end = v2(X_TO_NDC(x + width), Y_TO_NDC(y + size));
+        const double charUV = uv_per_char * index;
+        const double charUVEnd = uv_per_char * (index + 1) - uvPixel;
 
         const mat4 quad = {
-            {ndc_pos.x, ndc_pos.y, charUV, 0},
-            {ndc_pos.x, ndc_pos_end.y, charUV, 1},
-            {ndc_pos_end.x, ndc_pos_end.y, charUVEnd, 1},
-            {ndc_pos_end.x, ndc_pos.y, charUVEnd, 0}
+            {ndc_pos.x, ndc_pos.y, (float)charUV, 0},
+            {ndc_pos.x, ndc_pos_end.y, (float)charUV, 1},
+            {ndc_pos_end.x, ndc_pos_end.y, (float)charUVEnd, 1},
+            {ndc_pos_end.x, ndc_pos.y, (float)charUVEnd, 0}
         };
 
         memcpy(verts + i * 16, quad, sizeof(quad));
@@ -81,7 +82,7 @@ Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, cons
 
         memcpy(indices + i * 6, quad_indices, sizeof(quad_indices));
 
-        x += sizeX;
+        x += width;
         i++;
     }
 
@@ -94,7 +95,7 @@ Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, cons
     free(verts);
     free(indices);
 
-    return v2(x + sizeX, y + size); // Return the bottom right corner of the text
+    return v2(x + width, y + size); // Return the bottom right corner of the text
 }
 
 Vector2 MeasureText(const char *str, const uint size, const bool small)

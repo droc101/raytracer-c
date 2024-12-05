@@ -40,7 +40,7 @@ return returnValue; \
 #pragma endregion macros
 
 #pragma region typedefs
-/// A struct to hold the indicies of the queue families for graphics, presentation, and transfer.
+/// A struct to hold the indicies of the queue families for graphics and presentation.
 /// This is used to find and store the indices, which allows for picking between unique and non-unique indices.
 typedef struct QueueFamilyIndices
 {
@@ -53,13 +53,9 @@ typedef struct QueueFamilyIndices
     uint32_t presentFamily;
     /// If the graphics family does not support presentation this will contain the same value as @c QueueFamilyIndices::presentFamily
     uint32_t uniquePresentFamily;
-    /// The index of the family on the GPU that will be used for transfer operations
-    uint32_t transferFamily;
     /** The total count of unique families
-     * @note If this is 1, then @c QueueFamilyIndices::graphicsFamily, @c QueueFamilyIndices::presentFamily, and @c QueueFamilyIndices::transferFamily will all have the same value. If this is the case, then @c QueueFamilyIndices::uniquePresentFamily will be @c UINT32_MAX
-     * @note If this is 2 and @code QueueFamilyIndices::presentFamily == QueueFamilyIndices::uniquePresentFamily @endcode, then @c QueueFamilyIndices::graphicsFamily and @c QueueFamilyIndices::transferFamily will have the same value.
-     * @note If this is 2 and @code QueueFamilyIndices::presentFamily != QueueFamilyIndices::uniquePresentFamily @endcode, then @c QueueFamilyIndices::graphicsFamily and @c QueueFamilyIndices::presentFamily will have the same value.
-     * @note If this is 3, then @c QueueFamilyIndices::graphicsFamily, @c QueueFamilyIndices::presentFamily, and @c QueueFamilyIndices::transferFamily will all have unique values. If this is the case, then @c QueueFamilyIndices::presentFamily will be equal to @c QueueFamilyIndices::uniquePresentFamily
+     * @note If this is 1, then @code QueueFamilyIndices::presentFamily == QueueFamilyIndices::graphicsFamily@endcode and @code QueueFamilyIndices::uniquePresentFamily == UINT32_MAX@endcode
+     * @note If this is 2, then @code QueueFamilyIndices::presentFamily != QueueFamilyIndices::graphicsFamily@endcode and @code QueueFamilyIndices::uniquePresentFamily == QueueFamilyIndices::presentFamily@endcode
      */
     uint8_t familyCount;
 } QueueFamilyIndices;
@@ -199,7 +195,7 @@ extern VkSurfaceKHR surface;
 /// @see https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkPhysicalDevice.html
 extern VkPhysicalDevice physicalDevice;
 /// @todo Document this along with the struct
-extern QueueFamilyIndices *queueFamilyIndices;
+extern QueueFamilyIndices queueFamilyIndices;
 /// @todo Document this along with the struct
 extern SwapChainSupportDetails *swapChainSupport;
 /// The logical device is a connection to a physical device, and is used for interfacing with Vulkan.
@@ -214,10 +210,6 @@ extern VkQueue graphicsQueue;
 /// @see https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#devsandqueues-queues
 /// @see https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkQueue.html
 extern VkQueue presentQueue;
-/// The transfer queue is the queue used for executing transfer command buffers and sparse bindings on the device.
-/// @see https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#devsandqueues-queues
-/// @see https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkQueue.html
-extern VkQueue transferQueue;
 /// Allows Vulkan to give a surface the rendered image.
 extern VkSwapchainKHR swapChain;
 extern VkImage *swapChainImages;
@@ -231,7 +223,6 @@ extern VkPipelineLayout pipelineLayout;
 extern Pipelines pipelines;
 extern VkFramebuffer *swapChainFramebuffers;
 extern VkCommandPool graphicsCommandPool;
-extern VkCommandPool transferCommandPool;
 extern VkCommandBuffer commandBuffers[MAX_FRAMES_IN_FLIGHT];
 extern VkSemaphore imageAvailableSemaphores[MAX_FRAMES_IN_FLIGHT];
 extern VkSemaphore renderFinishedSemaphores[MAX_FRAMES_IN_FLIGHT];

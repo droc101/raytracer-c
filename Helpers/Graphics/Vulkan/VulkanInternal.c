@@ -133,8 +133,6 @@ bool CreateSurface()
 
 bool PickPhysicalDevice()
 {
-    queueFamilyIndices = malloc(sizeof(*queueFamilyIndices));
-
     uint32_t deviceCount = 0;
     VulkanTest(vkEnumeratePhysicalDevices(instance, &deviceCount, NULL), "Failed to enumerate physical devices!");
     if (deviceCount == 0)
@@ -148,7 +146,7 @@ bool PickPhysicalDevice()
     bool match = false;
     for (uint32_t i = 0; i < deviceCount; i++)
     {
-        *queueFamilyIndices = (QueueFamilyIndices){-1, -1, -1, -1, 0};
+        queueFamilyIndices = (QueueFamilyIndices){-1, -1, -1, 0};
         const VkPhysicalDevice pDevice = devices[i];
 
         VkPhysicalDeviceFeatures deviceFeatures;
@@ -167,23 +165,18 @@ bool PickPhysicalDevice()
 
             if (families[index].queueFlags & VK_QUEUE_GRAPHICS_BIT)
             {
-                queueFamilyIndices->graphicsFamily = index;
-                if (presentSupport) queueFamilyIndices->presentFamily = index;
+                queueFamilyIndices.graphicsFamily = index;
+                if (presentSupport) queueFamilyIndices.presentFamily = index;
             } else
             {
-                if (families[index].queueFlags & VK_QUEUE_TRANSFER_BIT)
-                {
-                    // TODO investigate if separate transfer family is beneficial or detrimental
-                    queueFamilyIndices->transferFamily = index;
-                }
                 if (presentSupport)
                 {
-                    queueFamilyIndices->uniquePresentFamily = index;
+                    queueFamilyIndices.uniquePresentFamily = index;
                 }
             }
 
-            if (queueFamilyIndices->graphicsFamily == -1 || queueFamilyIndices->transferFamily == -1 ||
-                (queueFamilyIndices->presentFamily == -1 && queueFamilyIndices->uniquePresentFamily == -1))
+            if ((queueFamilyIndices.presentFamily == -1 && queueFamilyIndices.uniquePresentFamily == -1) ||
+                queueFamilyIndices.graphicsFamily == -1)
             {
                 continue;
             }
@@ -191,28 +184,17 @@ bool PickPhysicalDevice()
             break;
         }
 
-        if (queueFamilyIndices->presentFamily == -1)
+        if (queueFamilyIndices.presentFamily == -1)
         {
-            queueFamilyIndices->presentFamily = queueFamilyIndices->uniquePresentFamily;
-        }
-        if (queueFamilyIndices->transferFamily == -1)
-        {
-            queueFamilyIndices->transferFamily = queueFamilyIndices->graphicsFamily;
+            queueFamilyIndices.presentFamily = queueFamilyIndices.uniquePresentFamily;
         }
 
-        if (queueFamilyIndices->graphicsFamily == queueFamilyIndices->presentFamily ||
-            queueFamilyIndices->graphicsFamily == queueFamilyIndices->transferFamily)
+        if (queueFamilyIndices.graphicsFamily == queueFamilyIndices.presentFamily)
         {
-            if (queueFamilyIndices->presentFamily == queueFamilyIndices->transferFamily)
-            {
-                queueFamilyIndices->familyCount = 1;
-            } else
-            {
-                queueFamilyIndices->familyCount = 2;
-            }
+            queueFamilyIndices.familyCount = 1;
         } else
         {
-            queueFamilyIndices->familyCount = 3;
+            queueFamilyIndices.familyCount = 2;
         }
 
         uint32_t extensionCount;
@@ -256,41 +238,24 @@ bool CreateLogicalDevice()
 {
     const float queuePriority = 1;
 
-    VkDeviceQueueCreateInfo queueCreateInfo[queueFamilyIndices->familyCount];
-    switch (queueFamilyIndices->familyCount)
+    VkDeviceQueueCreateInfo queueCreateInfo[queueFamilyIndices.familyCount];
+    switch (queueFamilyIndices.familyCount)
     {
-        case 3:
-            queueCreateInfo[2] = (VkDeviceQueueCreateInfo){
-                VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
-                NULL,
-                0,
-                queueFamilyIndices->transferFamily,
-                1,
-                &queuePriority
-            };
         case 2:
             queueCreateInfo[1] = (VkDeviceQueueCreateInfo){
                 VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
                 NULL,
                 0,
-                queueFamilyIndices->transferFamily,
+                queueFamilyIndices.presentFamily,
                 1,
                 &queuePriority
             };
-            if (queueFamilyIndices->transferFamily == queueFamilyIndices->graphicsFamily)
-            {
-                queueCreateInfo[1].queueFamilyIndex = queueFamilyIndices->presentFamily;
-            } else if (queueFamilyIndices->presentFamily != queueFamilyIndices->graphicsFamily)
-            {
-                VulkanLogError("Failed to create VkDeviceQueueCreateInfo due to invalid queueFamilyIndices!");
-                return false;
-            }
         case 1:
             queueCreateInfo[0] = (VkDeviceQueueCreateInfo){
                 VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
                 NULL,
                 0,
-                queueFamilyIndices->graphicsFamily,
+                queueFamilyIndices.graphicsFamily,
                 1,
                 &queuePriority
             };
@@ -315,7 +280,7 @@ bool CreateLogicalDevice()
         VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
         &vulkan12Features,
         0,
-        queueFamilyIndices->familyCount,
+        queueFamilyIndices.familyCount,
         queueCreateInfo,
         0,
         NULL,
@@ -331,9 +296,8 @@ bool CreateLogicalDevice()
 
     VulkanTest(vkCreateDevice(physicalDevice, &createInfo, NULL, &device), "Failed to create Vulkan device!");
 
-    vkGetDeviceQueue(device, queueFamilyIndices->graphicsFamily, 0, &graphicsQueue);
-    vkGetDeviceQueue(device, queueFamilyIndices->transferFamily, 0, &transferQueue);
-    vkGetDeviceQueue(device, queueFamilyIndices->presentFamily, 0, &presentQueue);
+    vkGetDeviceQueue(device, queueFamilyIndices.graphicsFamily, 0, &graphicsQueue);
+    vkGetDeviceQueue(device, queueFamilyIndices.presentFamily, 0, &presentQueue);
 
     return true;
 }
@@ -395,25 +359,15 @@ bool CreateSwapChain()
         imageCount = swapChainSupport->capabilities.maxImageCount;
     }
 
-    uint32_t pQueueFamilyIndices[queueFamilyIndices->familyCount];
-    switch (queueFamilyIndices->familyCount)
+    uint32_t pQueueFamilyIndices[queueFamilyIndices.familyCount];
+    switch (queueFamilyIndices.familyCount)
     {
-        case 3:
-            pQueueFamilyIndices[2] = queueFamilyIndices->graphicsFamily;
         case 2:
-            if (queueFamilyIndices->presentFamily == queueFamilyIndices->graphicsFamily)
-            {
-                pQueueFamilyIndices[1] = queueFamilyIndices->transferFamily;
-            } else if (queueFamilyIndices->transferFamily == queueFamilyIndices->graphicsFamily)
-            {
-                pQueueFamilyIndices[1] = queueFamilyIndices->presentFamily;
-            } else
-            {
-                VulkanLogError("Failed to create VkSwapchainCreateInfoKHR due to invalid queueFamilyIndices!");
-                return false;
-            }
+            pQueueFamilyIndices[0] = queueFamilyIndices.graphicsFamily;
+            pQueueFamilyIndices[1] = queueFamilyIndices.presentFamily;
+            break;
         case 1:
-            pQueueFamilyIndices[0] = queueFamilyIndices->graphicsFamily;
+            pQueueFamilyIndices[0] = queueFamilyIndices.graphicsFamily;
             break;
         default:
             VulkanLogError("Failed to create VkSwapchainCreateInfoKHR due to invalid queueFamilyIndices!");
@@ -442,8 +396,8 @@ bool CreateSwapChain()
         extent,
         1,
         VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-        queueFamilyIndices->familyCount == 1 ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_CONCURRENT,
-        queueFamilyIndices->familyCount,
+        queueFamilyIndices.familyCount == 1 ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_CONCURRENT,
+        queueFamilyIndices.familyCount,
         pQueueFamilyIndices,
         swapChainSupport->capabilities.currentTransform,
         VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
@@ -482,18 +436,18 @@ bool CreateImageViews()
 
 bool CreateRenderPass()
 {
-    // TODO if stencil is not needed then allow for using VK_FORMAT_D32_SFLOAT
+    // TODO if stencil is not needed then allow for using VK_FORMAT_D16_UNORM
     VkFormatProperties properties;
-    vkGetPhysicalDeviceFormatProperties(physicalDevice, VK_FORMAT_D32_SFLOAT_S8_UINT, &properties);
+    vkGetPhysicalDeviceFormatProperties(physicalDevice, VK_FORMAT_D24_UNORM_S8_UINT, &properties);
     if (properties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
     {
-        depthImageFormat = VK_FORMAT_D32_SFLOAT_S8_UINT;
+        depthImageFormat = VK_FORMAT_D24_UNORM_S8_UINT;
     } else
     {
-        vkGetPhysicalDeviceFormatProperties(physicalDevice, VK_FORMAT_D24_UNORM_S8_UINT, &properties);
+        vkGetPhysicalDeviceFormatProperties(physicalDevice, VK_FORMAT_D32_SFLOAT_S8_UINT, &properties);
         if (properties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
         {
-            depthImageFormat = VK_FORMAT_D24_UNORM_S8_UINT;
+            depthImageFormat = VK_FORMAT_D32_SFLOAT_S8_UINT;
         } else
         {
             VulkanLogError("Unable to find suitable format for Vulkan depth image!");
@@ -506,23 +460,23 @@ bool CreateRenderPass()
             0,
             swapChainImageFormat,
             MSAA_SAMPLES,
-            VK_ATTACHMENT_LOAD_OP_LOAD,
-            VK_ATTACHMENT_STORE_OP_STORE,
+            VK_ATTACHMENT_LOAD_OP_CLEAR,
+            VK_ATTACHMENT_STORE_OP_DONT_CARE,
             VK_ATTACHMENT_LOAD_OP_DONT_CARE,
             VK_ATTACHMENT_STORE_OP_DONT_CARE,
-            VK_IMAGE_LAYOUT_GENERAL,
-            VK_IMAGE_LAYOUT_GENERAL
+            VK_IMAGE_LAYOUT_UNDEFINED,
+            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
         },
         {
             0,
             depthImageFormat,
             MSAA_SAMPLES,
-            VK_ATTACHMENT_LOAD_OP_LOAD,
-            VK_ATTACHMENT_STORE_OP_STORE,
+            VK_ATTACHMENT_LOAD_OP_CLEAR,
+            VK_ATTACHMENT_STORE_OP_DONT_CARE,
             VK_ATTACHMENT_LOAD_OP_DONT_CARE,
             VK_ATTACHMENT_STORE_OP_DONT_CARE,
-            VK_IMAGE_LAYOUT_GENERAL,
-            VK_IMAGE_LAYOUT_GENERAL
+            VK_IMAGE_LAYOUT_UNDEFINED,
+            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
         },
         {
             0,
@@ -1019,7 +973,17 @@ bool CreateGraphicsPipelines()
     };
     VkPipeline pipelineList[2] = {0};
 
-    VulkanTest(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 2, pipelinesCreateInfo, NULL, pipelineList),
+    VkPipelineCacheCreateInfo pipelineCacheCreateInfo = {
+        VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO,
+        NULL,
+        0,
+        0,
+        NULL
+    };
+    VkPipelineCache pipelineCache;
+    vkCreatePipelineCache(device, &pipelineCacheCreateInfo, NULL, &pipelineCache);
+
+    VulkanTest(vkCreateGraphicsPipelines(device, pipelineCache, 2, pipelinesCreateInfo, NULL, pipelineList),
                "Failed to create graphics pipelines!");
 
     pipelines.walls = pipelineList[0];
@@ -1045,21 +1009,11 @@ bool CreateCommandPools()
         VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
         NULL,
         VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
-        queueFamilyIndices->graphicsFamily
+        queueFamilyIndices.graphicsFamily
     };
 
     VulkanTest(vkCreateCommandPool(device, &graphicsPoolInfo, NULL, &graphicsCommandPool),
                "Failed to create Vulkan graphics command pool!");
-
-    const VkCommandPoolCreateInfo transferPoolInfo = {
-        VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-        NULL,
-        VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
-        queueFamilyIndices->transferFamily
-    };
-
-    VulkanTest(vkCreateCommandPool(device, &transferPoolInfo, NULL, &transferCommandPool),
-               "Failed to create Vulkan transfer command pool!");
 
     return true;
 }
@@ -1080,33 +1034,33 @@ bool CreateColorImage()
         return false;
     }
 
-    const VkCommandBuffer commandBuffer;
-    if (!BeginCommandBuffer(&commandBuffer, graphicsCommandPool)) return false;
-
-    const VkImageMemoryBarrier transferBarrier = {
-        VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-        NULL,
-        0,
-        VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-        VK_IMAGE_LAYOUT_UNDEFINED,
-        VK_IMAGE_LAYOUT_GENERAL,
-        VK_QUEUE_FAMILY_IGNORED,
-        VK_QUEUE_FAMILY_IGNORED,
-        colorImage,
-        {
-            VK_IMAGE_ASPECT_COLOR_BIT,
-            0,
-            1,
-            0,
-            1
-        }
-    };
-
-    vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-                         VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-                         0, 0, NULL, 0, NULL, 1, &transferBarrier);
-
-    if (!EndCommandBuffer(commandBuffer, graphicsCommandPool, graphicsQueue)) return false;
+    // const VkCommandBuffer commandBuffer;
+    // if (!BeginCommandBuffer(&commandBuffer, graphicsCommandPool)) return false;
+    //
+    // const VkImageMemoryBarrier transferBarrier = {
+    //     VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+    //     NULL,
+    //     0,
+    //     VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+    //     VK_IMAGE_LAYOUT_UNDEFINED,
+    //     VK_IMAGE_LAYOUT_GENERAL,
+    //     VK_QUEUE_FAMILY_IGNORED,
+    //     VK_QUEUE_FAMILY_IGNORED,
+    //     colorImage,
+    //     {
+    //         VK_IMAGE_ASPECT_COLOR_BIT,
+    //         0,
+    //         1,
+    //         0,
+    //         1
+    //     }
+    // };
+    //
+    // vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+    //                      VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+    //                      0, 0, NULL, 0, NULL, 1, &transferBarrier);
+    //
+    // if (!EndCommandBuffer(commandBuffer, graphicsCommandPool, graphicsQueue)) return false;
 
     return true;
 }
@@ -1137,7 +1091,7 @@ bool CreateDepthImage()
         0,
         VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
         VK_IMAGE_LAYOUT_UNDEFINED,
-        VK_IMAGE_LAYOUT_GENERAL,
+        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
         VK_QUEUE_FAMILY_IGNORED,
         VK_QUEUE_FAMILY_IGNORED,
         depthImage,
@@ -1160,7 +1114,7 @@ bool CreateDepthImage()
 
 bool CreateFramebuffers()
 {
-    swapChainFramebuffers = (VkFramebuffer*)malloc(sizeof(*swapChainFramebuffers) * swapChainCount);
+    swapChainFramebuffers = (VkFramebuffer *)malloc(sizeof(*swapChainFramebuffers) * swapChainCount);
 
     for (uint32_t i = 0; i < swapChainCount; i++)
     {
@@ -1280,7 +1234,7 @@ bool LoadTextures()
         vkUnmapMemory(device, memoryInfo.memory);
 
         const VkCommandBuffer commandBuffer;
-        if (!BeginCommandBuffer(&commandBuffer, transferCommandPool)) return false;
+        if (!BeginCommandBuffer(&commandBuffer, graphicsCommandPool)) return false;
 
         const VkImageMemoryBarrier transferBarrier = {
             VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
@@ -1304,9 +1258,9 @@ bool LoadTextures()
         vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0,
                              NULL, 0, NULL, 1, &transferBarrier);
 
-        if (!EndCommandBuffer(commandBuffer, transferCommandPool, transferQueue)) return false;
+        if (!EndCommandBuffer(commandBuffer, graphicsCommandPool, graphicsQueue)) return false;
 
-        if (!BeginCommandBuffer(&commandBuffer, transferCommandPool)) return false;
+        if (!BeginCommandBuffer(&commandBuffer, graphicsCommandPool)) return false;
 
         const VkBufferImageCopy bufferCopyInfo = {
             textures[textureIndex].allocationInfo.offset,
@@ -1329,7 +1283,7 @@ bool LoadTextures()
         vkCmdCopyBufferToImage(commandBuffer, stagingBuffer, textures[textureIndex].image,
                                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &bufferCopyInfo);
 
-        if (!EndCommandBuffer(commandBuffer, transferCommandPool, transferQueue)) return false;
+        if (!EndCommandBuffer(commandBuffer, graphicsCommandPool, graphicsQueue)) return false;
 
         if (!BeginCommandBuffer(&commandBuffer, graphicsCommandPool)) return false;
 
@@ -1403,6 +1357,7 @@ bool LoadTextures()
                 }
             };
 
+            // TODO validation
             vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
                                  0, 0, NULL, 0, NULL, 1, &mipmapBarrier);
 
@@ -1483,7 +1438,7 @@ bool CreateTextureSampler()
         NULL,
         0,
         VK_FILTER_NEAREST,
-        VK_FILTER_LINEAR,
+        VK_FILTER_NEAREST,
         VK_SAMPLER_MIPMAP_MODE_LINEAR,
         VK_SAMPLER_ADDRESS_MODE_REPEAT,
         VK_SAMPLER_ADDRESS_MODE_REPEAT,
@@ -1523,7 +1478,7 @@ bool CreateTextureSampler()
         NULL,
         0,
         VK_FILTER_NEAREST,
-        VK_FILTER_LINEAR,
+        VK_FILTER_NEAREST,
         VK_SAMPLER_MIPMAP_MODE_LINEAR,
         VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
         VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,

@@ -195,7 +195,6 @@ bool VK_Cleanup()
         CleanupSyncObjects();
 
         vkDestroyCommandPool(device, graphicsCommandPool, NULL);
-        vkDestroyCommandPool(device, transferCommandPool, NULL);
     }
 
     vkDestroyDevice(device, NULL);
@@ -400,7 +399,7 @@ void VK_ClearColor(const uint32_t color)
 {
     GET_COLOR(color);
 
-    clearColor = (VkClearColorValue){r, g, b, a};
+    clearColor = (VkClearColorValue){{r, g, b, a}};
     VK_ClearScreen();
 }
 
@@ -421,16 +420,22 @@ void VK_SetTexParams(const uint8_t *texture, const bool linear, const bool repea
     for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
         VkDescriptorImageInfo imageInfo = {
-            linear
-                ? repeat
-                      ? textureSamplers.linearRepeat
-                      : textureSamplers.linearNoRepeat
-                : repeat
-                      ? textureSamplers.nearestRepeat
-                      : textureSamplers.nearestNoRepeat,
+            textureSamplers.nearestNoRepeat,
             texturesImageView[textureIndex],
             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
         };
+        if (linear && repeat)
+        {
+            imageInfo.sampler = textureSamplers.linearRepeat;
+        }
+        else if (linear)
+        {
+            imageInfo.sampler = textureSamplers.linearNoRepeat;
+        }
+        else if (repeat)
+        {
+            imageInfo.sampler = textureSamplers.nearestRepeat;
+        }
 
         const VkWriteDescriptorSet writeDescriptor = {
             VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
