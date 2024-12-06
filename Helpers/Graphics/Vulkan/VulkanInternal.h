@@ -42,6 +42,8 @@ bool CreateRenderPass();
 
 bool CreateDescriptorSetLayouts();
 
+bool CreateGraphicsPipelineCache();
+
 bool CreateGraphicsPipelines();
 
 bool CreateCommandPools();

@@ -8,6 +8,7 @@
 #include "VulkanHelpers.h"
 #include "../Drawing.h"
 #include "../../../Assets/AssetReader.h"
+#include "../../../Structs/GlobalState.h"
 #include "../../Core/DataReader.h"
 #include "../../Core/Error.h"
 #include "../../Core/MathEx.h"
@@ -213,16 +214,20 @@ bool PickPhysicalDevice()
                     VulkanLogError("Failed to query Vulkan swap chain support!");
                     return false;
                 }
-                if (swapChainSupport->formatCount == 0 && swapChainSupport->presentModeCount == 0) continue;
+                if (swapChainSupport.formatCount == 0 && swapChainSupport.presentModeCount == 0) continue;
 
                 VkPhysicalDeviceProperties deviceProperties;
                 vkGetPhysicalDeviceProperties(pDevice, &deviceProperties);
                 if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
                 {
-                    physicalDevice = devices[i];
+                    physicalDevice.device = devices[i];
+                    physicalDevice.features = deviceFeatures;
+                    physicalDevice.properties = deviceProperties;
                     return true;
                 }
-                physicalDevice = devices[i];
+                physicalDevice.device = devices[i];
+                physicalDevice.features = deviceFeatures;
+                physicalDevice.properties = deviceProperties;
                 match = true;
                 break;
             }
@@ -294,7 +299,7 @@ bool CreateLogicalDevice()
     createInfo.ppEnabledLayerNames = (const char *const[1]){"VK_LAYER_KHRONOS_validation"};
 #endif
 
-    VulkanTest(vkCreateDevice(physicalDevice, &createInfo, NULL, &device), "Failed to create Vulkan device!");
+    VulkanTest(vkCreateDevice(physicalDevice.device, &createInfo, NULL, &device), "Failed to create Vulkan device!");
 
     vkGetDeviceQueue(device, queueFamilyIndices.graphicsFamily, 0, &graphicsQueue);
     vkGetDeviceQueue(device, queueFamilyIndices.presentFamily, 0, &presentQueue);
@@ -306,13 +311,13 @@ bool CreateSwapChain()
 {
     if (minimized) return true;
 
-    if (!QuerySwapChainSupport(physicalDevice))
+    if (!QuerySwapChainSupport(physicalDevice.device))
     {
         VulkanLogError("Failed to query Vulkan swap chain support!");
         return false;
     }
 
-    if (!swapChainSupport->capabilities.currentExtent.width || !swapChainSupport->capabilities.currentExtent.height)
+    if (!swapChainSupport.capabilities.currentExtent.width || !swapChainSupport.capabilities.currentExtent.height)
     {
         // Window is minimized, so return to prevent creating a swap chain with dimensions of 0px by 0px
         // However, we do not want to fail or even log anything, since this is intended behavior
@@ -321,9 +326,9 @@ bool CreateSwapChain()
     }
 
     VkSurfaceFormatKHR surfaceFormat = {VK_FORMAT_MAX_ENUM, VK_COLOR_SPACE_MAX_ENUM_KHR};
-    for (uint32_t i = 0; i < swapChainSupport->formatCount; i++)
+    for (uint32_t i = 0; i < swapChainSupport.formatCount; i++)
     {
-        const VkSurfaceFormatKHR format = swapChainSupport->formats[i];
+        const VkSurfaceFormatKHR format = swapChainSupport.formats[i];
         if (format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
         {
             if (format.format == VK_FORMAT_B8G8R8A8_UNORM || surfaceFormat.format == VK_FORMAT_MAX_ENUM)
@@ -342,21 +347,21 @@ bool CreateSwapChain()
         return false;
     }
 
-    VkExtent2D extent = swapChainSupport->capabilities.currentExtent;
+    VkExtent2D extent = swapChainSupport.capabilities.currentExtent;
     if (extent.width == UINT32_MAX || extent.height == UINT32_MAX)
     {
         int32_t width;
         int32_t height;
         SDL_Vulkan_GetDrawableSize(vk_window, &width, &height);
-        extent.width = clamp(width, swapChainSupport->capabilities.minImageExtent.width,
-                             swapChainSupport->capabilities.maxImageExtent.width);
-        extent.height = clamp(height, swapChainSupport->capabilities.minImageExtent.height,
-                              swapChainSupport->capabilities.maxImageExtent.height);
+        extent.width = clamp(width, swapChainSupport.capabilities.minImageExtent.width,
+                             swapChainSupport.capabilities.maxImageExtent.width);
+        extent.height = clamp(height, swapChainSupport.capabilities.minImageExtent.height,
+                              swapChainSupport.capabilities.maxImageExtent.height);
     }
-    uint32_t imageCount = swapChainSupport->capabilities.minImageCount + 1;
-    if (swapChainSupport->capabilities.maxImageCount > 0 && imageCount > swapChainSupport->capabilities.maxImageCount)
+    uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
+    if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount)
     {
-        imageCount = swapChainSupport->capabilities.maxImageCount;
+        imageCount = swapChainSupport.capabilities.maxImageCount;
     }
 
     uint32_t pQueueFamilyIndices[queueFamilyIndices.familyCount];
@@ -375,9 +380,9 @@ bool CreateSwapChain()
     }
 
     VkPresentModeKHR presentMode = VK_PRESENT_MODE_MAX_ENUM_KHR;
-    for (uint32_t i = 0; i < swapChainSupport->presentModeCount; i++)
+    for (uint32_t i = 0; i < swapChainSupport.presentModeCount; i++)
     {
-        const VkPresentModeKHR mode = swapChainSupport->presentMode[i];
+        const VkPresentModeKHR mode = swapChainSupport.presentMode[i];
         if (mode == VK_PRESENT_MODE_MAILBOX_KHR)
         {
             presentMode = mode;
@@ -399,7 +404,7 @@ bool CreateSwapChain()
         queueFamilyIndices.familyCount == 1 ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_CONCURRENT,
         queueFamilyIndices.familyCount,
         pQueueFamilyIndices,
-        swapChainSupport->capabilities.currentTransform,
+        swapChainSupport.capabilities.currentTransform,
         VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
         presentMode,
         VK_TRUE,
@@ -438,13 +443,13 @@ bool CreateRenderPass()
 {
     // TODO if stencil is not needed then allow for using VK_FORMAT_D16_UNORM
     VkFormatProperties properties;
-    vkGetPhysicalDeviceFormatProperties(physicalDevice, VK_FORMAT_D24_UNORM_S8_UINT, &properties);
+    vkGetPhysicalDeviceFormatProperties(physicalDevice.device, VK_FORMAT_D24_UNORM_S8_UINT, &properties);
     if (properties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
     {
         depthImageFormat = VK_FORMAT_D24_UNORM_S8_UINT;
     } else
     {
-        vkGetPhysicalDeviceFormatProperties(physicalDevice, VK_FORMAT_D32_SFLOAT_S8_UINT, &properties);
+        vkGetPhysicalDeviceFormatProperties(physicalDevice.device, VK_FORMAT_D32_SFLOAT_S8_UINT, &properties);
         if (properties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
         {
             depthImageFormat = VK_FORMAT_D32_SFLOAT_S8_UINT;
@@ -455,41 +460,28 @@ bool CreateRenderPass()
         }
     }
 
-    const VkAttachmentDescription attachments[3] = {
-        {
-            0,
-            swapChainImageFormat,
-            MSAA_SAMPLES,
-            VK_ATTACHMENT_LOAD_OP_CLEAR,
-            VK_ATTACHMENT_STORE_OP_DONT_CARE,
-            VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-            VK_ATTACHMENT_STORE_OP_DONT_CARE,
-            VK_IMAGE_LAYOUT_UNDEFINED,
-            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-        },
-        {
-            0,
-            depthImageFormat,
-            MSAA_SAMPLES,
-            VK_ATTACHMENT_LOAD_OP_CLEAR,
-            VK_ATTACHMENT_STORE_OP_DONT_CARE,
-            VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-            VK_ATTACHMENT_STORE_OP_DONT_CARE,
-            VK_IMAGE_LAYOUT_UNDEFINED,
-            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
-        },
-        {
-            0,
-            swapChainImageFormat,
-            VK_SAMPLE_COUNT_1_BIT,
-            VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-            VK_ATTACHMENT_STORE_OP_STORE,
-            VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-            VK_ATTACHMENT_STORE_OP_DONT_CARE,
-            VK_IMAGE_LAYOUT_UNDEFINED,
-            VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
-        }
-    };
+    switch (GetState()->options.msaa)
+    {
+        case MSAA_2X:
+            msaaSamples = VK_SAMPLE_COUNT_2_BIT;
+            break;
+        case MSAA_4X:
+            msaaSamples = VK_SAMPLE_COUNT_4_BIT;
+            break;
+        case MSAA_8X:
+            msaaSamples = VK_SAMPLE_COUNT_8_BIT;
+            break;
+        case MSAA_NONE:
+        default:
+            msaaSamples = VK_SAMPLE_COUNT_1_BIT;
+            break;
+    }
+    if (!(physicalDevice.properties.limits.framebufferColorSampleCounts & physicalDevice.properties.limits.framebufferDepthSampleCounts & msaaSamples))
+    {
+        VulkanLogError("Unsupported MSAA type selected!");
+        return false;
+    }
+
 
     const VkAttachmentReference colorAttachmentRef = {
         0,
@@ -499,34 +491,6 @@ bool CreateRenderPass()
         1,
         VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
     };
-    const VkAttachmentReference colorAttachmentResolveRef = {
-        2,
-        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-    };
-    const VkSubpassDescription wallSubpass = {
-        0,
-        VK_PIPELINE_BIND_POINT_GRAPHICS,
-        0,
-        NULL,
-        1,
-        &colorAttachmentRef,
-        &colorAttachmentResolveRef,
-        &depthAttachmentReference,
-        0,
-        NULL
-    };
-    const VkSubpassDescription uiSubpass = {
-        0,
-        VK_PIPELINE_BIND_POINT_GRAPHICS,
-        0,
-        NULL,
-        1,
-        &colorAttachmentRef,
-        &colorAttachmentResolveRef,
-        NULL,
-        0,
-        NULL
-    };
 
     const VkSubpassDependency dependencies[2] = {
         {
@@ -534,7 +498,7 @@ bool CreateRenderPass()
             0,
             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
-            VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT,
+            VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
             VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
             0
         },
@@ -543,25 +507,160 @@ bool CreateRenderPass()
             1,
             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
-            VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT,
+            VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
             VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
             0
         }
     };
 
-    const VkRenderPassCreateInfo renderPassInfo = {
-        VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
-        NULL,
-        0,
-        3,
-        attachments,
-        2,
-        (VkSubpassDescription[]){wallSubpass, uiSubpass},
-        2,
-        dependencies
-    };
+    if (msaaSamples == VK_SAMPLE_COUNT_1_BIT)
+    {
+        const VkAttachmentDescription attachments[2] = {
+            {
+                0,
+                swapChainImageFormat,
+                VK_SAMPLE_COUNT_1_BIT,
+                VK_ATTACHMENT_LOAD_OP_CLEAR,
+                VK_ATTACHMENT_STORE_OP_STORE,
+                VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+                VK_ATTACHMENT_STORE_OP_DONT_CARE,
+                VK_IMAGE_LAYOUT_UNDEFINED,
+                VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+            },
+            {
+                0,
+                depthImageFormat,
+                VK_SAMPLE_COUNT_1_BIT,
+                VK_ATTACHMENT_LOAD_OP_CLEAR,
+                VK_ATTACHMENT_STORE_OP_DONT_CARE,
+                VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+                VK_ATTACHMENT_STORE_OP_DONT_CARE,
+                VK_IMAGE_LAYOUT_UNDEFINED,
+                VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+            }
+        };
 
-    VulkanTest(vkCreateRenderPass(device, &renderPassInfo, NULL, &renderPass), "Failed to create Vulkan render pass!");
+        const VkSubpassDescription wallSubpass = {
+            0,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            0,
+            NULL,
+            1,
+            &colorAttachmentRef,
+            NULL,
+            &depthAttachmentReference,
+            0,
+            NULL
+        };
+        const VkSubpassDescription uiSubpass = {
+            0,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            0,
+            NULL,
+            1,
+            &colorAttachmentRef,
+            NULL,
+            NULL,
+            0,
+            NULL
+        };
+
+        const VkRenderPassCreateInfo renderPassInfo = {
+            VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+            NULL,
+            0,
+            2,
+            attachments,
+            2,
+            (VkSubpassDescription[]){wallSubpass, uiSubpass},
+            2,
+            dependencies
+        };
+
+        VulkanTest(vkCreateRenderPass(device, &renderPassInfo, NULL, &renderPass),
+                   "Failed to create Vulkan render pass!");
+    } else
+    {
+        const VkAttachmentDescription attachments[3] = {
+            {
+                0,
+                swapChainImageFormat,
+                msaaSamples,
+                VK_ATTACHMENT_LOAD_OP_CLEAR,
+                VK_ATTACHMENT_STORE_OP_DONT_CARE,
+                VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+                VK_ATTACHMENT_STORE_OP_DONT_CARE,
+                VK_IMAGE_LAYOUT_UNDEFINED,
+                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+            },
+            {
+                0,
+                depthImageFormat,
+                msaaSamples,
+                VK_ATTACHMENT_LOAD_OP_CLEAR,
+                VK_ATTACHMENT_STORE_OP_DONT_CARE,
+                VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+                VK_ATTACHMENT_STORE_OP_DONT_CARE,
+                VK_IMAGE_LAYOUT_UNDEFINED,
+                VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+            },
+            {
+                0,
+                swapChainImageFormat,
+                VK_SAMPLE_COUNT_1_BIT,
+                VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+                VK_ATTACHMENT_STORE_OP_STORE,
+                VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+                VK_ATTACHMENT_STORE_OP_DONT_CARE,
+                VK_IMAGE_LAYOUT_UNDEFINED,
+                VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+            }
+        };
+
+        const VkAttachmentReference colorAttachmentResolveRef = {
+            2,
+            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+        };
+        const VkSubpassDescription wallSubpass = {
+            0,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            0,
+            NULL,
+            1,
+            &colorAttachmentRef,
+            &colorAttachmentResolveRef,
+            &depthAttachmentReference,
+            0,
+            NULL
+        };
+        const VkSubpassDescription uiSubpass = {
+            0,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            0,
+            NULL,
+            1,
+            &colorAttachmentRef,
+            &colorAttachmentResolveRef,
+            NULL,
+            0,
+            NULL
+        };
+
+        const VkRenderPassCreateInfo renderPassInfo = {
+            VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+            NULL,
+            0,
+            3,
+            attachments,
+            2,
+            (VkSubpassDescription[]){wallSubpass, uiSubpass},
+            2,
+            dependencies
+        };
+
+        VulkanTest(vkCreateRenderPass(device, &renderPassInfo, NULL, &renderPass),
+                   "Failed to create Vulkan render pass!");
+    }
 
     return true;
 }
@@ -601,6 +700,21 @@ bool CreateDescriptorSetLayouts()
 
     VulkanTest(vkCreateDescriptorSetLayout(device, &layoutInfo, NULL, &descriptorSetLayout),
                "Failed to create pipeline descriptor set layout!");
+
+    return true;
+}
+
+bool CreateGraphicsPipelineCache()
+{
+    const VkPipelineCacheCreateInfo pipelineCacheCreateInfo = {
+        VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO,
+        NULL,
+        0,
+        0,
+        NULL
+    };
+    VulkanTest(vkCreatePipelineCache(device, &pipelineCacheCreateInfo, NULL, &pipelineCache),
+               "Failed to create graphics pipeline cache!");
 
     return true;
 }
@@ -653,7 +767,7 @@ bool CreateGraphicsPipelines()
         VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
         NULL,
         0,
-        MSAA_SAMPLES,
+        msaaSamples,
         VK_FALSE,
         1,
         NULL,
@@ -973,16 +1087,6 @@ bool CreateGraphicsPipelines()
     };
     VkPipeline pipelineList[2] = {0};
 
-    VkPipelineCacheCreateInfo pipelineCacheCreateInfo = {
-        VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO,
-        NULL,
-        0,
-        0,
-        NULL
-    };
-    VkPipelineCache pipelineCache;
-    vkCreatePipelineCache(device, &pipelineCacheCreateInfo, NULL, &pipelineCache);
-
     VulkanTest(vkCreateGraphicsPipelines(device, pipelineCache, 2, pipelinesCreateInfo, NULL, pipelineList),
                "Failed to create graphics pipelines!");
 
@@ -1022,7 +1126,7 @@ bool CreateColorImage()
 {
     if (!CreateImage(&colorImage, &colorImageMemory, swapChainImageFormat,
                      (VkExtent3D){swapChainExtent.width, swapChainExtent.height, 1}, 1,
-                     MSAA_SAMPLES, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                     msaaSamples, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                      "color"))
     {
         return false;
@@ -1069,7 +1173,7 @@ bool CreateDepthImage()
 {
     if (!CreateImage(&depthImage, &depthImageMemory, depthImageFormat,
                      (VkExtent3D){swapChainExtent.width, swapChainExtent.height, 1}, 1,
-                     MSAA_SAMPLES, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
+                     msaaSamples, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
                      "depth test"))
     {
         return false;
@@ -1123,8 +1227,10 @@ bool CreateFramebuffers()
             NULL,
             0,
             renderPass,
-            3,
-            (VkImageView[]){colorImageView, depthImageView, swapChainImageViews[i]},
+            msaaSamples == VK_SAMPLE_COUNT_1_BIT ? 2 : 3,
+            msaaSamples == VK_SAMPLE_COUNT_1_BIT
+                ? (VkImageView[2]){swapChainImageViews[i], depthImageView}
+                : (VkImageView[3]){colorImageView, depthImageView, swapChainImageViews[i]},
             swapChainExtent.width,
             swapChainExtent.height,
             1
@@ -1146,7 +1252,7 @@ bool LoadTextures()
 
         const VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
         VkFormatProperties formatProperties;
-        vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &formatProperties);
+        vkGetPhysicalDeviceFormatProperties(physicalDevice.device, format, &formatProperties);
         if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
         {
             VulkanLogError("Vulkan texture image format does not support linear blitting!");
@@ -1177,7 +1283,7 @@ bool LoadTextures()
     }
 
     VkPhysicalDeviceMemoryProperties memoryProperties;
-    vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
+    vkGetPhysicalDeviceMemoryProperties(physicalDevice.device, &memoryProperties);
     for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++)
     {
         if (textures[i].allocationInfo.memoryRequirements.memoryTypeBits & 1 << i &&

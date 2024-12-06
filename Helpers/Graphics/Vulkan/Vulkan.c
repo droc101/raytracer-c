@@ -13,10 +13,11 @@ bool VK_Init(SDL_Window *window)
 {
     vk_window = window;
     if (CreateInstance() && CreateSurface() && PickPhysicalDevice() && CreateLogicalDevice() && CreateSwapChain() &&
-        CreateImageViews() && CreateRenderPass() && CreateDescriptorSetLayouts() && CreateGraphicsPipelines() &&
-        CreateCommandPools() && CreateColorImage() && CreateDepthImage() && CreateFramebuffers() && LoadTextures() &&
-        CreateTexturesImageView() && CreateTextureSampler() && CreateVertexBuffers() && CreateUniformBuffers() &&
-        CreateDescriptorPool() && CreateDescriptorSets() && CreateCommandBuffers() && CreateSyncObjects())
+        CreateImageViews() && CreateRenderPass() && CreateDescriptorSetLayouts() && CreateGraphicsPipelineCache() &&
+        CreateGraphicsPipelines() && CreateCommandPools() && CreateColorImage() && CreateDepthImage() &&
+        CreateFramebuffers() && LoadTextures() && CreateTexturesImageView() && CreateTextureSampler() &&
+        CreateVertexBuffers() && CreateUniformBuffers() && CreateDescriptorPool() && CreateDescriptorSets() &&
+        CreateCommandBuffers() && CreateSyncObjects())
     {
         const DataUniformBufferObject dataBufferObject = {
             texturesAssetIDMap[ReadUintA(DecompressAsset(gztex_actor_iq), 12)]
@@ -174,6 +175,7 @@ bool VK_Cleanup()
         CleanupColorImage();
         CleanupDepthImage();
 
+        vkDestroyPipelineCache(device, pipelineCache, NULL);
         CleanupPipeline();
 
         vkDestroyRenderPass(device, renderPass, NULL);
@@ -218,10 +220,7 @@ inline void VK_Restore()
 
 inline VkSampleCountFlags VK_GetSampleCount()
 {
-    VkPhysicalDeviceProperties properties;
-    vkGetPhysicalDeviceProperties(physicalDevice, &properties);
-
-    return properties.limits.framebufferColorSampleCounts & properties.limits.framebufferDepthSampleCounts;
+    return physicalDevice.properties.limits.framebufferColorSampleCounts & physicalDevice.properties.limits.framebufferDepthSampleCounts;
 }
 
 bool VK_DrawColoredQuad(const int32_t x, const int32_t y, const int32_t w, const int32_t h, const uint32_t color)
@@ -387,10 +386,10 @@ bool VK_DrawRectOutline(const int32_t x,
                         const float thickness,
                         const uint32_t color)
 {
-    VK_DrawLine(x    , y    , x + w, y    , thickness, color);
-    VK_DrawLine(x + w, y    , x + w, y + h, thickness, color);
-    VK_DrawLine(x + w, y + h, x    , y + h, thickness, color);
-    VK_DrawLine(x    , y + h, x    , y    , thickness, color);
+    VK_DrawLine(x, y, x + w, y, thickness, color);
+    VK_DrawLine(x + w, y, x + w, y + h, thickness, color);
+    VK_DrawLine(x + w, y + h, x, y + h, thickness, color);
+    VK_DrawLine(x, y + h, x, y, thickness, color);
 
     return true;
 }
@@ -403,16 +402,9 @@ void VK_ClearColor(const uint32_t color)
     VK_ClearScreen();
 }
 
-void VK_ClearScreen()
-{
-    buffersToClear.color = true;
-    buffersToClear.depth = true;
-}
+void VK_ClearScreen() {}
 
-void VK_ClearDepthOnly()
-{
-    buffersToClear.depth = true;
-}
+void VK_ClearDepthOnly() {}
 
 void VK_SetTexParams(const uint8_t *texture, const bool linear, const bool repeat)
 {
@@ -427,12 +419,10 @@ void VK_SetTexParams(const uint8_t *texture, const bool linear, const bool repea
         if (linear && repeat)
         {
             imageInfo.sampler = textureSamplers.linearRepeat;
-        }
-        else if (linear)
+        } else if (linear)
         {
             imageInfo.sampler = textureSamplers.linearNoRepeat;
-        }
-        else if (repeat)
+        } else if (repeat)
         {
             imageInfo.sampler = textureSamplers.nearestRepeat;
         }

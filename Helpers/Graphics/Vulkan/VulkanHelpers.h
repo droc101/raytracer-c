@@ -172,11 +172,15 @@ typedef struct TextureSamplers
     VkSampler nearestNoRepeat;
 } TextureSamplers;
 
-typedef struct BuffersToClear
+typedef struct PhysicalDevice
 {
-    bool color: 1;
-    bool depth: 1;
-} BuffersToClear;
+    /// The physical device is the hardware available to the host that has an implementation of Vulkan.
+    /// @see https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#devsandqueues-physical-device-enumeration
+    /// @see https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkPhysicalDevice.html
+    VkPhysicalDevice device;
+    VkPhysicalDeviceFeatures features;
+    VkPhysicalDeviceProperties properties;
+} PhysicalDevice;
 #pragma endregion typedefs
 
 #pragma region variables
@@ -190,14 +194,12 @@ extern VkInstance instance;
 /// The interface between Vulkan and SDL, allowing Vulkan to actually interact with the window.
 /// @see https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkSurfaceKHR.html
 extern VkSurfaceKHR surface;
-/// The physical device is the hardware available to the host that has an implementation of Vulkan.
-/// @see https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#devsandqueues-physical-device-enumeration
-/// @see https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkPhysicalDevice.html
-extern VkPhysicalDevice physicalDevice;
 /// @todo Document this along with the struct
+extern PhysicalDevice physicalDevice;
+/// @todo Document this
 extern QueueFamilyIndices queueFamilyIndices;
 /// @todo Document this along with the struct
-extern SwapChainSupportDetails *swapChainSupport;
+extern SwapChainSupportDetails swapChainSupport;
 /// The logical device is a connection to a physical device, and is used for interfacing with Vulkan.
 /// @see https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#devsandqueues-devices
 /// @see https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkDevice.html
@@ -220,6 +222,7 @@ extern VkImageView *swapChainImageViews;
 extern VkRenderPass renderPass;
 extern VkDescriptorSetLayout descriptorSetLayout;
 extern VkPipelineLayout pipelineLayout;
+extern VkPipelineCache pipelineCache;
 extern Pipelines pipelines;
 extern VkFramebuffer *swapChainFramebuffers;
 extern VkCommandPool graphicsCommandPool;
@@ -247,7 +250,7 @@ extern VkImage colorImage;
 extern VkDeviceMemory colorImageMemory;
 extern VkImageView colorImageView;
 extern VkClearColorValue clearColor;
-extern BuffersToClear buffersToClear;
+extern VkSampleCountFlagBits msaaSamples;
 #pragma endregion variables
 
 #pragma region helperFunctions

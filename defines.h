@@ -130,11 +130,10 @@ typedef enum Renderer
 
 typedef enum OptionsMsaa
 {
-    MSAA_NONE = 0,
-    MSAA_2X = 1,
-    MSAA_4X = 2,
-    MSAA_8X = 3,
-    MSAA_16X = 4
+    MSAA_NONE,
+    MSAA_2X,
+    MSAA_4X,
+    MSAA_8X
 } OptionsMsaa;
 
 typedef enum ModelShader

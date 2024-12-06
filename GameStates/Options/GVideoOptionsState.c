@@ -31,8 +31,7 @@ char *SliderLabelMSAA(const Control *slider)
         "Off",
         "2X",
         "4X",
-        "8X",
-        "16X"
+        "8X"
     };
     const SliderData *data = (SliderData *) slider->ControlData;
     char *buf = malloc(64);
@@ -124,7 +123,7 @@ void GVideoOptionsStateSet()
                     CreateRadioButtonControl(v2(0, opy), v2(480, 40), "OpenGL (Compatibility)", RbOptionsRenderer, TOP_CENTER,
                                              GetState()->options.renderer == RENDERER_OPENGL, 0, RENDERER_OPENGL));
         opy += ops * 1.5;
-        UiStackPush(videoOptionsStack, CreateSliderControl(v2(0, opy), v2(480, 40), "MSAA", SldOptionsMsaa, TOP_CENTER, 0.0, 4.0, GetState()->options.msaa, 1, 1, SliderLabelMSAA));
+        UiStackPush(videoOptionsStack, CreateSliderControl(v2(0, opy), v2(480, 40), "MSAA", SldOptionsMsaa, TOP_CENTER, 0.0, 3.0, GetState()->options.msaa, 1, 1, SliderLabelMSAA));
         opy += ops;
 
 

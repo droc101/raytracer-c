@@ -10,9 +10,9 @@ bool minimized = false;
 
 VkInstance instance = VK_NULL_HANDLE;
 VkSurfaceKHR surface;
-VkPhysicalDevice physicalDevice;
+PhysicalDevice physicalDevice;
 QueueFamilyIndices queueFamilyIndices;
-SwapChainSupportDetails *swapChainSupport;
+SwapChainSupportDetails swapChainSupport;
 VkDevice device = NULL;
 VkQueue graphicsQueue;
 VkQueue presentQueue;
@@ -25,6 +25,7 @@ VkImageView *swapChainImageViews;
 VkRenderPass renderPass = VK_NULL_HANDLE;
 VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
 VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
+VkPipelineCache pipelineCache = VK_NULL_HANDLE;
 Pipelines pipelines;
 VkFramebuffer *swapChainFramebuffers;
 VkCommandPool graphicsCommandPool = VK_NULL_HANDLE;
@@ -67,12 +68,11 @@ VkImage colorImage;
 VkDeviceMemory colorImageMemory;
 VkImageView colorImageView;
 VkClearColorValue clearColor = {{0.0f, 0.64f, 0.91f, 1.0f}};
-BuffersToClear buffersToClear = {0};
+VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
 #pragma endregion variables
 
 bool QuerySwapChainSupport(const VkPhysicalDevice pDevice)
 {
-    swapChainSupport = malloc(sizeof(*swapChainSupport));
     SwapChainSupportDetails details = {0, 0, NULL, NULL, {}};
 
     VulkanTest(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(pDevice, surface, &details.capabilities),
@@ -96,7 +96,7 @@ bool QuerySwapChainSupport(const VkPhysicalDevice pDevice)
             vkGetPhysicalDeviceSurfacePresentModesKHR(pDevice, surface, &details.presentModeCount, details.presentMode),
             "Failed to query Vulkan surface presentation modes!");
     }
-    *swapChainSupport = details;
+    swapChainSupport = details;
 
     return true;
 }
@@ -203,7 +203,7 @@ bool CreateImage(VkImage *image,
     VkMemoryRequirements memoryRequirements;
     vkGetImageMemoryRequirements(device, *image, &memoryRequirements);
     VkPhysicalDeviceMemoryProperties memoryProperties;
-    vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
+    vkGetPhysicalDeviceMemoryProperties(physicalDevice.device, &memoryProperties);
     for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++)
     {
         if (memoryRequirements.memoryTypeBits & 1 << i &&
@@ -327,7 +327,7 @@ bool CreateBuffer(VkBuffer *buffer,
     if (!newAllocation) return true; // Allocation and binding will be handled elsewhere
 
     VkPhysicalDeviceMemoryProperties memoryProperties;
-    vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
+    vkGetPhysicalDeviceMemoryProperties(physicalDevice.device, &memoryProperties);
     for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++)
     {
         if (allocationInfo->memoryRequirements.memoryTypeBits & 1 << i &&
@@ -374,7 +374,7 @@ bool AllocateMemory()
     bool allocated = false;
 
     VkPhysicalDeviceMemoryProperties memoryProperties;
-    vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
+    vkGetPhysicalDeviceMemoryProperties(physicalDevice.device, &memoryProperties);
     for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++)
     {
         if (memoryPools.localMemory.memoryTypeBits & 1 << i &&

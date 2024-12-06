@@ -58,9 +58,6 @@ bool GL_PreInit()
             case MSAA_8X:
                 mssa_val = 8;
                 break;
-            case MSAA_16X:
-                mssa_val = 16;
-                break;
             default:
                 GL_Error("Invalid MSAA value!");
                 return false;
