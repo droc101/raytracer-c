@@ -50,20 +50,20 @@ void FrameGraphDraw()
         } else if (framerates[i] < FRAMEGRAPH_THRESHOLD_GOOD) {
             color = 0x40ff8000;
         }
-        setColorUint(color);
+        SetColorUint(color);
         int y = WindowHeight() - height - 10;
-        draw_rect(x+(i*2), y, 2, height);
+        DrawRect(x+(i*2), y, 2, height);
     }
 
     // draw a line at the target physicsFrame time
-    setColorUint(0x80808080);
+    SetColorUint(0x80808080);
     int y = WindowHeight() - (FRAMEGRAPH_THRESHOLD_GOOD*FRAMEGRAPH_V_SCALE) - 10;
-    draw_rect(x, y, FRAMEGRAPH_HISTORY_SIZE * 2, 2);
+    DrawRect(x, y, FRAMEGRAPH_HISTORY_SIZE * 2, 2);
     FontDrawString(v2(10, y - 5), "Target FPS", 12, 0xff00ffff, true);
 
     // draw a line at the bottom
-    setColorUint(0x80808080);
-    draw_rect(x, WindowHeight() - 10, FRAMEGRAPH_HISTORY_SIZE * 2, 2);
+    SetColorUint(0x80808080);
+    DrawRect(x, WindowHeight() - 10, FRAMEGRAPH_HISTORY_SIZE * 2, 2);
 #else
     uint color = 0x4000ff00;
 #endif

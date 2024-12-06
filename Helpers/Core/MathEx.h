@@ -63,12 +63,12 @@ float lerp(float a, float b, float f);
  * Convert degrees to radians
  * @param d Degrees
  */
-#define degToRad(d) (d * 0.017453292519943295)
+#define degToRad(d) ((d) * 0.017453292519943295)
 
 /**
  * Convert radians to degrees
  * @param r Radians
  */
-#define radToDeg(r) (r * 57.29577951308232)
+#define radToDeg(r) ((r) * 57.29577951308232)
 
 #endif //GAME_MATHEX_H

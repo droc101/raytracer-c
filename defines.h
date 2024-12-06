@@ -115,7 +115,10 @@ typedef enum
     MAIN_STATE,
     MENU_STATE,
     PAUSE_STATE,
-    OPTIONS_STATE
+    OPTIONS_STATE,
+    VIDEO_OPTIONS_STATE,
+    SOUND_OPTIONS_STATE,
+    INPUT_OPTIONS_STATE
 } CurrentState;
 
 typedef enum Renderer
@@ -125,18 +128,59 @@ typedef enum Renderer
     RENDERER_MAX
 } Renderer;
 
+typedef enum OptionsMsaa
+{
+    MSAA_NONE = 0,
+    MSAA_2X = 1,
+    MSAA_4X = 2,
+    MSAA_8X = 3,
+    MSAA_16X = 4
+} OptionsMsaa;
+
+typedef enum ModelShader
+{
+    SHADER_SKY,
+    SHADER_UNSHADED,
+    SHADER_SHADED
+} ModelShader;
+
 typedef struct Options
 {
     ushort checksum; // Checksum of the options struct (helps prevent corruption)
+
+    // Controls
+    bool controllerMode; // Whether the game is in controller mode
+    double mouseSpeed; // The look speed (it affects controller speed too)
+
+    // Video
     Renderer renderer; // The renderer to use
+    bool fullscreen; // Whether the game is fullscreen
+    bool vsync; // Whether vsync is enabled
+    OptionsMsaa msaa;
+    bool mipmaps;
+
+    // Sound
     double musicVolume; // The volume of the music
     double sfxVolume; // The volume of the sound effects
     double masterVolume; // The master volume
-    double mouseSpeed; // The look speed (it affects controller speed too)
-    bool fullscreen; // Whether the game is fullscreen
-    bool vsync; // Whether vsync is enabled
-    bool controllerMode; // Whether the game is in controller mode
 } __attribute__((packed)) Options; // This is packed because it is saved to disk
+
+typedef struct ModelHeader
+{
+    char sig[4]; // "MESH"
+    uint indexCount;
+    char dataSig[4]; // "DATA"
+} __attribute__((packed)) ModelHeader;
+
+typedef struct Model
+{
+    ModelHeader header;
+
+    uint packedVertsUvsCount;
+    uint packedIndicesCount;
+    float *packedVertsUvs; // X Y Z U V, use for rendering
+    uint *packedIndices; // Just the vert index, use for rendering
+} Model;
 
 // Global state of the game
 typedef struct GlobalState
@@ -192,6 +236,8 @@ typedef struct Actor
     float yPosition; // y position for rendering. Does not affect collision
     bool showShadow; // should the actor cast a shadow?
     float shadowSize; // size of the shadow
+    Model *actorModel; // Optional model for the actor, if not NULL, will be rendered instead of the wall
+    byte *actorModelTexture; // Texture for the model
 } Actor;
 
 // pi 🥧

@@ -23,6 +23,9 @@ GL_Shader *ui_colored;
 GL_Shader *wall_generic;
 GL_Shader *floor_generic;
 GL_Shader *shadow;
+GL_Shader *sky;
+GL_Shader *model_unshaded;
+GL_Shader *model_shaded;
 
 GL_Buffer *gl_buffer;
 
@@ -39,8 +42,31 @@ void GL_Error(const char *error)
 
 bool GL_PreInit()
 {
-    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, MSAA_SAMPLES);
+    const bool msaa_enabled = GetState()->options.msaa != MSAA_NONE;
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, msaa_enabled);
+    if (msaa_enabled)
+    {
+        int mssa_val = 0;
+        switch (GetState()->options.msaa)
+        {
+            case MSAA_2X:
+                mssa_val = 2;
+                break;
+            case MSAA_4X:
+                mssa_val = 4;
+                break;
+            case MSAA_8X:
+                mssa_val = 8;
+                break;
+            case MSAA_16X:
+                mssa_val = 16;
+                break;
+            default:
+                GL_Error("Invalid MSAA value!");
+                return false;
+        }
+        SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, mssa_val);
+    }
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
     SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
@@ -85,8 +111,12 @@ bool GL_Init(SDL_Window *wnd)
     wall_generic = GL_ConstructShaderFromAssets(gzshd_GL_wall_f, gzshd_GL_wall_v);
     floor_generic = GL_ConstructShaderFromAssets(gzshd_GL_floor_f, gzshd_GL_floor_v);
     shadow = GL_ConstructShaderFromAssets(gzshd_GL_shadow_f, gzshd_GL_shadow_v);
+    sky = GL_ConstructShaderFromAssets(gzshd_GL_sky_f, gzshd_GL_sky_v);
+    model_shaded = GL_ConstructShaderFromAssets(gzshd_GL_model_shaded_f, gzshd_GL_model_shaded_v);
+    model_unshaded = GL_ConstructShaderFromAssets(gzshd_GL_model_unshaded_f, gzshd_GL_model_unshaded_v);
 
-    if (!ui_textured || !ui_colored || !wall_generic || !floor_generic || !shadow)
+    if (!ui_textured || !ui_colored || !wall_generic || !floor_generic || !shadow || !sky || !model_shaded ||
+        !model_unshaded)
     {
         GL_Error("Failed to compile shaders");
         return false;
@@ -239,6 +269,9 @@ void GL_DestroyGL()
     GL_DestroyShader(wall_generic);
     GL_DestroyShader(floor_generic);
     GL_DestroyShader(shadow);
+    GL_DestroyShader(sky);
+    GL_DestroyShader(model_shaded);
+    GL_DestroyShader(model_unshaded);
     glUseProgram(0);
     glDisableVertexAttribArray(0);
     GL_DestroyBuffer(gl_buffer);
@@ -388,13 +421,19 @@ int GL_RegisterTexture(const unsigned char *pixelData, const int width, const in
 
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, -1.5f);
 
-    glGenerateMipmap(GL_TEXTURE_2D);
-
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    if (GetState()->options.mipmaps)
+    {
+        glGenerateMipmap(GL_TEXTURE_2D);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    } else
+    {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    }
 
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV, pixelData);
 
@@ -417,8 +456,16 @@ void GL_SetTexParams(const unsigned char *imageData, const bool linear, const bo
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, repeat ? GL_REPEAT : GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, repeat ? GL_REPEAT : GL_CLAMP_TO_EDGE);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, linear ? GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, linear ? GL_LINEAR : GL_NEAREST);
+    if (GetState()->options.mipmaps)
+    {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, linear ? GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, linear ? GL_LINEAR : GL_NEAREST);
+    } else
+    {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, linear ? GL_LINEAR : GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, linear ? GL_LINEAR : GL_NEAREST);
+    }
+
 }
 
 void GL_DrawTexture_Internal(const Vector2 pos, const Vector2 size, const unsigned char *imageData, const uint color,
@@ -564,6 +611,23 @@ void GL_SetLevelParams(const mat4 *mvp, const Level *l)
 
     glUniform1f(glGetUniformLocation(wall_generic->program, "fog_start"), l->FogStart);
     glUniform1f(glGetUniformLocation(wall_generic->program, "fog_end"), l->FogEnd);
+
+    glUseProgram(sky->program);
+    glUniformMatrix4fv(glGetUniformLocation(sky->program, "WORLD_VIEW_MATRIX"), 1, GL_FALSE,
+                       mvp[0][0]); // world -> screen
+    const uint scolor = l->SkyColor;
+    const float sr = (scolor >> 16 & 0xFF) / 255.0f;
+    const float sg = (scolor >> 8 & 0xFF) / 255.0f;
+    const float sb = (scolor & 0xFF) / 255.0f;
+    glUniform4f(glGetUniformLocation(sky->program, "col"), sr, sg, sb, 1.0f);
+
+    glUseProgram(model_shaded->program);
+    glUniformMatrix4fv(glGetUniformLocation(model_shaded->program, "WORLD_VIEW_MATRIX"), 1, GL_FALSE,
+                       mvp[0][0]); // world -> screen
+
+    glUseProgram(model_unshaded->program);
+    glUniformMatrix4fv(glGetUniformLocation(model_unshaded->program, "WORLD_VIEW_MATRIX"), 1, GL_FALSE,
+                       mvp[0][0]); // world -> screen
 }
 
 void GL_DrawWall(const Wall *w, const mat4 *mdl, const Camera *cam, const Level */*l*/)
@@ -809,17 +873,23 @@ void GL_DrawTexturedArrays(const float *vertices, const uint *indices, const int
 void GL_RenderLevel(const Level *l, const Camera *cam)
 {
     GL_Enable3D();
+
     //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
     //glLineWidth(2);
 
     mat4 *WORLD_VIEW_MATRIX = GetMatrix(cam);
     mat4 *IDENTITY = malloc(sizeof(mat4));
     glm_mat4_identity(*IDENTITY);
+    mat4 *SKY_MODEL_WORLD = malloc(sizeof(mat4));
+    glm_mat4_identity(*SKY_MODEL_WORLD);
+    glm_translated(*SKY_MODEL_WORLD, (vec3){l->player.pos.x, 0, l->player.pos.y});
 
     const Vector2 floor_start = v2(l->player.pos.x - 100, l->player.pos.y - 100);
     const Vector2 floor_end = v2(l->player.pos.x + 100, l->player.pos.y + 100);
 
     GL_SetLevelParams(WORLD_VIEW_MATRIX, l);
+
+    GL_RenderModel(skyModel, SKY_MODEL_WORLD, gztex_level_sky, SHADER_SKY);
 
     GL_DrawFloor(floor_start, floor_end, WORLD_VIEW_MATRIX, l, wallTextures[l->FloorTexture], -0.5, 1.0);
     if (l->CeilingTexture != 0)
@@ -835,13 +905,19 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
     for (int i = 0; i < l->staticActors->size; i++)
     {
         const Actor *actor = SizedArrayGet(l->staticActors, i);
-        if (actor->actorWall == NULL) continue;
-        Wall w;
-        memcpy(&w, actor->actorWall, sizeof(Wall));
-        WallBake(&w);
-        w.Angle += actor->rotation;
         mat4 *actor_xfm = ActorTransformMatrix(actor);
-        GL_DrawWall(&w, actor_xfm, cam, l);
+        if (actor->actorModel == NULL)
+        {
+            if (actor->actorWall == NULL) continue;
+            Wall w;
+            memcpy(&w, actor->actorWall, sizeof(Wall));
+            WallBake(&w);
+            w.Angle += actor->rotation;
+            GL_DrawWall(&w, actor_xfm, cam, l);
+        } else
+        {
+            GL_RenderModel(actor->actorModel, actor_xfm, actor->actorModelTexture, SHADER_SHADED);
+        }
 
         if (actor->showShadow)
         {
@@ -860,4 +936,57 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
 
     //glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
     GL_Disable3D();
+}
+
+void GL_RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const byte *texture, const ModelShader shader)
+{
+    GL_Shader *shd;
+    switch (shader)
+    {
+        case SHADER_SKY:
+            shd = sky;
+            break;
+        case SHADER_SHADED:
+            shd = model_shaded;
+            break;
+        case SHADER_UNSHADED:
+            shd = model_unshaded;
+            break;
+        default:
+            Error("Invalid shader for model drawing");
+    }
+
+    glUseProgram(shd->program);
+
+    const GLuint tex = GL_LoadTextureFromAsset(texture);
+
+    glUniform1i(glGetUniformLocation(shd->program, "alb"), tex);
+
+    glUniformMatrix4fv(glGetUniformLocation(shd->program, "MODEL_WORLD_MATRIX"), 1, GL_FALSE,
+                       MODEL_WORLD_MATRIX[0][0]); // model -> world
+
+    glBindVertexArray(gl_buffer->vao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, gl_buffer->vbo);
+    glBufferData(GL_ARRAY_BUFFER, m->packedVertsUvsCount * sizeof(float) * 8, m->packedVertsUvs, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_buffer->ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, m->packedIndicesCount * sizeof(uint), m->packedIndices, GL_STATIC_DRAW);
+
+    const GLint pos_attr_loc = glGetAttribLocation(shd->program, "VERTEX");
+    glVertexAttribPointer(pos_attr_loc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void *) 0);
+    glEnableVertexAttribArray(pos_attr_loc);
+
+    const GLint tex_attr_loc = glGetAttribLocation(shd->program, "VERTEX_UV");
+    glVertexAttribPointer(tex_attr_loc, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void *) (3 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(tex_attr_loc);
+
+    if (shader == SHADER_SHADED) // other shaders do not take normals
+    {
+        const GLint norm_attr_loc = glGetAttribLocation(shd->program, "VERTEX_NORMAL");
+        glVertexAttribPointer(norm_attr_loc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void *) (5 * sizeof(GLfloat)));
+        glEnableVertexAttribArray(norm_attr_loc);
+    }
+
+    glDrawElements(GL_TRIANGLES, m->packedIndicesCount, GL_UNSIGNED_INT, NULL);
 }

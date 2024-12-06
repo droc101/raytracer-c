@@ -48,9 +48,13 @@ extern const unsigned char gztex_level_uvtest[];
 extern const unsigned char gztex_level_wall2[];
 
 extern const unsigned char gzbin_leveldata_benchmark[];
+extern const unsigned char gzbin_leveldata_gfjfdjfhdfhgs[];
 extern const unsigned char gzbin_leveldata_hallway[];
 extern const unsigned char gzbin_leveldata_hub[];
 extern const unsigned char gzbin_leveldata_test_level[];
+
+extern const unsigned char gzobj_model_leafy[];
+extern const unsigned char gzobj_model_sky[];
 
 extern const unsigned char gzwav_sfx_click[];
 extern const unsigned char gzwav_sfx_coincling[];
@@ -64,8 +68,14 @@ extern const unsigned char gzshd_GL_hud_color_f[];
 extern const unsigned char gzshd_GL_hud_color_v[];
 extern const unsigned char gzshd_GL_hud_textured_f[];
 extern const unsigned char gzshd_GL_hud_textured_v[];
+extern const unsigned char gzshd_GL_model_shaded_f[];
+extern const unsigned char gzshd_GL_model_shaded_v[];
+extern const unsigned char gzshd_GL_model_unshaded_f[];
+extern const unsigned char gzshd_GL_model_unshaded_v[];
 extern const unsigned char gzshd_GL_shadow_f[];
 extern const unsigned char gzshd_GL_shadow_v[];
+extern const unsigned char gzshd_GL_sky_f[];
+extern const unsigned char gzshd_GL_sky_v[];
 extern const unsigned char gzshd_GL_wall_f[];
 extern const unsigned char gzshd_GL_wall_v[];
 

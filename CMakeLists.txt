@@ -122,6 +122,12 @@ add_executable(
         Helpers/PlatformHelpers.c
         Helpers/PlatformHelpers.h
         Helpers/Graphics/GL/GLInternal.h
+        GameStates/Options/GVideoOptionsState.c
+        GameStates/Options/GVideoOptionsState.h
+        GameStates/Options/GSoundOptionsState.c
+        GameStates/Options/GSoundOptionsState.h
+        GameStates/Options/GInputOptionsState.c
+        GameStates/Options/GInputOptionsState.h
         Helpers/Graphics/Vulkan/Vulkan.c
         Helpers/Graphics/Vulkan/Vulkan.h
         Helpers/Graphics/Vulkan/VulkanInternal.h

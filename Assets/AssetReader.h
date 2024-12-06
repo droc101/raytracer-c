@@ -37,6 +37,19 @@ void InvalidateAssetCache();
  */
 byte *DecompressAsset(const byte *asset);
 
+/**
+ * Load a model from an asset
+ * @param asset The asset to load the model from
+ * @return The loaded model, or NULL if it failed
+ */
+Model *LoadModel(const byte *asset);
+
+/**
+ * Free a model
+ * @param model The model to free
+ */
+void FreeModel(Model *model);
+
 #define ASSET_TYPE_TEXTURE 0
 #define ASSET_TYPE_MP3 1
 #define ASSET_TYPE_WAV 2
@@ -46,5 +59,6 @@ byte *DecompressAsset(const byte *asset);
 #define ASSET_TYPE_SPIRV_VERT 6
 #define ASSET_TYPE_SPIRV_TESS_CTRL 7
 #define ASSET_TYPE_SPIRV_TESS_EVAL 8
+#define ASSET_TYPE_MODEL 9
 
 #endif //GAME_ASSETREADER_H

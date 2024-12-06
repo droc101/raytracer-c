@@ -16,6 +16,8 @@ void DefaultOptions(Options *options)
     options->vsync = false;
     options->mouseSpeed = 1;
     options->controllerMode = false;
+    options->msaa = MSAA_4X;
+    options->mipmaps = true;
 }
 
 bool ValidateOptions(const Options *options)

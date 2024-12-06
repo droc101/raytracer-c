@@ -90,26 +90,7 @@ void RemoveActor(Actor *actor)
     BakeActorArray(l);
 }
 
-void RenderLevelSky(const Camera *cam)
-{
-    const Level *l = GetState()->level;
-
-    const double camRot = cam->yaw;
-
-    const Vector2 wndSize = v2(WindowWidth(), WindowHeight());
-
-    const int skyPos = (int) (camRot * 128 / PI) % 256;
-    const int height = wndSize.y / 2;
-    const int offset = (int) (wndSize.x * (1 - skyPos / 256.0));
-
-    DrawTextureRegionMod(v2(offset, 0), v2(wndSize.x * skyPos / 256, height), gztex_level_sky, v2(0, 0),
-                         v2(skyPos, 128), l->SkyColor);
-    DrawTextureRegionMod(v2(0, 0), v2(offset, height), gztex_level_sky, v2(skyPos, 0), v2(256 - skyPos, 128),
-                         l->SkyColor);
-}
-
 void RenderLevel(const GlobalState *g)
 {
-    RenderLevelSky(g->cam);
     RenderLevel3D(g->level, g->cam);
 }
