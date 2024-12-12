@@ -46,7 +46,7 @@ int main(const int argc, char *argv[])
 
     SDL_SetHint(SDL_HINT_APP_NAME, GAME_TITLE);
 
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0)
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMECONTROLLER) != 0)
     {
         LogError("SDL_Init Error: %s\n", SDL_GetError());
         Error("Failed to initialize SDL");
@@ -198,7 +198,7 @@ int main(const int argc, char *argv[])
     RenderDestroy();
     Mix_CloseAudio();
     Mix_Quit();
-    SDL_QuitSubSystem(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER);
+    SDL_QuitSubSystem(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER);
     SDL_Quit();
     return 0;
 }
