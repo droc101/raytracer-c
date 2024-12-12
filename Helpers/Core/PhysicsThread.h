@@ -7,10 +7,21 @@
 
 #include "../../defines.h"
 
+/**
+ * Start the physics thread
+ */
 void PhysicsThreadInit();
 
+/**
+ * Set the function to run in the physics thread
+ * @param function The function to run
+ * @note This will block until the current iteration of the physics thread is finished
+ */
 void PhysicsThreadSetFunction(void (*function)(GlobalState *state));
 
+/**
+ * Post a quit message to the physics thread and wait for it to finish
+ */
 void PhysicsThreadTerminate();
 
 #endif //PHYSICSTHREAD_H

@@ -3,30 +3,34 @@
 //
 
 #include "PhysicsThread.h"
-
 #include <SDL_thread.h>
-
-#include "Logging.h"
-#include "MathEx.h"
 #include "../../defines.h"
 #include "../../Structs/GlobalState.h"
 
 SDL_Thread* PhysicsThread;
 SDL_mutex* PhysicsThreadMutex;
 
+/**
+ * The function to run in the physics thread
+ * @warning Only touch this when you have a lock on the mutex
+ */
 void (*PhysicsThreadFunction)(GlobalState *state);
+
+/**
+ * Whether to quit the physics thread on the next iteration
+ * @warning Only touch this when you have a lock on the mutex
+ */
 bool PhysicsThreadPostQuit = false;
 
-void PhysicsNopFunction(GlobalState *state)
-{
-    SDL_Delay(PHYSICS_TARGET_MS - 2); // let the computer rest
-}
-
+/**
+ * The main function for the physics thread
+ * @return 0
+ */
 int PhysicsThreadMain(void*)
 {
     while (true)
     {
-        uint timeStart = SDL_GetTicks();
+        const ulong timeStart = SDL_GetTicks();
         SDL_LockMutex(PhysicsThreadMutex);
         if (PhysicsThreadPostQuit)
         {
@@ -43,8 +47,8 @@ int PhysicsThreadMain(void*)
         SDL_UnlockMutex(PhysicsThreadMutex);
         function(GetState());
 
-        uint timeEnd = SDL_GetTicks();
-        uint timeElapsed = timeEnd - timeStart;
+        const ulong timeEnd = SDL_GetTicks();
+        const ulong timeElapsed = timeEnd - timeStart;
         if (timeElapsed < PHYSICS_TARGET_MS)
         {
             SDL_Delay(PHYSICS_TARGET_MS - timeElapsed);
@@ -62,10 +66,6 @@ void PhysicsThreadInit()
 
 void PhysicsThreadSetFunction(void (*function)(GlobalState *state))
 {
-    if (function == NULL)
-    {
-        function = PhysicsNopFunction;
-    }
     SDL_LockMutex(PhysicsThreadMutex);
     PhysicsThreadFunction = function;
     SDL_UnlockMutex(PhysicsThreadMutex);

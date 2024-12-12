@@ -65,7 +65,6 @@ void GMainStateUpdate(GlobalState *State)
 
 void GMainStateFixedUpdate(GlobalState *State)
 {
-    //SDL_Delay(1000);
     if (State->textBoxActive)
     {
         return;
