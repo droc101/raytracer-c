@@ -63,11 +63,12 @@ void GMainStateUpdate(GlobalState *State)
     State->level->player.angle += GetMouseRel().x * (State->options.mouseSpeed / 120.0);
 }
 
-uint GMainStateFixedUpdate(const uint interval, GlobalState *State)
+void GMainStateFixedUpdate(GlobalState *State)
 {
+    //SDL_Delay(1000);
     if (State->textBoxActive)
     {
-        return interval;
+        return;
     }
 
     Level *l = State->level;
@@ -163,7 +164,6 @@ uint GMainStateFixedUpdate(const uint interval, GlobalState *State)
     }
 
     State->physicsFrame++;
-    return interval;
 }
 
 // ReSharper disable once CppParameterMayBeConstPtrOrRef

@@ -13,6 +13,8 @@
 #include "../Helpers/Core/Logging.h"
 #include "../Structs/Level.h"
 #include "../Structs/Wall.h"
+#include "../Helpers/Core/Error.h"
+#include "../Helpers/Core/PhysicsThread.h"
 
 GlobalState state;
 
@@ -111,29 +113,14 @@ void UseAmmo(const int amount)
     }
 }
 
-uint DefaultFixedUpdate(const uint interval, GlobalState *param)
-{
-    param->physicsFrame++;
-    return interval;
-}
-
 void SetUpdateCallback(void (*const UpdateGame)(GlobalState *State),
-                       uint (*const FixedUpdateGame)(uint interval, GlobalState *State),
+                       void (*const FixedUpdateGame)(GlobalState *State),
                        const CurrentState currentState)
 {
     state.physicsFrame = 0;
     state.UpdateGame = UpdateGame;
     state.currentState = currentState;
-    SDL_RemoveTimer(state.FixedFramerateUpdate);
-    if (FixedUpdateGame) // yummy null
-    {
-        state.FixedFramerateUpdate = SDL_AddTimer(PHYSICS_TARGET_MS, (SDL_TimerCallback) FixedUpdateGame, GetState());
-    } else
-    {
-        // ReSharper disable once CppRedundantCastExpression
-        state.FixedFramerateUpdate = SDL_AddTimer(PHYSICS_TARGET_MS, (SDL_TimerCallback) DefaultFixedUpdate,
-                                                  GetState());
-    }
+    PhysicsThreadSetFunction(FixedUpdateGame);
 }
 
 void SetRenderCallback(void (*RenderGame)(GlobalState *State))
@@ -231,7 +218,6 @@ void PlaySoundEffect(const byte *asset)
 void DestroyGlobalState()
 {
     SaveOptions(&state.options);
-    SDL_RemoveTimer(state.FixedFramerateUpdate);
     DestroyLevel(state.level);
     free(state.cam);
     if (state.music != NULL)

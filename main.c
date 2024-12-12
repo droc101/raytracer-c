@@ -14,6 +14,7 @@
 #include "Helpers/Core/Error.h"
 #include "Helpers/Core/Input.h"
 #include "Helpers/Core/Logging.h"
+#include "Helpers/Core/PhysicsThread.h"
 #include "Helpers/Core/Timing.h"
 #include "Helpers/Graphics/Drawing.h"
 #include "Helpers/Graphics/RenderingHelpers.h"
@@ -51,6 +52,7 @@ int main(const int argc, char *argv[])
         Error("Failed to initialize SDL");
     }
 
+    PhysicsThreadInit();
     InitState();
 
     if (!RenderPreInit())
@@ -187,6 +189,7 @@ int main(const int argc, char *argv[])
         FrameGraphUpdate(GetTimeNs() - frameStart);
     }
     LogInfo("Mainloop exited, cleaning up engine...\n");
+    PhysicsThreadTerminate();
     DestroyGlobalState();
     SDL_DestroyWindow(GetGameWindow());
     SDL_FreeSurface(icon);
