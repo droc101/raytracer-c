@@ -10,11 +10,11 @@
 #include "../Assets/Assets.h"
 #include "../Helpers/LevelEntries.h"
 #include "../Helpers/LevelLoader.h"
+#include "../Helpers/Core/Error.h"
 #include "../Helpers/Core/Logging.h"
+#include "../Helpers/Core/PhysicsThread.h"
 #include "../Structs/Level.h"
 #include "../Structs/Wall.h"
-#include "../Helpers/Core/Error.h"
-#include "../Helpers/Core/PhysicsThread.h"
 
 GlobalState state;
 

@@ -30,7 +30,7 @@ int PhysicsThreadMain(void*)
 {
     while (true)
     {
-        const ulong timeStart = SDL_GetTicks();
+        const ulong timeStart = SDL_GetTicks64();
         SDL_LockMutex(PhysicsThreadMutex);
         if (PhysicsThreadPostQuit)
         {
@@ -47,7 +47,7 @@ int PhysicsThreadMain(void*)
         SDL_UnlockMutex(PhysicsThreadMutex);
         function(GetState());
 
-        const ulong timeEnd = SDL_GetTicks();
+        const ulong timeEnd = SDL_GetTicks64();
         const ulong timeElapsed = timeEnd - timeStart;
         if (timeElapsed < PHYSICS_TARGET_MS)
         {
