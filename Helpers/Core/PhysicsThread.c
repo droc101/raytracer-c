@@ -47,11 +47,15 @@ int PhysicsThreadMain(void*)
         SDL_UnlockMutex(PhysicsThreadMutex);
         function(GetState());
 
-        const ulong timeEnd = SDL_GetTicks64();
-        const ulong timeElapsed = timeEnd - timeStart;
-        if (timeElapsed < PHYSICS_TARGET_MS)
+        ulong timeEnd = SDL_GetTicks64();
+        ulong timeElapsed = timeEnd - timeStart;
+        while (timeElapsed < PHYSICS_TARGET_MS)
         {
-            SDL_Delay(PHYSICS_TARGET_MS - timeElapsed);
+            // SDL_Delay is inaccurate at low values (often 15 or lower)
+            // and as we are targeting 60 TPS (16ms) we need more accuracy
+            // so we are unfortunately forced to spin
+            timeEnd = SDL_GetTicks64();
+            timeElapsed = timeEnd - timeStart;
         }
     }
 }
