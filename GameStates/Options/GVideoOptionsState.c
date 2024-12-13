@@ -8,6 +8,7 @@
 
 #include "../GOptionsState.h"
 #include "../../Assets/Assets.h"
+#include "../../Helpers/Core/Error.h"
 #include "../../Helpers/Core/Input.h"
 #include "../../Helpers/Graphics/Drawing.h"
 #include "../../Helpers/Graphics/Font.h"
@@ -17,11 +18,18 @@
 #include "../../Structs/UI/Controls/CheckBox.h"
 #include "../../Structs/UI/Controls/RadioButton.h"
 #include "../../Structs/UI/Controls/Slider.h"
+#include "../../Structs/Options.h"
 
 UiStack *videoOptionsStack;
+bool hasChangedVideoOptions = false;
 
 void BtnVideoOptionsBack()
 {
+    if (hasChangedVideoOptions)
+    {
+        SaveOptions(&GetState()->options);
+        PromptRelaunch("Restart Game?", "You have changed options that require a relaunch. Would you like to relaunch now?", "Yes", "No");
+    }
     GOptionsStateSet();
 }
 
@@ -49,24 +57,28 @@ void CbOptionsFullscreen(const bool value)
 void RbOptionsRenderer(const bool /*value*/, const byte /*groupId*/, const byte id)
 {
     GetState()->options.renderer = id;
+    hasChangedVideoOptions = true;
     // Renderer change will happen on next restart
 }
 
 void CbOptionsVsync(const bool value)
 {
     GetState()->options.vsync = value;
+    hasChangedVideoOptions = true;
     // VSync change will happen on next restart
 }
 
 void CbOptionsMipmaps(const bool value)
 {
     GetState()->options.mipmaps = value;
+    hasChangedVideoOptions = true;
     // Mipmaps change will happen on next restart
 }
 
 void SldOptionsMsaa(const double value)
 {
     GetState()->options.msaa = value;
+    hasChangedVideoOptions = true;
     // Change will happen next restart
 }
 
@@ -131,6 +143,7 @@ void GVideoOptionsStateSet()
         UiStackPush(videoOptionsStack, CreateButtonControl(v2(0, -40), v2(480, 40), "Back", BtnVideoOptionsBack, BOTTOM_CENTER));
     }
     UiStackResetFocus(videoOptionsStack);
+    hasChangedVideoOptions = false;
 
     SetRenderCallback(GVideoOptionsStateRender);
     SetUpdateCallback(GVideoOptionsStateUpdate, NULL, VIDEO_OPTIONS_STATE); // Fixed update is not needed for this state
