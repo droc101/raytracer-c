@@ -40,23 +40,23 @@ return returnValue; \
 #pragma endregion macros
 
 #pragma region typedefs
-/// A struct to hold the indicies of the queue families for graphics and presentation.
-/// This is used to find and store the indices, which allows for picking between unique and non-unique indices.
+/**
+ * A struct to hold the indicies of the queue families for graphics and presentation.
+ * This is used to find and store the indices, which allows for picking between unique and non-unique indices.
+ */
 typedef struct QueueFamilyIndices
 {
     /// The index of the family on the GPU that will be used for graphics processing
     uint32_t graphicsFamily;
-    /** The index of the family on the GPU that will be used for presentation
-     * @note If the graphics family supports presentation, @c QueueFamilyIndices::presentFamily will contain the same value as @c QueueFamilyIndices::graphicsFamily
-     * @note Similarly, if the graphics family does not support presentation then @c QueueFamilyIndices::presentFamily will contain the same value as @c QueueFamilyIndices::uniquePresentFamily
-     */
+    /// The index of the family on the GPU that will be used for presentation
+    /// @note If the graphics family supports presentation, @c QueueFamilyIndices::presentFamily will contain the same value as @c QueueFamilyIndices::graphicsFamily
+    /// @note Similarly, if the graphics family does not support presentation then @c QueueFamilyIndices::presentFamily will contain the same value as @c QueueFamilyIndices::uniquePresentFamily
     uint32_t presentFamily;
     /// If the graphics family does not support presentation this will contain the same value as @c QueueFamilyIndices::presentFamily
     uint32_t uniquePresentFamily;
-    /** The total count of unique families
-     * @note If this is 1, then @code QueueFamilyIndices::presentFamily == QueueFamilyIndices::graphicsFamily@endcode and @code QueueFamilyIndices::uniquePresentFamily == UINT32_MAX@endcode
-     * @note If this is 2, then @code QueueFamilyIndices::presentFamily != QueueFamilyIndices::graphicsFamily@endcode and @code QueueFamilyIndices::uniquePresentFamily == QueueFamilyIndices::presentFamily@endcode
-     */
+    /// The total count of unique families
+    /// @note If this is 1, then @code QueueFamilyIndices::presentFamily == QueueFamilyIndices::graphicsFamily@endcode and @code QueueFamilyIndices::uniquePresentFamily == UINT32_MAX@endcode
+    /// @note If this is 2, then @code QueueFamilyIndices::presentFamily != QueueFamilyIndices::graphicsFamily@endcode and @code QueueFamilyIndices::uniquePresentFamily == QueueFamilyIndices::presentFamily@endcode
     uint8_t familyCount;
 } QueueFamilyIndices;
 
@@ -69,19 +69,49 @@ typedef struct SwapChainSupportDetails
     VkSurfaceCapabilitiesKHR capabilities;
 } SwapChainSupportDetails;
 
+/**
+ * A struct used to hold information about the size and type of the memory, as well as a host pointer mapped to the
+ * Vulkan memory allocation.
+ *
+ * @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkDeviceSize.html
+ * @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkDeviceMemory.html
+ * @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkMemoryPropertyFlags.html
+ * @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkMemoryPropertyFlagBits.html
+ */
 typedef struct MemoryInfo
 {
+    /// The size of the block of memory.
+    /// @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkDeviceSize.html
     VkDeviceSize size;
+    /// A pointer to the host memory block mapped to this block of memory.
     void *mappedMemory;
+    /// The actual Vulkan memory handle.
+    /// @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkDeviceMemory.html
     VkDeviceMemory memory;
+    /// A bitmask where bit n is set if the nth memory type of the @c VkPhysicalDeviceMemoryProperties struct for the
+    /// physical device is a supported memory type for the resource.
     uint32_t memoryTypeBits;
+    /// A bitmask of VkMemoryPropertyFlagBits that describes the memory type.
+    /// @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkMemoryPropertyFlags.html
+    /// @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkMemoryPropertyFlagBits.html
     VkMemoryPropertyFlags type;
 } MemoryInfo;
 
+/**
+ * A struct used to hold information about the allocation of a certain resource out of a larger block of memory.
+ *
+ * @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkDeviceSize.html
+ * @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkMemoryRequirements.html
+ */
 typedef struct MemoryAllocationInfo
 {
+    /// The offset at which the object resides within the larger block of memory.
+    /// @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkDeviceSize.html
     VkDeviceSize offset;
+    /// A pointer to a MemoryInfo struct containing more information about the larger block of memory.
     MemoryInfo *memoryInfo;
+    /// Information about the allocation requirements such as size, alignment, and memory type.
+    /// @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkMemoryRequirements.html
     VkMemoryRequirements memoryRequirements;
 } MemoryAllocationInfo;
 
@@ -139,14 +169,35 @@ typedef struct DataUniformBuffer
     MemoryAllocationInfo memoryAllocationInfo;
 } DataUniformBuffer;
 
+/**
+ * A structure holding data about a UI vertex buffer.
+ *
+ * This structure is used to keep track of not only the larger buffer that the vertex buffer is offset into,
+ * but also to keep track of the memory allocation information, host mapped memory, and vertex count information.
+ *
+ * @note This is still C, so there are no actual guardrails preventing you from, say, causing a SEGFAULT by attempting to write to vertices[100] when maxVertices is only 20.
+ *
+ * @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkBuffer.html
+ */
 typedef struct VertexBuffer
 {
+    /// The larger buffer within which this vertex buffer resides.
+    /// @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkBuffer.html
     VkBuffer buffer;
+    /// This pointer will be mapped directly to an offset into some larger block of memory.
+    /// It is able to be used to directly write up to @c maxVertices UiVertex elements to the vertex buffer.
     UiVertex *vertices;
+    /// This pointer takes the form of UiVertex[fallbackMaxVertices].
+    /// This pointer is host only, meaning that there is no Vulkan memory backing it.
+    /// This means that for the GPU to be able to access it the data must first be copied to a buffer.
     UiVertex *fallback;
+    /// The current number of vertices that are stored in the buffer.
     uint32_t vertexCount;
+    /// The maximum number of vertices that can be stored in the buffer with the currently allocated memory.
     uint32_t maxVertices;
+    /// The maximum number of vertices that can be stored in the fallback buffer with the currently allocated memory.
     uint32_t fallbackMaxVertices;
+    /// Stores information about what memory contains the buffer, as well as where the buffer is in the memory.
     MemoryAllocationInfo memoryAllocationInfo;
 } VertexBuffer;
 
