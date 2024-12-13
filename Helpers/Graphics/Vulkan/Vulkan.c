@@ -157,7 +157,7 @@ bool VK_Cleanup()
     {
         VulkanTest(vkDeviceWaitIdle(device), "Failed to wait for Vulkan device to become idle!");
 
-        vkUnmapMemory(device, memoryPools.sharedMemory.memory);
+        if (memoryPools.sharedMemory.memory) vkUnmapMemory(device, memoryPools.sharedMemory.memory);
 
         CleanupSwapChain();
 
@@ -218,9 +218,11 @@ inline void VK_Restore()
     minimized = false;
 }
 
-inline VkSampleCountFlags VK_GetSampleCount()
+inline uint8_t VK_GetSampleCountFlags()
 {
-    return physicalDevice.properties.limits.framebufferColorSampleCounts & physicalDevice.properties.limits.framebufferDepthSampleCounts;
+    return physicalDevice.properties.limits.framebufferColorSampleCounts &
+           physicalDevice.properties.limits.framebufferDepthSampleCounts &
+           0xF;
 }
 
 bool VK_DrawColoredQuad(const int32_t x, const int32_t y, const int32_t w, const int32_t h, const uint32_t color)
@@ -280,11 +282,12 @@ bool VK_DrawTexturedQuadRegion(const int32_t x,
     const uint32_t width = ReadUintA(decompressed, 4);
     const uint32_t height = ReadUintA(decompressed, 8);
 
-    const float startU = (float)regionX / (float)width;
-    const float startV = (float)regionY / (float)height;
+    const float startU = (float) regionX / (float) width;
+    const float startV = (float) regionY / (float) height;
 
     return DrawRectInternal(VK_X_TO_NDC(x), VK_Y_TO_NDC(y), VK_X_TO_NDC(x + w), VK_Y_TO_NDC(y + h), startU, startV,
-                            startU + (float)regionW / (float)width, startV + (float)regionH / (float)height, 0xFFFFFFFF,
+                            startU + (float) regionW / (float) width, startV + (float) regionH / (float) height,
+                            0xFFFFFFFF,
                             texturesAssetIDMap[ReadUintA(decompressed, 12)]);
 }
 
@@ -304,11 +307,11 @@ bool VK_DrawTexturedQuadRegionMod(const int32_t x,
     const uint32_t width = ReadUintA(decompressed, 4);
     const uint32_t height = ReadUintA(decompressed, 8);
 
-    const float startU = (float)regionX / (float)width;
-    const float startV = (float)regionY / (float)height;
+    const float startU = (float) regionX / (float) width;
+    const float startV = (float) regionY / (float) height;
 
     return DrawRectInternal(VK_X_TO_NDC(x), VK_Y_TO_NDC(y), VK_X_TO_NDC(x + w), VK_Y_TO_NDC(y + h), startU, startV,
-                            startU + (float)regionW / (float)width, startV + (float)regionH / (float)height, color,
+                            startU + (float) regionW / (float) width, startV + (float) regionH / (float) height, color,
                             texturesAssetIDMap[ReadUintA(decompressed, 12)]);
 }
 
@@ -351,8 +354,8 @@ bool VK_DrawLine(const int32_t startX,
                  const float thickness,
                  const uint32_t color)
 {
-    const float dx = (float)endX - (float)startX;
-    const float dy = (float)endY - (float)startY;
+    const float dx = (float) endX - (float) startX;
+    const float dy = (float) endY - (float) startY;
     const float distance = sqrtf(dx * dx + dy * dy);
 
     if (thickness == 1)
@@ -402,9 +405,13 @@ void VK_ClearColor(const uint32_t color)
     VK_ClearScreen();
 }
 
-void VK_ClearScreen() {}
+void VK_ClearScreen()
+{
+}
 
-void VK_ClearDepthOnly() {}
+void VK_ClearDepthOnly()
+{
+}
 
 void VK_SetTexParams(const uint8_t *texture, const bool linear, const bool repeat)
 {

@@ -196,6 +196,19 @@ inline bool IsLowFPSModeEnabled()
     return lowFPSMode;
 }
 
+inline byte GetSampleCountFlags()
+{
+    switch (currentRenderer)
+    {
+        case RENDERER_VULKAN:
+            return VK_GetSampleCountFlags();
+        case RENDERER_OPENGL:
+            return 0b1111;
+        default:
+            return 1;
+    }
+}
+
 inline void DrawBatchedQuadsTextured(const BatchedQuadArray *batch, const unsigned char *imageData, const uint color)
 {
     switch (currentRenderer)

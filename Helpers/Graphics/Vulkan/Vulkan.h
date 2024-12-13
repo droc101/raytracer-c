@@ -39,7 +39,7 @@ void VK_Minimize();
 
 void VK_Restore();
 
-VkSampleCountFlags VK_GetSampleCount();
+uint8_t VK_GetSampleCountFlags();
 
 bool VK_DrawColoredQuad(int x, int y, int w, int h, uint32_t color);
 

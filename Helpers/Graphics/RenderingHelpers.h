@@ -99,6 +99,12 @@ void SetLowFPS(bool val);
 bool IsLowFPSModeEnabled();
 
 /**
+ * Gets the supported MSAA levels
+ * @return A bitmask of supported MSAA levels
+ */
+byte GetSampleCountFlags();
+
+/**
  * Draw a `BatchedQuadArray` to the screen using the textured shader. This is faster than multiple draw calls, but harder to use.
  * @param batch The batch to draw
  * @param imageData The texture to use

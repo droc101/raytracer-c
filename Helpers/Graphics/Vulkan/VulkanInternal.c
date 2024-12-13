@@ -380,16 +380,24 @@ bool CreateSwapChain()
     }
 
     VkPresentModeKHR presentMode = VK_PRESENT_MODE_MAX_ENUM_KHR;
-    for (uint32_t i = 0; i < swapChainSupport.presentModeCount; i++)
+    if (!GetState()->options.vsync)
     {
-        const VkPresentModeKHR mode = swapChainSupport.presentMode[i];
-        if (mode == VK_PRESENT_MODE_MAILBOX_KHR)
+        for (uint32_t i = 0; i < swapChainSupport.presentModeCount; i++)
         {
-            presentMode = mode;
-            break;
+            const VkPresentModeKHR mode = swapChainSupport.presentMode[i];
+            if (mode == VK_PRESENT_MODE_MAILBOX_KHR)
+            {
+                presentMode = mode;
+                break;
+            }
+            if (mode == VK_PRESENT_MODE_IMMEDIATE_KHR)
+            {
+                presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
+            }
         }
     }
     if (presentMode == VK_PRESENT_MODE_MAX_ENUM_KHR) presentMode = VK_PRESENT_MODE_FIFO_KHR;
+
     const VkSwapchainCreateInfoKHR createInfo = {
         VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
         NULL,
@@ -413,7 +421,7 @@ bool CreateSwapChain()
     VulkanTest(vkCreateSwapchainKHR(device, &createInfo, NULL, &swapChain), "Failed to create Vulkan swap chain!");
 
     VulkanTest(vkGetSwapchainImagesKHR(device, swapChain, &imageCount, NULL), "Failed to get Vulkan swapchain images!");
-    swapChainImages = (VkImage *)malloc(sizeof(*swapChainImages) * imageCount);
+    swapChainImages = (VkImage *) malloc(sizeof(*swapChainImages) * imageCount);
     swapChainCount = imageCount;
     VulkanTest(vkGetSwapchainImagesKHR(device, swapChain, &imageCount, swapChainImages),
                "Failed to get Vulkan swapchain images!");
@@ -425,7 +433,7 @@ bool CreateSwapChain()
 
 bool CreateImageViews()
 {
-    swapChainImageViews = (VkImageView *)malloc(sizeof(*swapChainImageViews) * swapChainCount);
+    swapChainImageViews = (VkImageView *) malloc(sizeof(*swapChainImageViews) * swapChainCount);
 
     for (uint32_t i = 0; i < swapChainCount; i++)
     {
@@ -476,12 +484,17 @@ bool CreateRenderPass()
             msaaSamples = VK_SAMPLE_COUNT_1_BIT;
             break;
     }
-    if (!(physicalDevice.properties.limits.framebufferColorSampleCounts & physicalDevice.properties.limits.framebufferDepthSampleCounts & msaaSamples))
+    if (!(physicalDevice.properties.limits.framebufferColorSampleCounts &
+         physicalDevice.properties.limits.framebufferDepthSampleCounts & msaaSamples))
     {
-        VulkanLogError("Unsupported MSAA type selected!");
-        return false;
+        ShowWarning("Invalid Settings", "Your GPU driver does not support the selected MSAA level!\n"
+                    "A fallback has been set to avoid issues.");
+        while (!(physicalDevice.properties.limits.framebufferColorSampleCounts &
+                 physicalDevice.properties.limits.framebufferDepthSampleCounts & msaaSamples))
+        {
+            msaaSamples >>= 1;
+        }
     }
-
 
     const VkAttachmentReference colorAttachmentRef = {
         0,
@@ -515,29 +528,28 @@ bool CreateRenderPass()
 
     if (msaaSamples == VK_SAMPLE_COUNT_1_BIT)
     {
-        const VkAttachmentDescription attachments[2] = {
-            {
-                0,
-                swapChainImageFormat,
-                VK_SAMPLE_COUNT_1_BIT,
-                VK_ATTACHMENT_LOAD_OP_CLEAR,
-                VK_ATTACHMENT_STORE_OP_STORE,
-                VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-                VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                VK_IMAGE_LAYOUT_UNDEFINED,
-                VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
-            },
-            {
-                0,
-                depthImageFormat,
-                VK_SAMPLE_COUNT_1_BIT,
-                VK_ATTACHMENT_LOAD_OP_CLEAR,
-                VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-                VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                VK_IMAGE_LAYOUT_UNDEFINED,
-                VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
-            }
+        const VkAttachmentDescription colorAttachment =
+        {
+            0,
+            swapChainImageFormat,
+            VK_SAMPLE_COUNT_1_BIT,
+            VK_ATTACHMENT_LOAD_OP_CLEAR,
+            VK_ATTACHMENT_STORE_OP_STORE,
+            VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+            VK_ATTACHMENT_STORE_OP_DONT_CARE,
+            VK_IMAGE_LAYOUT_UNDEFINED,
+            VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+        };
+        const VkAttachmentDescription depthAttachment = {
+            0,
+            depthImageFormat,
+            VK_SAMPLE_COUNT_1_BIT,
+            VK_ATTACHMENT_LOAD_OP_CLEAR,
+            VK_ATTACHMENT_STORE_OP_DONT_CARE,
+            VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+            VK_ATTACHMENT_STORE_OP_DONT_CARE,
+            VK_IMAGE_LAYOUT_UNDEFINED,
+            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
         };
 
         const VkSubpassDescription wallSubpass = {
@@ -570,7 +582,7 @@ bool CreateRenderPass()
             NULL,
             0,
             2,
-            attachments,
+            (VkAttachmentDescription[]){colorAttachment, depthAttachment},
             2,
             (VkSubpassDescription[]){wallSubpass, uiSubpass},
             2,
@@ -581,40 +593,38 @@ bool CreateRenderPass()
                    "Failed to create Vulkan render pass!");
     } else
     {
-        const VkAttachmentDescription attachments[3] = {
-            {
-                0,
-                swapChainImageFormat,
-                msaaSamples,
-                VK_ATTACHMENT_LOAD_OP_CLEAR,
-                VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-                VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                VK_IMAGE_LAYOUT_UNDEFINED,
-                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-            },
-            {
-                0,
-                depthImageFormat,
-                msaaSamples,
-                VK_ATTACHMENT_LOAD_OP_CLEAR,
-                VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-                VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                VK_IMAGE_LAYOUT_UNDEFINED,
-                VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
-            },
-            {
-                0,
-                swapChainImageFormat,
-                VK_SAMPLE_COUNT_1_BIT,
-                VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-                VK_ATTACHMENT_STORE_OP_STORE,
-                VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-                VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                VK_IMAGE_LAYOUT_UNDEFINED,
-                VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
-            }
+        const VkAttachmentDescription colorAttachment = {
+            0,
+            swapChainImageFormat,
+            msaaSamples,
+            VK_ATTACHMENT_LOAD_OP_CLEAR,
+            VK_ATTACHMENT_STORE_OP_DONT_CARE,
+            VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+            VK_ATTACHMENT_STORE_OP_DONT_CARE,
+            VK_IMAGE_LAYOUT_UNDEFINED,
+            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+        };
+        const VkAttachmentDescription depthAttachment = {
+            0,
+            depthImageFormat,
+            msaaSamples,
+            VK_ATTACHMENT_LOAD_OP_CLEAR,
+            VK_ATTACHMENT_STORE_OP_DONT_CARE,
+            VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+            VK_ATTACHMENT_STORE_OP_DONT_CARE,
+            VK_IMAGE_LAYOUT_UNDEFINED,
+            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+        };
+        const VkAttachmentDescription colorResolveAttachment = {
+            0,
+            swapChainImageFormat,
+            VK_SAMPLE_COUNT_1_BIT,
+            VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+            VK_ATTACHMENT_STORE_OP_STORE,
+            VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+            VK_ATTACHMENT_STORE_OP_DONT_CARE,
+            VK_IMAGE_LAYOUT_UNDEFINED,
+            VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
         };
 
         const VkAttachmentReference colorAttachmentResolveRef = {
@@ -651,7 +661,7 @@ bool CreateRenderPass()
             NULL,
             0,
             3,
-            attachments,
+            (VkAttachmentDescription[]){colorAttachment, depthAttachment, colorResolveAttachment},
             2,
             (VkSubpassDescription[]){wallSubpass, uiSubpass},
             2,
@@ -725,8 +735,8 @@ bool CreateGraphicsPipelines()
     const VkViewport viewport = {
         0,
         0,
-        (float)swapChainExtent.width,
-        (float)swapChainExtent.height,
+        (float) swapChainExtent.width,
+        (float) swapChainExtent.height,
         0,
         1
     };
@@ -833,13 +843,13 @@ bool CreateGraphicsPipelines()
 #pragma endregion shared
 
 #pragma region walls
-    const VkShaderModule wallVertShaderModule = CreateShaderModule((uint32_t *)DecompressAsset(gzvert_Vulkan_wall),
+    const VkShaderModule wallVertShaderModule = CreateShaderModule((uint32_t *) DecompressAsset(gzvert_Vulkan_wall),
                                                                    AssetGetSize(gzvert_Vulkan_wall));
-    const VkShaderModule wallFragShaderModule = CreateShaderModule((uint32_t *)DecompressAsset(gzfrag_Vulkan_wall),
+    const VkShaderModule wallFragShaderModule = CreateShaderModule((uint32_t *) DecompressAsset(gzfrag_Vulkan_wall),
                                                                    AssetGetSize(gzfrag_Vulkan_wall));
-    const VkShaderModule wallTescShaderModule = CreateShaderModule((uint32_t *)DecompressAsset(gztesc_Vulkan_wall),
+    const VkShaderModule wallTescShaderModule = CreateShaderModule((uint32_t *) DecompressAsset(gztesc_Vulkan_wall),
                                                                    AssetGetSize(gztesc_Vulkan_wall));
-    const VkShaderModule wallTeseShaderModule = CreateShaderModule((uint32_t *)DecompressAsset(gztese_Vulkan_wall),
+    const VkShaderModule wallTeseShaderModule = CreateShaderModule((uint32_t *) DecompressAsset(gztese_Vulkan_wall),
                                                                    AssetGetSize(gztese_Vulkan_wall));
     if (!wallVertShaderModule || !wallFragShaderModule || !wallTescShaderModule || !wallTeseShaderModule)
     {
@@ -955,13 +965,13 @@ bool CreateGraphicsPipelines()
 
 #pragma region UI
     const VkShaderModule uiVertShaderModule = CreateShaderModule(
-        (uint32_t *)DecompressAsset(gzvert_Vulkan_ui), AssetGetSize(gzvert_Vulkan_ui));
+        (uint32_t *) DecompressAsset(gzvert_Vulkan_ui), AssetGetSize(gzvert_Vulkan_ui));
     const VkShaderModule uiFragShaderModule = CreateShaderModule(
-        (uint32_t *)DecompressAsset(gzfrag_Vulkan_ui), AssetGetSize(gzfrag_Vulkan_ui));
+        (uint32_t *) DecompressAsset(gzfrag_Vulkan_ui), AssetGetSize(gzfrag_Vulkan_ui));
     const VkShaderModule uiTescShaderModule = CreateShaderModule(
-        (uint32_t *)DecompressAsset(gztesc_Vulkan_ui), AssetGetSize(gztesc_Vulkan_ui));
+        (uint32_t *) DecompressAsset(gztesc_Vulkan_ui), AssetGetSize(gztesc_Vulkan_ui));
     const VkShaderModule uiTeseShaderModule = CreateShaderModule(
-        (uint32_t *)DecompressAsset(gztese_Vulkan_ui), AssetGetSize(gztese_Vulkan_ui));
+        (uint32_t *) DecompressAsset(gztese_Vulkan_ui), AssetGetSize(gztese_Vulkan_ui));
     if (!uiVertShaderModule || !uiFragShaderModule)
     {
         VulkanLogError("Failed to load colored quad shaders!");
@@ -1218,7 +1228,7 @@ bool CreateDepthImage()
 
 bool CreateFramebuffers()
 {
-    swapChainFramebuffers = (VkFramebuffer *)malloc(sizeof(*swapChainFramebuffers) * swapChainCount);
+    swapChainFramebuffers = (VkFramebuffer *) malloc(sizeof(*swapChainFramebuffers) * swapChainCount);
 
     for (uint32_t i = 0; i < swapChainCount; i++)
     {
@@ -1260,7 +1270,9 @@ bool LoadTextures()
         }
 
         const VkExtent3D extent = {ReadUintA(decompressed, 4), ReadUintA(decompressed, 8), 1};
-        textures[textureIndex].mipmapLevels = (uint8_t)log2(max(extent.width, extent.height)) + 1;
+        textures[textureIndex].mipmapLevels = GetState()->options.mipmaps
+                                                  ? (uint8_t) log2(max(extent.width, extent.height)) + 1
+                                                  : 1;
         if (!CreateImage(&textures[textureIndex].image, NULL, format, extent, textures[textureIndex].mipmapLevels,
                          VK_SAMPLE_COUNT_1_BIT,
                          VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
@@ -1272,9 +1284,9 @@ bool LoadTextures()
         vkGetImageMemoryRequirements(device, textures[textureIndex].image,
                                      &textures[textureIndex].allocationInfo.memoryRequirements);
         textures[textureIndex].allocationInfo.offset =
-                textures[textureIndex].allocationInfo.memoryRequirements.alignment * (VkDeviceSize)ceil(
-                    ((double)memorySize + (double)textures[textureIndex].allocationInfo.memoryRequirements.
-                                                                         size) / (double)textures[textureIndex].
+                textures[textureIndex].allocationInfo.memoryRequirements.alignment * (VkDeviceSize) ceil(
+                    ((double) memorySize + (double) textures[textureIndex].allocationInfo.memoryRequirements.
+                     size) / (double) textures[textureIndex].
                     allocationInfo.memoryRequirements.alignment);
         memorySize = textures[textureIndex].allocationInfo.offset + textures[textureIndex].allocationInfo.
                      memoryRequirements.size;
@@ -1426,7 +1438,7 @@ bool LoadTextures()
                 },
                 {
                     {0, 0, 0},
-                    {(int32_t)width, (int32_t)height, 1}
+                    {(int32_t) width, (int32_t) height, 1}
                 },
                 {
                     VK_IMAGE_ASPECT_COLOR_BIT,
@@ -1436,7 +1448,7 @@ bool LoadTextures()
                 },
                 {
                     {0, 0, 0},
-                    {width > 1 ? (int32_t)width / 2 : 1, height > 1 ? (int32_t)height / 2 : 1, 1}
+                    {width > 1 ? (int32_t) width / 2 : 1, height > 1 ? (int32_t) height / 2 : 1, 1}
                 }
             };
 
@@ -1642,8 +1654,7 @@ bool CreateUniformBuffers()
     }
 
     buffers.data.memoryAllocationInfo.memoryInfo = &memoryPools.sharedMemory;
-    buffers.data.maxInstances = 1;
-    if (!CreateBuffer(&buffers.data.buffer, sizeof(DataUniformBufferObject) * buffers.data.maxInstances,
+    if (!CreateBuffer(&buffers.data.buffer, sizeof(DataUniformBufferObject),
                       VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, false,
                       &buffers.data.memoryAllocationInfo))
     {

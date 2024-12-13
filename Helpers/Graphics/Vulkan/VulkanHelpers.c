@@ -21,33 +21,33 @@ VkImage *swapChainImages;
 uint32_t swapChainCount = 0;
 VkFormat swapChainImageFormat;
 VkExtent2D swapChainExtent;
-VkImageView *swapChainImageViews;
+VkImageView *swapChainImageViews = NULL;
 VkRenderPass renderPass = VK_NULL_HANDLE;
 VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
 VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
 VkPipelineCache pipelineCache = VK_NULL_HANDLE;
-Pipelines pipelines;
-VkFramebuffer *swapChainFramebuffers;
+Pipelines pipelines = {VK_NULL_HANDLE, VK_NULL_HANDLE};
+VkFramebuffer *swapChainFramebuffers = NULL;
 VkCommandPool graphicsCommandPool = VK_NULL_HANDLE;
 VkCommandBuffer commandBuffers[MAX_FRAMES_IN_FLIGHT];
-VkSemaphore imageAvailableSemaphores[MAX_FRAMES_IN_FLIGHT] = {VK_NULL_HANDLE};
-VkSemaphore renderFinishedSemaphores[MAX_FRAMES_IN_FLIGHT] = {VK_NULL_HANDLE};
-VkFence inFlightFences[MAX_FRAMES_IN_FLIGHT] = {VK_NULL_HANDLE};
+VkSemaphore imageAvailableSemaphores[MAX_FRAMES_IN_FLIGHT];
+VkSemaphore renderFinishedSemaphores[MAX_FRAMES_IN_FLIGHT];
+VkFence inFlightFences[MAX_FRAMES_IN_FLIGHT];
 bool framebufferResized = false;
 uint8_t currentFrame = 0;
 uint32_t swapchainImageIndex;
 MemoryPools memoryPools = {
     {
         0,
+        NULL,
         VK_NULL_HANDLE,
-        0,
         0,
         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
     },
     {
         0,
+        NULL,
         VK_NULL_HANDLE,
-        0,
         0,
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
     }
@@ -56,17 +56,17 @@ Buffers buffers = {0};
 VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
 VkDescriptorSet descriptorSets[MAX_FRAMES_IN_FLIGHT];
 Image textures[TEXTURE_ASSET_COUNT];
-VkDeviceMemory textureMemory;
+VkDeviceMemory textureMemory = VK_NULL_HANDLE;
 VkImageView texturesImageView[TEXTURE_ASSET_COUNT];
 uint32_t texturesAssetIDMap[ASSET_COUNT];
-TextureSamplers textureSamplers;
+TextureSamplers textureSamplers = {VK_NULL_HANDLE, VK_NULL_HANDLE, VK_NULL_HANDLE, VK_NULL_HANDLE};
 VkFormat depthImageFormat;
-VkImage depthImage;
-VkDeviceMemory depthImageMemory;
-VkImageView depthImageView;
-VkImage colorImage;
-VkDeviceMemory colorImageMemory;
-VkImageView colorImageView;
+VkImage depthImage = VK_NULL_HANDLE;
+VkDeviceMemory depthImageMemory = VK_NULL_HANDLE;
+VkImageView depthImageView = VK_NULL_HANDLE;
+VkImage colorImage = VK_NULL_HANDLE;
+VkDeviceMemory colorImageMemory = VK_NULL_HANDLE;
+VkImageView colorImageView = VK_NULL_HANDLE;
 VkClearColorValue clearColor = {{0.0f, 0.64f, 0.91f, 1.0f}};
 VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
 #pragma endregion variables
@@ -210,8 +210,8 @@ bool CreateImage(VkImage *image,
             (memoryProperties.memoryTypes[i].propertyFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) ==
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
         {
-            const VkDeviceSize size = memoryRequirements.alignment * (VkDeviceSize)ceil(
-                                          (double)memoryRequirements.size / (double)memoryRequirements.alignment);
+            const VkDeviceSize size = memoryRequirements.alignment * (VkDeviceSize) ceil(
+                                          (double) memoryRequirements.size / (double) memoryRequirements.alignment);
             const VkMemoryAllocateInfo allocateInfo = {
                 VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
                 NULL,
@@ -316,8 +316,8 @@ bool CreateBuffer(VkBuffer *buffer,
     VulkanTest(vkCreateBuffer(device, &bufferInfo, NULL, buffer), "Failed to create Vulkan buffer!");
 
     vkGetBufferMemoryRequirements(device, *buffer, &allocationInfo->memoryRequirements);
-    const VkDeviceSize memorySize = allocationInfo->memoryRequirements.alignment * (VkDeviceSize)ceil(
-                                        (double)allocationInfo->memoryRequirements.size / (double)allocationInfo->
+    const VkDeviceSize memorySize = allocationInfo->memoryRequirements.alignment * (VkDeviceSize) ceil(
+                                        (double) allocationInfo->memoryRequirements.size / (double) allocationInfo->
                                         memoryRequirements.alignment);
 
     allocationInfo->offset = allocationInfo->memoryInfo->size;
@@ -456,7 +456,7 @@ bool AllocateMemory()
     for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
         buffers.translation[i].data = memoryPools.sharedMemory.mappedMemory + buffers.translation[i].
-                                                                              memoryAllocationInfo.offset;
+                                      memoryAllocationInfo.offset;
     }
 
     VkBuffer stagingBuffer;
@@ -511,13 +511,19 @@ bool AllocateMemory()
 
 void CleanupSwapChain()
 {
-    for (uint32_t i = 0; i < swapChainCount; i++)
+    if (swapChainFramebuffers)
     {
-        vkDestroyFramebuffer(device, swapChainFramebuffers[i], NULL);
+        for (uint32_t i = 0; i < swapChainCount; i++)
+        {
+            vkDestroyFramebuffer(device, swapChainFramebuffers[i], NULL);
+        }
     }
-    for (uint32_t i = 0; i < swapChainCount; i++)
+    if (swapChainImageViews)
     {
-        vkDestroyImageView(device, swapChainImageViews[i], NULL);
+        for (uint32_t i = 0; i < swapChainCount; i++)
+        {
+            vkDestroyImageView(device, swapChainImageViews[i], NULL);
+        }
     }
     vkDestroySwapchainKHR(device, swapChain, NULL);
 }
@@ -561,9 +567,9 @@ void UpdateUniformBuffer(const uint32_t currentFrame)
     mat4 proj = GLM_MAT4_IDENTITY_INIT;
     mat4 ubo = GLM_MAT4_IDENTITY_INIT;
 
-    glm_rotate(model, (float)SDL_GetTicks64() * PIf / 10000.0f, GLM_YUP);
+    glm_rotate(model, (float) SDL_GetTicks64() * PIf / 10000.0f, GLM_YUP);
     glm_lookat((vec3){2.0f, 2.0f, 2.0f}, GLM_VEC3_ZERO, (vec3){0.0f, -1.0f, 0.0f}, view);
-    glm_perspective(PI / 4, (float)swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 10.0f, proj);
+    glm_perspective(PI / 4, (float) swapChainExtent.width / (float) swapChainExtent.height, 0.1f, 10.0f, proj);
 
     glm_mat4_mul(proj, view, ubo);
     glm_mat4_mul(ubo, model, ubo);

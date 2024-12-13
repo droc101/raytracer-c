@@ -104,6 +104,11 @@ _Noreturn void FriendlyError(const char *title, const char *description)
     exit(1);
 }
 
+void ShowWarning(const char *title, const char *description)
+{
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, title, description, NULL);
+}
+
 _Noreturn void RenderInitError()
 {
     LogError("Failed to initialize renderer");
