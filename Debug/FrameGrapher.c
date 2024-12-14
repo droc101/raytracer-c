@@ -3,13 +3,18 @@
 //
 
 #include "FrameGrapher.h"
+
+#include <limits.h>
 #include <stdio.h>
+
+#include "../Helpers/Core/Timing.h"
 #include "../Helpers/Graphics/Drawing.h"
 #include "../Helpers/Graphics/Font.h"
 #include "../Structs/GlobalState.h"
 #include "../Structs/Vector2.h"
 
-double framerates[FRAMEGRAPH_HISTORY_SIZE];
+double framerates[FRAMEGRAPH_HISTORY_SIZE] = {0};
+long lastUpdTime = LONG_MIN;
 
 void FG_PushIntoArray(const double value)
 {
@@ -22,56 +27,81 @@ void FG_PushIntoArray(const double value)
 
 void FrameGraphUpdate(ulong ns)
 {
-    if (GetState()->physicsFrame % FRAMEGRAPH_INTERVAL == 0)
-    {
-        if (ns == 0) { ns = 1; }
-        FG_PushIntoArray(1000000000.0 / ns);
-    }
+    // If it's not time to update the graph, return
+    if (GetTimeMs() - lastUpdTime < FRAMEGRAPH_INTERVAL) { return; }
+
+    FG_PushIntoArray(ns == 0 ? 1 : ns);
+    lastUpdTime = GetTimeMs();
 }
 
 void FrameGraphDraw()
 {
 #ifdef FRAMEGRAPH_ENABLE
 #ifndef FRAMEGRAPH_FPS_ONLY
-    int x = 10;
-    uint color;
-    for (int i = 0; i < FRAMEGRAPH_HISTORY_SIZE; i++) {
-        color = 0x4000ff00;
-        int height = framerates[i]*FRAMEGRAPH_V_SCALE;
+    // Draw a background for the graph
+    SetColorUint(0x80000000);
+    DrawRect(0, WindowHeight() - FRAMEGRAPH_THRESHOLD_GOOD * 2 * FRAMEGRAPH_V_SCALE - 20, FRAMEGRAPH_H_SCALE * FRAMEGRAPH_HISTORY_SIZE + 10, WindowHeight() - 10);
+
+    // Draw a line at the bottom of the graph
+    SetColorUint(0x80808080);
+    DrawLine(v2(10, WindowHeight() - 10), v2(FRAMEGRAPH_H_SCALE * FRAMEGRAPH_HISTORY_SIZE, WindowHeight() - 10), 1);
+
+    // Draw a line at the target framerate
+    SetColorUint(0x80808080);
+    DrawLine(v2(10, WindowHeight() - 10 - FRAMEGRAPH_THRESHOLD_GOOD * FRAMEGRAPH_V_SCALE),
+             v2(FRAMEGRAPH_H_SCALE * FRAMEGRAPH_HISTORY_SIZE, WindowHeight() - 10 - FRAMEGRAPH_THRESHOLD_GOOD * FRAMEGRAPH_V_SCALE), 1);
+    FontDrawString(v2(10, WindowHeight() - 10 - FRAMEGRAPH_THRESHOLD_GOOD * FRAMEGRAPH_V_SCALE - 6), "Target FPS", 12, 0xff00ffff, true);
+
+    uint lineColor = 0;
+    // Draw a line graph of all the frame times
+    for (int i = FRAMEGRAPH_HISTORY_SIZE - 2; i >= 0; i--)
+    {
+        if (framerates[i] == 0) { break; }
+
+        double ns = framerates[i];
+        double nextNs = framerates[i + 1];
+
+        double f = 1000000000.0 / ns;
+        double nextF = 1000000000.0 / nextNs;
 
 #ifdef FRAMEGRAPH_ENABLE_CAPPING
-        if (height > (FRAMEGRAPH_THRESHOLD_GOOD*2)*FRAMEGRAPH_V_SCALE) {
-            height = (FRAMEGRAPH_THRESHOLD_GOOD*2)*FRAMEGRAPH_V_SCALE;
-        }
+        if (f > FRAMEGRAPH_THRESHOLD_GOOD * 2) { f = FRAMEGRAPH_THRESHOLD_GOOD * 2; }
+        if (nextF > FRAMEGRAPH_THRESHOLD_GOOD * 2) { nextF = FRAMEGRAPH_THRESHOLD_GOOD * 2; }
 #endif
 
-        if (framerates[i] < FRAMEGRAPH_THRESHOLD_BAD) {
-            color = 0x40ff0000;
-        } else if (framerates[i] < FRAMEGRAPH_THRESHOLD_GOOD) {
-            color = 0x40ff8000;
+
+        // place in bottom left corner
+        double x1 = (double) i * FRAMEGRAPH_H_SCALE + 10;
+        double y1 = (double) WindowHeight() - f * FRAMEGRAPH_V_SCALE - 10;
+        double x2 = (double) (i + 1) * FRAMEGRAPH_H_SCALE + 10;
+        double y2 = (double) WindowHeight() - nextF * FRAMEGRAPH_V_SCALE - 10;
+
+        if (framerates[i] > FRAMEGRAPH_THRESHOLD_GOOD)
+        {
+            lineColor = 0xff00ff00;
+        } else if (framerates[i] < FRAMEGRAPH_THRESHOLD_BAD)
+        {
+            lineColor = 0xffff0000;
+        } else
+        {
+            lineColor = 0xffff8000;
         }
-        SetColorUint(color);
-        int y = WindowHeight() - height - 10;
-        DrawRect(x+(i*2), y, 2, height);
+        SetColorUint(lineColor);
+        DrawLine(v2(x1, y1), v2(x2, y2), 2);
     }
 
-    // draw a line at the target physicsFrame time
-    SetColorUint(0x80808080);
-    int y = WindowHeight() - (FRAMEGRAPH_THRESHOLD_GOOD*FRAMEGRAPH_V_SCALE) - 10;
-    DrawRect(x, y, FRAMEGRAPH_HISTORY_SIZE * 2, 2);
-    FontDrawString(v2(10, y - 5), "Target FPS", 12, 0xff00ffff, true);
-
-    // draw a line at the bottom
-    SetColorUint(0x80808080);
-    DrawRect(x, WindowHeight() - 10, FRAMEGRAPH_HISTORY_SIZE * 2, 2);
 #else
-    uint color = 0x4000ff00;
+    uint lineColor = 0xFF00FF00;
 #endif
-    // set the alpha to 255
-    color |= 0xff000000;
-    SetColorUint(color);
-    char fps[20];
-    sprintf(fps, "FPS: %.2f", framerates[FRAMEGRAPH_HISTORY_SIZE - 1]);
-    FontDrawString(v2(10, WindowHeight() - 32), fps, 16, color, true);
+    double currentNs = framerates[FRAMEGRAPH_HISTORY_SIZE - 1];
+    double currentF = 1000000000.0 / currentNs;
+    double currentMs = currentNs / 1000000.0;
+
+    // Draw the current framerate
+    SetColorUint(0xffffffff);
+    char fps[40];
+    sprintf(fps, "FPS: %.2f\nMS: %2.2f", currentF, currentMs);
+    FontDrawString(v2(10,WindowHeight() - 10 - 38), fps, 16, lineColor, true);
+
 #endif
 }

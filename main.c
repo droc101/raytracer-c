@@ -22,6 +22,7 @@
 
 int main(const int argc, char *argv[])
 {
+    
     LogInfo("Build time: %s at %s\n", __DATE__, __TIME__);
     LogInfo("Version: %s\n", VERSION);
     LogInfo("Initializing Engine\n");
