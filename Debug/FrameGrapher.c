@@ -76,10 +76,10 @@ void FrameGraphDraw()
         double x2 = (double) (i + 1) * FRAMEGRAPH_H_SCALE + 10;
         double y2 = (double) WindowHeight() - nextF * FRAMEGRAPH_V_SCALE - 10;
 
-        if (framerates[i] > FRAMEGRAPH_THRESHOLD_GOOD)
+        if (f > FRAMEGRAPH_THRESHOLD_GOOD)
         {
             lineColor = 0xff00ff00;
-        } else if (framerates[i] < FRAMEGRAPH_THRESHOLD_BAD)
+        } else if (f < FRAMEGRAPH_THRESHOLD_BAD)
         {
             lineColor = 0xffff0000;
         } else
@@ -96,6 +96,17 @@ void FrameGraphDraw()
     double currentNs = framerates[FRAMEGRAPH_HISTORY_SIZE - 1];
     double currentF = 1000000000.0 / currentNs;
     double currentMs = currentNs / 1000000.0;
+
+    if (currentF > FRAMEGRAPH_THRESHOLD_GOOD)
+    {
+        lineColor = 0xff00ff00;
+    } else if (currentF < FRAMEGRAPH_THRESHOLD_BAD)
+    {
+        lineColor = 0xffff0000;
+    } else
+    {
+        lineColor = 0xffff8000;
+    }
 
     // Draw the current framerate
     SetColorUint(0xffffffff);
