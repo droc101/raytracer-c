@@ -18,6 +18,7 @@
 #include "Helpers/Core/Error.h"
 #include "Helpers/Core/Input.h"
 #include "Helpers/Core/Logging.h"
+#include "Helpers/Core/PhysicsThread.h"
 #include "Helpers/Core/Timing.h"
 #include "Helpers/Graphics/Drawing.h"
 #include "Helpers/Graphics/RenderingHelpers.h"
@@ -27,6 +28,7 @@
 
 int main(const int argc, char *argv[])
 {
+    
     LogInfo("Build time: %s at %s\n", __DATE__, __TIME__);
     LogInfo("Version: %s\n", VERSION);
     LogInfo("Initializing Engine\n");
@@ -51,12 +53,13 @@ int main(const int argc, char *argv[])
 
     SDL_SetHint(SDL_HINT_APP_NAME, GAME_TITLE);
 
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0)
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMECONTROLLER) != 0)
     {
         LogError("SDL_Init Error: %s\n", SDL_GetError());
         Error("Failed to initialize SDL");
     }
 
+    PhysicsThreadInit();
     InitState();
 
     if (!RenderPreInit())
@@ -221,6 +224,7 @@ int main(const int argc, char *argv[])
         if (IsLowFPSModeEnabled()) SDL_Delay(33);
     }
     LogInfo("Mainloop exited, cleaning up engine...\n");
+    PhysicsThreadTerminate();
     DestroyGlobalState();
     SDL_DestroyWindow(GetGameWindow());
     SDL_FreeSurface(icon);
@@ -229,7 +233,7 @@ int main(const int argc, char *argv[])
     RenderDestroy();
     Mix_CloseAudio();
     Mix_Quit();
-    SDL_QuitSubSystem(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER);
+    SDL_QuitSubSystem(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER);
     SDL_Quit();
     return 0;
 }

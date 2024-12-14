@@ -10,7 +10,7 @@
 #include "../Structs/GlobalState.h"
 #include "../Structs/Vector2.h"
 
-uint GLogoSplashStateFixedUpdate(const uint interval, GlobalState *State)
+void GLogoSplashStateFixedUpdate(GlobalState *State)
 {
 #ifdef DEBUG_NOSPLASH
     if (State->physicsFrame == 1)
@@ -20,7 +20,7 @@ uint GLogoSplashStateFixedUpdate(const uint interval, GlobalState *State)
     if (State->physicsFrame > 0)
     {
         State->physicsFrame++;
-        return interval;
+        return;
     }
 #endif
 
@@ -35,7 +35,6 @@ uint GLogoSplashStateFixedUpdate(const uint interval, GlobalState *State)
     }
 
     State->physicsFrame++;
-    return interval;
 }
 
 // ReSharper disable once CppParameterMayBeConstPtrOrRef

@@ -187,7 +187,6 @@ typedef struct GlobalState
     Level *level; // Current level
     void (*UpdateGame)(struct GlobalState *State); // State update function
     void (*RenderGame)(void *State); // State render function
-    SDL_TimerID FixedFramerateUpdate; // Timer for fixed framerate update
     CurrentState currentState; // The current state of the game
     int hp; // Player health
     int maxHp; // Player max health

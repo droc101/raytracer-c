@@ -19,6 +19,12 @@ void InitTimers();
 ulong GetTimeNs();
 
 /**
+ * Get the time the program has been running in milliseconds
+ * @return Time in milliseconds
+ */
+ulong GetTimeMs();
+
+/**
  * Get the time the program has been running in seconds
  * @return Time in seconds
  */

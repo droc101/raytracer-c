@@ -109,6 +109,37 @@ void ShowWarning(const char *title, const char *description)
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, title, description, NULL);
 }
 
+void PromptRelaunch(const char *title, const char *description, const char *yesBtn, const char *noBtn)
+{
+    SDL_MessageBoxData mb;
+    mb.message = description;
+    mb.title = title;
+
+    SDL_MessageBoxButtonData buttons[2];
+    buttons[0].buttonid = 0;
+    buttons[0].text = noBtn;
+    buttons[0].flags = 0;
+    buttons[1].buttonid = 1;
+    buttons[1].text = yesBtn;
+    buttons[1].flags = SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
+
+    mb.buttons = buttons;
+    mb.numbuttons = 2;
+
+    mb.colorScheme = &mbColorScheme;
+
+    mb.window = GetGameWindow();
+    mb.flags = SDL_MESSAGEBOX_ERROR;
+
+    int buttonid;
+    SDL_ShowMessageBox(&mb, &buttonid);
+
+    if (buttonid == 1)
+    {
+        RestartProgram();
+    }
+}
+
 _Noreturn void RenderInitError()
 {
     LogError("Failed to initialize renderer");
