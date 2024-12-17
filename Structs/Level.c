@@ -2,14 +2,11 @@
 // Created by droc101 on 4/21/2024.
 //
 #include "Level.h"
-#include <math.h>
 #include "Actor.h"
 #include "GlobalState.h"
 #include "Vector2.h"
 #include "Wall.h"
 #include "../defines.h"
-#include "../Assets/Assets.h"
-#include "../Helpers/Graphics/Drawing.h"
 #include "../Helpers/Graphics/RenderingHelpers.h"
 
 Level *CreateLevel()

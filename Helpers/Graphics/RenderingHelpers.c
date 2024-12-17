@@ -189,7 +189,6 @@ void RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const byte *tex
             return;
         case RENDERER_OPENGL:
             GL_RenderModel(m, MODEL_WORLD_MATRIX, texture, shd);
-        default:
-            return;
+        default: // yeah this can be left empty and it actually makes the ide happier than having a return
     }
 }

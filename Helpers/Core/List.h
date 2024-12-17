@@ -5,27 +5,31 @@
 #ifndef GAME_LIST_H
 #define GAME_LIST_H
 
+typedef struct Node Node;
+typedef struct List List;
+typedef struct SizedArray SizedArray;
+
 // List item
-typedef struct Node
+struct Node
 {
     void *data;
-    struct Node *prev;
-    struct Node *next;
-} Node;
+    Node *prev;
+    Node *next;
+};
 
 // Doubly linked list
-typedef struct List
+struct List
 {
     Node *head;
     Node *tail;
     int size;
-} List;
+};
 
-typedef struct SizedArray
+struct SizedArray
 {
     void **elements;
     int size;
-} SizedArray;
+};
 
 // Internal functions
 Node *CreateListNode(void *data);

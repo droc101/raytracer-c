@@ -10,7 +10,6 @@
 #include "../Helpers/Core/Timing.h"
 #include "../Helpers/Graphics/Drawing.h"
 #include "../Helpers/Graphics/Font.h"
-#include "../Structs/GlobalState.h"
 #include "../Structs/Vector2.h"
 
 double framerates[FRAMEGRAPH_HISTORY_SIZE] = {0};
@@ -25,7 +24,7 @@ void FG_PushIntoArray(const double value)
     framerates[FRAMEGRAPH_HISTORY_SIZE - 1] = value;
 }
 
-void FrameGraphUpdate(ulong ns)
+void FrameGraphUpdate(const ulong ns)
 {
     // If it's not time to update the graph, return
     if (GetTimeMs() - lastUpdTime < FRAMEGRAPH_INTERVAL) { return; }
@@ -89,13 +88,12 @@ void FrameGraphDraw()
         SetColorUint(lineColor);
         DrawLine(v2(x1, y1), v2(x2, y2), 2);
     }
-
 #else
-    uint lineColor = 0xFF00FF00;
+    uint lineColor;
 #endif
-    double currentNs = framerates[FRAMEGRAPH_HISTORY_SIZE - 1];
-    double currentF = 1000000000.0 / currentNs;
-    double currentMs = currentNs / 1000000.0;
+    const double currentNs = framerates[FRAMEGRAPH_HISTORY_SIZE - 1];
+    const double currentF = 1000000000.0 / currentNs;
+    const double currentMs = currentNs / 1000000.0;
 
     if (currentF > FRAMEGRAPH_THRESHOLD_GOOD)
     {

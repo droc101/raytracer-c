@@ -12,22 +12,106 @@
 #include "config.h"
 #include "Helpers/Core/List.h"
 
-#define byte uint8_t // unsigned 8-bit integer
-#define ushort uint16_t // unsigned 16-bit integer
-#define uint uint32_t // unsigned 32-bit integer
-#define ulong uint64_t // unsigned 64-bit integer
+#pragma region Forward Declarations/Typedefs
+
+// Basic types
+typedef uint8_t byte;
+typedef uint16_t ushort;
+typedef uint32_t uint;
+typedef uint64_t ulong;
+
+// Enum forward declarations
+typedef enum CurrentState CurrentState;
+typedef enum Renderer Renderer;
+typedef enum OptionsMsaa OptionsMsaa;
+typedef enum ModelShader ModelShader;
+
+// Struct forward declarations
+typedef struct GlobalState GlobalState;
+typedef struct Vector2 Vector2;
+typedef struct Camera Camera;
+typedef struct Player Player;
+typedef struct Wall Wall;
+typedef struct Level Level;
+typedef struct RayCastResult RayCastResult;
+typedef struct TextBox TextBox;
+typedef struct Model Model;
+typedef struct Actor Actor;
+typedef struct ModelHeader ModelHeader;
+typedef struct Options Options;
+
+// Function signatures
+typedef void (*FixedUpdateFunction)(GlobalState *state);
+typedef void (*FrameUpdateFunction)(GlobalState *state);
+typedef void (*FrameRenderFunction)(GlobalState *state);
+typedef void (*TextBoxCloseFunction)(TextBox *textBox);
+typedef void (*ActorInitFunction)(Actor *self);
+typedef void (*ActorUpdateFunction)(Actor *self);
+typedef void (*ActorDestroyFunction)(Actor *self);
+
+#pragma endregion
+
+#pragma region Utility defines
 
 #define STR(x) #x
 #define TO_STR(x) STR(x)
+#define PI 3.14159265358979323846
+#define PHYSICS_TARGET_MS (1000 / PHYSICS_TARGET_TPS)
+#define PHYSICS_TARGET_NS (1000000000 / PHYSICS_TARGET_TPS) // nanoseconds because precision
+
+#pragma endregion
+
+#pragma region Enum definitions
+
+enum CurrentState
+{
+    EDITOR_STATE,
+    LEVEL_SELECT_STATE,
+    LOGO_SPLASH_STATE,
+    MAIN_STATE,
+    MENU_STATE,
+    PAUSE_STATE,
+    OPTIONS_STATE,
+    VIDEO_OPTIONS_STATE,
+    SOUND_OPTIONS_STATE,
+    INPUT_OPTIONS_STATE
+};
+
+enum Renderer
+{
+    RENDERER_OPENGL,
+    RENDERER_VULKAN,
+    RENDERER_MAX
+};
+
+enum OptionsMsaa
+{
+    MSAA_NONE = 0,
+    MSAA_2X = 1,
+    MSAA_4X = 2,
+    MSAA_8X = 3,
+    MSAA_16X = 4
+};
+
+enum ModelShader
+{
+    SHADER_SKY,
+    SHADER_UNSHADED,
+    SHADER_SHADED
+};
+
+#pragma endregion
+
+#pragma region Struct definitions
 
 // Utility functions are in Structs/Vector2.h
-typedef struct Vector2
+struct Vector2
 {
     double x;
     double y;
-} Vector2;
+};
 
-typedef struct Camera
+struct Camera
 {
     float x;
     float z;
@@ -38,16 +122,16 @@ typedef struct Camera
     float roll;
 
     float fov;
-} Camera;
+};
 
-typedef struct Player
+struct Player
 {
     Vector2 pos;
     double angle;
-} Player;
+};
 
 // Utility functions are in Structs/wall.h
-typedef struct Wall
+struct Wall
 {
     Vector2 a; // The first point of the wall
     Vector2 b; // The second point of the wall
@@ -60,10 +144,10 @@ typedef struct Wall
     float uvScale; // The X scale of the texture
     float uvOffset; // The X offset of the texture
     float height; // height of the wall for rendering. Does not affect collision
-} Wall;
+};
 
 // Utility functions are in Structs/level.h
-typedef struct Level
+struct Level
 {
     List *actors; // The list of actors in the level. You must bake this into staticActors before it is used.
     List *walls; // The list of walls in the level. You must bake this into staticWalls before it is used.
@@ -77,18 +161,18 @@ typedef struct Level
     SizedArray *staticWalls; // The static array of walls in the level
     SizedArray *staticActors; // The static array of actors in the level
     Player player;
-} Level;
+};
 
 // Utility functions are in Structs/ray.h
-typedef struct RayCastResult
+struct RayCastResult
 {
     Vector2 CollisionPoint; // The point of collision
     double Distance; // The distance to the collision
     bool Collided; // Whether the ray collided with anything
     Wall CollisionWall; // The wall that was collided with
-} RayCastResult;
+};
 
-typedef struct TextBox
+struct TextBox
 {
     char *text; // The text to display
     int rows; // The number of rows to display
@@ -101,47 +185,10 @@ typedef struct TextBox
 
     int theme; // The theme of the text box
 
-    void (*Close)(void *textBox); // The function to call when the text box is closed
-} TextBox;
+    TextBoxCloseFunction Close; // The function to call when the text box is closed
+};
 
-typedef enum
-{
-    EDITOR_STATE,
-    LEVEL_SELECT_STATE,
-    LOGO_SPLASH_STATE,
-    MAIN_STATE,
-    MENU_STATE,
-    PAUSE_STATE,
-    OPTIONS_STATE,
-    VIDEO_OPTIONS_STATE,
-    SOUND_OPTIONS_STATE,
-    INPUT_OPTIONS_STATE
-} CurrentState;
-
-typedef enum Renderer
-{
-    RENDERER_OPENGL,
-    RENDERER_VULKAN,
-    RENDERER_MAX
-} Renderer;
-
-typedef enum OptionsMsaa
-{
-    MSAA_NONE = 0,
-    MSAA_2X = 1,
-    MSAA_4X = 2,
-    MSAA_8X = 3,
-    MSAA_16X = 4
-} OptionsMsaa;
-
-typedef enum ModelShader
-{
-    SHADER_SKY,
-    SHADER_UNSHADED,
-    SHADER_SHADED
-} ModelShader;
-
-typedef struct Options
+struct Options
 {
     ushort checksum; // Checksum of the options struct (helps prevent corruption)
 
@@ -160,16 +207,16 @@ typedef struct Options
     double musicVolume; // The volume of the music
     double sfxVolume; // The volume of the sound effects
     double masterVolume; // The master volume
-} __attribute__((packed)) Options; // This is packed because it is saved to disk
+} __attribute__((packed)); // This is packed because it is saved to disk
 
-typedef struct ModelHeader
+struct ModelHeader
 {
     char sig[4]; // "MESH"
     uint indexCount;
     char dataSig[4]; // "DATA"
-} __attribute__((packed)) ModelHeader;
+} __attribute__((packed));
 
-typedef struct Model
+struct Model
 {
     ModelHeader header;
 
@@ -177,14 +224,14 @@ typedef struct Model
     uint packedIndicesCount;
     float *packedVertsUvs; // X Y Z U V, use for rendering
     uint *packedIndices; // Just the vert index, use for rendering
-} Model;
+};
 
 // Global state of the game
-typedef struct GlobalState
+struct GlobalState
 {
     Level *level; // Current level
-    void (*UpdateGame)(struct GlobalState *State); // State update function
-    void (*RenderGame)(void *State); // State render function
+    FrameUpdateFunction UpdateGame; // State update function
+    FrameRenderFunction RenderGame; // State render function
     CurrentState currentState; // The current state of the game
     int hp; // Player health
     int maxHp; // Player max health
@@ -210,10 +257,10 @@ typedef struct GlobalState
     char executablePath[261]; // The path to the executable
 
     double uiScale; // The scale of the UI.
-} GlobalState;
+};
 
 // Actor (interactable/moving wall) struct
-typedef struct Actor
+struct Actor
 {
     Vector2 position; // The position of the actor
     double rotation; // The rotation of the actor
@@ -221,9 +268,9 @@ typedef struct Actor
     bool solid; // can the player walk through this actor?
     int health; // health. may be unused for some actors
     void *extra_data; // extra data for the actor
-    void (*Init)(void *self); // call once to set up the actor
-    void (*Update)(void *self); // call every physicsFrame to update the actor
-    void (*Destroy)(void *self); // call once to clean up the actor
+    ActorInitFunction Init;
+    ActorUpdateFunction Update;
+    ActorDestroyFunction Destroy;
     int actorType; // type of actor. do not change this after creation.
     byte paramA; // extra parameters for the actor. saved in level data, so can be used during Init
     byte paramB;
@@ -234,12 +281,8 @@ typedef struct Actor
     float shadowSize; // size of the shadow
     Model *actorModel; // Optional model for the actor, if not NULL, will be rendered instead of the wall
     byte *actorModelTexture; // Texture for the model
-} Actor;
+};
 
-// pi 🥧
-#define PI 3.14159265358979323846
-
-#define PHYSICS_TARGET_MS (1000 / PHYSICS_TARGET_TPS)
-#define PHYSICS_TARGET_NS (1000000000 / PHYSICS_TARGET_TPS) // nanoseconds because precision
+#pragma endregion
 
 #endif //GAME_DEFINES_H

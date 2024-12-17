@@ -113,8 +113,8 @@ void UseAmmo(const int amount)
     }
 }
 
-void SetUpdateCallback(void (*const UpdateGame)(GlobalState *State),
-                       void (*const FixedUpdateGame)(GlobalState *State),
+void SetUpdateCallback(const FrameUpdateFunction UpdateGame,
+                       const FixedUpdateFunction FixedUpdateGame,
                        const CurrentState currentState)
 {
     state.physicsFrame = 0;
@@ -123,9 +123,9 @@ void SetUpdateCallback(void (*const UpdateGame)(GlobalState *State),
     PhysicsThreadSetFunction(FixedUpdateGame);
 }
 
-void SetRenderCallback(void (*RenderGame)(GlobalState *State))
+void SetRenderCallback(const FrameRenderFunction RenderGame)
 {
-    state.RenderGame = (void (*)(void *)) RenderGame;
+    state.RenderGame = RenderGame;
 }
 
 void ChangeLevel(Level *l)

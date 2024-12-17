@@ -5,7 +5,6 @@
 #ifndef GAME_COMMONASSETS_H
 #define GAME_COMMONASSETS_H
 
-#include <SDL.h>
 #include "../defines.h"
 
 #define WALL_TEXTURE_COUNT 5
