@@ -4,6 +4,9 @@
 
 #include "PhysicsThread.h"
 #include <SDL_thread.h>
+
+#include "Error.h"
+#include "Logging.h"
 #include "../../defines.h"
 #include "../../Structs/GlobalState.h"
 
@@ -66,6 +69,12 @@ void PhysicsThreadInit()
     PhysicsThreadPostQuit = false;
     PhysicsThreadMutex = SDL_CreateMutex();
     PhysicsThread = SDL_CreateThread(PhysicsThreadMain, "GamePhysics", NULL);
+    if (PhysicsThread == NULL)
+    {
+        const char *error = SDL_GetError();
+        LogError("Failed to create physics thread: %s\n", error);
+        Error("Failed to create physics thread");
+    }
 }
 
 void PhysicsThreadSetFunction(const FixedUpdateFunction function)
