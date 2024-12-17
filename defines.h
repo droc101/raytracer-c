@@ -89,8 +89,7 @@ enum OptionsMsaa
     MSAA_NONE = 0,
     MSAA_2X = 1,
     MSAA_4X = 2,
-    MSAA_8X = 3,
-    MSAA_16X = 4
+    MSAA_8X = 3
 };
 
 enum ModelShader
