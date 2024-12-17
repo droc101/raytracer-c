@@ -63,6 +63,10 @@ typedef void (*ActorDestroyFunction)(Actor *self);
 
 #pragma region Enum definitions
 
+/**
+ * Used to check which game state the game is in
+ * Now, you *could* just set a complete mess of state functions and disregard this, but if you do that, I will find you.
+ */
 enum CurrentState
 {
     EDITOR_STATE,
@@ -77,6 +81,9 @@ enum CurrentState
     INPUT_OPTIONS_STATE
 };
 
+/**
+ * Used to check which renderer the game is using
+ */
 enum Renderer
 {
     RENDERER_OPENGL,
@@ -84,6 +91,9 @@ enum Renderer
     RENDERER_MAX
 };
 
+/**
+ * Used the check the MSAA level setting
+ */
 enum OptionsMsaa
 {
     MSAA_NONE = 0,
@@ -92,6 +102,9 @@ enum OptionsMsaa
     MSAA_8X = 3
 };
 
+/**
+ * List of shaders a model can be rendered with
+ */
 enum ModelShader
 {
     SHADER_SKY,

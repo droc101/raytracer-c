@@ -7,22 +7,29 @@
 
 #include "../../defines.h"
 
-typedef enum
+typedef enum ControlType ControlType;
+typedef enum ControlState ControlState;
+typedef enum ControlAnchor ControlAnchor;
+
+typedef struct Control Control;
+typedef struct UiStack UiStack;
+
+enum ControlType
 {
     BUTTON,
     SLIDER,
     CHECKBOX,
     RADIO_BUTTON,
-} ControlType;
+};
 
-typedef enum
+enum ControlState
 {
     NORMAL,
     HOVER,
     ACTIVE
-} ControlState;
+};
 
-typedef enum
+enum ControlAnchor
 {
     TOP_LEFT,
     TOP_CENTER,
@@ -33,9 +40,9 @@ typedef enum
     BOTTOM_LEFT,
     BOTTOM_CENTER,
     BOTTOM_RIGHT
-} ControlAnchor;
+};
 
-typedef struct Control
+struct Control
 {
     ControlType type;
     ControlAnchor anchor;
@@ -45,9 +52,9 @@ typedef struct Control
     Vector2 anchoredPosition;
 
     void *ControlData;
-} Control;
+};
 
-typedef struct UiStack
+struct UiStack
 {
     List *Controls;
 
@@ -55,7 +62,7 @@ typedef struct UiStack
     ControlState ActiveControlState;
 
     int focusedControl;
-} UiStack;
+};
 
 /**
  * Create a new UiStack

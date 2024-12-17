@@ -12,19 +12,22 @@
 #include <GL/glew.h>
 #include "../../../defines.h"
 
-typedef struct GL_Shader
+typedef struct GL_Shader GL_Shader;
+typedef struct GL_Buffer GL_Buffer;
+
+struct GL_Shader
 {
     GLuint vsh;
     GLuint fsh;
     GLuint program;
-} GL_Shader;
+};
 
-typedef struct GL_Buffer
+struct GL_Buffer
 {
     GLuint vao;
     GLuint vbo;
     GLuint ebo;
-} GL_Buffer;
+};
 
 /**
  * The maximum number of textures that can be loaded into OpenGL

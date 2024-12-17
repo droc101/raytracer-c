@@ -8,14 +8,16 @@
 #include "../UiStack.h"
 #include "../../Vector2.h"
 
-typedef struct CheckBoxData
+typedef struct CheckBoxData CheckBoxData;
+
+typedef void (*CheckboxCallback)(bool checked);
+
+struct CheckBoxData
 {
     char *label;
-
     bool checked;
-
-    void (*callback)(bool);
-} CheckBoxData;
+    CheckboxCallback callback;
+};
 
 /**
  * Create a new Checkbox Control
@@ -28,7 +30,7 @@ typedef struct CheckBoxData
  * @return The new Checkbox Control
  */
 Control *
-CreateCheckboxControl(Vector2 position, Vector2 size, char *label, void (*callback)(bool), ControlAnchor anchor,
+CreateCheckboxControl(Vector2 position, Vector2 size, char *label, CheckboxCallback callback, ControlAnchor anchor,
                       bool checked);
 
 void DestroyCheckbox(const Control *c);

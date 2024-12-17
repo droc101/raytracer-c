@@ -30,7 +30,7 @@
 
 // Disable to draw the graph
 // Drawing the graph has a significant performance impact
-#define FRAMEGRAPH_FPS_ONLY
+//#define FRAMEGRAPH_FPS_ONLY
 
 /**
  * Update the frame graph with the time it took to render the frame
