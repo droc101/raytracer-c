@@ -32,6 +32,9 @@
 // Drawing the graph has a significant performance impact
 //#define FRAMEGRAPH_FPS_ONLY
 
+// no touchy please 🥺
+#define FRAMEGRAPH_NSPF 1000000000.0 / FRAMEGRAPH_THRESHOLD_GOOD
+
 /**
  * Update the frame graph with the time it took to render the frame
  * @param ns nanoseconds the frame took
