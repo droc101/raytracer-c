@@ -36,7 +36,7 @@
 //#define FRAMEGRAPH_FPS_ONLY
 
 // no touchy please 🥺
-#define FRAMEGRAPH_NSPF 1000000000.0 / FRAMEGRAPH_THRESHOLD_GOOD
+#define FRAMEGRAPH_NSPF (1000000000.0 / FRAMEGRAPH_THRESHOLD_GOOD)
 
 /**
  * Update the frame graph with the time it took to render the frame
