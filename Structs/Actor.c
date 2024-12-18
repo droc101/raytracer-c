@@ -5,6 +5,7 @@
 #include "Actor.h"
 #include "Vector2.h"
 #include "Wall.h"
+#include "../Helpers/Core/Error.h"
 
 // Empty template functions
 void ActorInit(Actor * /*this*/)
@@ -103,6 +104,7 @@ Actor *CreateActor(const Vector2 position, const double rotation, const int acto
                    const byte paramB, const byte paramC, const byte paramD)
 {
     Actor *actor = malloc(sizeof(Actor));
+    chk_malloc(actor);
     actor->actorWall = NULL;
     actor->position = position;
     actor->rotation = rotation;

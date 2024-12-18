@@ -8,6 +8,7 @@
 #include "RenderingHelpers.h"
 #include "../../Assets/Assets.h"
 #include "../../Structs/Vector2.h"
+#include "../Core/Error.h"
 #include "../Core/MathEx.h"
 
 const char fontChars[] = "abcdefghijklmnopqrstuvwxyz0123456789.:-,/\\|[]{}();'\"<>`~!@#$%^*_=+?";
@@ -30,7 +31,9 @@ Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, cons
 {
     const int str_len = strlen(str);
     float *verts = malloc(sizeof(float[4][4]) * str_len);
+    chk_malloc(verts);
     uint *indices = malloc(sizeof(uint[6]) * str_len);
+    chk_malloc(indices);
     memset(verts, 0, sizeof(float[4][4]) * str_len);
     memset(indices, 0, sizeof(uint[6]) * str_len);
 

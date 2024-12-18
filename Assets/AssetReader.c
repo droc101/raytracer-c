@@ -60,6 +60,7 @@ byte *DecompressAsset(const byte *asset)
 
     // Allocate memory for the decompressed data
     byte *decompressedData = malloc(decompressedSize);
+    chk_malloc(decompressedData);
 
     z_stream stream = {0};
 
@@ -109,6 +110,7 @@ Model *LoadModel(const byte *asset)
         return NULL;
     }
     Model *model = malloc(sizeof(Model));
+    chk_malloc(model);
     const byte *assetData = DecompressAsset(asset);
     memcpy(&model->header, assetData, sizeof(ModelHeader));
 
@@ -133,7 +135,9 @@ Model *LoadModel(const byte *asset)
     model->packedIndicesCount = model->header.indexCount;
 
     model->packedVertsUvs = malloc(vertsSizeBytes);
+    chk_malloc(model->packedVertsUvs);
     model->packedIndices = malloc(indexSizeBytes);
+    chk_malloc(model->packedIndices);
 
     memcpy(model->packedVertsUvs, (byte *) assetData + sizeof(ModelHeader), vertsSizeBytes);
 

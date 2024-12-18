@@ -43,6 +43,7 @@ char *SliderLabelMSAA(const Control *slider)
     };
     const SliderData *data = (SliderData *) slider->ControlData;
     char *buf = malloc(64);
+    chk_malloc(buf);
     sprintf(buf, "%s: %s", data->label, labels[(int)data->value]);
     return buf;
 }

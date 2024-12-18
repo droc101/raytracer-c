@@ -160,6 +160,7 @@ GL_Shader *GL_ConstructShader(const char *fsh, const char *vsh)
     char err_buf[512];
 
     GL_Shader *shd = malloc(sizeof(GL_Shader));
+    chk_malloc(shd);
 
     shd->vsh = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(shd->vsh, 1, (const GLchar *const *) &vsh, NULL);
@@ -216,6 +217,7 @@ void GL_DestroyShader(GL_Shader *shd)
 GL_Buffer *GL_ConstructBuffer()
 {
     GL_Buffer *buf = malloc(sizeof(GL_Buffer));
+    chk_malloc(buf);
 
     glGenVertexArrays(1, &buf->vao);
     glGenBuffers(1, &buf->vbo);
@@ -888,8 +890,10 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
 
     mat4 *WORLD_VIEW_MATRIX = GetMatrix(cam);
     mat4 *IDENTITY = malloc(sizeof(mat4));
+    chk_malloc(IDENTITY);
     glm_mat4_identity(*IDENTITY);
     mat4 *SKY_MODEL_WORLD = malloc(sizeof(mat4));
+    chk_malloc(SKY_MODEL_WORLD);
     glm_mat4_identity(*SKY_MODEL_WORLD);
     glm_translated(*SKY_MODEL_WORLD, (vec3){l->player.pos.x, 0, l->player.pos.y});
 

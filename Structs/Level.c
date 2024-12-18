@@ -7,11 +7,13 @@
 #include "Vector2.h"
 #include "Wall.h"
 #include "../defines.h"
+#include "../Helpers/Core/Error.h"
 #include "../Helpers/Graphics/RenderingHelpers.h"
 
 Level *CreateLevel()
 {
     Level *l = malloc(sizeof(Level));
+    chk_malloc(l);
     l->actors = CreateList();
     l->walls = CreateList();
     l->player.pos = v2s(0);

@@ -4,6 +4,8 @@
 
 #include "Options.h"
 #include <stdio.h>
+
+#include "../Helpers/Core/Error.h"
 #include "../Helpers/Core/Logging.h"
 
 void DefaultOptions(Options *options)
@@ -46,6 +48,7 @@ char *GetOptionsPath()
     char *folderPath = SDL_GetPrefPath(APPDATA_ORG_NAME, APPDATA_APP_NAME);
     const char *fileName = "options.bin";
     char *filePath = malloc(strlen(folderPath) + strlen(fileName) + 1);
+    chk_malloc(filePath);
     strcpy(filePath, folderPath);
     strcat(filePath, fileName);
 

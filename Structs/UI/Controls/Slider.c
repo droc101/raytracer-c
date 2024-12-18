@@ -11,11 +11,13 @@
 #include "../../../Helpers/Graphics/Font.h"
 
 #include "../../../Assets/Assets.h"
+#include "../../../Helpers/Core/Error.h"
 
 char *DefaultSliderLabelCallback(const Control *slider)
 {
     const SliderData *data = (SliderData *) slider->ControlData;
     char *buf = malloc(64);
+    chk_malloc(buf);
     sprintf(buf, "%s: %.2f", data->label, data->value);
     return buf;
 }
@@ -24,6 +26,7 @@ char *SliderLabelPercent(const Control *slider)
 {
     const SliderData *data = (SliderData *) slider->ControlData;
     char *buf = malloc(64);
+    chk_malloc(buf);
     sprintf(buf, "%s: %.0f%%", data->label, data->value * 100);
     return buf;
 }
@@ -32,6 +35,7 @@ char *SliderLabelInteger(const Control *slider)
 {
     const SliderData *data = (SliderData *) slider->ControlData;
     char *buf = malloc(64);
+    chk_malloc(buf);
     sprintf(buf, "%s: %.0f", data->label, data->value);
     return buf;
 }
@@ -54,6 +58,7 @@ CreateSliderControl(const Vector2 position, const Vector2 size, char *label, voi
     slider->anchor = anchor;
 
     slider->ControlData = malloc(sizeof(SliderData));
+    chk_malloc(slider->ControlData);
     SliderData *data = slider->ControlData;
     data->label = label;
     data->callback = callback;

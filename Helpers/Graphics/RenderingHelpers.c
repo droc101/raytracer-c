@@ -5,6 +5,7 @@
 #include "RenderingHelpers.h"
 #include "../CommonAssets.h"
 #include "../../Structs/GlobalState.h"
+#include "../Core/Error.h"
 #include "../Core/MathEx.h"
 #include "GL/GLHelper.h"
 
@@ -38,6 +39,7 @@ mat4 *GetMatrix(const Camera *cam)
     glm_mat4_mul(VIEW, IDENTITY, MODEL_VIEW);
 
     mat4 *MODEL_VIEW_PROJECTION = malloc(sizeof(mat4));
+    chk_malloc(MODEL_VIEW_PROJECTION);
     glm_mat4_mul(PERSPECTIVE, MODEL_VIEW, *MODEL_VIEW_PROJECTION);
 
     return MODEL_VIEW_PROJECTION;
@@ -46,6 +48,7 @@ mat4 *GetMatrix(const Camera *cam)
 mat4 *ActorTransformMatrix(const Actor *Actor)
 {
     mat4 *MODEL = malloc(sizeof(mat4));
+    chk_malloc(MODEL);
     glm_mat4_identity(*MODEL);
     glm_translate(*MODEL, (vec3){Actor->position.x, Actor->yPosition, Actor->position.y});
     glm_rotate(*MODEL, -Actor->rotation, (vec3){0, 1, 0});

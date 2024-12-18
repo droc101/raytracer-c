@@ -107,6 +107,7 @@ Level *LoadLevel(const byte *data)
 LevelBytecode *GenerateBytecode(const Level *l)
 {
     byte *data = malloc(1048576);
+    chk_malloc(data);
     int i = 0;
     for (int j = 0; j < l->walls->size; j++)
     {
@@ -161,9 +162,12 @@ LevelBytecode *GenerateBytecode(const Level *l)
     data[i] = LEVEL_CMD_FINISH;
     i++;
 
-    data = realloc(data, i); // NOLINT(*-suspicious-realloc-usage)
+    void *tmp = realloc(data, i);
+    chk_malloc(tmp);
+    data = tmp;
 
     LevelBytecode *lb = malloc(sizeof(LevelBytecode));
+    chk_malloc(lb);
     lb->data = data;
     lb->size = i;
 

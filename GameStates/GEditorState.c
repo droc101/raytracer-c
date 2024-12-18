@@ -9,6 +9,7 @@
 #include "../config.h"
 #include "../Helpers/CommonAssets.h"
 #include "../Helpers/LevelLoader.h"
+#include "../Helpers/Core/Error.h"
 #include "../Helpers/Core/Input.h"
 #include "../Helpers/Core/MathEx.h"
 #include "../Helpers/Graphics/Drawing.h"
@@ -92,6 +93,7 @@ char *SliderActorNameLabelCallback(const Control *slider)
 {
     const SliderData *data = (SliderData *) slider->ControlData;
     char *buf = malloc(64);
+    chk_malloc(buf);
     sprintf(buf, "Type: %s", GetActorName(data->value));
     return buf;
 }
@@ -374,6 +376,7 @@ void GEditorStateUpdate(GlobalState */*State*/)
 
                     // Create 2 nodes for a wall
                     EditorNode *nodeA = malloc(sizeof(EditorNode));
+                    chk_malloc(nodeA);
                     nodeA->type = NODE_WALL_A;
                     nodeA->position = worldPos;
                     nodeA->extra = tex;
@@ -382,6 +385,7 @@ void GEditorStateUpdate(GlobalState */*State*/)
                     ListAdd(EditorNodes, nodeA);
 
                     EditorNode *nodeB = malloc(sizeof(EditorNode));
+                    chk_malloc(nodeB);
                     nodeB->type = NODE_WALL_B;
                     nodeB->position = worldPos;
                     ListAdd(EditorNodes, nodeB);
@@ -421,6 +425,7 @@ void GEditorStateUpdate(GlobalState */*State*/)
                 if (IsMouseButtonJustPressed(SDL_BUTTON_LEFT))
                 {
                     EditorNode *node = malloc(sizeof(EditorNode));
+                    chk_malloc(node);
                     node->type = NODE_ACTOR;
                     const Vector2 mousePos = GetMousePos();
                     Vector2 worldPos = v2((mousePos.x - EditorPanX) / EditorZoom,
@@ -715,6 +720,7 @@ void BtnCopyBytecode()
 {
     LevelBytecode *bc = GenerateBytecode(GetState()->level);
     char *buf = malloc(bc->size * 2 + 1);
+    chk_malloc(buf);
     for (int i = 0; i < bc->size; i++)
     {
         sprintf(buf + i * 2, "%02x", bc->data[i]);
@@ -843,6 +849,7 @@ void BtnLoad()
 
     // add a node for the player
     EditorNode *playerNode = malloc(sizeof(EditorNode));
+    chk_malloc(playerNode);
     playerNode->type = NODE_PLAYER;
     playerNode->position = l->player.pos;
     playerNode->rotation = fmod(l->player.angle, 2 * PI);
@@ -853,6 +860,7 @@ void BtnLoad()
     {
         const Actor *a = ListGet(l->actors, i);
         EditorNode *actorNode = malloc(sizeof(EditorNode));
+        chk_malloc(actorNode);
         actorNode->type = NODE_ACTOR;
         actorNode->position = a->position;
         actorNode->rotation = fmod(a->rotation, 2 * PI);
@@ -872,6 +880,7 @@ void BtnLoad()
     {
         const Wall *w = ListGet(l->walls, i);
         EditorNode *wallNodeA = malloc(sizeof(EditorNode));
+        chk_malloc(wallNodeA);
         wallNodeA->type = NODE_WALL_A;
         wallNodeA->index = i;
         wallNodeA->position = w->a;
@@ -880,6 +889,7 @@ void BtnLoad()
         ListAdd(EditorNodes, wallNodeA);
 
         EditorNode *wallNodeB = malloc(sizeof(EditorNode));
+        chk_malloc(wallNodeB);
         wallNodeB->type = NODE_WALL_B;
         wallNodeB->index = i;
         wallNodeB->position = w->b;

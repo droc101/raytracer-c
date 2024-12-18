@@ -7,6 +7,7 @@
 #include "../GlobalState.h"
 #include "../Vector2.h"
 #include "../../Assets/Assets.h"
+#include "../../Helpers/Core/Error.h"
 #include "../../Helpers/Core/Input.h"
 #include "../../Helpers/Graphics/Drawing.h"
 
@@ -39,6 +40,7 @@ const void (*ControlUpdateFuncs[4])(UiStack *stack, Control *, Vector2 localMous
 UiStack *CreateUiStack()
 {
     UiStack *stack = malloc(sizeof(UiStack));
+    chk_malloc(stack);
     stack->Controls = CreateList();
     stack->ActiveControl = -1;
     stack->ActiveControlState = NORMAL;
@@ -220,6 +222,7 @@ Vector2 CalculateControlPosition(const Control *control)
 Control *CreateEmptyControl()
 {
     Control *c = malloc(sizeof(Control));
+    chk_malloc(c);
     c->ControlData = NULL;
     return c;
 }
