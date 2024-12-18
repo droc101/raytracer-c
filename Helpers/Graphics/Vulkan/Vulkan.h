@@ -5,12 +5,10 @@
 #ifndef GAME_VULKAN_H
 #define GAME_VULKAN_H
 
-#include <stdbool.h>
 #include <vulkan/vulkan.h>
 #include "../Drawing.h"
 
 #define VK_X_TO_NDC(x) ((float) (x) / WindowWidth() * 2.0f - 1.0f)
-
 #define VK_Y_TO_NDC(y) ((float) (y) / WindowHeight() * 2.0f - 1.0f)
 
 /**
@@ -30,7 +28,7 @@ VkResult VK_FrameStart();
 VkResult VK_FrameEnd();
 
 //TODO document me
-VkResult VK_RenderLevel();
+VkResult VK_RenderLevel(const Level *level, const Camera *camera);
 
 /// A function used to destroy the Vulkan objects when they are no longer needed.
 bool VK_Cleanup();
@@ -40,6 +38,8 @@ void VK_Minimize();
 void VK_Restore();
 
 uint8_t VK_GetSampleCountFlags();
+
+bool VK_LoadLevelWalls(const Level *level);
 
 bool VK_DrawColoredQuad(int x, int y, int w, int h, uint32_t color);
 

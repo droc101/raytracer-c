@@ -59,7 +59,7 @@
 #define VK_ENABLE_VALIDATION_LAYER
 #endif
 
-#ifdef __LINUX__
+#if defined(__LINUX__) && !defined(NDEBUG)
 /// Adds an overlay with FPS information provided by the Mesa Vulkan driver in Linux
 #define VK_ENABLE_MESA_FPS_OVERLAY
 #endif

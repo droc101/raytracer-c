@@ -194,6 +194,13 @@ void GL_DrawColoredArrays(const float *vertices, const uint *indices, int quad_c
 #define GL_Y_TO_NDC(y) (1.0f - (float) (y) / WindowHeight() * 2.0f)
 
 /**
+ * Get the transformation matrix for a camera
+ * @param cam The camera
+ * @return A mat4 MODEL_VIEW_PROJECTION matrix of the camera (World space to screen space)
+ */
+mat4 *GL_GetMatrix(const Camera *cam);
+
+/**
  * OpenGL code to render the 3D portion of a level
  * @param l The level to render
  * @param cam The camera to render with

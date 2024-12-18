@@ -3,6 +3,8 @@
 //
 
 #include "VulkanHelpers.h"
+#include <cglm/clipspace/persp_lh_zo.h>
+#include <cglm/clipspace/view_lh_zo.h>
 
 #pragma region variables
 SDL_Window *vk_window;
@@ -210,8 +212,8 @@ bool CreateImage(VkImage *image,
             (memoryProperties.memoryTypes[i].propertyFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) ==
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
         {
-            const VkDeviceSize size = memoryRequirements.alignment * (VkDeviceSize) ceil(
-                                          (double) memoryRequirements.size / (double) memoryRequirements.alignment);
+            const VkDeviceSize size = memoryRequirements.alignment * (VkDeviceSize)ceil(
+                                          (double)memoryRequirements.size / (double)memoryRequirements.alignment);
             const VkMemoryAllocateInfo allocateInfo = {
                 VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
                 NULL,
@@ -316,8 +318,8 @@ bool CreateBuffer(VkBuffer *buffer,
     VulkanTest(vkCreateBuffer(device, &bufferInfo, NULL, buffer), "Failed to create Vulkan buffer!");
 
     vkGetBufferMemoryRequirements(device, *buffer, &allocationInfo->memoryRequirements);
-    const VkDeviceSize memorySize = allocationInfo->memoryRequirements.alignment * (VkDeviceSize) ceil(
-                                        (double) allocationInfo->memoryRequirements.size / (double) allocationInfo->
+    const VkDeviceSize memorySize = allocationInfo->memoryRequirements.alignment * (VkDeviceSize)ceil(
+                                        (double)allocationInfo->memoryRequirements.size / (double)allocationInfo->
                                         memoryRequirements.alignment);
 
     allocationInfo->offset = allocationInfo->memoryInfo->size;
@@ -365,146 +367,6 @@ bool CopyBuffer(const VkBuffer srcBuffer, const VkBuffer dstBuffer, const VkDevi
     vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
 
     if (!EndCommandBuffer(commandBuffer, graphicsCommandPool, graphicsQueue)) return false;
-
-    return true;
-}
-
-bool AllocateMemory()
-{
-    bool allocated = false;
-
-    VkPhysicalDeviceMemoryProperties memoryProperties;
-    vkGetPhysicalDeviceMemoryProperties(physicalDevice.device, &memoryProperties);
-    for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++)
-    {
-        if (memoryPools.localMemory.memoryTypeBits & 1 << i &&
-            (memoryProperties.memoryTypes[i].propertyFlags & memoryPools.localMemory.type) == memoryPools.localMemory.
-            type)
-        {
-            const VkMemoryAllocateInfo allocInfo = {
-                VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-                NULL,
-                memoryPools.localMemory.size,
-                i
-            };
-
-            VulkanTest(vkAllocateMemory(device, &allocInfo, NULL, &memoryPools.localMemory.memory),
-                       "Failed to allocate device local buffer memory!");
-
-            allocated = true;
-            break;
-        }
-    }
-    if (!allocated)
-    {
-        VulkanLogError("Failed to allocate device local buffer memory!");
-
-        return false;
-    }
-
-    allocated = false;
-    for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++)
-    {
-        if (memoryPools.sharedMemory.memoryTypeBits & 1 << i &&
-            (memoryProperties.memoryTypes[i].propertyFlags & memoryPools.sharedMemory.type) == memoryPools.sharedMemory.
-            type)
-        {
-            const VkMemoryAllocateInfo allocInfo = {
-                VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-                NULL,
-                memoryPools.sharedMemory.size,
-                i
-            };
-
-            VulkanTest(vkAllocateMemory(device, &allocInfo, NULL, &memoryPools.sharedMemory.memory),
-                       "Failed to allocate device shared buffer memory!");
-
-            allocated = true;
-            break;
-        }
-    }
-    if (!allocated)
-    {
-        VulkanLogError("Failed to allocate device shared buffer memory!");
-
-        return false;
-    }
-
-    VulkanTest(
-        vkBindBufferMemory(device, buffers.ui.buffer, memoryPools.sharedMemory.memory, buffers.ui.memoryAllocationInfo.
-            offset), "Failed to bind UI vertex buffer memory!");
-    VulkanTest(
-        vkBindBufferMemory(device, buffers.data.buffer, memoryPools.sharedMemory.memory, buffers.data.
-            memoryAllocationInfo.offset), "Failed to bind data uniform buffer memory!");
-    for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-    {
-        VulkanTest(
-            vkBindBufferMemory(device, buffers.translation[i].buffer, memoryPools.sharedMemory.memory, buffers.
-                translation[i].memoryAllocationInfo.offset), "Failed to bind translation uniform buffer memory!");
-    }
-
-    VulkanTest(
-        vkBindBufferMemory(device, buffers.walls.buffer, memoryPools.localMemory.memory, buffers.walls.
-            memoryAllocationInfo.offset), "Failed to bind Vulkan buffer memory!");
-
-    VulkanTest(
-        vkMapMemory(device, memoryPools.sharedMemory.memory, 0, VK_WHOLE_SIZE, 0, &memoryPools.sharedMemory.mappedMemory
-        ), "Failed to map Vulkan buffer memory!");
-
-    buffers.ui.vertices = memoryPools.sharedMemory.mappedMemory + buffers.ui.memoryAllocationInfo.offset;
-    buffers.data.data = memoryPools.sharedMemory.mappedMemory + buffers.data.memoryAllocationInfo.offset;
-    for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-    {
-        buffers.translation[i].data = memoryPools.sharedMemory.mappedMemory + buffers.translation[i].
-                                      memoryAllocationInfo.offset;
-    }
-
-    VkBuffer stagingBuffer;
-    void *data;
-    const WallVertex vertices[8] = {
-        {{-0.5f, 0.0f, -0.5f}, {0.0f, 0.0f}},
-        {{0.5f, 0.0f, -0.5f}, {1.0f, 0.0f}},
-        {{0.5f, 0.0f, 0.5f}, {1.0f, 1.0f}},
-        {{-0.5f, 0.0f, 0.5f}, {0.0f, 1.0f}},
-
-        {{-0.5f, -0.5f, -0.5f}, {0.0f, 0.0f}},
-        {{0.5f, -0.5f, -0.5f}, {1.0f, 0.0f}},
-        {{0.5f, -0.5f, 0.5f}, {1.0f, 1.0f}},
-        {{-0.5f, -0.5f, 0.5f}, {0.0f, 1.0f}}
-    };
-
-    const VkDeviceSize bufferSize = sizeof(*vertices) * 8;
-
-    MemoryInfo memoryInfo = {
-        0,
-        NULL,
-        0,
-        0,
-        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-    };
-    MemoryAllocationInfo allocationInfo = {
-        0,
-        &memoryInfo,
-        {0}
-    };
-
-    if (!CreateBuffer(&stagingBuffer, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, true, &allocationInfo))
-    {
-        return false;
-    }
-
-    VulkanTest(vkMapMemory(device, memoryInfo.memory, 0, bufferSize, 0, &data),
-               "Failed to map Vulkan vertex staging buffer memory!");
-
-    memcpy(data, vertices, bufferSize);
-    vkUnmapMemory(device, memoryInfo.memory);
-
-
-    if (!CopyBuffer(stagingBuffer, buffers.walls.buffer, bufferSize)) return false;
-    buffers.walls.vertexCount = 8;
-
-    vkDestroyBuffer(device, stagingBuffer, NULL);
-    vkFreeMemory(device, memoryInfo.memory, NULL);
 
     return true;
 }
@@ -560,21 +422,25 @@ void CleanupSyncObjects()
     }
 }
 
-void UpdateUniformBuffer(const uint32_t currentFrame)
+void UpdateUniformBuffer(const Camera *camera, const uint32_t currentFrame)
 {
-    mat4 model = GLM_MAT4_IDENTITY_INIT;
-    mat4 view = GLM_MAT4_IDENTITY_INIT;
-    mat4 proj = GLM_MAT4_IDENTITY_INIT;
-    mat4 ubo = GLM_MAT4_IDENTITY_INIT;
+    mat4 perspective;
+    glm_perspective_lh_zo(glm_rad(camera->fov), (float)swapChainExtent.width / (float)swapChainExtent.height, NEAR_Z,
+                          FAR_Z, perspective);
 
-    glm_rotate(model, (float) SDL_GetTicks64() * PIf / 10000.0f, GLM_YUP);
-    glm_lookat((vec3){2.0f, 2.0f, 2.0f}, GLM_VEC3_ZERO, (vec3){0.0f, -1.0f, 0.0f}, view);
-    glm_perspective(PI / 4, (float) swapChainExtent.width / (float) swapChainExtent.height, 0.1f, 10.0f, proj);
+    vec3 viewTarget = {cosf(camera->yaw), 0, sinf(camera->yaw)};
 
-    glm_mat4_mul(proj, view, ubo);
-    glm_mat4_mul(ubo, model, ubo);
+    // TODO roll and pitch might be messed up (test and fix as needed)
+    glm_vec3_rotate(viewTarget, camera->roll, GLM_ZUP); // Roll
+    glm_vec3_rotate(viewTarget, camera->pitch, GLM_XUP); // Pitch
 
-    memcpy(buffers.translation[currentFrame].data, &ubo, sizeof(ubo));
+    vec3 cameraPosition = {camera->x, camera->y, camera->z};
+    glm_vec3_add(viewTarget, cameraPosition, viewTarget);
+
+    mat4 view;
+    glm_lookat_lh_zo(cameraPosition, viewTarget, (vec3){0.0f, -1.0f, 0.0f}, view);
+
+    glm_mat4_mul(perspective, view, *buffers.translation[currentFrame].data);
 }
 
 VkResult BeginRenderPass(const VkCommandBuffer commandBuffer, const uint32_t imageIndex)
@@ -614,20 +480,6 @@ VkResult EndRenderPass(const VkCommandBuffer commandBuffer)
     VulkanTestReturnResult(vkEndCommandBuffer(commandBuffer), "Failed to record the Vulkan command buffer!");
 
     return VK_SUCCESS;
-}
-
-void DrawVertexBuffer(const VkCommandBuffer commandBuffer,
-                      const VkPipeline pipeline,
-                      const VertexBuffer vertexBuffer)
-{
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-
-    vkCmdBindVertexBuffers(commandBuffer, 0, 1, (VkBuffer[1]){vertexBuffer.buffer}, (VkDeviceSize[1]){0});
-
-    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1,
-                            &descriptorSets[currentFrame], 0, NULL);
-
-    vkCmdDraw(commandBuffer, vertexBuffer.vertexCount, 1, 0, 0);
 }
 
 bool DrawRectInternal(const float ndcStartX,

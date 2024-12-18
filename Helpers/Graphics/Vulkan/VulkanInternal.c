@@ -4,12 +4,8 @@
 
 #include "VulkanInternal.h"
 #include <SDL_vulkan.h>
-#include <string.h>
 #include "VulkanHelpers.h"
-#include "../Drawing.h"
-#include "../../../Assets/AssetReader.h"
 #include "../../../Structs/GlobalState.h"
-#include "../../Core/DataReader.h"
 #include "../../Core/Error.h"
 #include "../../Core/MathEx.h"
 
@@ -387,7 +383,7 @@ bool CreateSwapChain()
             const VkPresentModeKHR mode = swapChainSupport.presentMode[i];
             if (mode == VK_PRESENT_MODE_MAILBOX_KHR)
             {
-                presentMode = mode;
+                presentMode = VK_PRESENT_MODE_MAILBOX_KHR;
                 break;
             }
             if (mode == VK_PRESENT_MODE_IMMEDIATE_KHR)
@@ -421,7 +417,7 @@ bool CreateSwapChain()
     VulkanTest(vkCreateSwapchainKHR(device, &createInfo, NULL, &swapChain), "Failed to create Vulkan swap chain!");
 
     VulkanTest(vkGetSwapchainImagesKHR(device, swapChain, &imageCount, NULL), "Failed to get Vulkan swapchain images!");
-    swapChainImages = (VkImage *) malloc(sizeof(*swapChainImages) * imageCount);
+    swapChainImages = (VkImage *)malloc(sizeof(*swapChainImages) * imageCount);
     swapChainCount = imageCount;
     VulkanTest(vkGetSwapchainImagesKHR(device, swapChain, &imageCount, swapChainImages),
                "Failed to get Vulkan swapchain images!");
@@ -433,7 +429,7 @@ bool CreateSwapChain()
 
 bool CreateImageViews()
 {
-    swapChainImageViews = (VkImageView *) malloc(sizeof(*swapChainImageViews) * swapChainCount);
+    swapChainImageViews = (VkImageView *)malloc(sizeof(*swapChainImageViews) * swapChainCount);
 
     for (uint32_t i = 0; i < swapChainCount; i++)
     {
@@ -485,7 +481,7 @@ bool CreateRenderPass()
             break;
     }
     if (!(physicalDevice.properties.limits.framebufferColorSampleCounts &
-         physicalDevice.properties.limits.framebufferDepthSampleCounts & msaaSamples))
+          physicalDevice.properties.limits.framebufferDepthSampleCounts & msaaSamples))
     {
         ShowWarning("Invalid Settings", "Your GPU driver does not support the selected MSAA level!\n"
                     "A fallback has been set to avoid issues.");
@@ -677,7 +673,7 @@ bool CreateRenderPass()
 
 bool CreateDescriptorSetLayouts()
 {
-    const VkDescriptorSetLayoutBinding bindings[3] = {
+    const VkDescriptorSetLayoutBinding bindings[2] = {
         {
             0,
             VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
@@ -691,20 +687,13 @@ bool CreateDescriptorSetLayouts()
             TEXTURE_ASSET_COUNT,
             VK_SHADER_STAGE_FRAGMENT_BIT,
             NULL
-        },
-        {
-            2,
-            VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-            1,
-            VK_SHADER_STAGE_FRAGMENT_BIT,
-            NULL
         }
     };
     const VkDescriptorSetLayoutCreateInfo layoutInfo = {
         VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
         NULL,
         0,
-        3,
+        2,
         bindings
     };
 
@@ -735,8 +724,8 @@ bool CreateGraphicsPipelines()
     const VkViewport viewport = {
         0,
         0,
-        (float) swapChainExtent.width,
-        (float) swapChainExtent.height,
+        (float)swapChainExtent.width,
+        (float)swapChainExtent.height,
         0,
         1
     };
@@ -843,15 +832,15 @@ bool CreateGraphicsPipelines()
 #pragma endregion shared
 
 #pragma region walls
-    const VkShaderModule wallVertShaderModule = CreateShaderModule((uint32_t *) DecompressAsset(gzvert_Vulkan_wall),
+    const VkShaderModule wallVertShaderModule = CreateShaderModule((uint32_t *)DecompressAsset(gzvert_Vulkan_wall),
                                                                    AssetGetSize(gzvert_Vulkan_wall));
-    const VkShaderModule wallFragShaderModule = CreateShaderModule((uint32_t *) DecompressAsset(gzfrag_Vulkan_wall),
-                                                                   AssetGetSize(gzfrag_Vulkan_wall));
-    const VkShaderModule wallTescShaderModule = CreateShaderModule((uint32_t *) DecompressAsset(gztesc_Vulkan_wall),
+    const VkShaderModule wallTescShaderModule = CreateShaderModule((uint32_t *)DecompressAsset(gztesc_Vulkan_wall),
                                                                    AssetGetSize(gztesc_Vulkan_wall));
-    const VkShaderModule wallTeseShaderModule = CreateShaderModule((uint32_t *) DecompressAsset(gztese_Vulkan_wall),
+    const VkShaderModule wallTeseShaderModule = CreateShaderModule((uint32_t *)DecompressAsset(gztese_Vulkan_wall),
                                                                    AssetGetSize(gztese_Vulkan_wall));
-    if (!wallVertShaderModule || !wallFragShaderModule || !wallTescShaderModule || !wallTeseShaderModule)
+    const VkShaderModule wallFragShaderModule = CreateShaderModule((uint32_t *)DecompressAsset(gzfrag_Vulkan_wall),
+                                                                   AssetGetSize(gzfrag_Vulkan_wall));
+    if (!wallVertShaderModule || !wallTescShaderModule || !wallTeseShaderModule || !wallFragShaderModule)
     {
         VulkanLogError("Failed to load wall shaders!");
         return false;
@@ -864,15 +853,6 @@ bool CreateGraphicsPipelines()
             0,
             VK_SHADER_STAGE_VERTEX_BIT,
             wallVertShaderModule,
-            "main",
-            NULL
-        },
-        {
-            VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-            NULL,
-            0,
-            VK_SHADER_STAGE_FRAGMENT_BIT,
-            wallFragShaderModule,
             "main",
             NULL
         },
@@ -893,35 +873,57 @@ bool CreateGraphicsPipelines()
             wallTeseShaderModule,
             "main",
             NULL
+        },
+        {
+            VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+            NULL,
+            0,
+            VK_SHADER_STAGE_FRAGMENT_BIT,
+            wallFragShaderModule,
+            "main",
+            NULL
         }
     };
 
-    const VkVertexInputBindingDescription wallBindingDescription = {
-        0,
-        sizeof(WallVertex),
-        VK_VERTEX_INPUT_RATE_VERTEX
-    };
-    const VkVertexInputAttributeDescription wallVertexDescriptions[2] = {
+    const VkVertexInputBindingDescription wallBindingDescriptions[2] = {
         {
             0,
-            0,
-            VK_FORMAT_R32G32B32_SFLOAT,
-            offsetof(WallVertex, pos)
+            sizeof(WallVertex),
+            VK_VERTEX_INPUT_RATE_VERTEX
         },
         {
             1,
+            sizeof(WallInfo),
+            VK_VERTEX_INPUT_RATE_INSTANCE
+        }
+    };
+    const VkVertexInputAttributeDescription wallVertexDescriptions[3] = {
+        {
             0,
-            VK_FORMAT_R32G32_SFLOAT,
-            offsetof(WallVertex, uv)
+            0,
+            VK_FORMAT_R32G32B32A32_SFLOAT,
+            0
+        },
+        {
+            1,
+            1,
+            VK_FORMAT_R32_SFLOAT,
+            offsetof(WallInfo, halfHeight)
+        },
+        {
+            2,
+            1,
+            VK_FORMAT_R32_UINT,
+            offsetof(WallInfo, textureIndex)
         }
     };
     const VkPipelineVertexInputStateCreateInfo wallVertexInputInfo = {
         VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
         NULL,
         0,
-        1,
-        &wallBindingDescription,
         2,
+        wallBindingDescriptions,
+        3,
         wallVertexDescriptions
     };
 
@@ -937,7 +939,7 @@ bool CreateGraphicsPipelines()
         VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO,
         NULL,
         0,
-        4
+        2
     };
 
     VkGraphicsPipelineCreateInfo wallsPipelineInfo = {
@@ -965,13 +967,13 @@ bool CreateGraphicsPipelines()
 
 #pragma region UI
     const VkShaderModule uiVertShaderModule = CreateShaderModule(
-        (uint32_t *) DecompressAsset(gzvert_Vulkan_ui), AssetGetSize(gzvert_Vulkan_ui));
-    const VkShaderModule uiFragShaderModule = CreateShaderModule(
-        (uint32_t *) DecompressAsset(gzfrag_Vulkan_ui), AssetGetSize(gzfrag_Vulkan_ui));
+        (uint32_t *)DecompressAsset(gzvert_Vulkan_ui), AssetGetSize(gzvert_Vulkan_ui));
     const VkShaderModule uiTescShaderModule = CreateShaderModule(
-        (uint32_t *) DecompressAsset(gztesc_Vulkan_ui), AssetGetSize(gztesc_Vulkan_ui));
+        (uint32_t *)DecompressAsset(gztesc_Vulkan_ui), AssetGetSize(gztesc_Vulkan_ui));
     const VkShaderModule uiTeseShaderModule = CreateShaderModule(
-        (uint32_t *) DecompressAsset(gztese_Vulkan_ui), AssetGetSize(gztese_Vulkan_ui));
+        (uint32_t *)DecompressAsset(gztese_Vulkan_ui), AssetGetSize(gztese_Vulkan_ui));
+    const VkShaderModule uiFragShaderModule = CreateShaderModule(
+        (uint32_t *)DecompressAsset(gzfrag_Vulkan_ui), AssetGetSize(gzfrag_Vulkan_ui));
     if (!uiVertShaderModule || !uiFragShaderModule)
     {
         VulkanLogError("Failed to load colored quad shaders!");
@@ -992,15 +994,6 @@ bool CreateGraphicsPipelines()
             VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
             NULL,
             0,
-            VK_SHADER_STAGE_FRAGMENT_BIT,
-            uiFragShaderModule,
-            "main",
-            NULL
-        },
-        {
-            VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-            NULL,
-            0,
             VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT,
             uiTescShaderModule,
             "main",
@@ -1012,6 +1005,15 @@ bool CreateGraphicsPipelines()
             0,
             VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT,
             uiTeseShaderModule,
+            "main",
+            NULL
+        },
+        {
+            VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+            NULL,
+            0,
+            VK_SHADER_STAGE_FRAGMENT_BIT,
+            uiFragShaderModule,
             "main",
             NULL
         }
@@ -1105,14 +1107,14 @@ bool CreateGraphicsPipelines()
 
 
     vkDestroyShaderModule(device, wallVertShaderModule, NULL);
-    vkDestroyShaderModule(device, wallFragShaderModule, NULL);
     vkDestroyShaderModule(device, wallTescShaderModule, NULL);
     vkDestroyShaderModule(device, wallTeseShaderModule, NULL);
+    vkDestroyShaderModule(device, wallFragShaderModule, NULL);
 
     vkDestroyShaderModule(device, uiVertShaderModule, NULL);
-    vkDestroyShaderModule(device, uiFragShaderModule, NULL);
     vkDestroyShaderModule(device, uiTescShaderModule, NULL);
     vkDestroyShaderModule(device, uiTeseShaderModule, NULL);
+    vkDestroyShaderModule(device, uiFragShaderModule, NULL);
 
     return true;
 }
@@ -1147,34 +1149,6 @@ bool CreateColorImage()
     {
         return false;
     }
-
-    // const VkCommandBuffer commandBuffer;
-    // if (!BeginCommandBuffer(&commandBuffer, graphicsCommandPool)) return false;
-    //
-    // const VkImageMemoryBarrier transferBarrier = {
-    //     VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-    //     NULL,
-    //     0,
-    //     VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-    //     VK_IMAGE_LAYOUT_UNDEFINED,
-    //     VK_IMAGE_LAYOUT_GENERAL,
-    //     VK_QUEUE_FAMILY_IGNORED,
-    //     VK_QUEUE_FAMILY_IGNORED,
-    //     colorImage,
-    //     {
-    //         VK_IMAGE_ASPECT_COLOR_BIT,
-    //         0,
-    //         1,
-    //         0,
-    //         1
-    //     }
-    // };
-    //
-    // vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-    //                      VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-    //                      0, 0, NULL, 0, NULL, 1, &transferBarrier);
-    //
-    // if (!EndCommandBuffer(commandBuffer, graphicsCommandPool, graphicsQueue)) return false;
 
     return true;
 }
@@ -1228,7 +1202,7 @@ bool CreateDepthImage()
 
 bool CreateFramebuffers()
 {
-    swapChainFramebuffers = (VkFramebuffer *) malloc(sizeof(*swapChainFramebuffers) * swapChainCount);
+    swapChainFramebuffers = (VkFramebuffer *)malloc(sizeof(*swapChainFramebuffers) * swapChainCount);
 
     for (uint32_t i = 0; i < swapChainCount; i++)
     {
@@ -1271,7 +1245,7 @@ bool LoadTextures()
 
         const VkExtent3D extent = {ReadUintA(decompressed, 4), ReadUintA(decompressed, 8), 1};
         textures[textureIndex].mipmapLevels = GetState()->options.mipmaps
-                                                  ? (uint8_t) log2(max(extent.width, extent.height)) + 1
+                                                  ? (uint8_t)log2(max(extent.width, extent.height)) + 1
                                                   : 1;
         if (!CreateImage(&textures[textureIndex].image, NULL, format, extent, textures[textureIndex].mipmapLevels,
                          VK_SAMPLE_COUNT_1_BIT,
@@ -1284,9 +1258,9 @@ bool LoadTextures()
         vkGetImageMemoryRequirements(device, textures[textureIndex].image,
                                      &textures[textureIndex].allocationInfo.memoryRequirements);
         textures[textureIndex].allocationInfo.offset =
-                textures[textureIndex].allocationInfo.memoryRequirements.alignment * (VkDeviceSize) ceil(
-                    ((double) memorySize + (double) textures[textureIndex].allocationInfo.memoryRequirements.
-                     size) / (double) textures[textureIndex].
+                textures[textureIndex].allocationInfo.memoryRequirements.alignment * (VkDeviceSize)ceil(
+                    ((double)memorySize + (double)textures[textureIndex].allocationInfo.memoryRequirements.
+                                                                         size) / (double)textures[textureIndex].
                     allocationInfo.memoryRequirements.alignment);
         memorySize = textures[textureIndex].allocationInfo.offset + textures[textureIndex].allocationInfo.
                      memoryRequirements.size;
@@ -1438,7 +1412,7 @@ bool LoadTextures()
                 },
                 {
                     {0, 0, 0},
-                    {(int32_t) width, (int32_t) height, 1}
+                    {(int32_t)width, (int32_t)height, 1}
                 },
                 {
                     VK_IMAGE_ASPECT_COLOR_BIT,
@@ -1448,7 +1422,7 @@ bool LoadTextures()
                 },
                 {
                     {0, 0, 0},
-                    {width > 1 ? (int32_t) width / 2 : 1, height > 1 ? (int32_t) height / 2 : 1, 1}
+                    {width > 1 ? (int32_t)width / 2 : 1, height > 1 ? (int32_t)height / 2 : 1, 1}
                 }
             };
 
@@ -1624,44 +1598,118 @@ bool CreateTextureSampler()
     return true;
 }
 
-bool CreateVertexBuffers()
+bool CreateBuffers()
 {
-    buffers.walls.memoryAllocationInfo.memoryInfo = &memoryPools.localMemory;
-    if (!CreateBuffer(&buffers.walls.buffer, sizeof(WallVertex) * 8,
+    buffers.walls.maxWallCount = 100;
+    buffers.local.memoryAllocationInfo.memoryInfo = &memoryPools.localMemory;
+    if (!CreateBuffer(&buffers.local.buffer, buffers.walls.maxWallCount * (2 * sizeof(WallVertex) + sizeof(WallInfo)),
                       VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, false,
-                      &buffers.walls.memoryAllocationInfo))
+                      &buffers.local.memoryAllocationInfo))
     {
         return false;
     }
+    buffers.walls.bufferInfo = &buffers.local;
+    buffers.walls.offsets[0] = 0;
+    buffers.walls.offsets[1] = 2 * buffers.walls.maxWallCount * sizeof(WallVertex);
 
-    buffers.ui.maxVertices = UI_PRIMITIVES * 4;
-    buffers.ui.memoryAllocationInfo.memoryInfo = &memoryPools.sharedMemory;
-    return CreateBuffer(&buffers.ui.buffer, sizeof(UiVertex) * buffers.ui.maxVertices,
-                        VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, false,
-                        &buffers.ui.memoryAllocationInfo);
-}
-
-bool CreateUniformBuffers()
-{
+    buffers.ui.maxVertices = MAX_UI_PRIMITIVES_INIT * 4;
+    const VkDeviceSize size = sizeof(UiVertex) * buffers.ui.maxVertices + sizeof(mat4) * MAX_FRAMES_IN_FLIGHT;
+    const VkBufferUsageFlags usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
+                                          VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+    buffers.shared.memoryAllocationInfo.memoryInfo = &memoryPools.sharedMemory;
+    if (!CreateBuffer(&buffers.shared.buffer, size, usageFlags, false, &buffers.shared.memoryAllocationInfo))
+    {
+        return false;
+    }
+    buffers.ui.bufferInfo = &buffers.shared;
+    buffers.ui.offset = 0;
     for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
-        buffers.translation[i].memoryAllocationInfo.memoryInfo = &memoryPools.sharedMemory;
-        if (!CreateBuffer(&buffers.translation[i].buffer, sizeof(mat4), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, false,
-                          &buffers.translation[i].memoryAllocationInfo))
-        {
-            return false;
-        }
+        buffers.translation[i].bufferInfo = &buffers.shared;
+        buffers.translation[i].offset = sizeof(UiVertex) * buffers.ui.maxVertices + sizeof(mat4) * i;
     }
 
-    buffers.data.memoryAllocationInfo.memoryInfo = &memoryPools.sharedMemory;
-    if (!CreateBuffer(&buffers.data.buffer, sizeof(DataUniformBufferObject),
-                      VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, false,
-                      &buffers.data.memoryAllocationInfo))
+    return true;
+}
+
+bool AllocateMemory()
+{
+    bool allocated = false;
+
+    VkPhysicalDeviceMemoryProperties memoryProperties;
+    vkGetPhysicalDeviceMemoryProperties(physicalDevice.device, &memoryProperties);
+    for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++)
     {
+        if (memoryPools.localMemory.memoryTypeBits & 1 << i &&
+            (memoryProperties.memoryTypes[i].propertyFlags & memoryPools.localMemory.type) == memoryPools.localMemory.
+            type)
+        {
+            const VkMemoryAllocateInfo allocInfo = {
+                VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+                NULL,
+                memoryPools.localMemory.size,
+                i
+            };
+
+            VulkanTest(vkAllocateMemory(device, &allocInfo, NULL, &memoryPools.localMemory.memory),
+                       "Failed to allocate device local buffer memory!");
+
+            allocated = true;
+            break;
+        }
+    }
+    if (!allocated)
+    {
+        VulkanLogError("Failed to allocate device local buffer memory!");
+
         return false;
     }
 
-    return AllocateMemory();
+    allocated = false;
+    for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++)
+    {
+        if (memoryPools.sharedMemory.memoryTypeBits & 1 << i &&
+            (memoryProperties.memoryTypes[i].propertyFlags & memoryPools.sharedMemory.type) == memoryPools.sharedMemory.
+            type)
+        {
+            const VkMemoryAllocateInfo allocInfo = {
+                VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+                NULL,
+                memoryPools.sharedMemory.size,
+                i
+            };
+
+            VulkanTest(vkAllocateMemory(device, &allocInfo, NULL, &memoryPools.sharedMemory.memory),
+                       "Failed to allocate device shared buffer memory!");
+
+            allocated = true;
+            break;
+        }
+    }
+    if (!allocated)
+    {
+        VulkanLogError("Failed to allocate device shared buffer memory!");
+
+        return false;
+    }
+
+    VulkanTest(vkBindBufferMemory(device, buffers.local.buffer, memoryPools.localMemory.memory,
+                   buffers.local.memoryAllocationInfo.offset), "Failed to bind local buffer memory!");
+    VulkanTest(vkBindBufferMemory(device, buffers.shared.buffer, memoryPools.sharedMemory.memory,
+                   buffers.shared.memoryAllocationInfo.offset), "Failed to bind shared buffer memory!");
+
+    VulkanTest(vkMapMemory(device, memoryPools.sharedMemory.memory, 0, VK_WHOLE_SIZE, 0,
+                   &memoryPools.sharedMemory.mappedMemory), "Failed to map shared buffer memory!");
+
+    buffers.ui.vertices = memoryPools.sharedMemory.mappedMemory +
+                          buffers.shared.memoryAllocationInfo.offset + buffers.ui.offset;
+    for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
+        buffers.translation[i].data = memoryPools.sharedMemory.mappedMemory +
+                                      buffers.shared.memoryAllocationInfo.offset + buffers.translation[i].offset;
+    }
+
+    return true;
 }
 
 bool CreateDescriptorPool()
@@ -1717,8 +1765,8 @@ bool CreateDescriptorSets()
     for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
         VkDescriptorBufferInfo uniformBufferInfo = {
-            buffers.translation[i].buffer,
-            0,
+            buffers.translation[i].bufferInfo->buffer,
+            buffers.translation[i].offset,
             sizeof(mat4)
         };
 
@@ -1732,13 +1780,7 @@ bool CreateDescriptorSets()
             };
         }
 
-        VkDescriptorBufferInfo dataBufferInfo = {
-            buffers.data.buffer,
-            0,
-            sizeof(DataUniformBufferObject)
-        };
-
-        const VkWriteDescriptorSet writeDescriptorList[3] = {
+        const VkWriteDescriptorSet writeDescriptorList[2] = {
             {
                 VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
                 NULL,
@@ -1762,21 +1804,9 @@ bool CreateDescriptorSets()
                 imageInfo,
                 NULL,
                 NULL
-            },
-            {
-                VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-                NULL,
-                descriptorSets[i],
-                2,
-                0,
-                1,
-                VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                NULL,
-                &dataBufferInfo,
-                NULL
             }
         };
-        vkUpdateDescriptorSets(device, 3, writeDescriptorList, 0, NULL);
+        vkUpdateDescriptorSets(device, 2, writeDescriptorList, 0, NULL);
     }
 
     return true;

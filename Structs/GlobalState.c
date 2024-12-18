@@ -13,6 +13,7 @@
 #include "../Helpers/Core/Error.h"
 #include "../Helpers/Core/Logging.h"
 #include "../Helpers/Core/PhysicsThread.h"
+#include "../Helpers/Graphics/RenderingHelpers.h"
 #include "../Structs/Level.h"
 #include "../Structs/Wall.h"
 
@@ -152,6 +153,7 @@ void ChangeLevel(Level *l)
     }
     BakeWallArray(l);
     BakeActorArray(l);
+    LoadLevelWalls(l);
 }
 
 void ChangeMusic(const byte *asset)

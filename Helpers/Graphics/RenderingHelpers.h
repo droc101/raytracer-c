@@ -23,13 +23,6 @@ typedef struct BatchedQuadArray
 extern Renderer currentRenderer;
 
 /**
- * Get the transformation matrix for a camera
- * @param cam The camera
- * @return A mat4 MODEL_VIEW_PROJECTION matrix of the camera (World space to screen space)
- */
-mat4 *GetMatrix(const Camera *cam);
-
-/**
  * Get the transformation matrix for an actor
  * @param Actor The actor
  * @return A mat4 MODEL matrix of the actor (Model space to world space)
@@ -61,6 +54,8 @@ VkResult FrameStart();
  * Run tasks needed to present the frame to the screen, as well as swapping the framebuffers
  */
 void FrameEnd();
+
+void LoadLevelWalls(const Level *l);
 
 /**
  * Render the 3D portion of a level

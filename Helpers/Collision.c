@@ -15,7 +15,7 @@ Vector2 CollideWall(const Wall *w, const Vector2 position, Vector2 moveVec)
     const int mult = (position.x - w->a.x) * (w->b.y - w->a.y) - (position.y - w->a.y) * (w->b.x - w->a.x) < 0 ? -1 : 1;
     const double hitboxSize = mult * WALL_HITBOX_EXTENTS;
     const Vector2 pos = Vector2Add(position, moveVec);
-    const Vector2 hitboxOffset = v2(hitboxSize * dy / w->Length, -hitboxSize * dx / w->Length);
+    const Vector2 hitboxOffset = v2(hitboxSize * dy / w->length, -hitboxSize * dx / w->length);
     if (
         mult * ((pos.x - w->a.x - hitboxOffset.x) * (w->b.y - w->a.y) -
                 (pos.y - w->a.y - hitboxOffset.y) * (w->b.x - w->a.x)) <= 0 &&
@@ -27,7 +27,7 @@ Vector2 CollideWall(const Wall *w, const Vector2 position, Vector2 moveVec)
     {
         const double dydx = dy / (dx ? dx : 1);
         const double dxdy = dx / (dy ? dy : 1);
-        const double wallLength = w->Length;
+        const double wallLength = w->length;
         moveVec.x = hitboxSize * dy / wallLength +
                     (dx == 0
                          ? w->a.x
@@ -90,6 +90,6 @@ bool CollideActorCylinder(const Actor *a, const Vector2 testPoint)
     {
         return false;
     }
-    const double radius = transformedWall.Length / 2;
+    const double radius = transformedWall.length / 2;
     return CollideCylinder(a->position, radius, testPoint);
 }

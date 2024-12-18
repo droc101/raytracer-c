@@ -56,8 +56,8 @@ typedef struct Wall
     Vector2 b; // The second point of the wall
     const byte *tex; // The raw asset data for the texture
     int texId; // The texture ID
-    double Length; // The length of the wall (Call WallBake to update)
-    double Angle; // The angle of the wall (Call WallBake to update)
+    double length; // The length of the wall (Call WallBake to update)
+    double angle; // The angle of the wall (Call WallBake to update)
     double dx;
     double dy;
     float uvScale; // The X scale of the texture

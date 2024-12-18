@@ -20,6 +20,7 @@ void main() {
     }
 
     gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
+
     outColor[gl_InvocationID] = inColor[gl_InvocationID];
     outUV[gl_InvocationID] = inUV[gl_InvocationID];
     outTextureIndex[gl_InvocationID] = inTextureIndex[gl_InvocationID];

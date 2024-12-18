@@ -5,9 +5,9 @@
 #include "Vulkan.h"
 #include "VulkanHelpers.h"
 #include "VulkanInternal.h"
-#include "../../../Assets/AssetReader.h"
 #include "../../../Structs/GlobalState.h"
-#include "../../Core/DataReader.h"
+
+const Level *loadedLevel = NULL;
 
 bool VK_Init(SDL_Window *window)
 {
@@ -16,15 +16,9 @@ bool VK_Init(SDL_Window *window)
         CreateImageViews() && CreateRenderPass() && CreateDescriptorSetLayouts() && CreateGraphicsPipelineCache() &&
         CreateGraphicsPipelines() && CreateCommandPools() && CreateColorImage() && CreateDepthImage() &&
         CreateFramebuffers() && LoadTextures() && CreateTexturesImageView() && CreateTextureSampler() &&
-        CreateVertexBuffers() && CreateUniformBuffers() && CreateDescriptorPool() && CreateDescriptorSets() &&
+        CreateBuffers() && AllocateMemory() && CreateDescriptorPool() && CreateDescriptorSets() &&
         CreateCommandBuffers() && CreateSyncObjects())
     {
-        const DataUniformBufferObject dataBufferObject = {
-            texturesAssetIDMap[ReadUintA(DecompressAsset(gztex_actor_iq), 12)]
-        };
-
-        memcpy(buffers.data.data, &dataBufferObject, sizeof(dataBufferObject));
-
         return true;
     }
     VK_Cleanup();
@@ -67,38 +61,53 @@ VkResult VK_FrameEnd()
     const GlobalState *g = GetState();
     if (g->currentState == MAIN_STATE || g->currentState == PAUSE_STATE)
     {
-        DrawVertexBuffer(commandBuffers[currentFrame], pipelines.walls, buffers.walls);
+        vkCmdBindPipeline(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.walls);
+
+        vkCmdBindVertexBuffers(commandBuffers[currentFrame], 0, 2, (VkBuffer[2]){buffers.walls.bufferInfo->buffer, buffers.walls.bufferInfo->buffer}, buffers.walls.offsets);
+
+        vkCmdBindDescriptorSets(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1,
+                                &descriptorSets[currentFrame], 0, NULL);
+
+        vkCmdDraw(commandBuffers[currentFrame], 2 * buffers.walls.wallCount, buffers.walls.wallCount, 0, 0);
     }
 
     vkCmdNextSubpass(commandBuffers[currentFrame], VK_SUBPASS_CONTENTS_INLINE);
 
-    if (buffers.ui.fallbackMaxVertices > 0)
-    {
-        VulkanLogError("UI Buffer Resized!!\n"); // TODO remove me when buffer size figured out
+    // TODO Resizing the buffers does not work
+    // if (buffers.ui.fallbackMaxVertices > 0)
+    // {
+    //     VulkanLogError("UI Buffer Resized!!\n"); // TODO remove me when buffer size figured out
+    //
+    //     vkUnmapMemory(device, memoryPools.sharedMemory.memory);
+    //     vkDestroyBuffer(device, buffers.ui.bufferInfo, NULL);
+    //     vkFreeMemory(device, memoryPools.sharedMemory.memory, NULL);
+    //
+    //     // buffers.ui.memoryAllocationInfo.memoryInfo = &memoryPools.sharedMemory;
+    //     // CreateBuffer(&buffers.ui.bufferInfo, sizeof(UiVertex) * buffers.ui.fallbackMaxVertices,
+    //     //              VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, false,
+    //     //              &buffers.ui.memoryAllocationInfo);
+    //
+    //
+    //     VulkanTest(vkMapMemory(device, memoryPools.sharedMemory.memory, 0,
+    //                    sizeof(*buffers.ui.vertices) * buffers.ui.fallbackMaxVertices, 0,
+    //                    (void**)&buffers.ui.vertices), "Failed to map ui vertex buffer memory!");
+    //
+    //     memcpy(buffers.ui.vertices, buffers.ui.fallback,
+    //            sizeof(UiVertex) * buffers.ui.fallbackMaxVertices);
+    //
+    //     buffers.ui.maxVertices = buffers.ui.fallbackMaxVertices;
+    //     buffers.ui.fallbackMaxVertices = 0;
+    //     free(buffers.ui.fallback);
+    // }
 
-        vkUnmapMemory(device, memoryPools.sharedMemory.memory);
-        vkDestroyBuffer(device, buffers.ui.buffer, NULL);
-        vkFreeMemory(device, memoryPools.sharedMemory.memory, NULL);
+    vkCmdBindPipeline(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.ui);
 
-        buffers.ui.memoryAllocationInfo.memoryInfo = &memoryPools.sharedMemory;
-        CreateBuffer(&buffers.ui.buffer, sizeof(UiVertex) * buffers.ui.fallbackMaxVertices,
-                     VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, false,
-                     &buffers.ui.memoryAllocationInfo);
+    vkCmdBindVertexBuffers(commandBuffers[currentFrame], 0, 1, &buffers.ui.bufferInfo->buffer, (VkDeviceSize[1]){buffers.ui.offset});
 
-        // TODO Resizing the buffers does not work
-        VulkanTest(vkMapMemory(device, memoryPools.sharedMemory.memory, 0,
-                       sizeof(*buffers.ui.vertices) * buffers.ui.fallbackMaxVertices, 0,
-                       (void**)&buffers.ui.vertices), "Failed to map ui vertex buffer memory!");
+    vkCmdBindDescriptorSets(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1,
+                            &descriptorSets[currentFrame], 0, NULL);
 
-        memcpy(buffers.ui.vertices, buffers.ui.fallback,
-               sizeof(UiVertex) * buffers.ui.fallbackMaxVertices);
-
-        buffers.ui.maxVertices = buffers.ui.fallbackMaxVertices;
-        buffers.ui.fallbackMaxVertices = 0;
-        free(buffers.ui.fallback);
-    }
-
-    DrawVertexBuffer(commandBuffers[currentFrame], pipelines.ui, buffers.ui);
+    vkCmdDraw(commandBuffers[currentFrame], buffers.ui.vertexCount, 1, 0, 0);
 
     VulkanTestReturnResult(EndRenderPass(commandBuffers[currentFrame]), "Failed to end render pass!");
 
@@ -145,9 +154,10 @@ VkResult VK_FrameEnd()
     return VK_SUCCESS;
 }
 
-VkResult VK_RenderLevel()
+VkResult VK_RenderLevel(const Level *level, const Camera *camera)
 {
-    UpdateUniformBuffer(currentFrame);
+    if (loadedLevel != level) VK_LoadLevelWalls(level);
+    UpdateUniformBuffer(camera, currentFrame);
     return VK_SUCCESS;
 }
 
@@ -183,13 +193,8 @@ bool VK_Cleanup()
         vkDestroyDescriptorPool(device, descriptorPool, NULL);
         vkDestroyDescriptorSetLayout(device, descriptorSetLayout, NULL);
 
-        vkDestroyBuffer(device, buffers.ui.buffer, NULL);
-        vkDestroyBuffer(device, buffers.data.buffer, NULL);
-        vkDestroyBuffer(device, buffers.walls.buffer, NULL);
-        for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-        {
-            vkDestroyBuffer(device, buffers.translation[i].buffer, NULL);
-        }
+        vkDestroyBuffer(device, buffers.local.buffer, NULL);
+        vkDestroyBuffer(device, buffers.shared.buffer, NULL);
 
         vkFreeMemory(device, memoryPools.localMemory.memory, NULL);
         vkFreeMemory(device, memoryPools.sharedMemory.memory, NULL);
@@ -223,6 +228,67 @@ inline uint8_t VK_GetSampleCountFlags()
     return physicalDevice.properties.limits.framebufferColorSampleCounts &
            physicalDevice.properties.limits.framebufferDepthSampleCounts &
            0xF;
+}
+
+bool VK_LoadLevelWalls(const Level *level)
+{
+    VkBuffer stagingBuffer;
+    void *data;
+
+    buffers.walls.wallCount = level->staticWalls->size;
+    WallVertex vertices[buffers.walls.wallCount * 2];
+    WallInfo info[buffers.walls.wallCount];
+    for (uint32_t i = 0; i < buffers.walls.wallCount; i++)
+    {
+        const Wall *wall = SizedArrayGet(level->staticWalls, i);
+        vertices[2 * i].x = (float)wall->a.x;
+        vertices[2 * i].y = (float)wall->a.y;
+        vertices[2 * i].u = wall->uvOffset;
+        vertices[2 * i].v = 0;
+        vertices[2 * i + 1].x = (float)wall->b.x;
+        vertices[2 * i + 1].y = (float)wall->b.y;
+        vertices[2 * i + 1].u = (float)(wall->uvScale * wall->length + wall->uvOffset);
+        vertices[2 * i + 1].v = 1.0f;
+        info[i].halfHeight = wall->height / 2.0f;
+        info[i].textureIndex = TextureIndex(wall->tex);
+    }
+
+    const VkDeviceSize bufferSize = buffers.walls.maxWallCount * (2 * sizeof(WallVertex) + sizeof(WallInfo));
+
+    MemoryInfo memoryInfo = {
+        0,
+        NULL,
+        0,
+        0,
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+    };
+    MemoryAllocationInfo allocationInfo = {
+        0,
+        &memoryInfo,
+        {0}
+    };
+    if (!CreateBuffer(&stagingBuffer, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, true, &allocationInfo))
+    {
+        return false;
+    }
+
+    VulkanTest(vkMapMemory(device, memoryInfo.memory, 0, bufferSize, 0, &data),
+               "Failed to map Vulkan vertex staging buffer memory!");
+
+    memset(data, 0, bufferSize);
+    memcpy(data, vertices, 2 * buffers.walls.maxWallCount * sizeof(WallVertex));
+    memcpy(data + 2 * buffers.walls.maxWallCount * sizeof(WallVertex), &info, buffers.walls.maxWallCount * sizeof(WallInfo));
+    vkUnmapMemory(device, memoryInfo.memory);
+
+
+    if (!CopyBuffer(stagingBuffer, buffers.walls.bufferInfo->buffer, bufferSize)) return false;
+
+    vkDestroyBuffer(device, stagingBuffer, NULL);
+    vkFreeMemory(device, memoryInfo.memory, NULL);
+
+    loadedLevel = level;
+
+    return true;
 }
 
 bool VK_DrawColoredQuad(const int32_t x, const int32_t y, const int32_t w, const int32_t h, const uint32_t color)

@@ -639,13 +639,13 @@ void GL_DrawWall(const Wall *w, const mat4 *mdl, const Camera *cam, const Level 
                        mdl[0][0]); // model -> world
 
     glUniform1f(glGetUniformLocation(wall_generic->program, "camera_yaw"), cam->yaw);
-    glUniform1f(glGetUniformLocation(wall_generic->program, "wall_angle"), w->Angle);
+    glUniform1f(glGetUniformLocation(wall_generic->program, "wall_angle"), w->angle);
 
     float vertices[4][5] = {
         // X Y Z U V
         {w->a.x, 0.5f * w->height, w->a.y, 0.0f, 0.0f},
-        {w->b.x, 0.5f * w->height, w->b.y, w->Length, 0.0f},
-        {w->b.x, -0.5f * w->height, w->b.y, w->Length, 1.0f},
+        {w->b.x, 0.5f * w->height, w->b.y, w->length, 0.0f},
+        {w->b.x, -0.5f * w->height, w->b.y, w->length, 1.0f},
         {w->a.x, -0.5f * w->height, w->a.y, 0.0f, 1.0f}
     };
 
@@ -867,6 +867,39 @@ void GL_DrawTexturedArrays(const float *vertices, const uint *indices, const int
     glDrawElements(GL_TRIANGLES, quad_count * 6, GL_UNSIGNED_INT, NULL);
 }
 
+mat4 *GL_GetMatrix(const Camera *cam)
+{
+    vec3 cam_pos = {cam->x, cam->y, cam->z};
+    const float aspect = (float) WindowWidth() / (float) WindowHeight();
+
+    mat4 IDENTITY = GLM_MAT4_IDENTITY_INIT;
+    mat4 PERSPECTIVE = GLM_MAT4_ZERO_INIT;
+    glm_perspective(glm_rad(cam->fov), aspect, NEAR_Z, FAR_Z, PERSPECTIVE);
+
+    vec3 look_at = {cosf(cam->yaw), 0, sinf(cam->yaw)};
+    vec3 up = {0, 1, 0};
+
+    // TODO: roll and pitch are messed up
+
+    glm_vec3_rotate(look_at, cam->roll, (vec3){0, 0, 1}); // Roll
+    glm_vec3_rotate(look_at, cam->pitch, (vec3){1, 0, 0}); // Pitch
+
+    look_at[0] += cam_pos[0];
+    look_at[1] += cam_pos[1];
+    look_at[2] += cam_pos[2];
+
+    mat4 VIEW = GLM_MAT4_ZERO_INIT;
+    glm_lookat(cam_pos, look_at, up, VIEW);
+
+    mat4 MODEL_VIEW = GLM_MAT4_ZERO_INIT;
+    glm_mat4_mul(VIEW, IDENTITY, MODEL_VIEW);
+
+    mat4 *MODEL_VIEW_PROJECTION = malloc(sizeof(mat4));
+    glm_mat4_mul(PERSPECTIVE, MODEL_VIEW, *MODEL_VIEW_PROJECTION);
+
+    return MODEL_VIEW_PROJECTION;
+}
+
 void GL_RenderLevel(const Level *l, const Camera *cam)
 {
     GL_Enable3D();
@@ -874,7 +907,7 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
     //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
     //glLineWidth(2);
 
-    mat4 *WORLD_VIEW_MATRIX = GetMatrix(cam);
+    mat4 *WORLD_VIEW_MATRIX = GL_GetMatrix(cam);
     mat4 *IDENTITY = malloc(sizeof(mat4));
     glm_mat4_identity(*IDENTITY);
     mat4 *SKY_MODEL_WORLD = malloc(sizeof(mat4));
@@ -909,7 +942,7 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
             Wall w;
             memcpy(&w, actor->actorWall, sizeof(Wall));
             WallBake(&w);
-            w.Angle += actor->rotation;
+            w.angle += actor->rotation;
             GL_DrawWall(&w, actor_xfm, cam, l);
         } else
         {

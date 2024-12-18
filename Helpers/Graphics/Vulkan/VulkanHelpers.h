@@ -5,17 +5,22 @@
 #ifndef VULKANHELPERS_H
 #define VULKANHELPERS_H
 
-#include <SDL_video.h>
+// It lies.
+// ReSharper disable CppUnusedIncludeDirective
 #include <cglm/cglm.h>
 #include <vulkan/vulkan.h>
+#include "../../../Assets/AssetReader.h"
 #include "../../../Assets/Assets.h"
+#include "../../Core/DataReader.h"
 #include "../../Core/Logging.h"
+// ReSharper restore CppUnusedIncludeDirective
 
 #pragma region macros
 #define VULKAN_VERSION VK_MAKE_VERSION(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH)
 #define MAX_FRAMES_IN_FLIGHT 2
 // TODO Verify start size
-#define UI_PRIMITIVES 2048
+#define MAX_UI_PRIMITIVES_INIT 2048
+#define MAX_WALLS_INIT 100
 
 #define VulkanLogError(...) LogInternal("VULKAN", 31, true, __VA_ARGS__)
 // TODO Use LogInternal
@@ -130,9 +135,17 @@ typedef struct UiVertex
 
 typedef struct WallVertex
 {
-    vec3 pos;
-    vec2 uv;
+    float x;
+    float y;
+    float u;
+    float v;
 } WallVertex;
+
+typedef struct WallInfo
+{
+    float halfHeight;
+    uint32_t textureIndex;
+} WallInfo;
 
 typedef struct Image
 {
@@ -142,54 +155,63 @@ typedef struct Image
     MemoryAllocationInfo allocationInfo;
 } Image;
 
+/**
+ * A structure holding data about a Vulkan buffer.
+ *
+ * This structure is used to keep track of the buffer handle, as well as the memory allocation information associated
+ * with the given buffer.
+ *
+ * @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkBuffer.html
+ */
+typedef struct Buffer
+{
+    /// The actual Vulkan buffer handle
+    /// @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkBuffer.html
+    VkBuffer buffer;
+    /// Stores information about what memory contains the buffer as well as where the buffer is in the memory.
+    MemoryAllocationInfo memoryAllocationInfo;
+} Buffer;
+
+/**
+ * A structure holding data about a translation uniform buffer.
+ *
+ * This structure is used to keep track of not only the larger buffer that the vertex buffer is offset into, but also to
+ * keep track of the host mapped memory and vertex count information.
+ *
+ * @note This is still C, so there are no actual guardrails preventing you from potentially causing a SEGFAULT by attempting to use @c data as an array.
+ */
 typedef struct TranslationUniformBuffer
 {
+    /// The larger buffer within which this uniform buffer resides.
+    Buffer *bufferInfo;
+    /// The offset into the larger buffer at which the uniform buffer can be found.
+    VkDeviceSize offset;
+    /// This pointer will be mapped directly to an offset into some larger block of memory, which allows for data to be
+    /// written to the uniform buffer directly.
+    /// @note This pointer is NOT an array, and only has @c sizeof(mat4) bytes allocated to it.
     mat4 *data;
-    mat4 *fallback;
-    VkBuffer buffer;
-    uint32_t maxInstances;
-    uint32_t instanceCount;
-    uint32_t fallbackMaxInstances;
-    MemoryAllocationInfo memoryAllocationInfo;
 } TranslationUniformBuffer;
-
-typedef struct DataUniformBufferObject
-{
-    uint32_t textureIndex;
-} DataUniformBufferObject;
-
-typedef struct DataUniformBuffer
-{
-    VkBuffer buffer;
-    uint32_t maxInstances;
-    uint32_t instanceCount;
-    uint32_t fallbackMaxInstances;
-    DataUniformBufferObject *data;
-    DataUniformBufferObject *fallback;
-    MemoryAllocationInfo memoryAllocationInfo;
-} DataUniformBuffer;
 
 /**
  * A structure holding data about a UI vertex buffer.
  *
- * This structure is used to keep track of not only the larger buffer that the vertex buffer is offset into,
- * but also to keep track of the memory allocation information, host mapped memory, and vertex count information.
+ * This structure is used to keep track of not only the larger buffer that the vertex buffer is offset into, but also to
+ * keep track of the host mapped memory and vertex count information.
  *
- * @note This is still C, so there are no actual guardrails preventing you from, say, causing a SEGFAULT by attempting to write to vertices[100] when maxVertices is only 20.
- *
- * @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkBuffer.html
+ * @note This is still C, so there are no actual guardrails preventing you from potentially causing a SEGFAULT by attempting to write to @c vertices[100] when @C maxVertices is only 20.
  */
-typedef struct VertexBuffer
+typedef struct UiVertexBuffer
 {
     /// The larger buffer within which this vertex buffer resides.
-    /// @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkBuffer.html
-    VkBuffer buffer;
+    Buffer *bufferInfo;
+    /// The offset into the larger buffer at which this vertex buffer can be found.
+    VkDeviceSize offset;
     /// This pointer will be mapped directly to an offset into some larger block of memory.
-    /// It is able to be used to directly write up to @c maxVertices UiVertex elements to the vertex buffer.
+    /// It is able to be used to directly write up to @c maxVertices elements of type @c UiVertex to the vertex buffer.
     UiVertex *vertices;
-    /// This pointer takes the form of UiVertex[fallbackMaxVertices].
-    /// This pointer is host only, meaning that there is no Vulkan memory backing it.
-    /// This means that for the GPU to be able to access it the data must first be copied to a buffer.
+    /// A fallback pointer that can be used if it is necessary to write more than @c maxVertices vertices to the buffer.
+    /// @note This pointer takes the form of @code UiVertex[fallbackMaxVertices]@endcode.
+    /// @note This pointer is host only, meaning that there is no Vulkan memory backing it. This means that for the GPU to be able to access it the data must first be copied to a buffer.
     UiVertex *fallback;
     /// The current number of vertices that are stored in the buffer.
     uint32_t vertexCount;
@@ -197,15 +219,33 @@ typedef struct VertexBuffer
     uint32_t maxVertices;
     /// The maximum number of vertices that can be stored in the fallback buffer with the currently allocated memory.
     uint32_t fallbackMaxVertices;
-    /// Stores information about what memory contains the buffer, as well as where the buffer is in the memory.
-    MemoryAllocationInfo memoryAllocationInfo;
-} VertexBuffer;
+} UiVertexBuffer;
+
+/**
+ * A structure holding data about a set of walls vertex buffers.
+ *
+ * This structure is used to keep track of the larger buffer that the buffers are a part of, offset information,
+ * and information about the number of walls.
+ */
+typedef struct WallVertexBuffer
+{
+    /// The larger buffer within which the wall vertex buffers reside.
+    Buffer *bufferInfo;
+    /// The offsets of each wall vertex buffer into the larger buffer allocation.
+    VkDeviceSize offsets[2];
+    /// The number of walls that are currently stored in the buffer.
+    uint32_t wallCount;
+    /// The maximum number of walls that can currently be stored in the buffer.
+    uint32_t maxWallCount;
+} WallVertexBuffer;
 
 typedef struct Buffers
 {
-    VertexBuffer ui;
-    VertexBuffer walls;
-    DataUniformBuffer data;
+    Buffer local;
+    Buffer shared;
+
+    UiVertexBuffer ui;
+    WallVertexBuffer walls;
     TranslationUniformBuffer translation[MAX_FRAMES_IN_FLIGHT];
 } Buffers;
 
@@ -342,8 +382,6 @@ bool CreateBuffer(VkBuffer *buffer,
 
 bool CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
-bool AllocateMemory();
-
 void CleanupSwapChain();
 
 void CleanupColorImage();
@@ -356,13 +394,11 @@ void CleanupSyncObjects();
 #pragma endregion helperFunctions
 
 #pragma region drawingHelpers
-void UpdateUniformBuffer(uint32_t currentFrame);
+void UpdateUniformBuffer(const Camera *camera, uint32_t currentFrame);
 
 VkResult BeginRenderPass(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 
 VkResult EndRenderPass(VkCommandBuffer commandBuffer);
-
-void DrawVertexBuffer(VkCommandBuffer commandBuffer, VkPipeline pipeline, VertexBuffer vertexBuffer);
 
 bool DrawRectInternal(float ndcStartX,
                       float ndcStartY,

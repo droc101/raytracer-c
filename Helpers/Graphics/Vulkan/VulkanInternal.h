@@ -6,11 +6,7 @@
 #ifndef VULKANINTERNAL_H
 #define VULKANINTERNAL_H
 
-#define CGLM_FORCE_LEFT_HANDED
-#define CGLM_FORCE_DEPTH_ZERO_TO_ONE
-
 #include <cglm/cglm.h>
-#include <vulkan/vulkan.h>
 
 #pragma region internalFunctions
 /**
@@ -60,9 +56,9 @@ bool CreateTexturesImageView();
 
 bool CreateTextureSampler();
 
-bool CreateVertexBuffers();
+bool CreateBuffers();
 
-bool CreateUniformBuffers();
+bool AllocateMemory();
 
 bool CreateDescriptorPool();
 
