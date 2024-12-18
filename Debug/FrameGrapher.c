@@ -64,14 +64,19 @@ void FrameGraphDraw()
         double f = 1000000000.0 / ns;
         double nextF = 1000000000.0 / nextNs;
 
+#ifdef FRAMEGRAPH_SHOW_LINEAR_TIME_GRAPH
         double nsRemapped = remap(ns, 0, FRAMEGRAPH_NSPF, 0, FRAMEGRAPH_THRESHOLD_GOOD);
         double nextNsRemapped = remap(nextNs, 0, FRAMEGRAPH_NSPF, 0, FRAMEGRAPH_THRESHOLD_GOOD);
+#endif
+
 
 #ifdef FRAMEGRAPH_ENABLE_CAPPING
         if (f > FRAMEGRAPH_THRESHOLD_GOOD * 2) { f = FRAMEGRAPH_THRESHOLD_GOOD * 2; }
         if (nextF > FRAMEGRAPH_THRESHOLD_GOOD * 2) { nextF = FRAMEGRAPH_THRESHOLD_GOOD * 2; }
+#ifdef FRAMEGRAPH_SHOW_LINEAR_TIME_GRAPH
         if (nsRemapped > FRAMEGRAPH_THRESHOLD_GOOD * 2) { nsRemapped = FRAMEGRAPH_THRESHOLD_GOOD * 2; }
         if (nextNsRemapped > FRAMEGRAPH_THRESHOLD_GOOD * 2) { nextNsRemapped = FRAMEGRAPH_THRESHOLD_GOOD * 2; }
+#endif
 #endif
 
 
@@ -93,12 +98,13 @@ void FrameGraphDraw()
         }
         SetColorUint(lineColor);
         DrawLine(v2(x1, y1), v2(x2, y2), 2);
-
+#ifdef FRAMEGRAPH_SHOW_LINEAR_TIME_GRAPH
         // 2nd line for frame time
         y1 = (double) WindowHeight() - nsRemapped * FRAMEGRAPH_V_SCALE - 10;
         y2 = (double) WindowHeight() - nextNsRemapped * FRAMEGRAPH_V_SCALE - 10;
         SetColorUint((lineColor & 0x00ffffff) | 0x80000000); // set the alpha to 50% of the line color
         DrawLine(v2(x1, y1), v2(x2, y2), 2);
+#endif
     }
 #else
     uint lineColor;

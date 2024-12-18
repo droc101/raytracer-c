@@ -8,7 +8,7 @@ The engine has various debug features available. These can be enabled or disable
 ## DPrint
 `Debug/Dprint.h` provides `DPrintf` which prints a message to an on-screen "console" that is reset every frame. This is useful for debugging without needing to open a console or slow down due to console I/O.
 
-## Frame Grapther
+## Frame Grapher
 `Debug/FrameGrapher.h` provides a simple frame grapher that shows the framerate/frametime over a period of time, as well as the current FPS and MSPF. Several configuration options are available in the header.
 
 The graph contains 2 lines, the opaque one is FPS, where higher is better, and the transparent one is frametime, where lower is better.

@@ -28,6 +28,9 @@
 // Enable or disable the physicsFrame graph (just the rendering)
 #define FRAMEGRAPH_ENABLE
 
+// Enable or disable the 2nd graph line for linear time
+#define FRAMEGRAPH_SHOW_LINEAR_TIME_GRAPH
+
 // Disable to draw the graph
 // Drawing the graph has a significant performance impact
 //#define FRAMEGRAPH_FPS_ONLY
