@@ -13,6 +13,6 @@ bool SetLocalBufferAliasingInfo();
 bool CreateSharedBuffer();
 bool SetSharedBufferAliasingInfo();
 
-
+void UpdateDescriptorSets();
 
 #endif //VULKANRESOURCES_H

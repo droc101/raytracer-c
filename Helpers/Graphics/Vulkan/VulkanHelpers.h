@@ -18,9 +18,8 @@
 #pragma region macros
 #define VULKAN_VERSION VK_MAKE_VERSION(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH)
 #define MAX_FRAMES_IN_FLIGHT 2
-// TODO Verify start size
-#define MAX_UI_QUADS_INIT 2048
-#define MAX_WALLS_INIT 100
+#define MAX_UI_QUADS_INIT 8192
+#define MAX_WALLS_INIT 1024
 
 #define VulkanLogError(...) LogInternal("VULKAN", 31, true, __VA_ARGS__)
 // TODO Use LogInternal
@@ -217,7 +216,7 @@ typedef struct UiVertexBuffer
     /// A fallback pointer that can be used if it is necessary to write more than @code maxQuads * 4@endcode vertices to the buffer.
     /// @note This pointer takes the form of @code UiVertex[fallbackMaxQuads * 4]@endcode.
     /// @note This pointer is host only, meaning that there is no Vulkan memory backing it. This means that for the GPU to be able to access it the data must first be copied to a buffer.
-    UiVertex *fallback;
+    UiVertex *fallbackVertices;
     /// A fallback pointer that can be used if it is necessary to write more than @code maxQuads * 6@endcode indices to the buffer.
     /// @note This pointer takes the form of @code uint32_t[fallbackMaxVertices * 6]@endcode.
     /// @note This pointer is host only, meaning that there is no Vulkan memory backing it. This means that for the GPU to be able to access it the data must first be copied to a buffer.

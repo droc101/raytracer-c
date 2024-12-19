@@ -1389,7 +1389,7 @@ bool LoadTextures()
                 }
             };
 
-            // TODO validation
+            // TODO Best practices validation doesn't like this
             vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
                                  0, 0, NULL, 0, NULL, 1, &mipmapBarrier);
 
@@ -1609,52 +1609,7 @@ bool CreateDescriptorSets()
     VulkanTest(vkAllocateDescriptorSets(device, &allocateInfo, descriptorSets),
                "Failed to allocate Vulkan descriptor sets!");
 
-    for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-    {
-        VkDescriptorBufferInfo uniformBufferInfo = {
-            buffers.translation[i].bufferInfo->buffer,
-            buffers.translation[i].offset,
-            sizeof(mat4)
-        };
-
-        VkDescriptorImageInfo imageInfo[TEXTURE_ASSET_COUNT];
-        for (uint16_t textureIndex = 0; textureIndex < TEXTURE_ASSET_COUNT; textureIndex++)
-        {
-            imageInfo[textureIndex] = (VkDescriptorImageInfo){
-                textureSamplers.nearestRepeat,
-                texturesImageView[textureIndex],
-                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-            };
-        }
-
-        const VkWriteDescriptorSet writeDescriptorList[2] = {
-            {
-                VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-                NULL,
-                descriptorSets[i],
-                0,
-                0,
-                1,
-                VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                NULL,
-                &uniformBufferInfo,
-                NULL
-            },
-            {
-                VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-                NULL,
-                descriptorSets[i],
-                1,
-                0,
-                TEXTURE_ASSET_COUNT,
-                VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                imageInfo,
-                NULL,
-                NULL
-            }
-        };
-        vkUpdateDescriptorSets(device, 2, writeDescriptorList, 0, NULL);
-    }
+    UpdateDescriptorSets();
 
     return true;
 }

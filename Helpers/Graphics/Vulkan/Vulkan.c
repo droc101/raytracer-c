@@ -57,6 +57,42 @@ VkResult VK_FrameStart()
 
 VkResult VK_FrameEnd()
 {
+    if (buffers.ui.fallbackMaxQuads > 0)
+    {
+        if (currentFrame == 0)
+        {
+            VulkanTestReturnResult(vkWaitForFences(device, 1, &inFlightFences[MAX_FRAMES_IN_FLIGHT - 1],
+                                       VK_TRUE, UINT64_MAX), "Failed to wait for Vulkan fences!");
+        } else
+        {
+            VulkanTestReturnResult(vkWaitForFences(device, 1, &inFlightFences[currentFrame - 1],
+                                       VK_TRUE, UINT64_MAX), "Failed to wait for Vulkan fences!");
+        }
+
+        mat4 *translationMatrix = malloc(sizeof(mat4));
+        memcpy(translationMatrix, buffers.translation[currentFrame].data, sizeof(mat4));
+
+        vkDestroyBuffer(device, buffers.ui.bufferInfo->buffer, NULL);
+        vkFreeMemory(device, memoryPools.sharedMemory.memory, NULL);
+
+        buffers.ui.maxQuads = buffers.ui.fallbackMaxQuads;
+        buffers.ui.fallbackMaxQuads = 0;
+
+        CreateSharedBuffer();
+        SetSharedBufferAliasingInfo();
+
+        CreateSharedMemory();
+
+        memcpy(buffers.ui.vertices, buffers.ui.fallbackVertices, sizeof(UiVertex) * buffers.ui.maxQuads * 4);
+        memcpy(buffers.ui.indices, buffers.ui.fallbackIndices, sizeof(uint32_t) * buffers.ui.maxQuads * 6);
+        memcpy(buffers.translation[currentFrame].data, translationMatrix, sizeof(mat4));
+
+        UpdateDescriptorSets();
+
+        free(buffers.ui.fallbackVertices);
+        free(translationMatrix);
+    }
+
     VulkanTestReturnResult(BeginRenderPass(commandBuffers[currentFrame], swapchainImageIndex),
                            "Failed to begin render pass!");
 
@@ -78,33 +114,6 @@ VkResult VK_FrameEnd()
     }
 
     vkCmdNextSubpass(commandBuffers[currentFrame], VK_SUBPASS_CONTENTS_INLINE);
-
-    // TODO Resizing the buffers does not work
-    // if (buffers.ui.fallbackMaxVertices > 0)
-    // {
-    //     VulkanLogError("UI Buffer Resized!!\n"); // TODO remove me when buffer size figured out
-    //
-    //     vkUnmapMemory(device, memoryPools.sharedMemory.memory);
-    //     vkDestroyBuffer(device, buffers.ui.bufferInfo, NULL);
-    //     vkFreeMemory(device, memoryPools.sharedMemory.memory, NULL);
-    //
-    //     // buffers.ui.memoryAllocationInfo.memoryInfo = &memoryPools.sharedMemory;
-    //     // CreateBuffer(&buffers.ui.bufferInfo, sizeof(UiVertex) * buffers.ui.fallbackMaxVertices,
-    //     //              VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, false,
-    //     //              &buffers.ui.memoryAllocationInfo);
-    //
-    //
-    //     VulkanTest(vkMapMemory(device, memoryPools.sharedMemory.memory, 0,
-    //                    sizeof(*buffers.ui.vertices) * buffers.ui.fallbackMaxVertices, 0,
-    //                    (void**)&buffers.ui.vertices), "Failed to map ui vertex buffer memory!");
-    //
-    //     memcpy(buffers.ui.vertices, buffers.ui.fallback,
-    //            sizeof(UiVertex) * buffers.ui.fallbackMaxVertices);
-    //
-    //     buffers.ui.maxVertices = buffers.ui.fallbackMaxVertices;
-    //     buffers.ui.fallbackMaxVertices = 0;
-    //     free(buffers.ui.fallback);
-    // }
 
     vkCmdBindPipeline(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.ui);
 
@@ -176,8 +185,6 @@ bool VK_Cleanup()
     if (device)
     {
         VulkanTest(vkDeviceWaitIdle(device), "Failed to wait for Vulkan device to become idle!");
-
-        if (memoryPools.sharedMemory.memory) vkUnmapMemory(device, memoryPools.sharedMemory.memory);
 
         CleanupSwapChain();
 

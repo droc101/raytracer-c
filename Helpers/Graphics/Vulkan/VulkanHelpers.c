@@ -510,29 +510,59 @@ bool DrawQuadInternal(const mat4 vertices_posXY_uvZW,
             if (buffers.ui.fallbackMaxQuads)
             {
                 buffers.ui.fallbackMaxQuads += 16;
-                UiVertex *newVertices = realloc(buffers.ui.fallback, sizeof(UiVertex) * buffers.ui.fallbackMaxQuads * 4);
+
+                UiVertex *newVertices = realloc(buffers.ui.fallbackVertices,
+                                                sizeof(UiVertex) * buffers.ui.fallbackMaxQuads * 4);
                 if (!newVertices)
                 {
                     free(newVertices);
-                    free(buffers.ui.fallback);
+                    free(buffers.ui.fallbackVertices);
+
                     VulkanLogError("realloc of fallback UI vertex buffer failed!");
+
                     return false;
                 }
-                buffers.ui.fallback = newVertices;
+                buffers.ui.fallbackVertices = newVertices;
+
+                uint32_t *newIndices = realloc(buffers.ui.fallbackVertices,
+                                               sizeof(UiVertex) * buffers.ui.fallbackMaxQuads * 4);
+                if (!newIndices)
+                {
+                    free(newVertices);
+                    free(buffers.ui.fallbackVertices);
+
+                    free(newIndices);
+                    free(buffers.ui.fallbackIndices);
+
+                    VulkanLogError("realloc of fallback UI index buffer failed!");
+
+                    return false;
+                }
+                buffers.ui.fallbackIndices = newIndices;
             } else
             {
                 buffers.ui.fallbackMaxQuads = buffers.ui.maxQuads + 16;
-                buffers.ui.fallback = malloc(sizeof(UiVertex) * buffers.ui.fallbackMaxQuads * 4);
-                memcpy(buffers.ui.fallback, buffers.ui.vertices, sizeof(UiVertex) * buffers.ui.maxQuads * 4);
-                if (!buffers.ui.fallback)
+
+                buffers.ui.fallbackVertices = malloc(sizeof(UiVertex) * buffers.ui.fallbackMaxQuads * 4);
+                if (!buffers.ui.fallbackVertices)
                 {
                     VulkanLogError("malloc of fallback UI vertex buffer failed!");
                     return false;
                 }
+                memcpy(buffers.ui.fallbackVertices, buffers.ui.vertices, sizeof(UiVertex) * buffers.ui.maxQuads * 4);
+
+                buffers.ui.fallbackIndices = malloc(sizeof(uint32_t) * buffers.ui.fallbackMaxQuads * 6);
+                if (!buffers.ui.fallbackIndices)
+                {
+                    VulkanLogError("malloc of fallback UI index buffer failed!");
+
+                    return false;
+                }
+                memcpy(buffers.ui.fallbackIndices, buffers.ui.indices, sizeof(uint32_t) * buffers.ui.maxQuads * 6);
             }
         }
 
-        buffers.ui.fallback[4 * buffers.ui.quadCount] = (UiVertex){
+        buffers.ui.fallbackVertices[4 * buffers.ui.quadCount] = (UiVertex){
             {
                 vertices_posXY_uvZW[0][0],
                 vertices_posXY_uvZW[0][1],
@@ -542,7 +572,7 @@ bool DrawQuadInternal(const mat4 vertices_posXY_uvZW,
             {r, g, b, a},
             textureIndex
         };
-        buffers.ui.fallback[4 * buffers.ui.quadCount + 1] = (UiVertex){
+        buffers.ui.fallbackVertices[4 * buffers.ui.quadCount + 1] = (UiVertex){
             {
                 vertices_posXY_uvZW[1][0],
                 vertices_posXY_uvZW[1][1],
@@ -552,7 +582,7 @@ bool DrawQuadInternal(const mat4 vertices_posXY_uvZW,
             {r, g, b, a},
             textureIndex
         };
-        buffers.ui.fallback[4 * buffers.ui.quadCount + 2] = (UiVertex){
+        buffers.ui.fallbackVertices[4 * buffers.ui.quadCount + 2] = (UiVertex){
             {
                 vertices_posXY_uvZW[2][0],
                 vertices_posXY_uvZW[2][1],
@@ -562,7 +592,7 @@ bool DrawQuadInternal(const mat4 vertices_posXY_uvZW,
             {r, g, b, a},
             textureIndex
         };
-        buffers.ui.fallback[4 * buffers.ui.quadCount + 3] = (UiVertex){
+        buffers.ui.fallbackVertices[4 * buffers.ui.quadCount + 3] = (UiVertex){
             {
                 vertices_posXY_uvZW[3][0],
                 vertices_posXY_uvZW[3][1],
@@ -572,6 +602,14 @@ bool DrawQuadInternal(const mat4 vertices_posXY_uvZW,
             {r, g, b, a},
             textureIndex
         };
+
+        buffers.ui.fallbackIndices[6 * buffers.ui.quadCount] = buffers.ui.quadCount * 4;
+        buffers.ui.fallbackIndices[6 * buffers.ui.quadCount + 1] = buffers.ui.quadCount * 4 + 1;
+        buffers.ui.fallbackIndices[6 * buffers.ui.quadCount + 2] = buffers.ui.quadCount * 4 + 2;
+        buffers.ui.fallbackIndices[6 * buffers.ui.quadCount + 3] = buffers.ui.quadCount * 4;
+        buffers.ui.fallbackIndices[6 * buffers.ui.quadCount + 4] = buffers.ui.quadCount * 4 + 2;
+        buffers.ui.fallbackIndices[6 * buffers.ui.quadCount + 5] = buffers.ui.quadCount * 4 + 3;
+
         buffers.ui.quadCount++;
 
         return true;
