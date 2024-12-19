@@ -3,6 +3,8 @@
 //
 
 #include "GLHelper.h"
+
+#include <complex.h>
 #include <cglm/cglm.h>
 #include "GLInternal.h"
 #include "../RenderingHelpers.h"
@@ -380,9 +382,9 @@ GLuint GL_LoadTextureFromAsset(const unsigned char *imageData)
     const byte *Decompressed = DecompressAsset(imageData);
 
     //uint size = ReadUintA(Decompressed, 0);
-    const uint width = ReadUintA(Decompressed, 4);
-    const uint height = ReadUintA(Decompressed, 8);
-    const uint id = ReadUintA(Decompressed, 12);
+    const uint width = ReadUintA(Decompressed, IMAGE_WIDTH_OFFSET);
+    const uint height = ReadUintA(Decompressed, IMAGE_HEIGHT_OFFSET);
+    const uint id = ReadUintA(Decompressed, IMAGE_ID_OFFSET);
 
     if (id >= ASSET_COUNT)
     {
@@ -447,7 +449,7 @@ void GL_SetTexParams(const unsigned char *imageData, const bool linear, const bo
 
     const byte *Decompressed = DecompressAsset(imageData);
 
-    const uint id = ReadUintA(Decompressed, 12);
+    const uint id = ReadUintA(Decompressed, IMAGE_ID_OFFSET);
 
     const GLuint tex = GL_Textures[GL_AssetTextureMap[id]];
 

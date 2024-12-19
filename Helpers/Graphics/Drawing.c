@@ -85,8 +85,8 @@ SDL_Surface *ToSDLSurface(const unsigned char *imageData, const char *filterMode
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, filterMode);
 
     //uint size = ReadUintA(Decompressed, 0);
-    const uint width = ReadUintA(Decompressed, 4);
-    const uint height = ReadUintA(Decompressed, 8);
+    const uint width = ReadUintA(Decompressed, IMAGE_WIDTH_OFFSET);
+    const uint height = ReadUintA(Decompressed, IMAGE_HEIGHT_OFFSET);
     //uint id = ReadUintA(Decompressed, 12);
 
     const byte *pixelData = Decompressed + sizeof(uint) * 4; // Skip the first 4 bytes
@@ -294,8 +294,8 @@ Vector2 GetTextureSize(const unsigned char *imageData)
 {
     const byte *Decompressed = DecompressAsset(imageData);
 
-    const uint width = ReadUintA(Decompressed, 4);
-    const uint height = ReadUintA(Decompressed, 8);
+    const uint width = ReadUintA(Decompressed, IMAGE_WIDTH_OFFSET);
+    const uint height = ReadUintA(Decompressed, IMAGE_HEIGHT_OFFSET);
 
     return v2(width, height);
 }

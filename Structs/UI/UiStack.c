@@ -16,21 +16,34 @@
 #include "Controls/RadioButton.h"
 #include "Controls/Slider.h"
 
-const void (*ControlDestroyFuncs[4])(const Control *) = {
+typedef void (*ControlDrawFunc)(const Control *, ControlState state, Vector2 position);
+typedef void (*ControlUpdateFunc)(UiStack *stack, Control *, Vector2 localMousePos, uint ctlIndex);
+typedef void (*ControlDestroyFunc)(const Control *);
+
+/**
+ * Destroy functions for each control type
+ */
+const ControlDestroyFunc ControlDestroyFuncs[4]= {
     DestroyButton, // BUTTON
     DestroySlider, // SLIDER
     DestroyCheckbox, // CHECKBOX
     DestroyRadioButton, // RADIO_BUTTON
 };
 
-const void (*ControlDrawFuncs[4])(const Control *, ControlState state, Vector2 position) = {
+/**
+ * Draw functions for each control type
+ */
+const ControlDrawFunc ControlDrawFuncs[4] = {
     DrawButton, // BUTTON
     DrawSlider, // SLIDER
     DrawCheckbox, // CHECKBOX
     DrawRadioButton, // RADIO_BUTTON
 };
 
-const void (*ControlUpdateFuncs[4])(UiStack *stack, Control *, Vector2 localMousePos, uint ctlIndex) = {
+/**
+ * Update functions for each control type
+ */
+const ControlUpdateFunc ControlUpdateFuncs[4] = {
     UpdateButton, // BUTTON
     UpdateSlider, // SLIDER
     UpdateCheckbox, // CHECKBOX
