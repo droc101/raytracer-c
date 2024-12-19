@@ -7,6 +7,9 @@
 
 #include "../defines.h"
 
+// How far out the hitbox of the wall extends from the actual wall (on both sides)
+#define WALL_HITBOX_EXTENTS 0.2
+
 /**
  * Get the number of available wall textures
  * @return
@@ -37,9 +40,6 @@ Wall *CreateWall(Vector2 a, Vector2 b, const byte *tex, float uvScale, float uvO
  * @warning This function also frees the texture used by the wall
  */
 void FreeWall(Wall *w);
-
-// How far out the hitbox of the wall extends from the actual wall (on both sides)
-#define WALL_HITBOX_EXTENTS 0.2
 
 /**
  * Bake a wall's information

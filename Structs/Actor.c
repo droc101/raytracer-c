@@ -5,6 +5,7 @@
 #include "Actor.h"
 #include "Vector2.h"
 #include "Wall.h"
+#include "../Helpers/Core/Error.h"
 
 // Empty template functions
 void ActorInit(Actor * /*this*/)
@@ -24,7 +25,7 @@ void ActorDestroy(Actor */*this*/)
 #include "../Actor/Goal.h"
 #include "../Actor/TestActor.h"
 
-void (*ActorInitFuncs[])(Actor *) = {
+ActorInitFunction ActorInitFuncs[] = {
     ActorInit,
     TestActorInit,
     CoinInit,
@@ -32,7 +33,7 @@ void (*ActorInitFuncs[])(Actor *) = {
     DoorInit
 };
 
-void (*ActorUpdateFuncs[])(Actor *) = {
+ActorUpdateFunction ActorUpdateFuncs[] = {
     ActorUpdate,
     TestActorUpdate,
     CoinUpdate,
@@ -40,7 +41,7 @@ void (*ActorUpdateFuncs[])(Actor *) = {
     DoorUpdate
 };
 
-void (*ActorDestroyFuncs[])(Actor *) = {
+ActorDestroyFunction ActorDestroyFuncs[] = {
     ActorDestroy,
     TestActorDestroy,
     CoinDestroy,
@@ -103,6 +104,7 @@ Actor *CreateActor(const Vector2 position, const double rotation, const int acto
                    const byte paramB, const byte paramC, const byte paramD)
 {
     Actor *actor = malloc(sizeof(Actor));
+    chk_malloc(actor);
     actor->actorWall = NULL;
     actor->position = position;
     actor->rotation = rotation;
@@ -117,9 +119,9 @@ Actor *CreateActor(const Vector2 position, const double rotation, const int acto
     actor->shadowSize = 1.0f;
     actor->actorModel = NULL;
     actor->actorModelTexture = NULL;
-    actor->Init = (void (*)(void *)) ActorInitFuncs[actorType];
-    actor->Update = (void (*)(void *)) ActorUpdateFuncs[actorType];
-    actor->Destroy = (void (*)(void *)) ActorDestroyFuncs[actorType];
+    actor->Init = ActorInitFuncs[actorType];
+    actor->Update = ActorUpdateFuncs[actorType];
+    actor->Destroy = ActorDestroyFuncs[actorType];
     actor->Init(actor); // kindly allow the Actor to initialize itself
     actor->actorType = actorType;
     return actor;

@@ -5,6 +5,7 @@
 #include "CheckBox.h"
 #include "../../GlobalState.h"
 #include "../../../Assets/Assets.h"
+#include "../../../Helpers/Core/Error.h"
 #include "../../../Helpers/Core/Input.h"
 #include "../../../Helpers/Graphics/Drawing.h"
 #include "../../../Helpers/Graphics/Font.h"
@@ -21,6 +22,7 @@ CreateCheckboxControl(const Vector2 position, const Vector2 size, char *label, v
     checkbox->anchor = anchor;
 
     checkbox->ControlData = malloc(sizeof(CheckBoxData));
+    chk_malloc(checkbox->ControlData);
     CheckBoxData *data = checkbox->ControlData;
     data->label = label;
     data->checked = checked;

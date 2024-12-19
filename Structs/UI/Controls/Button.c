@@ -5,6 +5,7 @@
 #include "Button.h"
 #include "../../GlobalState.h"
 #include "../../../Assets/Assets.h"
+#include "../../../Helpers/Core/Error.h"
 #include "../../../Helpers/Core/Input.h"
 #include "../../../Helpers/Graphics/Drawing.h"
 #include "../../../Helpers/Graphics/Font.h"
@@ -19,6 +20,7 @@ Control *CreateButtonControl(const Vector2 position, const Vector2 size, char *t
     btn->anchor = anchor;
 
     btn->ControlData = malloc(sizeof(ButtonData));
+    chk_malloc(btn->ControlData);
     ButtonData *data = btn->ControlData;
     data->text = text;
     data->callback = callback;

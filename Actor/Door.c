@@ -6,6 +6,7 @@
 
 #include "../Helpers/Collision.h"
 #include "../Helpers/CommonAssets.h"
+#include "../Helpers/Core/Error.h"
 #include "../Helpers/Core/Logging.h"
 #include "../Structs/GlobalState.h"
 #include "../Structs/Vector2.h"
@@ -49,6 +50,7 @@ void DoorInit(Actor *this)
     this->solid = true;
     this->actorWall = CreateWall(v2(0, 0), v2(1, 0), actorTextures[11], 1, 0.0);
     this->extra_data = malloc(sizeof(DoorData));
+    chk_malloc(this->extra_data);
     memset(this->extra_data, 0, sizeof(DoorData));
     DoorData *data = this->extra_data;
     data->state = DOOR_CLOSED;

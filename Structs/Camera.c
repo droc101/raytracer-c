@@ -5,6 +5,8 @@
 #include "Camera.h"
 #include <math.h>
 
+#include "../Helpers/Core/Error.h"
+
 /**
  * Create a camera with default values
  * @return A pointer to the camera
@@ -12,6 +14,7 @@
 Camera *CreateCamera()
 {
     Camera *camera = malloc(sizeof(Camera));
+    chk_malloc(camera);
     camera->x = 0;
     camera->y = 0;
     camera->z = 0;

@@ -4,6 +4,9 @@
 
 #include "PhysicsThread.h"
 #include <SDL_thread.h>
+
+#include "Error.h"
+#include "Logging.h"
 #include "../../defines.h"
 #include "../../Structs/GlobalState.h"
 
@@ -14,7 +17,7 @@ SDL_mutex* PhysicsThreadMutex;
  * The function to run in the physics thread
  * @warning Only touch this when you have a lock on the mutex
  */
-void (*PhysicsThreadFunction)(GlobalState *state);
+FixedUpdateFunction PhysicsThreadFunction;
 
 /**
  * Whether to quit the physics thread on the next iteration
@@ -43,7 +46,7 @@ int PhysicsThreadMain(void*)
             continue;
         }
         // The function is copied to a local variable so we can unlock the mutex during its runtime
-        void (*function)(GlobalState *state) = PhysicsThreadFunction;
+        const FixedUpdateFunction function = PhysicsThreadFunction;
         SDL_UnlockMutex(PhysicsThreadMutex);
         function(GetState());
 
@@ -66,9 +69,15 @@ void PhysicsThreadInit()
     PhysicsThreadPostQuit = false;
     PhysicsThreadMutex = SDL_CreateMutex();
     PhysicsThread = SDL_CreateThread(PhysicsThreadMain, "GamePhysics", NULL);
+    if (PhysicsThread == NULL)
+    {
+        const char *error = SDL_GetError();
+        LogError("Failed to create physics thread: %s\n", error);
+        Error("Failed to create physics thread");
+    }
 }
 
-void PhysicsThreadSetFunction(void (*function)(GlobalState *state))
+void PhysicsThreadSetFunction(const FixedUpdateFunction function)
 {
     SDL_LockMutex(PhysicsThreadMutex);
     PhysicsThreadFunction = function;

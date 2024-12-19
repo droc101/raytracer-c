@@ -9,7 +9,9 @@
 #include "cglm/cglm.h"
 #include "Vulkan/Vulkan.h"
 
-typedef struct BatchedQuadArray
+typedef struct BatchedQuadArray BatchedQuadArray;
+
+struct BatchedQuadArray
 {
     /// If used in a textured quad, @c verts takes the form of a @c float[quad_count * 4] holding values for X, Y, U, and V for each vertex.
     /// If used in a colored quad, @c verts takes the form of a @c float[quad_count * 2] holding values for X and Y for each vertex.
@@ -18,7 +20,7 @@ typedef struct BatchedQuadArray
     uint *indices;
     /// Number of quads in the array
     int quad_count;
-} BatchedQuadArray;
+};
 
 extern Renderer currentRenderer;
 

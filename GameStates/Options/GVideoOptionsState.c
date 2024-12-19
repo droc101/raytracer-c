@@ -43,6 +43,7 @@ char *SliderLabelMSAA(const Control *slider)
     };
     const SliderData *data = (SliderData *) slider->ControlData;
     char *buf = malloc(64);
+    chk_malloc(buf);
     sprintf(buf, "%s: %s", data->label, labels[(int)data->value]);
     return buf;
 }
@@ -101,9 +102,6 @@ void GVideoOptionsStateRender(GlobalState */*State*/)
 
     DrawTextAligned("Video Options", 32, 0xFFFFFFFF, v2s(0), v2(WindowWidth(), 100), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE,
                     false);
-
-    DrawTextAligned("Changing renderer requires a restart", 16, 0xFFa0a0a0, v2(0, 590), v2(WindowWidth(), 40),
-                    FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
 
     ProcessUiStack(videoOptionsStack);
     DrawUiStack(videoOptionsStack);

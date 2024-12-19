@@ -8,7 +8,12 @@
 #include "../UiStack.h"
 #include "../../Vector2.h"
 
-typedef struct SliderData
+typedef struct SliderData SliderData;
+
+typedef void (*SliderCallback)(double);
+typedef char *(*SliderLabelFunc)(const Control *slider);
+
+struct SliderData
 {
     char *label;
 
@@ -19,10 +24,9 @@ typedef struct SliderData
     double step;
     double altStep; // Step when holding shift
 
-    void (*callback)(double);
-
-    char *(*getLabel)(const Control *slider);
-} SliderData;
+    SliderCallback callback;
+    SliderLabelFunc getLabel;
+};
 
 char *SliderLabelPercent(const Control *slider);
 

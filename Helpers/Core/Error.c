@@ -9,7 +9,6 @@
 #include <string.h>
 #include "Logging.h"
 #include "zlib.h"
-#include "../CommonAssets.h"
 #include "../../defines.h"
 #include "../../Structs/GlobalState.h"
 #include "../../Structs/Options.h"

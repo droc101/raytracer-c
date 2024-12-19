@@ -13,6 +13,8 @@
 #define Error(error) Error_Internal(error, "none", 0, "none")
 #endif
 
+#define chk_malloc(ptr) if (ptr == NULL) Error("Memory allocation failed")
+
 /**
  * Internal error handler
  * @param error Error message

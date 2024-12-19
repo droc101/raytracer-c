@@ -17,7 +17,7 @@ void PhysicsThreadInit();
  * @param function The function to run
  * @note This will block until the current iteration of the physics thread is finished
  */
-void PhysicsThreadSetFunction(void (*function)(GlobalState *state));
+void PhysicsThreadSetFunction(FixedUpdateFunction function);
 
 /**
  * Post a quit message to the physics thread and wait for it to finish

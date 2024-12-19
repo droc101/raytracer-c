@@ -8,14 +8,16 @@
 #include "../UiStack.h"
 #include "../../Vector2.h"
 
-typedef struct ButtonData
+typedef struct ButtonData ButtonData;
+
+typedef void (*ButtonCallback)();
+
+struct ButtonData
 {
     char *text;
-
-    void (*callback)();
-
+    ButtonCallback callback;
     bool enabled;
-} ButtonData;
+};
 
 /**
  * Create a new Button Control
@@ -26,7 +28,7 @@ typedef struct ButtonData
  * @param anchor The anchor of the button
  * @return The new Button Control
  */
-Control *CreateButtonControl(Vector2 position, Vector2 size, char *text, void (*callback)(), ControlAnchor anchor);
+Control *CreateButtonControl(Vector2 position, Vector2 size, char *text, ButtonCallback callback, ControlAnchor anchor);
 
 void DestroyButton(const Control *c);
 

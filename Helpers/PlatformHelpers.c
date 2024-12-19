@@ -5,11 +5,11 @@
 #include "PlatformHelpers.h"
 
 #include "../defines.h"
-#include "Core/Logging.h"
 
 #ifdef WIN32
 #include <dwmapi.h>
 #include <SDL_syswm.h>
+#include "Core/Logging.h"
 
 #define DWMWA_USE_IMMERSIVE_DARK_MODE 20
 #endif
