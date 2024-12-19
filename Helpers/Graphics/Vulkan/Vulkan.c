@@ -404,8 +404,8 @@ bool VK_DrawTexturedQuadRegion(const int32_t x,
 {
     const uint8_t *decompressed = DecompressAsset(texture);
 
-    const uint32_t width = ReadUintA(decompressed, 4);
-    const uint32_t height = ReadUintA(decompressed, 8);
+    const uint32_t width = ReadUintA(decompressed, IMAGE_WIDTH_OFFSET);
+    const uint32_t height = ReadUintA(decompressed, IMAGE_HEIGHT_OFFSET);
 
     const float startU = (float)regionX / (float)width;
     const float startV = (float)regionY / (float)height;
@@ -413,7 +413,7 @@ bool VK_DrawTexturedQuadRegion(const int32_t x,
     return DrawRectInternal(VK_X_TO_NDC(x), VK_Y_TO_NDC(y), VK_X_TO_NDC(x + w), VK_Y_TO_NDC(y + h), startU, startV,
                             startU + (float)regionW / (float)width, startV + (float)regionH / (float)height,
                             0xFFFFFFFF,
-                            texturesAssetIDMap[ReadUintA(decompressed, 12)]);
+                            texturesAssetIDMap[ReadUintA(decompressed, IMAGE_ID_OFFSET)]);
 }
 
 bool VK_DrawTexturedQuadRegionMod(const int32_t x,
@@ -429,15 +429,15 @@ bool VK_DrawTexturedQuadRegionMod(const int32_t x,
 {
     const uint8_t *decompressed = DecompressAsset(texture);
 
-    const uint32_t width = ReadUintA(decompressed, 4);
-    const uint32_t height = ReadUintA(decompressed, 8);
+    const uint32_t width = ReadUintA(decompressed, IMAGE_WIDTH_OFFSET);
+    const uint32_t height = ReadUintA(decompressed, IMAGE_HEIGHT_OFFSET);
 
     const float startU = (float)regionX / (float)width;
     const float startV = (float)regionY / (float)height;
 
     return DrawRectInternal(VK_X_TO_NDC(x), VK_Y_TO_NDC(y), VK_X_TO_NDC(x + w), VK_Y_TO_NDC(y + h), startU, startV,
                             startU + (float)regionW / (float)width, startV + (float)regionH / (float)height, color,
-                            texturesAssetIDMap[ReadUintA(decompressed, 12)]);
+                            texturesAssetIDMap[ReadUintA(decompressed, IMAGE_ID_OFFSET)]);
 }
 
 bool VK_DrawTexturedQuadsBatched(const float *vertices,

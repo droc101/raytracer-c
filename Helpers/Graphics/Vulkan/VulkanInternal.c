@@ -1185,7 +1185,7 @@ bool LoadTextures()
             return false;
         }
 
-        const VkExtent3D extent = {ReadUintA(decompressed, 4), ReadUintA(decompressed, 8), 1};
+        const VkExtent3D extent = {ReadUintA(decompressed, IMAGE_WIDTH_OFFSET), ReadUintA(decompressed, IMAGE_HEIGHT_OFFSET), 1};
         textures[textureIndex].mipmapLevels = GetState()->options.mipmaps
                                                   ? (uint8_t)log2(max(extent.width, extent.height)) + 1
                                                   : 1;
@@ -1207,7 +1207,7 @@ bool LoadTextures()
         memorySize = textures[textureIndex].allocationInfo.offset +
                      textures[textureIndex].allocationInfo.memoryRequirements.size;
 
-        texturesAssetIDMap[ReadUintA(decompressed, 12)] = textureIndex;
+        texturesAssetIDMap[ReadUintA(decompressed, IMAGE_ID_OFFSET)] = textureIndex;
     }
 
     for (uint32_t i = 0; i < physicalDevice.memoryProperties.memoryTypeCount; i++)
@@ -1254,15 +1254,15 @@ bool LoadTextures()
                 textures[textureIndex].allocationInfo.offset), "Failed to bind Vulkan texture memory!");
 
         const uint8_t *decompressed = DecompressAsset(texture_assets[textureIndex]);
-        uint32_t width = ReadUintA(decompressed, 4);
-        uint32_t height = ReadUintA(decompressed, 8);
+        uint32_t width = ReadUintA(decompressed, IMAGE_WIDTH_OFFSET);
+        uint32_t height = ReadUintA(decompressed, IMAGE_HEIGHT_OFFSET);
         void *data;
 
         VulkanTest(vkMapMemory(device, memoryInfo.memory, textures[textureIndex].allocationInfo.offset,
                        textures[textureIndex].allocationInfo.memoryRequirements.size, 0, &data),
                    "Failed to map Vulkan texture staging buffer memory!");
 
-        memcpy(data, decompressed + sizeof(uint32_t) * 4, ReadUintA(decompressed, 0) * 4);
+        memcpy(data, decompressed + sizeof(uint32_t) * 4, ReadUintA(decompressed, IMAGE_SIZE_OFFSET) * 4);
         vkUnmapMemory(device, memoryInfo.memory);
 
         const VkCommandBuffer commandBuffer;
