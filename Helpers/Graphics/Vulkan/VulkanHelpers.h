@@ -137,15 +137,13 @@ typedef struct WallVertex
 {
     float x;
     float y;
+    float z;
+
     float u;
     float v;
-} WallVertex;
 
-typedef struct WallInfo
-{
-    float halfHeight;
-    uint32_t textureIndex;
-} WallInfo;
+    uint32_t textureIndex; // TODO Per-vertex is less than ideal
+} WallVertex;
 
 typedef struct Image
 {
@@ -222,17 +220,19 @@ typedef struct UiVertexBuffer
 } UiVertexBuffer;
 
 /**
- * A structure holding data about a set of walls vertex buffers.
+ * A structure holding data about a wall vertex buffer.
  *
- * This structure is used to keep track of the larger buffer that the buffers are a part of, offset information,
+ * This structure is used to keep track of the larger buffer that the buffer is a part of, offset information,
  * and information about the number of walls.
  */
 typedef struct WallVertexBuffer
 {
-    /// The larger buffer within which the wall vertex buffers reside.
+    /// The larger buffer within which the wall vertex buffer reside.
     Buffer *bufferInfo;
-    /// The offsets of each wall vertex buffer into the larger buffer allocation.
-    VkDeviceSize offsets[2];
+    /// The offset of the wall vertex buffer into the larger buffer allocation.
+    VkDeviceSize verticesOffset;
+    /// The offset of the index buffer for the wall vertex buffer into the larger buffer allocation.
+    VkDeviceSize indicesOffset;
     /// The number of walls that are currently stored in the buffer.
     uint32_t wallCount;
     /// The maximum number of walls that can currently be stored in the buffer.

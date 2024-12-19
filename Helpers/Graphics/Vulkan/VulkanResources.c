@@ -7,8 +7,10 @@
 
 bool CreateLocalBuffer()
 {
-    const VkDeviceSize size = buffers.walls.maxWallCount * (2 * sizeof(WallVertex) + sizeof(WallInfo));
-    const VkBufferUsageFlags usageFlags = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+    const VkDeviceSize size = buffers.walls.maxWallCount * (4 * sizeof(WallVertex) + 6 * sizeof(uint32_t));
+    const VkBufferUsageFlags usageFlags = VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+                                          VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
+                                          VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
 
     buffers.local.memoryAllocationInfo.memoryInfo = &memoryPools.localMemory;
     if (!CreateBuffer(&buffers.local.buffer, size, usageFlags, false, &buffers.local.memoryAllocationInfo))
@@ -22,8 +24,8 @@ bool CreateLocalBuffer()
 bool SetLocalBufferAliasingInfo()
 {
     buffers.walls.bufferInfo = &buffers.local;
-    buffers.walls.offsets[0] = 0;
-    buffers.walls.offsets[1] = 2 * buffers.walls.maxWallCount * sizeof(WallVertex);
+    buffers.walls.verticesOffset = 0;
+    buffers.walls.indicesOffset = 4 * buffers.walls.maxWallCount * sizeof(WallVertex);
 
     return true;
 }

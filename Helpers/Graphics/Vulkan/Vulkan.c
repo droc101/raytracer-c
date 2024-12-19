@@ -65,12 +65,16 @@ VkResult VK_FrameEnd()
     {
         vkCmdBindPipeline(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.walls);
 
-        vkCmdBindVertexBuffers(commandBuffers[currentFrame], 0, 2, (VkBuffer[2]){buffers.walls.bufferInfo->buffer, buffers.walls.bufferInfo->buffer}, buffers.walls.offsets);
+        vkCmdBindVertexBuffers(commandBuffers[currentFrame], 0, 1, &buffers.walls.bufferInfo->buffer,
+                               &buffers.walls.verticesOffset);
+
+        vkCmdBindIndexBuffer(commandBuffers[currentFrame], buffers.walls.bufferInfo->buffer,
+                             buffers.walls.indicesOffset, VK_INDEX_TYPE_UINT32);
 
         vkCmdBindDescriptorSets(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1,
                                 &descriptorSets[currentFrame], 0, NULL);
 
-        vkCmdDraw(commandBuffers[currentFrame], 2 * buffers.walls.wallCount, buffers.walls.wallCount, 0, 0);
+        vkCmdDrawIndexed(commandBuffers[currentFrame], 6 * buffers.walls.wallCount, 1, 0, 0, 0);
     }
 
     vkCmdNextSubpass(commandBuffers[currentFrame], VK_SUBPASS_CONTENTS_INLINE);
@@ -104,7 +108,8 @@ VkResult VK_FrameEnd()
 
     vkCmdBindPipeline(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.ui);
 
-    vkCmdBindVertexBuffers(commandBuffers[currentFrame], 0, 1, &buffers.ui.bufferInfo->buffer, (VkDeviceSize[1]){buffers.ui.offset});
+    vkCmdBindVertexBuffers(commandBuffers[currentFrame], 0, 1, &buffers.ui.bufferInfo->buffer,
+                           (VkDeviceSize[1]){buffers.ui.offset});
 
     vkCmdBindDescriptorSets(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1,
                             &descriptorSets[currentFrame], 0, NULL);
@@ -251,24 +256,54 @@ bool VK_LoadLevelWalls(const Level *level)
         CreateLocalMemory();
     }
 
-    WallVertex vertices[buffers.walls.wallCount * 2];
-    WallInfo info[buffers.walls.wallCount];
+    WallVertex vertices[buffers.walls.wallCount * 4];
+    uint32_t indices[buffers.walls.wallCount * 6];
     for (uint32_t i = 0; i < buffers.walls.wallCount; i++)
     {
         const Wall *wall = SizedArrayGet(level->staticWalls, i);
-        vertices[2 * i].x = (float)wall->a.x;
-        vertices[2 * i].y = (float)wall->a.y;
-        vertices[2 * i].u = wall->uvOffset;
-        vertices[2 * i].v = 0;
-        vertices[2 * i + 1].x = (float)wall->b.x;
-        vertices[2 * i + 1].y = (float)wall->b.y;
-        vertices[2 * i + 1].u = (float)(wall->uvScale * wall->length + wall->uvOffset);
-        vertices[2 * i + 1].v = 1.0f;
-        info[i].halfHeight = wall->height / 2.0f;
-        info[i].textureIndex = TextureIndex(wall->tex);
+        const float halfHeight = wall->height / 2.0f;
+        const vec2 startVertex = {(float)wall->a.x, (float)wall->a.y};
+        const vec2 endVertex = {(float)wall->b.x, (float)wall->b.y};
+        const vec2 startUV = {wall->uvOffset, 0};
+        const vec2 endUV = {(float)(wall->uvScale * wall->length + wall->uvOffset), 1};
+
+        vertices[4 * i].x = startVertex[0];
+        vertices[4 * i].y = halfHeight;
+        vertices[4 * i].z = startVertex[1];
+        vertices[4 * i].u = startUV[0];
+        vertices[4 * i].v = startUV[1];
+        vertices[4 * i].textureIndex = TextureIndex(wall->tex);
+
+        vertices[4 * i + 1].x = endVertex[0];
+        vertices[4 * i + 1].y = halfHeight;
+        vertices[4 * i + 1].z = endVertex[1];
+        vertices[4 * i + 1].u = endUV[0];
+        vertices[4 * i + 1].v = startUV[1];
+        vertices[4 * i + 1].textureIndex = TextureIndex(wall->tex);
+
+        vertices[4 * i + 2].x = endVertex[0];
+        vertices[4 * i + 2].y = -halfHeight;
+        vertices[4 * i + 2].z = endVertex[1];
+        vertices[4 * i + 2].u = endUV[0];
+        vertices[4 * i + 2].v = endUV[1];
+        vertices[4 * i + 2].textureIndex = TextureIndex(wall->tex);
+
+        vertices[4 * i + 3].x = startVertex[0];
+        vertices[4 * i + 3].y = -halfHeight;
+        vertices[4 * i + 3].z = startVertex[1];
+        vertices[4 * i + 3].u = startUV[0];
+        vertices[4 * i + 3].v = endUV[1];
+        vertices[4 * i + 3].textureIndex = TextureIndex(wall->tex);
+
+        indices[6 * i] = i * 4;
+        indices[6 * i + 1] = i * 4 + 1;
+        indices[6 * i + 2] = i * 4 + 2;
+        indices[6 * i + 3] = i * 4;
+        indices[6 * i + 4] = i * 4 + 2;
+        indices[6 * i + 5] = i * 4 + 3;
     }
 
-    const VkDeviceSize bufferSize = buffers.walls.maxWallCount * (2 * sizeof(WallVertex) + sizeof(WallInfo));
+    const VkDeviceSize bufferSize = buffers.walls.maxWallCount * (4 * sizeof(WallVertex) + 6 * sizeof(uint32_t));
 
     MemoryInfo memoryInfo = {
         0,
@@ -290,8 +325,8 @@ bool VK_LoadLevelWalls(const Level *level)
     VulkanTest(vkMapMemory(device, memoryInfo.memory, 0, bufferSize, 0, &data),
                "Failed to map Vulkan vertex staging buffer memory!");
 
-    memcpy(data, vertices, 2 * buffers.walls.wallCount * sizeof(WallVertex));
-    memcpy(data + buffers.walls.offsets[1], info, buffers.walls.wallCount * sizeof(WallInfo));
+    memcpy(data, vertices, 4 * buffers.walls.wallCount * sizeof(WallVertex));
+    memcpy(data + buffers.walls.indicesOffset, indices, 6 * buffers.walls.wallCount * sizeof(uint32_t));
     vkUnmapMemory(device, memoryInfo.memory);
 
 
@@ -362,11 +397,11 @@ bool VK_DrawTexturedQuadRegion(const int32_t x,
     const uint32_t width = ReadUintA(decompressed, 4);
     const uint32_t height = ReadUintA(decompressed, 8);
 
-    const float startU = (float) regionX / (float) width;
-    const float startV = (float) regionY / (float) height;
+    const float startU = (float)regionX / (float)width;
+    const float startV = (float)regionY / (float)height;
 
     return DrawRectInternal(VK_X_TO_NDC(x), VK_Y_TO_NDC(y), VK_X_TO_NDC(x + w), VK_Y_TO_NDC(y + h), startU, startV,
-                            startU + (float) regionW / (float) width, startV + (float) regionH / (float) height,
+                            startU + (float)regionW / (float)width, startV + (float)regionH / (float)height,
                             0xFFFFFFFF,
                             texturesAssetIDMap[ReadUintA(decompressed, 12)]);
 }
@@ -387,11 +422,11 @@ bool VK_DrawTexturedQuadRegionMod(const int32_t x,
     const uint32_t width = ReadUintA(decompressed, 4);
     const uint32_t height = ReadUintA(decompressed, 8);
 
-    const float startU = (float) regionX / (float) width;
-    const float startV = (float) regionY / (float) height;
+    const float startU = (float)regionX / (float)width;
+    const float startV = (float)regionY / (float)height;
 
     return DrawRectInternal(VK_X_TO_NDC(x), VK_Y_TO_NDC(y), VK_X_TO_NDC(x + w), VK_Y_TO_NDC(y + h), startU, startV,
-                            startU + (float) regionW / (float) width, startV + (float) regionH / (float) height, color,
+                            startU + (float)regionW / (float)width, startV + (float)regionH / (float)height, color,
                             texturesAssetIDMap[ReadUintA(decompressed, 12)]);
 }
 
@@ -434,8 +469,8 @@ bool VK_DrawLine(const int32_t startX,
                  const float thickness,
                  const uint32_t color)
 {
-    const float dx = (float) endX - (float) startX;
-    const float dy = (float) endY - (float) startY;
+    const float dx = (float)endX - (float)startX;
+    const float dy = (float)endY - (float)startY;
     const float distance = sqrtf(dx * dx + dy * dy);
 
     if (thickness == 1)
@@ -485,13 +520,9 @@ void VK_ClearColor(const uint32_t color)
     VK_ClearScreen();
 }
 
-void VK_ClearScreen()
-{
-}
+void VK_ClearScreen() {}
 
-void VK_ClearDepthOnly()
-{
-}
+void VK_ClearDepthOnly() {}
 
 void VK_SetTexParams(const uint8_t *texture, const bool linear, const bool repeat)
 {

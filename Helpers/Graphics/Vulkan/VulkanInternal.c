@@ -687,7 +687,7 @@ bool CreateDescriptorSetLayouts()
             0,
             VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
             1,
-            VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT,
+            VK_SHADER_STAGE_VERTEX_BIT,
             NULL
         },
         {
@@ -843,43 +843,21 @@ bool CreateGraphicsPipelines()
 #pragma region walls
     const VkShaderModule wallVertShaderModule = CreateShaderModule((uint32_t *)DecompressAsset(gzvert_Vulkan_wall),
                                                                    AssetGetSize(gzvert_Vulkan_wall));
-    const VkShaderModule wallTescShaderModule = CreateShaderModule((uint32_t *)DecompressAsset(gztesc_Vulkan_wall),
-                                                                   AssetGetSize(gztesc_Vulkan_wall));
-    const VkShaderModule wallTeseShaderModule = CreateShaderModule((uint32_t *)DecompressAsset(gztese_Vulkan_wall),
-                                                                   AssetGetSize(gztese_Vulkan_wall));
     const VkShaderModule wallFragShaderModule = CreateShaderModule((uint32_t *)DecompressAsset(gzfrag_Vulkan_wall),
                                                                    AssetGetSize(gzfrag_Vulkan_wall));
-    if (!wallVertShaderModule || !wallTescShaderModule || !wallTeseShaderModule || !wallFragShaderModule)
+    if (!wallVertShaderModule || !wallFragShaderModule)
     {
         VulkanLogError("Failed to load wall shaders!");
         return false;
     }
 
-    const VkPipelineShaderStageCreateInfo wallShaderStages[4] = {
+    const VkPipelineShaderStageCreateInfo wallShaderStages[2] = {
         {
             VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
             NULL,
             0,
             VK_SHADER_STAGE_VERTEX_BIT,
             wallVertShaderModule,
-            "main",
-            NULL
-        },
-        {
-            VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-            NULL,
-            0,
-            VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT,
-            wallTescShaderModule,
-            "main",
-            NULL
-        },
-        {
-            VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-            NULL,
-            0,
-            VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT,
-            wallTeseShaderModule,
             "main",
             NULL
         },
@@ -894,43 +872,38 @@ bool CreateGraphicsPipelines()
         }
     };
 
-    const VkVertexInputBindingDescription wallBindingDescriptions[2] = {
+    const VkVertexInputBindingDescription wallBindingDescriptions[1] = {
         {
             0,
             sizeof(WallVertex),
             VK_VERTEX_INPUT_RATE_VERTEX
-        },
-        {
-            1,
-            sizeof(WallInfo),
-            VK_VERTEX_INPUT_RATE_INSTANCE
         }
     };
     const VkVertexInputAttributeDescription wallVertexDescriptions[3] = {
         {
             0,
             0,
-            VK_FORMAT_R32G32B32A32_SFLOAT,
-            0
+            VK_FORMAT_R32G32B32_SFLOAT,
+            offsetof(WallVertex, x)
         },
         {
             1,
-            1,
-            VK_FORMAT_R32_SFLOAT,
-            offsetof(WallInfo, halfHeight)
+            0,
+            VK_FORMAT_R32G32_SFLOAT,
+            offsetof(WallVertex, u)
         },
         {
             2,
-            1,
+            0,
             VK_FORMAT_R32_UINT,
-            offsetof(WallInfo, textureIndex)
+            offsetof(WallVertex, textureIndex)
         }
     };
     const VkPipelineVertexInputStateCreateInfo wallVertexInputInfo = {
         VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
         NULL,
         0,
-        2,
+        1,
         wallBindingDescriptions,
         3,
         wallVertexDescriptions
@@ -940,26 +913,19 @@ bool CreateGraphicsPipelines()
         VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
         NULL,
         0,
-        VK_PRIMITIVE_TOPOLOGY_PATCH_LIST,
+        VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
         VK_FALSE
-    };
-
-    const VkPipelineTessellationStateCreateInfo wallTessellationState = {
-        VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO,
-        NULL,
-        0,
-        2
     };
 
     VkGraphicsPipelineCreateInfo wallsPipelineInfo = {
         VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
         NULL,
         0,
-        4,
+        2,
         wallShaderStages,
         &wallVertexInputInfo,
         &wallInputAssembly,
-        &wallTessellationState,
+        NULL,
         &viewportState,
         &rasterizer,
         &multisampling,
@@ -1116,8 +1082,6 @@ bool CreateGraphicsPipelines()
 
 
     vkDestroyShaderModule(device, wallVertShaderModule, NULL);
-    vkDestroyShaderModule(device, wallTescShaderModule, NULL);
-    vkDestroyShaderModule(device, wallTeseShaderModule, NULL);
     vkDestroyShaderModule(device, wallFragShaderModule, NULL);
 
     vkDestroyShaderModule(device, uiVertShaderModule, NULL);
@@ -1266,13 +1230,13 @@ bool LoadTextures()
 
         vkGetImageMemoryRequirements(device, textures[textureIndex].image,
                                      &textures[textureIndex].allocationInfo.memoryRequirements);
-        textures[textureIndex].allocationInfo.offset =
-                textures[textureIndex].allocationInfo.memoryRequirements.alignment * (VkDeviceSize)ceil(
-                    ((double)memorySize + (double)textures[textureIndex].allocationInfo.memoryRequirements.
-                                                                         size) / (double)textures[textureIndex].
-                    allocationInfo.memoryRequirements.alignment);
-        memorySize = textures[textureIndex].allocationInfo.offset + textures[textureIndex].allocationInfo.
-                     memoryRequirements.size;
+
+        const VkDeviceSize alignment = textures[textureIndex].allocationInfo.memoryRequirements.alignment;
+        const double alignedSize = (double)(memorySize + textures[textureIndex].allocationInfo.memoryRequirements.size);
+        textures[textureIndex].allocationInfo.offset = alignment * (VkDeviceSize)ceil(alignedSize / (double)alignment);
+
+        memorySize = textures[textureIndex].allocationInfo.offset +
+                     textures[textureIndex].allocationInfo.memoryRequirements.size;
 
         texturesAssetIDMap[ReadUintA(decompressed, 12)] = textureIndex;
     }
