@@ -5,6 +5,8 @@
 #include "Vulkan.h"
 #include "VulkanHelpers.h"
 #include "VulkanInternal.h"
+#include "VulkanMemory.h"
+#include "VulkanResources.h"
 #include "../../../Structs/GlobalState.h"
 
 const Level *loadedLevel = NULL;
@@ -236,6 +238,19 @@ bool VK_LoadLevelWalls(const Level *level)
     void *data;
 
     buffers.walls.wallCount = level->staticWalls->size;
+    if (buffers.walls.wallCount > buffers.walls.maxWallCount)
+    {
+        vkDestroyBuffer(device, buffers.local.buffer, NULL);
+        vkFreeMemory(device, memoryPools.localMemory.memory, NULL);
+
+        buffers.walls.maxWallCount = buffers.walls.wallCount;
+
+        CreateLocalBuffer();
+        SetLocalBufferAliasingInfo();
+
+        CreateLocalMemory();
+    }
+
     WallVertex vertices[buffers.walls.wallCount * 2];
     WallInfo info[buffers.walls.wallCount];
     for (uint32_t i = 0; i < buffers.walls.wallCount; i++)
@@ -275,9 +290,8 @@ bool VK_LoadLevelWalls(const Level *level)
     VulkanTest(vkMapMemory(device, memoryInfo.memory, 0, bufferSize, 0, &data),
                "Failed to map Vulkan vertex staging buffer memory!");
 
-    memset(data, 0, bufferSize);
-    memcpy(data, vertices, 2 * buffers.walls.maxWallCount * sizeof(WallVertex));
-    memcpy(data + 2 * buffers.walls.maxWallCount * sizeof(WallVertex), &info, buffers.walls.maxWallCount * sizeof(WallInfo));
+    memcpy(data, vertices, 2 * buffers.walls.wallCount * sizeof(WallVertex));
+    memcpy(data + buffers.walls.offsets[1], info, buffers.walls.wallCount * sizeof(WallInfo));
     vkUnmapMemory(device, memoryInfo.memory);
 
 

@@ -271,6 +271,7 @@ typedef struct PhysicalDevice
     VkPhysicalDevice device;
     VkPhysicalDeviceFeatures features;
     VkPhysicalDeviceProperties properties;
+    VkPhysicalDeviceMemoryProperties memoryProperties;
 } PhysicalDevice;
 #pragma endregion typedefs
 

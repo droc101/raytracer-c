@@ -4,7 +4,10 @@
 
 #include "VulkanInternal.h"
 #include <SDL_vulkan.h>
+#include <string.h>
 #include "VulkanHelpers.h"
+#include "VulkanMemory.h"
+#include "VulkanResources.h"
 #include "../../../Structs/GlobalState.h"
 #include "../../Core/Error.h"
 #include "../../Core/MathEx.h"
@@ -213,17 +216,23 @@ bool PickPhysicalDevice()
                 if (swapChainSupport.formatCount == 0 && swapChainSupport.presentModeCount == 0) continue;
 
                 VkPhysicalDeviceProperties deviceProperties;
+                VkPhysicalDeviceMemoryProperties memoryProperties;
+
                 vkGetPhysicalDeviceProperties(pDevice, &deviceProperties);
+                vkGetPhysicalDeviceMemoryProperties(devices[i], &memoryProperties);
+
                 if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
                 {
                     physicalDevice.device = devices[i];
                     physicalDevice.features = deviceFeatures;
                     physicalDevice.properties = deviceProperties;
+                    physicalDevice.memoryProperties = memoryProperties;
                     return true;
                 }
                 physicalDevice.device = devices[i];
                 physicalDevice.features = deviceFeatures;
                 physicalDevice.properties = deviceProperties;
+                physicalDevice.memoryProperties = memoryProperties;
                 match = true;
                 break;
             }
@@ -1268,12 +1277,10 @@ bool LoadTextures()
         texturesAssetIDMap[ReadUintA(decompressed, 12)] = textureIndex;
     }
 
-    VkPhysicalDeviceMemoryProperties memoryProperties;
-    vkGetPhysicalDeviceMemoryProperties(physicalDevice.device, &memoryProperties);
-    for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++)
+    for (uint32_t i = 0; i < physicalDevice.memoryProperties.memoryTypeCount; i++)
     {
         if (textures[i].allocationInfo.memoryRequirements.memoryTypeBits & 1 << i &&
-            (memoryProperties.memoryTypes[i].propertyFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) ==
+            (physicalDevice.memoryProperties.memoryTypes[i].propertyFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) ==
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
         {
             const VkMemoryAllocateInfo allocateInfo = {
@@ -1600,114 +1607,21 @@ bool CreateTextureSampler()
 
 bool CreateBuffers()
 {
-    buffers.walls.maxWallCount = 100;
-    buffers.local.memoryAllocationInfo.memoryInfo = &memoryPools.localMemory;
-    if (!CreateBuffer(&buffers.local.buffer, buffers.walls.maxWallCount * (2 * sizeof(WallVertex) + sizeof(WallInfo)),
-                      VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, false,
-                      &buffers.local.memoryAllocationInfo))
-    {
-        return false;
-    }
-    buffers.walls.bufferInfo = &buffers.local;
-    buffers.walls.offsets[0] = 0;
-    buffers.walls.offsets[1] = 2 * buffers.walls.maxWallCount * sizeof(WallVertex);
+    buffers.walls.maxWallCount = MAX_WALLS_INIT;
+    CreateLocalBuffer();
+    SetLocalBufferAliasingInfo();
 
     buffers.ui.maxVertices = MAX_UI_PRIMITIVES_INIT * 4;
-    const VkDeviceSize size = sizeof(UiVertex) * buffers.ui.maxVertices + sizeof(mat4) * MAX_FRAMES_IN_FLIGHT;
-    const VkBufferUsageFlags usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
-                                          VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-    buffers.shared.memoryAllocationInfo.memoryInfo = &memoryPools.sharedMemory;
-    if (!CreateBuffer(&buffers.shared.buffer, size, usageFlags, false, &buffers.shared.memoryAllocationInfo))
-    {
-        return false;
-    }
-    buffers.ui.bufferInfo = &buffers.shared;
-    buffers.ui.offset = 0;
-    for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-    {
-        buffers.translation[i].bufferInfo = &buffers.shared;
-        buffers.translation[i].offset = sizeof(UiVertex) * buffers.ui.maxVertices + sizeof(mat4) * i;
-    }
+    CreateSharedBuffer();
+    SetSharedBufferAliasingInfo();
 
     return true;
 }
 
 bool AllocateMemory()
 {
-    bool allocated = false;
-
-    VkPhysicalDeviceMemoryProperties memoryProperties;
-    vkGetPhysicalDeviceMemoryProperties(physicalDevice.device, &memoryProperties);
-    for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++)
-    {
-        if (memoryPools.localMemory.memoryTypeBits & 1 << i &&
-            (memoryProperties.memoryTypes[i].propertyFlags & memoryPools.localMemory.type) == memoryPools.localMemory.
-            type)
-        {
-            const VkMemoryAllocateInfo allocInfo = {
-                VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-                NULL,
-                memoryPools.localMemory.size,
-                i
-            };
-
-            VulkanTest(vkAllocateMemory(device, &allocInfo, NULL, &memoryPools.localMemory.memory),
-                       "Failed to allocate device local buffer memory!");
-
-            allocated = true;
-            break;
-        }
-    }
-    if (!allocated)
-    {
-        VulkanLogError("Failed to allocate device local buffer memory!");
-
-        return false;
-    }
-
-    allocated = false;
-    for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++)
-    {
-        if (memoryPools.sharedMemory.memoryTypeBits & 1 << i &&
-            (memoryProperties.memoryTypes[i].propertyFlags & memoryPools.sharedMemory.type) == memoryPools.sharedMemory.
-            type)
-        {
-            const VkMemoryAllocateInfo allocInfo = {
-                VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-                NULL,
-                memoryPools.sharedMemory.size,
-                i
-            };
-
-            VulkanTest(vkAllocateMemory(device, &allocInfo, NULL, &memoryPools.sharedMemory.memory),
-                       "Failed to allocate device shared buffer memory!");
-
-            allocated = true;
-            break;
-        }
-    }
-    if (!allocated)
-    {
-        VulkanLogError("Failed to allocate device shared buffer memory!");
-
-        return false;
-    }
-
-    VulkanTest(vkBindBufferMemory(device, buffers.local.buffer, memoryPools.localMemory.memory,
-                   buffers.local.memoryAllocationInfo.offset), "Failed to bind local buffer memory!");
-    VulkanTest(vkBindBufferMemory(device, buffers.shared.buffer, memoryPools.sharedMemory.memory,
-                   buffers.shared.memoryAllocationInfo.offset), "Failed to bind shared buffer memory!");
-
-    VulkanTest(vkMapMemory(device, memoryPools.sharedMemory.memory, 0, VK_WHOLE_SIZE, 0,
-                   &memoryPools.sharedMemory.mappedMemory), "Failed to map shared buffer memory!");
-
-    buffers.ui.vertices = memoryPools.sharedMemory.mappedMemory +
-                          buffers.shared.memoryAllocationInfo.offset + buffers.ui.offset;
-    for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-    {
-        buffers.translation[i].data = memoryPools.sharedMemory.mappedMemory +
-                                      buffers.shared.memoryAllocationInfo.offset + buffers.translation[i].offset;
-    }
+    if (!CreateLocalMemory()) return false;
+    if (!CreateSharedMemory()) return false;
 
     return true;
 }

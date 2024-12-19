@@ -136,6 +136,10 @@ add_executable(
         Helpers/Graphics/Vulkan/VulkanInternal.c
         Helpers/Graphics/Vulkan/VulkanHelpers.c
         Helpers/Graphics/Vulkan/VulkanHelpers.h
+        Helpers/Graphics/Vulkan/VulkanMemory.h
+        Helpers/Graphics/Vulkan/VulkanMemory.c
+        Helpers/Graphics/Vulkan/VulkanResources.c
+        Helpers/Graphics/Vulkan/VulkanResources.h
 )
 
 set(SDL2_PATH "${CMAKE_SOURCE_DIR}/lib/SDL2/x86_64-w64-mingw32")

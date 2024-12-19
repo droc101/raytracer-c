@@ -11,8 +11,6 @@
 #include "Debug/DPrint.h"
 #include "Debug/FrameGrapher.h"
 #include "GameStates/GLogoSplashState.h"
-#include "GameStates/GMainState.h"
-#include "GameStates/GMenuState.h"
 #include "Helpers/CommonAssets.h"
 #include "Helpers/PlatformHelpers.h"
 #include "Helpers/Core/Error.h"
@@ -23,8 +21,6 @@
 #include "Helpers/Graphics/Drawing.h"
 #include "Helpers/Graphics/RenderingHelpers.h"
 #include "Structs/GlobalState.h"
-
-#include "GameStates/GPauseState.h"
 
 int main(const int argc, char *argv[])
 {
@@ -220,8 +216,8 @@ int main(const int argc, char *argv[])
             quit = true;
         }
 
-        FrameGraphUpdate(GetTimeNs() - frameStart);
         if (IsLowFPSModeEnabled()) SDL_Delay(33);
+        FrameGraphUpdate(GetTimeNs() - frameStart);
     }
     LogInfo("Mainloop exited, cleaning up engine...\n");
     PhysicsThreadTerminate();

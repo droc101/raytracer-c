@@ -204,12 +204,10 @@ bool CreateImage(VkImage *image,
 
     VkMemoryRequirements memoryRequirements;
     vkGetImageMemoryRequirements(device, *image, &memoryRequirements);
-    VkPhysicalDeviceMemoryProperties memoryProperties;
-    vkGetPhysicalDeviceMemoryProperties(physicalDevice.device, &memoryProperties);
-    for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++)
+    for (uint32_t i = 0; i < physicalDevice.memoryProperties.memoryTypeCount; i++)
     {
         if (memoryRequirements.memoryTypeBits & 1 << i &&
-            (memoryProperties.memoryTypes[i].propertyFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) ==
+            (physicalDevice.memoryProperties.memoryTypes[i].propertyFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) ==
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
         {
             const VkDeviceSize size = memoryRequirements.alignment * (VkDeviceSize)ceil(
@@ -328,12 +326,10 @@ bool CreateBuffer(VkBuffer *buffer,
 
     if (!newAllocation) return true; // Allocation and binding will be handled elsewhere
 
-    VkPhysicalDeviceMemoryProperties memoryProperties;
-    vkGetPhysicalDeviceMemoryProperties(physicalDevice.device, &memoryProperties);
-    for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++)
+    for (uint32_t i = 0; i < physicalDevice.memoryProperties.memoryTypeCount; i++)
     {
         if (allocationInfo->memoryRequirements.memoryTypeBits & 1 << i &&
-            (memoryProperties.memoryTypes[i].propertyFlags & allocationInfo->memoryInfo->type) == allocationInfo->
+            (physicalDevice.memoryProperties.memoryTypes[i].propertyFlags & allocationInfo->memoryInfo->type) == allocationInfo->
             memoryInfo->type)
         {
             const VkMemoryAllocateInfo allocInfo = {
