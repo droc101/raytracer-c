@@ -943,10 +943,6 @@ bool CreateGraphicsPipelines()
 #pragma region UI
     const VkShaderModule uiVertShaderModule = CreateShaderModule(
         (uint32_t *)DecompressAsset(gzvert_Vulkan_ui), AssetGetSize(gzvert_Vulkan_ui));
-    const VkShaderModule uiTescShaderModule = CreateShaderModule(
-        (uint32_t *)DecompressAsset(gztesc_Vulkan_ui), AssetGetSize(gztesc_Vulkan_ui));
-    const VkShaderModule uiTeseShaderModule = CreateShaderModule(
-        (uint32_t *)DecompressAsset(gztese_Vulkan_ui), AssetGetSize(gztese_Vulkan_ui));
     const VkShaderModule uiFragShaderModule = CreateShaderModule(
         (uint32_t *)DecompressAsset(gzfrag_Vulkan_ui), AssetGetSize(gzfrag_Vulkan_ui));
     if (!uiVertShaderModule || !uiFragShaderModule)
@@ -955,31 +951,13 @@ bool CreateGraphicsPipelines()
         return false;
     }
 
-    const VkPipelineShaderStageCreateInfo uiShaderStages[4] = {
+    const VkPipelineShaderStageCreateInfo uiShaderStages[2] = {
         {
             VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
             NULL,
             0,
             VK_SHADER_STAGE_VERTEX_BIT,
             uiVertShaderModule,
-            "main",
-            NULL
-        },
-        {
-            VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-            NULL,
-            0,
-            VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT,
-            uiTescShaderModule,
-            "main",
-            NULL
-        },
-        {
-            VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-            NULL,
-            0,
-            VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT,
-            uiTeseShaderModule,
             "main",
             NULL
         },
@@ -1033,26 +1011,19 @@ bool CreateGraphicsPipelines()
         VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
         NULL,
         0,
-        VK_PRIMITIVE_TOPOLOGY_PATCH_LIST,
+        VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
         VK_FALSE
-    };
-
-    const VkPipelineTessellationStateCreateInfo uiTessellationState = {
-        VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO,
-        NULL,
-        0,
-        4
     };
 
     VkGraphicsPipelineCreateInfo uiPipelineInfo = {
         VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
         NULL,
         0,
-        4,
+        2,
         uiShaderStages,
         &uiVertexInputInfo,
         &uiInputAssembly,
-        &uiTessellationState,
+        NULL,
         &viewportState,
         &rasterizer,
         &multisampling,
@@ -1085,8 +1056,6 @@ bool CreateGraphicsPipelines()
     vkDestroyShaderModule(device, wallFragShaderModule, NULL);
 
     vkDestroyShaderModule(device, uiVertShaderModule, NULL);
-    vkDestroyShaderModule(device, uiTescShaderModule, NULL);
-    vkDestroyShaderModule(device, uiTeseShaderModule, NULL);
     vkDestroyShaderModule(device, uiFragShaderModule, NULL);
 
     return true;
@@ -1575,7 +1544,7 @@ bool CreateBuffers()
     CreateLocalBuffer();
     SetLocalBufferAliasingInfo();
 
-    buffers.ui.maxVertices = MAX_UI_PRIMITIVES_INIT * 4;
+    buffers.ui.maxQuads = MAX_UI_QUADS_INIT;
     CreateSharedBuffer();
     SetSharedBufferAliasingInfo();
 

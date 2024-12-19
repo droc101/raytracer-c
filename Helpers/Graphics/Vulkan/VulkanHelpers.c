@@ -493,7 +493,7 @@ bool DrawRectInternal(const float ndcStartX,
                                 {ndcStartX, ndcStartY, startU, startV},
                                 {ndcEndX, ndcStartY, endU, startV},
                                 {ndcEndX, ndcEndY, endU, endV},
-                                {ndcStartX, ndcEndY, startU, endV}
+                                {ndcStartX, ndcEndY, startU, endV},
                             }, color, textureIndex);
 }
 
@@ -503,15 +503,14 @@ bool DrawQuadInternal(const mat4 vertices_posXY_uvZW,
 {
     GET_COLOR(color);
 
-    if (buffers.ui.vertexCount >= buffers.ui.maxVertices)
+    if (buffers.ui.quadCount >= buffers.ui.maxQuads)
     {
-        if (buffers.ui.vertexCount >= buffers.ui.fallbackMaxVertices)
+        if (buffers.ui.quadCount >= buffers.ui.fallbackMaxQuads)
         {
-            if (buffers.ui.fallbackMaxVertices)
+            if (buffers.ui.fallbackMaxQuads)
             {
-                buffers.ui.fallbackMaxVertices += 64;
-                UiVertex *newVertices = realloc(buffers.ui.fallback,
-                                                sizeof(UiVertex) * buffers.ui.fallbackMaxVertices);
+                buffers.ui.fallbackMaxQuads += 16;
+                UiVertex *newVertices = realloc(buffers.ui.fallback, sizeof(UiVertex) * buffers.ui.fallbackMaxQuads * 4);
                 if (!newVertices)
                 {
                     free(newVertices);
@@ -522,10 +521,9 @@ bool DrawQuadInternal(const mat4 vertices_posXY_uvZW,
                 buffers.ui.fallback = newVertices;
             } else
             {
-                buffers.ui.fallbackMaxVertices = buffers.ui.maxVertices + 64;
-                buffers.ui.fallback = malloc(sizeof(UiVertex) * buffers.ui.fallbackMaxVertices);
-                memcpy(buffers.ui.fallback, buffers.ui.vertices,
-                       sizeof(UiVertex) * buffers.ui.maxVertices);
+                buffers.ui.fallbackMaxQuads = buffers.ui.maxQuads + 16;
+                buffers.ui.fallback = malloc(sizeof(UiVertex) * buffers.ui.fallbackMaxQuads * 4);
+                memcpy(buffers.ui.fallback, buffers.ui.vertices, sizeof(UiVertex) * buffers.ui.maxQuads * 4);
                 if (!buffers.ui.fallback)
                 {
                     VulkanLogError("malloc of fallback UI vertex buffer failed!");
@@ -533,7 +531,8 @@ bool DrawQuadInternal(const mat4 vertices_posXY_uvZW,
                 }
             }
         }
-        buffers.ui.fallback[buffers.ui.vertexCount++] = (UiVertex){
+
+        buffers.ui.fallback[4 * buffers.ui.quadCount] = (UiVertex){
             {
                 vertices_posXY_uvZW[0][0],
                 vertices_posXY_uvZW[0][1],
@@ -543,7 +542,7 @@ bool DrawQuadInternal(const mat4 vertices_posXY_uvZW,
             {r, g, b, a},
             textureIndex
         };
-        buffers.ui.fallback[buffers.ui.vertexCount++] = (UiVertex){
+        buffers.ui.fallback[4 * buffers.ui.quadCount + 1] = (UiVertex){
             {
                 vertices_posXY_uvZW[1][0],
                 vertices_posXY_uvZW[1][1],
@@ -553,7 +552,7 @@ bool DrawQuadInternal(const mat4 vertices_posXY_uvZW,
             {r, g, b, a},
             textureIndex
         };
-        buffers.ui.fallback[buffers.ui.vertexCount++] = (UiVertex){
+        buffers.ui.fallback[4 * buffers.ui.quadCount + 2] = (UiVertex){
             {
                 vertices_posXY_uvZW[2][0],
                 vertices_posXY_uvZW[2][1],
@@ -563,7 +562,7 @@ bool DrawQuadInternal(const mat4 vertices_posXY_uvZW,
             {r, g, b, a},
             textureIndex
         };
-        buffers.ui.fallback[buffers.ui.vertexCount++] = (UiVertex){
+        buffers.ui.fallback[4 * buffers.ui.quadCount + 3] = (UiVertex){
             {
                 vertices_posXY_uvZW[3][0],
                 vertices_posXY_uvZW[3][1],
@@ -573,11 +572,12 @@ bool DrawQuadInternal(const mat4 vertices_posXY_uvZW,
             {r, g, b, a},
             textureIndex
         };
+        buffers.ui.quadCount++;
 
         return true;
     }
 
-    buffers.ui.vertices[buffers.ui.vertexCount++] = (UiVertex){
+    buffers.ui.vertices[4 * buffers.ui.quadCount] = (UiVertex){
         {
             vertices_posXY_uvZW[0][0],
             vertices_posXY_uvZW[0][1],
@@ -587,7 +587,7 @@ bool DrawQuadInternal(const mat4 vertices_posXY_uvZW,
         {r, g, b, a},
         textureIndex
     };
-    buffers.ui.vertices[buffers.ui.vertexCount++] = (UiVertex){
+    buffers.ui.vertices[4 * buffers.ui.quadCount + 1] = (UiVertex){
         {
             vertices_posXY_uvZW[1][0],
             vertices_posXY_uvZW[1][1],
@@ -597,7 +597,7 @@ bool DrawQuadInternal(const mat4 vertices_posXY_uvZW,
         {r, g, b, a},
         textureIndex
     };
-    buffers.ui.vertices[buffers.ui.vertexCount++] = (UiVertex){
+    buffers.ui.vertices[4 * buffers.ui.quadCount + 2] = (UiVertex){
         {
             vertices_posXY_uvZW[2][0],
             vertices_posXY_uvZW[2][1],
@@ -607,7 +607,7 @@ bool DrawQuadInternal(const mat4 vertices_posXY_uvZW,
         {r, g, b, a},
         textureIndex
     };
-    buffers.ui.vertices[buffers.ui.vertexCount++] = (UiVertex){
+    buffers.ui.vertices[4 * buffers.ui.quadCount + 3] = (UiVertex){
         {
             vertices_posXY_uvZW[3][0],
             vertices_posXY_uvZW[3][1],
@@ -617,6 +617,15 @@ bool DrawQuadInternal(const mat4 vertices_posXY_uvZW,
         {r, g, b, a},
         textureIndex
     };
+
+    buffers.ui.indices[6 * buffers.ui.quadCount] = buffers.ui.quadCount * 4;
+    buffers.ui.indices[6 * buffers.ui.quadCount + 1] = buffers.ui.quadCount * 4 + 1;
+    buffers.ui.indices[6 * buffers.ui.quadCount + 2] = buffers.ui.quadCount * 4 + 2;
+    buffers.ui.indices[6 * buffers.ui.quadCount + 3] = buffers.ui.quadCount * 4;
+    buffers.ui.indices[6 * buffers.ui.quadCount + 4] = buffers.ui.quadCount * 4 + 2;
+    buffers.ui.indices[6 * buffers.ui.quadCount + 5] = buffers.ui.quadCount * 4 + 3;
+
+    buffers.ui.quadCount++;
 
     return true;
 }

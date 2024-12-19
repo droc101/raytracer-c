@@ -7,7 +7,8 @@
 
 bool CreateLocalBuffer()
 {
-    const VkDeviceSize size = buffers.walls.maxWallCount * (4 * sizeof(WallVertex) + 6 * sizeof(uint32_t));
+    const VkDeviceSize size = sizeof(WallVertex) * buffers.walls.maxWallCount * 4 +
+                              sizeof(uint32_t) * buffers.walls.maxWallCount * 6;
     const VkBufferUsageFlags usageFlags = VK_BUFFER_USAGE_TRANSFER_DST_BIT |
                                           VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
                                           VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
@@ -32,9 +33,12 @@ bool SetLocalBufferAliasingInfo()
 
 bool CreateSharedBuffer()
 {
-    const VkDeviceSize size = sizeof(UiVertex) * buffers.ui.maxVertices + sizeof(mat4) * MAX_FRAMES_IN_FLIGHT;
+    const VkDeviceSize size = sizeof(mat4) * MAX_FRAMES_IN_FLIGHT +
+                              sizeof(UiVertex) * buffers.ui.maxQuads * 4 +
+                              sizeof(uint32_t) * buffers.ui.maxQuads * 6;
     const VkBufferUsageFlags usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT |
                                           VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
+                                          VK_BUFFER_USAGE_INDEX_BUFFER_BIT |
                                           VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 
     buffers.shared.memoryAllocationInfo.memoryInfo = &memoryPools.sharedMemory;
@@ -48,13 +52,14 @@ bool CreateSharedBuffer()
 
 bool SetSharedBufferAliasingInfo()
 {
-    buffers.ui.bufferInfo = &buffers.shared;
-    buffers.ui.offset = 0;
     for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
         buffers.translation[i].bufferInfo = &buffers.shared;
-        buffers.translation[i].offset = sizeof(UiVertex) * buffers.ui.maxVertices + sizeof(mat4) * i;
+        buffers.translation[i].offset = sizeof(mat4) * i;
     }
+    buffers.ui.bufferInfo = &buffers.shared;
+    buffers.ui.verticesOffset = sizeof(mat4) * MAX_FRAMES_IN_FLIGHT;
+    buffers.ui.indicesOffset = sizeof(mat4) * MAX_FRAMES_IN_FLIGHT + sizeof(UiVertex) * buffers.ui.maxQuads * 4;
 
     return true;
 }

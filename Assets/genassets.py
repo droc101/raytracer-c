@@ -8,6 +8,76 @@ import struct
 
 aid = 0
 
+def parse_obj_file(file_path):
+	verts = []
+	uvs = []
+	norms = []
+
+	with open(file_path, 'r') as f:
+		for line in f:
+			if line.startswith('v '):
+				verts.append(list(map(float, line.split()[1:])))
+			elif line.startswith('vt '):
+				uvs.append(list(map(float, line.split()[1:])))
+			elif line.startswith('vn '):
+				norms.append(list(map(float, line.split()[1:])))
+
+	# Create a bytearray to store the vertex data as a list of doubles
+	vertex_data = bytearray()
+	for v in verts:
+		vertex_data += struct.pack('3d', *v)
+
+	# Create a bytearray to store the uv data as a list of doubles
+	uv_data = bytearray()
+	for uv in uvs:
+		uv_data += struct.pack('2d', *uv)
+
+	# Create a bytearray to store the normal data as a list of doubles
+	normal_data = bytearray()
+	for n in norms:
+		normal_data += struct.pack('3d', *n)
+
+	vert_data = []
+	idx_val = 0
+	# Loop through the file a second time to get the face data
+	with open(file_path, 'r') as f:
+		for line in f:
+			if line.startswith('f '):
+				# Get the vertex and uv indices for each face
+				face = line.split()[1:]
+
+				for v in face:
+					# Add the vertex and uv data into the face data array as X Y Z U V (double)
+					v_idx, vt_idx, vn_idx = v.split('/')
+					vertex = verts[int(v_idx) - 1]
+					uv = uvs[int(vt_idx) - 1]
+					norm = norms[int(vn_idx) - 1]
+					vert_data.extend(vertex)
+					vert_data.extend(uv)
+					vert_data.extend(norm)
+
+					idx_val += 1
+
+	# Pack the vertex and index data into a bytearray with the format: X Y Z U V (double)
+	vtx_bin_data = bytearray()
+	for v in vert_data:
+		vtx_bin_data += struct.pack('f', v)
+
+
+	# Pack the vertex and index data into a bytearray with the format:
+	# signature (4 bytes, "MESH")
+	# vertex count
+	# separator (4 bytes, "DATA")
+	# vertex data
+	# index data
+
+	bin_data = bytearray()
+	bin_data += struct.pack('4s', b'MSH\0')
+	bin_data.extend(int_to_bytes_le(idx_val))
+	bin_data += struct.pack('4s', b'DAT\0')
+	bin_data += vtx_bin_data
+
+	return bin_data
 
 def int_to_bytes(i):  # Convert an integer to bytes big endian, 4 bytes
 	return [(i >> 24) & 0xFF, (i >> 16) & 0xFF, (i >> 8) & 0xFF, i & 0xFF]
@@ -266,76 +336,6 @@ def vert_to_bytes(path):
 
 	return header
 
-def tesc_to_bytes(path):
-	global aid
-
-	data = list(glsl_to_spv(path))
-
-	data += int_to_bytes(len(data))  # array size (excluding header)
-	data += int_to_bytes(0)  # unused
-	data += int_to_bytes(0)  # unused
-	data += int_to_bytes(aid)  # Padding
-	for i in range(0, len(data)):
-		if data[i] < 0 or data[i] > 255:
-			print("Error: TESC-SPV data out of range")
-			sys.exit(1)
-
-	decompressed_len = len(data)
-
-	data = gzip.compress(bytes(data))
-
-	header = bytearray()
-	header.extend(int_to_bytes(len(data)))  # Compressed length
-	header.extend(int_to_bytes(decompressed_len))  # Decompressed length
-	header.extend(int_to_bytes(aid))  # Asset ID
-	header.extend(int_to_bytes(7))  # Asset Type (7 = tessellation control)
-
-	header.extend(data)
-
-	header[19] = 1
-	header[20] = 2
-	header[21] = 3
-	header[22] = 4
-
-	aid += 1
-
-	return header
-
-def tese_to_bytes(path):
-	global aid
-
-	data = list(glsl_to_spv(path))
-
-	data += int_to_bytes(len(data))  # array size (excluding header)
-	data += int_to_bytes(0)  # unused
-	data += int_to_bytes(0)  # unused
-	data += int_to_bytes(aid)  # Padding
-	for i in range(0, len(data)):
-		if data[i] < 0 or data[i] > 255:
-			print("Error: TESE-SPV data out of range")
-			sys.exit(1)
-
-	decompressed_len = len(data)
-
-	data = gzip.compress(bytes(data))
-
-	header = bytearray()
-	header.extend(int_to_bytes(len(data)))  # Compressed length
-	header.extend(int_to_bytes(decompressed_len))  # Decompressed length
-	header.extend(int_to_bytes(aid))  # Asset ID
-	header.extend(int_to_bytes(8))  # Asset Type (8 = tessellation evaluation)
-
-	header.extend(data)
-
-	header[19] = 1
-	header[20] = 2
-	header[21] = 3
-	header[22] = 4
-
-	aid += 1
-
-	return header
-
 # Convert the bytes to a C array (for the .c file)
 def bytes_to_c_array(data, name):
 	output = "const unsigned char " + name + "[] = {\n"
@@ -345,77 +345,6 @@ def bytes_to_c_array(data, name):
 			output += "\n"
 	output += "};\n"
 	return output
-
-def parse_obj_file(file_path):
-	verts = []
-	uvs = []
-	norms = []
-
-	with open(file_path, 'r') as f:
-		for line in f:
-			if line.startswith('v '):
-				verts.append(list(map(float, line.split()[1:])))
-			elif line.startswith('vt '):
-				uvs.append(list(map(float, line.split()[1:])))
-			elif line.startswith('vn '):
-				norms.append(list(map(float, line.split()[1:])))
-
-	# Create a bytearray to store the vertex data as a list of doubles
-	vertex_data = bytearray()
-	for v in verts:
-		vertex_data += struct.pack('3d', *v)
-
-	# Create a bytearray to store the uv data as a list of doubles
-	uv_data = bytearray()
-	for uv in uvs:
-		uv_data += struct.pack('2d', *uv)
-
-	# Create a bytearray to store the normal data as a list of doubles
-	normal_data = bytearray()
-	for n in norms:
-		normal_data += struct.pack('3d', *n)
-
-	vert_data = []
-	idx_val = 0
-	# Loop through the file a second time to get the face data
-	with open(file_path, 'r') as f:
-		for line in f:
-			if line.startswith('f '):
-				# Get the vertex and uv indices for each face
-				face = line.split()[1:]
-
-				for v in face:
-					# Add the vertex and uv data into the face data array as X Y Z U V (double)
-					v_idx, vt_idx, vn_idx = v.split('/')
-					vertex = verts[int(v_idx) - 1]
-					uv = uvs[int(vt_idx) - 1]
-					norm = norms[int(vn_idx) - 1]
-					vert_data.extend(vertex)
-					vert_data.extend(uv)
-					vert_data.extend(norm)
-
-					idx_val += 1
-
-	# Pack the vertex and index data into a bytearray with the format: X Y Z U V (double)
-	vtx_bin_data = bytearray()
-	for v in vert_data:
-		vtx_bin_data += struct.pack('f', v)
-
-
-	# Pack the vertex and index data into a bytearray with the format:
-	# signature (4 bytes, "MESH")
-	# vertex count
-	# separator (4 bytes, "DATA")
-	# vertex data
-	# index data
-
-	bin_data = bytearray()
-	bin_data += struct.pack('4s', b'MSH\0')
-	bin_data.extend(int_to_bytes_le(idx_val))
-	bin_data += struct.pack('4s', b'DAT\0')
-	bin_data += vtx_bin_data
-
-	return bin_data
 
 def obj_to_bytes(path):
 	global aid
@@ -439,7 +368,7 @@ def obj_to_bytes(path):
 	header.extend(int_to_bytes(len(data)))  # Compressed length
 	header.extend(int_to_bytes(decompressed_len))  # Decompressed length
 	header.extend(int_to_bytes(aid))  # Asset ID
-	header.extend(int_to_bytes(9))  # Asset Type (9 = obj)
+	header.extend(int_to_bytes(7))  # Asset Type (7 = obj)
 
 	header.extend(data)
 
@@ -536,20 +465,6 @@ def recursive_search(path):
 				print("Converting " + path_from_assets + file)
 				data = vert_to_bytes(path + file)
 				name = "gzvert_" + foldername + "_" + file.split(".")[0]
-				assets_c += bytes_to_c_array(data, name)
-				assets_h += c_header_array(name, len(data))
-			elif file.endswith(".tesc"):
-				count += 1
-				print("Converting " + path_from_assets + file)
-				data = tesc_to_bytes(path + file)
-				name = "gztesc_" + foldername + "_" + file.split(".")[0]
-				assets_c += bytes_to_c_array(data, name)
-				assets_h += c_header_array(name, len(data))
-			elif file.endswith(".tese"):
-				count += 1
-				print("Converting " + path_from_assets + file)
-				data = tese_to_bytes(path + file)
-				name = "gztese_" + foldername + "_" + file.split(".")[0]
 				assets_c += bytes_to_c_array(data, name)
 				assets_h += c_header_array(name, len(data))
 			elif file.endswith(".obj"):

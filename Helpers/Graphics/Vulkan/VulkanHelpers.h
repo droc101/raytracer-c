@@ -19,7 +19,7 @@
 #define VULKAN_VERSION VK_MAKE_VERSION(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH)
 #define MAX_FRAMES_IN_FLIGHT 2
 // TODO Verify start size
-#define MAX_UI_PRIMITIVES_INIT 2048
+#define MAX_UI_QUADS_INIT 2048
 #define MAX_WALLS_INIT 100
 
 #define VulkanLogError(...) LogInternal("VULKAN", 31, true, __VA_ARGS__)
@@ -196,27 +196,38 @@ typedef struct TranslationUniformBuffer
  * This structure is used to keep track of not only the larger buffer that the vertex buffer is offset into, but also to
  * keep track of the host mapped memory and vertex count information.
  *
- * @note This is still C, so there are no actual guardrails preventing you from potentially causing a SEGFAULT by attempting to write to @c vertices[100] when @C maxVertices is only 20.
+ * @note This is still C, so there are no actual guardrails preventing you from potentially causing a SEGFAULT by attempting to write to @c vertices[100] when @c maxQuads is only 5.
  */
 typedef struct UiVertexBuffer
 {
     /// The larger buffer within which this vertex buffer resides.
     Buffer *bufferInfo;
     /// The offset into the larger buffer at which this vertex buffer can be found.
-    VkDeviceSize offset;
+    VkDeviceSize verticesOffset;
+    /// The offset into the larger buffer at which the UI index buffer can be found.
+    VkDeviceSize indicesOffset;
     /// This pointer will be mapped directly to an offset into some larger block of memory.
-    /// It is able to be used to directly write up to @c maxVertices elements of type @c UiVertex to the vertex buffer.
+    /// It is able to be used to directly write up to @code maxQuads * 4@endcode elements of type @c UiVertex to the vertex buffer.
+    /// @note This pointer takes the form of @code UiVertex[maxQuads * 4]@endcode.
     UiVertex *vertices;
-    /// A fallback pointer that can be used if it is necessary to write more than @c maxVertices vertices to the buffer.
-    /// @note This pointer takes the form of @code UiVertex[fallbackMaxVertices]@endcode.
+    /// This pointer will be mapped directly to an offset into some larger block of memory.
+    /// It is able to be used to directly write up to @code maxQuads * 4@endcode elements of type @c uint32_t to the index buffer.
+    /// @note This pointer takes the form of @code uint32_t[maxQuads * 6]@endcode.
+    uint32_t *indices;
+    /// A fallback pointer that can be used if it is necessary to write more than @code maxQuads * 4@endcode vertices to the buffer.
+    /// @note This pointer takes the form of @code UiVertex[fallbackMaxQuads * 4]@endcode.
     /// @note This pointer is host only, meaning that there is no Vulkan memory backing it. This means that for the GPU to be able to access it the data must first be copied to a buffer.
     UiVertex *fallback;
+    /// A fallback pointer that can be used if it is necessary to write more than @code maxQuads * 6@endcode indices to the buffer.
+    /// @note This pointer takes the form of @code uint32_t[fallbackMaxVertices * 6]@endcode.
+    /// @note This pointer is host only, meaning that there is no Vulkan memory backing it. This means that for the GPU to be able to access it the data must first be copied to a buffer.
+    uint32_t *fallbackIndices;
     /// The current number of vertices that are stored in the buffer.
-    uint32_t vertexCount;
+    uint32_t quadCount;
     /// The maximum number of vertices that can be stored in the buffer with the currently allocated memory.
-    uint32_t maxVertices;
+    uint32_t maxQuads;
     /// The maximum number of vertices that can be stored in the fallback buffer with the currently allocated memory.
-    uint32_t fallbackMaxVertices;
+    uint32_t fallbackMaxQuads;
 } UiVertexBuffer;
 
 /**

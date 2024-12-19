@@ -50,7 +50,7 @@ VkResult VK_FrameStart()
     VulkanTestReturnResult(vkResetCommandBuffer(commandBuffers[currentFrame], 0),
                            "Failed to reset Vulkan command buffer!");
 
-    buffers.ui.vertexCount = 0;
+    buffers.ui.quadCount = 0;
 
     return VK_SUCCESS;
 }
@@ -109,12 +109,15 @@ VkResult VK_FrameEnd()
     vkCmdBindPipeline(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.ui);
 
     vkCmdBindVertexBuffers(commandBuffers[currentFrame], 0, 1, &buffers.ui.bufferInfo->buffer,
-                           (VkDeviceSize[1]){buffers.ui.offset});
+                           (VkDeviceSize[1]){buffers.ui.verticesOffset});
+
+    vkCmdBindIndexBuffer(commandBuffers[currentFrame], buffers.ui.bufferInfo->buffer,
+                         buffers.ui.indicesOffset, VK_INDEX_TYPE_UINT32);
 
     vkCmdBindDescriptorSets(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1,
                             &descriptorSets[currentFrame], 0, NULL);
 
-    vkCmdDraw(commandBuffers[currentFrame], buffers.ui.vertexCount, 1, 0, 0);
+    vkCmdDrawIndexed(commandBuffers[currentFrame], buffers.ui.quadCount * 6, 1, 0, 0, 0);
 
     VulkanTestReturnResult(EndRenderPass(commandBuffers[currentFrame]), "Failed to end render pass!");
 

@@ -87,7 +87,9 @@ bool MapSharedMemory()
                    &memoryPools.sharedMemory.mappedMemory), "Failed to map shared buffer memory!");
 
     buffers.ui.vertices = memoryPools.sharedMemory.mappedMemory +
-                          buffers.shared.memoryAllocationInfo.offset + buffers.ui.offset;
+                          buffers.shared.memoryAllocationInfo.offset + buffers.ui.verticesOffset;
+    buffers.ui.indices = memoryPools.sharedMemory.mappedMemory +
+                          buffers.shared.memoryAllocationInfo.offset + buffers.ui.indicesOffset;
     for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
         buffers.translation[i].data = memoryPools.sharedMemory.mappedMemory +
