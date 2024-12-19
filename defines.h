@@ -25,6 +25,7 @@ typedef enum CurrentState CurrentState;
 typedef enum Renderer Renderer;
 typedef enum OptionsMsaa OptionsMsaa;
 typedef enum ModelShader ModelShader;
+typedef enum ImageDataOffsets ImageDataOffsets;
 
 // Struct forward declarations
 typedef struct GlobalState GlobalState;
@@ -62,6 +63,17 @@ typedef void (*ActorDestroyFunction)(Actor *self);
 #pragma endregion
 
 #pragma region Enum definitions
+
+/**
+ * Use to get data from a decompressed image asset using @c ReadUintA
+ */
+enum ImageDataOffsets
+{
+    IMAGE_SIZE_OFFSET = 0,
+    IMAGE_WIDTH_OFFSET = 4,
+    IMAGE_HEIGHT_OFFSET = 8,
+    IMAGE_ID_OFFSET = 12
+};
 
 /**
  * Used to check which game state the game is in
