@@ -14,10 +14,10 @@ bool AllocateLocalMemory()
             type)
         {
             const VkMemoryAllocateInfo allocInfo = {
-                VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-                NULL,
-                memoryPools.localMemory.size,
-                i
+                .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+                .pNext = NULL,
+                .allocationSize = memoryPools.localMemory.size,
+                .memoryTypeIndex = i,
             };
             VulkanTest(vkAllocateMemory(device, &allocInfo, NULL, &memoryPools.localMemory.memory),
                        "Failed to allocate device local buffer memory!");
@@ -55,10 +55,10 @@ bool AllocateSharedMemory()
             type)
         {
             const VkMemoryAllocateInfo allocInfo = {
-                VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-                NULL,
-                memoryPools.sharedMemory.size,
-                i
+                .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+                .pNext = NULL,
+                .allocationSize = memoryPools.sharedMemory.size,
+                .memoryTypeIndex = i,
             };
 
             VulkanTest(vkAllocateMemory(device, &allocInfo, NULL, &memoryPools.sharedMemory.memory),

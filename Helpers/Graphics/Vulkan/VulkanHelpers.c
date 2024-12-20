@@ -28,7 +28,7 @@ VkRenderPass renderPass = VK_NULL_HANDLE;
 VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
 VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
 VkPipelineCache pipelineCache = VK_NULL_HANDLE;
-Pipelines pipelines = {VK_NULL_HANDLE, VK_NULL_HANDLE};
+Pipelines pipelines = {.walls = VK_NULL_HANDLE, .ui = VK_NULL_HANDLE};
 VkFramebuffer *swapChainFramebuffers = NULL;
 VkCommandPool graphicsCommandPool = VK_NULL_HANDLE;
 VkCommandBuffer commandBuffers[MAX_FRAMES_IN_FLIGHT];
@@ -39,20 +39,20 @@ bool framebufferResized = false;
 uint8_t currentFrame = 0;
 uint32_t swapchainImageIndex;
 MemoryPools memoryPools = {
-    {
-        0,
-        NULL,
-        VK_NULL_HANDLE,
-        0,
-        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+    .localMemory = {
+        .size = 0,
+        .mappedMemory = NULL,
+        .memory = VK_NULL_HANDLE,
+        .memoryTypeBits = 0,
+        .type = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
     },
-    {
-        0,
-        NULL,
-        VK_NULL_HANDLE,
-        0,
-        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-    }
+    .sharedMemory = {
+        .size = 0,
+        .mappedMemory = NULL,
+        .memory = VK_NULL_HANDLE,
+        .memoryTypeBits = 0,
+        .type = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+    },
 };
 Buffers buffers = {0};
 VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
@@ -61,7 +61,12 @@ Image textures[TEXTURE_ASSET_COUNT];
 VkDeviceMemory textureMemory = VK_NULL_HANDLE;
 VkImageView texturesImageView[TEXTURE_ASSET_COUNT];
 uint32_t texturesAssetIDMap[ASSET_COUNT];
-TextureSamplers textureSamplers = {VK_NULL_HANDLE, VK_NULL_HANDLE, VK_NULL_HANDLE, VK_NULL_HANDLE};
+TextureSamplers textureSamplers = {
+	.linearRepeat = VK_NULL_HANDLE,
+	.nearestRepeat = VK_NULL_HANDLE,
+	.linearNoRepeat = VK_NULL_HANDLE,
+	.nearestNoRepeat = VK_NULL_HANDLE,
+};
 VkFormat depthImageFormat;
 VkImage depthImage = VK_NULL_HANDLE;
 VkDeviceMemory depthImageMemory = VK_NULL_HANDLE;
@@ -69,13 +74,19 @@ VkImageView depthImageView = VK_NULL_HANDLE;
 VkImage colorImage = VK_NULL_HANDLE;
 VkDeviceMemory colorImageMemory = VK_NULL_HANDLE;
 VkImageView colorImageView = VK_NULL_HANDLE;
-VkClearColorValue clearColor = {{0.0f, 0.64f, 0.91f, 1.0f}};
+VkClearColorValue clearColor = {{0.0f, 0.0f, 0.0f, 1.0f}};
 VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
 #pragma endregion variables
 
 bool QuerySwapChainSupport(const VkPhysicalDevice pDevice)
 {
-    SwapChainSupportDetails details = {0, 0, NULL, NULL, {}};
+    SwapChainSupportDetails details = {
+    	.formatCount = 0,
+		.presentModeCount = 0,
+		.formats = NULL,
+		.presentMode = NULL,
+		.capabilities = {0},
+    };
 
     VulkanTest(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(pDevice, surface, &details.capabilities),
                "Failed to query Vulkan surface capabilities!");
@@ -111,25 +122,25 @@ bool CreateImageView(VkImageView *imageView,
                      const char *errorMessage)
 {
     const VkImageViewCreateInfo createInfo = {
-        VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-        NULL,
-        0,
-        image,
-        VK_IMAGE_VIEW_TYPE_2D,
-        format,
-        {
-            VK_COMPONENT_SWIZZLE_IDENTITY,
-            VK_COMPONENT_SWIZZLE_IDENTITY,
-            VK_COMPONENT_SWIZZLE_IDENTITY,
-            VK_COMPONENT_SWIZZLE_IDENTITY
+        .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+        .pNext = NULL,
+        .flags = 0,
+        .image = image,
+        .viewType = VK_IMAGE_VIEW_TYPE_2D,
+        .format = format,
+        .components = {
+            .r = VK_COMPONENT_SWIZZLE_IDENTITY,
+            .g = VK_COMPONENT_SWIZZLE_IDENTITY,
+            .b = VK_COMPONENT_SWIZZLE_IDENTITY,
+            .a = VK_COMPONENT_SWIZZLE_IDENTITY,
         },
-        {
-            aspectMask,
-            0,
-            mipmapLevels,
-            0,
-            1
-        }
+        .subresourceRange = {
+            .aspectMask = aspectMask,
+            .baseMipLevel = 0,
+            .levelCount = mipmapLevels,
+            .baseArrayLayer = 0,
+            .layerCount = 1,
+        },
     };
 
     VulkanTest(vkCreateImageView(device, &createInfo, NULL, imageView), errorMessage);
@@ -142,11 +153,11 @@ VkShaderModule CreateShaderModule(const uint32_t *code, const size_t size)
     VkShaderModule shaderModule;
 
     const VkShaderModuleCreateInfo createInfo = {
-        VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-        NULL,
-        0,
-        size - 16,
-        code
+        .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
+        .pNext = NULL,
+        .flags = 0,
+        .codeSize = size - 16,
+        .pCode = code,
     };
 
     VulkanTestWithReturn(vkCreateShaderModule(device, &createInfo, NULL, &shaderModule), NULL,
@@ -180,21 +191,21 @@ bool CreateImage(VkImage *image,
     }
 
     const VkImageCreateInfo imageInfo = {
-        VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-        NULL,
-        0,
-        VK_IMAGE_TYPE_2D,
-        format,
-        extent,
-        mipmapLevels,
-        1,
-        samples,
-        VK_IMAGE_TILING_OPTIMAL,
-        usageFlags,
-        queueFamilyIndices.familyCount == 1 ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_CONCURRENT,
-        queueFamilyIndices.familyCount,
-        pQueueFamilyIndices,
-        VK_IMAGE_LAYOUT_UNDEFINED
+        .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+        .pNext = NULL,
+        .flags = 0,
+        .imageType = VK_IMAGE_TYPE_2D,
+        .format = format,
+        .extent = extent,
+        .mipLevels = mipmapLevels,
+        .arrayLayers = 1,
+        .samples = samples,
+        .tiling = VK_IMAGE_TILING_OPTIMAL,
+        .usage = usageFlags,
+        .sharingMode = queueFamilyIndices.familyCount == 1 ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_CONCURRENT,
+        .queueFamilyIndexCount = queueFamilyIndices.familyCount,
+        .pQueueFamilyIndices = pQueueFamilyIndices,
+        .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
     };
 
     VulkanTest(vkCreateImage(device, &imageInfo, NULL, image), "Failed to create Vulkan %s image!", imageType);
@@ -213,10 +224,10 @@ bool CreateImage(VkImage *image,
             const VkDeviceSize size = memoryRequirements.alignment * (VkDeviceSize)ceil(
                                           (double)memoryRequirements.size / (double)memoryRequirements.alignment);
             const VkMemoryAllocateInfo allocateInfo = {
-                VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-                NULL,
-                size,
-                i
+                .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+                .pNext = NULL,
+                .allocationSize = size,
+                .memoryTypeIndex = i,
             };
 
             VulkanTest(vkAllocateMemory(device, &allocateInfo, NULL, imageMemory),
@@ -233,21 +244,21 @@ bool CreateImage(VkImage *image,
 bool BeginCommandBuffer(const VkCommandBuffer *commandBuffer, const VkCommandPool commandPool)
 {
     const VkCommandBufferAllocateInfo allocateInfo = {
-        VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-        NULL,
-        commandPool,
-        VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-        1
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+        .pNext = NULL,
+        .commandPool = commandPool,
+        .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+        .commandBufferCount = 1,
     };
 
     VulkanTest(vkAllocateCommandBuffers(device, &allocateInfo, (VkCommandBuffer*)commandBuffer),
                "Failed to allocate Vulkan command buffers!");
 
     const VkCommandBufferBeginInfo beginInfo = {
-        VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-        NULL,
-        VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
-        NULL
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+        .pNext = NULL,
+        .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
+        .pInheritanceInfo = NULL,
     };
 
     VulkanTest(vkBeginCommandBuffer(*commandBuffer, &beginInfo),
@@ -261,15 +272,15 @@ bool EndCommandBuffer(VkCommandBuffer commandBuffer, const VkCommandPool command
     VulkanTest(vkEndCommandBuffer(commandBuffer), "Failed to finish the recording of Vulkan command buffers!");
 
     const VkSubmitInfo submitInfo = {
-        VK_STRUCTURE_TYPE_SUBMIT_INFO,
-        NULL,
-        0,
-        NULL,
-        0,
-        1,
-        &commandBuffer,
-        0,
-        NULL
+        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+        .pNext = NULL,
+        .waitSemaphoreCount = 0,
+        .pWaitSemaphores = NULL,
+        .pWaitDstStageMask = 0,
+        .commandBufferCount = 1,
+        .pCommandBuffers = &commandBuffer,
+        .signalSemaphoreCount = 0,
+        .pSignalSemaphores = NULL,
     };
 
     VulkanTest(vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE),
@@ -303,14 +314,14 @@ bool CreateBuffer(VkBuffer *buffer,
     }
 
     const VkBufferCreateInfo bufferInfo = {
-        VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-        NULL,
-        0,
-        size,
-        usageFlags,
-        queueFamilyIndices.familyCount == 1 ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_CONCURRENT,
-        queueFamilyIndices.familyCount,
-        pQueueFamilyIndices
+        .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+        .pNext = NULL,
+        .flags = 0,
+        .size = size,
+        .usage = usageFlags,
+        .sharingMode = queueFamilyIndices.familyCount == 1 ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_CONCURRENT,
+        .queueFamilyIndexCount = queueFamilyIndices.familyCount,
+        .pQueueFamilyIndices = pQueueFamilyIndices,
     };
 
     VulkanTest(vkCreateBuffer(device, &bufferInfo, NULL, buffer), "Failed to create Vulkan buffer!");
@@ -333,10 +344,10 @@ bool CreateBuffer(VkBuffer *buffer,
             memoryInfo->type)
         {
             const VkMemoryAllocateInfo allocInfo = {
-                VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-                NULL,
-                memorySize,
-                i
+                .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+                .pNext = NULL,
+                .allocationSize = memorySize,
+                .memoryTypeIndex = i,
             };
 
             VulkanTest(vkAllocateMemory(device, &allocInfo, NULL, &allocationInfo->memoryInfo->memory),
@@ -442,26 +453,29 @@ void UpdateUniformBuffer(const Camera *camera, const uint32_t currentFrame)
 VkResult BeginRenderPass(const VkCommandBuffer commandBuffer, const uint32_t imageIndex)
 {
     const VkCommandBufferBeginInfo beginInfo = {
-        VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-        NULL,
-        VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
-        NULL
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+        .pNext = NULL,
+        .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
+        .pInheritanceInfo = NULL
     };
 
     VulkanTestReturnResult(vkBeginCommandBuffer(commandBuffer, &beginInfo),
                            "Failed to begin recording Vulkan command buffer!");
 
     const VkRenderPassBeginInfo renderPassInfo = {
-        VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-        NULL,
-        renderPass,
-        swapChainFramebuffers[imageIndex],
-        {
-            {0, 0},
-            swapChainExtent
+        .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+        .pNext = NULL,
+        .renderPass = renderPass,
+        .framebuffer = swapChainFramebuffers[imageIndex],
+        .renderArea = {
+            .offset = {0, 0},
+            .extent = swapChainExtent,
         },
-        2,
-        (VkClearValue[]){{.color = clearColor}, {.depthStencil = {1, 0}}}
+        .clearValueCount = 2,
+        .pClearValues = (VkClearValue[]){
+        	{.color = clearColor},
+        	{.depthStencil = {1, 0}},
+        },
     };
 
     vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);

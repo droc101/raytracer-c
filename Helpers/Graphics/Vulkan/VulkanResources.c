@@ -69,45 +69,45 @@ void UpdateDescriptorSets()
     for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
         VkDescriptorBufferInfo uniformBufferInfo = {
-            buffers.translation[i].bufferInfo->buffer,
-            buffers.translation[i].offset,
-            sizeof(mat4)
+            .buffer = buffers.translation[i].bufferInfo->buffer,
+            .offset = buffers.translation[i].offset,
+            .range = sizeof(mat4),
         };
 
         VkDescriptorImageInfo imageInfo[TEXTURE_ASSET_COUNT];
         for (uint16_t textureIndex = 0; textureIndex < TEXTURE_ASSET_COUNT; textureIndex++)
         {
             imageInfo[textureIndex] = (VkDescriptorImageInfo){
-                textureSamplers.nearestRepeat,
-                texturesImageView[textureIndex],
-                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+            	.sampler = textureSamplers.nearestRepeat,
+            	.imageView = texturesImageView[textureIndex],
+            	.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
             };
         }
 
         const VkWriteDescriptorSet writeDescriptorList[2] = {
             {
-                VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-                NULL,
-                descriptorSets[i],
-                0,
-                0,
-                1,
-                VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                NULL,
-                &uniformBufferInfo,
-                NULL
+                .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+                .pNext = NULL,
+                .dstSet = descriptorSets[i],
+                .dstBinding = 0,
+                .dstArrayElement = 0,
+                .descriptorCount = 1,
+                .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                .pImageInfo = NULL,
+                .pBufferInfo = &uniformBufferInfo,
+                .pTexelBufferView = NULL,
             },
             {
-                VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-                NULL,
-                descriptorSets[i],
-                1,
-                0,
-                TEXTURE_ASSET_COUNT,
-                VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                imageInfo,
-                NULL,
-                NULL
+                .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+                .pNext = NULL,
+                .dstSet = descriptorSets[i],
+                .dstBinding = 1,
+                .dstArrayElement = 0,
+                .descriptorCount = TEXTURE_ASSET_COUNT,
+                .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                .pImageInfo = imageInfo,
+                .pBufferInfo = NULL,
+                .pTexelBufferView = NULL,
             }
         };
         vkUpdateDescriptorSets(device, 2, writeDescriptorList, 0, NULL);

@@ -117,8 +117,7 @@ VkResult VK_FrameEnd()
 
     vkCmdBindPipeline(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.ui);
 
-    vkCmdBindVertexBuffers(commandBuffers[currentFrame], 0, 1, &buffers.ui.bufferInfo->buffer,
-                           (VkDeviceSize[1]){buffers.ui.verticesOffset});
+    vkCmdBindVertexBuffers(commandBuffers[currentFrame], 0, 1, &buffers.ui.bufferInfo->buffer, &buffers.ui.verticesOffset);
 
     vkCmdBindIndexBuffer(commandBuffers[currentFrame], buffers.ui.bufferInfo->buffer,
                          buffers.ui.indicesOffset, VK_INDEX_TYPE_UINT32);
@@ -130,19 +129,16 @@ VkResult VK_FrameEnd()
 
     VulkanTestReturnResult(EndRenderPass(commandBuffers[currentFrame]), "Failed to end render pass!");
 
-    const VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]};
-    const VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-    const VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[currentFrame]};
     const VkSubmitInfo submitInfo = {
-        VK_STRUCTURE_TYPE_SUBMIT_INFO,
-        NULL,
-        1,
-        waitSemaphores,
-        waitStages,
-        1,
-        &commandBuffers[currentFrame],
-        1,
-        signalSemaphores
+        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+        .pNext = NULL,
+        .waitSemaphoreCount = 1,
+        .pWaitSemaphores = &imageAvailableSemaphores[currentFrame],
+        .pWaitDstStageMask = (VkPipelineStageFlags[]){VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT},
+        .commandBufferCount = 1,
+        .pCommandBuffers = &commandBuffers[currentFrame],
+        .signalSemaphoreCount = 1,
+        .pSignalSemaphores = &renderFinishedSemaphores[currentFrame],
     };
 
     VulkanTestReturnResult(vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]),
@@ -150,14 +146,14 @@ VkResult VK_FrameEnd()
 
     const VkSwapchainKHR swapChains[] = {swapChain};
     const VkPresentInfoKHR presentInfo = {
-        VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-        NULL,
-        1,
-        signalSemaphores,
-        1,
-        swapChains,
-        &swapchainImageIndex,
-        NULL
+        .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+        .pNext = NULL,
+        .waitSemaphoreCount = 1,
+        .pWaitSemaphores = &renderFinishedSemaphores[currentFrame],
+        .swapchainCount = 1,
+        .pSwapchains = swapChains,
+        .pImageIndices = &swapchainImageIndex,
+        .pResults = NULL,
     };
 
     const VkResult queuePresentResult = vkQueuePresentKHR(presentQueue, &presentInfo);
@@ -316,16 +312,16 @@ bool VK_LoadLevelWalls(const Level *level)
     const VkDeviceSize bufferSize = buffers.walls.maxWallCount * (4 * sizeof(WallVertex) + 6 * sizeof(uint32_t));
 
     MemoryInfo memoryInfo = {
-        0,
-        NULL,
-        0,
-        0,
-        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+    	.size = 0,
+    	.mappedMemory = NULL,
+    	.memory = 0,
+    	.memoryTypeBits = 0,
+    	.type = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
     };
     MemoryAllocationInfo allocationInfo = {
-        0,
-        &memoryInfo,
-        {0}
+        .offset = 0,
+        .memoryInfo = &memoryInfo,
+        .memoryRequirements = {0},
     };
     if (!CreateBuffer(&stagingBuffer, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, true, &allocationInfo))
     {
@@ -540,9 +536,9 @@ void VK_SetTexParams(const uint8_t *texture, const bool linear, const bool repea
     for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
         VkDescriptorImageInfo imageInfo = {
-            textureSamplers.nearestNoRepeat,
-            texturesImageView[textureIndex],
-            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+            .sampler = textureSamplers.nearestNoRepeat,
+            .imageView = texturesImageView[textureIndex],
+            .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
         };
         if (linear && repeat)
         {
