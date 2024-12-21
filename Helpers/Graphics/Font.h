@@ -67,7 +67,13 @@ void TextGetLine(const char *str, int line, char *out);
  * @param v_align Vertical alignment of text within the rectangle
  * @param small Whether to use the small font or not
  */
-void DrawTextAligned(const char *str, uint size, uint color, Vector2 rect_pos, Vector2 rect_size, byte h_align, byte v_align,
-                     bool small);
+void DrawTextAligned(const char *str,
+					 uint size,
+					 uint color,
+					 Vector2 rect_pos,
+					 Vector2 rect_size,
+					 byte h_align,
+					 byte v_align,
+					 bool small);
 
 #endif //GAME_FONT_H

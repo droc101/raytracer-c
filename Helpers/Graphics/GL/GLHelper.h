@@ -6,8 +6,8 @@
 #define GAME_GLHELPER_H
 
 #include <cglm/cglm.h>
-#include "SDL.h"
 #include "../Drawing.h"
+#include "SDL.h"
 
 /**
  * Set SDL_GL flags (this must be done before the SDL window is created)
@@ -98,8 +98,11 @@ void GL_DrawTextureMod(Vector2 pos, Vector2 size, const unsigned char *imageData
  * @param region_start The start of the region in pixels
  * @param region_end The end of the region in pixels
  */
-void GL_DrawTextureRegion(Vector2 pos, Vector2 size, const unsigned char *imageData, Vector2 region_start,
-                          Vector2 region_end);
+void GL_DrawTextureRegion(Vector2 pos,
+						  Vector2 size,
+						  const unsigned char *imageData,
+						  Vector2 region_start,
+						  Vector2 region_end);
 
 /**
  * Draw a texture region in 2D with a color mod
@@ -110,8 +113,12 @@ void GL_DrawTextureRegion(Vector2 pos, Vector2 size, const unsigned char *imageD
  * @param region_end The end of the region in pixels
  * @param color The modulate color
  */
-void GL_DrawTextureRegionMod(Vector2 pos, Vector2 size, const unsigned char *imageData, Vector2 region_start,
-                             Vector2 region_end, uint color);
+void GL_DrawTextureRegionMod(Vector2 pos,
+							 Vector2 size,
+							 const unsigned char *imageData,
+							 Vector2 region_start,
+							 Vector2 region_end,
+							 uint color);
 
 /**
  * Set the clear color
@@ -140,9 +147,13 @@ void GL_DrawWall(const Wall *w, const mat4 *mdl, const Camera *cam, const Level 
  * @param height The height of the floor
  * @param shade The shade of the floor
  */
-void
-GL_DrawFloor(Vector2 vp1, Vector2 vp2, const mat4 *mvp, const Level *l, const unsigned char *texture,
-             float height, float shade);
+void GL_DrawFloor(Vector2 vp1,
+				  Vector2 vp2,
+				  const mat4 *mvp,
+				  const Level *l,
+				  const unsigned char *texture,
+				  float height,
+				  float shade);
 
 /**
  * Draw a shadow sprite
@@ -167,8 +178,11 @@ void GL_UpdateViewportSize();
  * @param imageData The texture to use
  * @param color The modulate color
  */
-void GL_DrawTexturedArrays(const float *vertices, const uint *indices, int quad_count,
-                           const unsigned char *imageData, uint color);
+void GL_DrawTexturedArrays(const float *vertices,
+						   const uint *indices,
+						   int quad_count,
+						   const unsigned char *imageData,
+						   uint color);
 
 /**
  * Draw arrays using the ui_colored shader
@@ -184,14 +198,14 @@ void GL_DrawColoredArrays(const float *vertices, const uint *indices, int quad_c
  * @param x X position in pixels
  * @return The NDC position
  */
-#define GL_X_TO_NDC(x) ((float) (x) / WindowWidth() * 2.0f - 1.0f)
+#define GL_X_TO_NDC(x) ((float)(x) / WindowWidth() * 2.0f - 1.0f)
 
 /**
  * Convert screen Y to NDC
  * @param y Y position in pixels
  * @return The NDC position
  */
-#define GL_Y_TO_NDC(y) (1.0f - (float) (y) / WindowHeight() * 2.0f)
+#define GL_Y_TO_NDC(y) (1.0f - (float)(y) / WindowHeight() * 2.0f)
 
 /**
  * Get the transformation matrix for a camera

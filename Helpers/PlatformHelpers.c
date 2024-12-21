@@ -17,15 +17,15 @@
 void DwmDarkMode(SDL_Window *window)
 {
 #ifdef WIN32
-    SDL_SysWMinfo info;
-    SDL_VERSION(&info.version);
-    SDL_GetWindowWMInfo(window, &info);
-    const HWND hWnd  = info.info.win.window; // NOLINT(*-misplaced-const)
-    const BOOL enable = true;
-    const HRESULT res = DwmSetWindowAttribute(hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &enable, sizeof(BOOL));
-    if (res != S_OK)
-    {
-        LogWarning("Failed to enable dark mode: %lx\n", res);
-    }
+	SDL_SysWMinfo info;
+	SDL_VERSION(&info.version);
+	SDL_GetWindowWMInfo(window, &info);
+	const HWND hWnd = info.info.win.window; // NOLINT(*-misplaced-const)
+	const BOOL enable = true;
+	const HRESULT res = DwmSetWindowAttribute(hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &enable, sizeof(BOOL));
+	if (res != S_OK)
+	{
+		LogWarning("Failed to enable dark mode: %lx\n", res);
+	}
 #endif
 }

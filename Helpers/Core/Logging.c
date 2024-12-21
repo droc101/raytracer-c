@@ -10,13 +10,16 @@
 
 void LogInternal(const char *type, const int color, const bool flush, const char *message, ...)
 {
-    va_list args;
-    va_start(args, message);
-    char buf[bufferLength];
-    sprintf(buf, "\x1b[%02dm[%s]", color, type);
-    printf("%-"TO_STR(bufferLength)"s", buf);
-    vprintf(message, args);
-    printf("\x1b[0m");
-    if (flush) fflush(stdout);
-    va_end(args);
+	va_list args;
+	va_start(args, message);
+	char buf[bufferLength];
+	sprintf(buf, "\x1b[%02dm[%s]", color, type);
+	printf("%-" TO_STR(bufferLength) "s", buf);
+	vprintf(message, args);
+	printf("\x1b[0m");
+	if (flush)
+	{
+		fflush(stdout);
+	}
+	va_end(args);
 }

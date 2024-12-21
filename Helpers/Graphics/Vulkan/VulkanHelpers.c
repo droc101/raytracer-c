@@ -105,7 +105,9 @@ bool QuerySwapChainSupport(const VkPhysicalDevice pDevice)
 	if (details.presentModeCount != 0)
 	{
 		details.presentMode = malloc(sizeof(*details.presentMode) * details.presentModeCount);
-		VulkanTest(vkGetPhysicalDeviceSurfacePresentModesKHR(pDevice, surface, &details.presentModeCount,
+		VulkanTest(vkGetPhysicalDeviceSurfacePresentModesKHR(pDevice,
+															 surface,
+															 &details.presentModeCount,
 															 details.presentMode),
 				   "Failed to query Vulkan surface presentation modes!");
 	}
@@ -162,7 +164,8 @@ VkShaderModule CreateShaderModule(const uint32_t *code, const size_t size)
 		.pCode = code,
 	};
 
-	VulkanTestWithReturn(vkCreateShaderModule(device, &createInfo, NULL, &shaderModule), NULL,
+	VulkanTestWithReturn(vkCreateShaderModule(device, &createInfo, NULL, &shaderModule),
+						 NULL,
 						 "Failed to create shader module!");
 
 	return shaderModule;
@@ -237,7 +240,8 @@ bool CreateImage(VkImage *image,
 			};
 
 			VulkanTest(vkAllocateMemory(device, &allocateInfo, NULL, imageMemory),
-					   "Failed to allocate Vulkan %s image memory!", imageType);
+					   "Failed to allocate Vulkan %s image memory!",
+					   imageType);
 			break;
 		}
 	}
@@ -447,8 +451,11 @@ void CleanupSyncObjects()
 void UpdateUniformBuffer(const Camera *camera, const uint32_t currentFrame)
 {
 	mat4 perspective;
-	glm_perspective_lh_zo(glm_rad(camera->fov), (float)swapChainExtent.width / (float)swapChainExtent.height, NEAR_Z,
-						  FAR_Z, perspective);
+	glm_perspective_lh_zo(glm_rad(camera->fov),
+						  (float)swapChainExtent.width / (float)swapChainExtent.height,
+						  NEAR_Z,
+						  FAR_Z,
+						  perspective);
 
 	vec3 viewTarget = {cosf(camera->yaw), 0, sinf(camera->yaw)};
 

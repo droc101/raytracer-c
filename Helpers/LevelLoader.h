@@ -11,8 +11,8 @@ typedef struct LevelBytecode LevelBytecode;
 
 struct LevelBytecode
 {
-    byte *data;
-    int size;
+	byte *data;
+	int size;
 };
 
 // Level bytecode commands

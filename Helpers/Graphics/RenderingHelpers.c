@@ -3,7 +3,6 @@
 //
 
 #include "RenderingHelpers.h"
-#include "../CommonAssets.h"
 #include "../../Structs/GlobalState.h"
 #include "../Core/Error.h"
 #include "../Core/MathEx.h"
@@ -14,244 +13,250 @@ bool lowFPSMode;
 
 mat4 *ActorTransformMatrix(const Actor *Actor)
 {
-    mat4 *MODEL = malloc(sizeof(mat4));
-    chk_malloc(MODEL);
-    glm_mat4_identity(*MODEL);
-    glm_translate(*MODEL, (vec3){Actor->position.x, Actor->yPosition, Actor->position.y});
-    glm_rotate(*MODEL, -Actor->rotation, (vec3){0, 1, 0});
-    return MODEL;
+	mat4 *MODEL = malloc(sizeof(mat4));
+	chk_malloc(MODEL);
+	glm_mat4_identity(*MODEL);
+	glm_translate(*MODEL, (vec3){Actor->position.x, Actor->yPosition, Actor->position.y});
+	glm_rotate(*MODEL, -Actor->rotation, (vec3){0, 1, 0});
+	return MODEL;
 }
 
 bool RenderPreInit()
 {
-    currentRenderer = GetState()->options.renderer;
-    switch (currentRenderer)
-    {
-        case RENDERER_VULKAN:
-            return true;
-        case RENDERER_OPENGL:
-            return GL_PreInit();
-        default:
-            return false;
-    }
+	currentRenderer = GetState()->options.renderer;
+	switch (currentRenderer)
+	{
+		case RENDERER_VULKAN:
+			return true;
+		case RENDERER_OPENGL:
+			return GL_PreInit();
+		default:
+			return false;
+	}
 }
 
 bool RenderInit()
 {
-    switch (currentRenderer)
-    {
-        case RENDERER_VULKAN:
-            return VK_Init(GetGameWindow());
-        case RENDERER_OPENGL:
-            const bool gli = GL_Init(GetGameWindow());
-            return gli;
-        default:
-            return false;
-    }
+	switch (currentRenderer)
+	{
+		case RENDERER_VULKAN:
+			return VK_Init(GetGameWindow());
+		case RENDERER_OPENGL:
+			const bool gli = GL_Init(GetGameWindow());
+			return gli;
+		default:
+			return false;
+	}
 }
 
 void RenderDestroy()
 {
-    switch (currentRenderer)
-    {
-        case RENDERER_VULKAN:
-            VK_Cleanup();
-            break;
-        case RENDERER_OPENGL:
-            GL_DestroyGL();
-            break;
-        default: break;
-    }
+	switch (currentRenderer)
+	{
+		case RENDERER_VULKAN:
+			VK_Cleanup();
+			break;
+		case RENDERER_OPENGL:
+			GL_DestroyGL();
+			break;
+		default:
+			break;
+	}
 }
 
 VkResult FrameStart()
 {
-    switch (currentRenderer)
-    {
-        case RENDERER_VULKAN:
-            return VK_FrameStart();
-        case RENDERER_OPENGL: // NOLINT(*-branch-clone)
-
-            return VK_SUCCESS;
-        default: return VK_SUCCESS;
-    }
+	switch (currentRenderer)
+	{
+		case RENDERER_VULKAN:
+			return VK_FrameStart();
+		case RENDERER_OPENGL:
+		default:
+			return VK_SUCCESS;
+	}
 }
 
 void FrameEnd()
 {
-    switch (currentRenderer)
-    {
-        case RENDERER_VULKAN:
-            VK_FrameEnd();
-            break;
-        case RENDERER_OPENGL:
-            GL_Swap();
-            break;
-        default: break;
+	switch (currentRenderer)
+	{
+		case RENDERER_VULKAN:
+			VK_FrameEnd();
+			break;
+		case RENDERER_OPENGL:
+			GL_Swap();
+			break;
+		default:
+			break;
     }
 }
 
 void LoadLevelWalls(const Level *l)
 {
-    switch (currentRenderer)
-    {
-        case RENDERER_VULKAN:
-            VK_LoadLevelWalls(l);
-        break;
-        case RENDERER_OPENGL:
-        default: break;
-    }
+	switch (currentRenderer)
+	{
+		case RENDERER_VULKAN:
+			VK_LoadLevelWalls(l);
+			break;
+		case RENDERER_OPENGL:
+		default:
+			break;
+	}
 }
 
 void RenderLevel3D(const Level *l, const Camera *cam)
 {
-    switch (currentRenderer)
-    {
-        case RENDERER_VULKAN:
-            VK_RenderLevel(l, cam);
-            break;
-        case RENDERER_OPENGL:
-            GL_RenderLevel(l, cam);
-            break;
-        default: break;
-    }
+	switch (currentRenderer)
+	{
+		case RENDERER_VULKAN:
+			VK_RenderLevel(l, cam);
+			break;
+		case RENDERER_OPENGL:
+			GL_RenderLevel(l, cam);
+			break;
+		default:
+			break;
+	}
 }
 
 inline void UpdateViewportSize()
 {
-    const float newScaleX = (float) ActualWindowSize().x / (float) DEF_WIDTH;
-    const float newScaleY = (float) ActualWindowSize().y / (float) DEF_HEIGHT;
-    float newScale = newScaleX < newScaleY ? newScaleX : newScaleY;
-    newScale = max(newScale, 1.0f);
-    GetState()->uiScale = newScale;
-    UpdateWindowSize();
-    switch (currentRenderer)
-    {
-        case RENDERER_VULKAN:
-            // Unused
-            break;
-        case RENDERER_OPENGL:
-            GL_UpdateViewportSize();
-            break;
-        default: break;
-    }
+	const float newScaleX = (float)ActualWindowSize().x / (float)DEF_WIDTH;
+	const float newScaleY = (float)ActualWindowSize().y / (float)DEF_HEIGHT;
+	float newScale = newScaleX < newScaleY ? newScaleX : newScaleY;
+	newScale = max(newScale, 1.0f);
+	GetState()->uiScale = newScale;
+	UpdateWindowSize();
+	switch (currentRenderer)
+	{
+		case RENDERER_VULKAN:
+			// Unused
+			break;
+		case RENDERER_OPENGL:
+			GL_UpdateViewportSize();
+			break;
+		default:
+			break;
+	}
 }
 
 inline void WindowObscured()
 {
-    lowFPSMode = true;
-    switch (currentRenderer)
-    {
-        case RENDERER_VULKAN:
-            VK_Minimize();
-            break;
-        case RENDERER_OPENGL:
-
-            break;
-        default: break;
-    }
+	lowFPSMode = true;
+	switch (currentRenderer)
+	{
+		case RENDERER_VULKAN:
+			VK_Minimize();
+			break;
+		case RENDERER_OPENGL:
+		default:
+			break;
+	}
 }
 
 inline void WindowRestored()
 {
-    lowFPSMode = false;
-    switch (currentRenderer)
-    {
-        case RENDERER_VULKAN:
-            VK_Restore();
-            break;
-        case RENDERER_OPENGL:
-
-            break;
-        default: break;
-    }
+	lowFPSMode = false;
+	switch (currentRenderer)
+	{
+		case RENDERER_VULKAN:
+			VK_Restore();
+			break;
+		case RENDERER_OPENGL:
+		default:
+			break;
+	}
 }
 
 inline void SetLowFPS(const bool val)
 {
-    lowFPSMode = val;
+	lowFPSMode = val;
 }
 
 inline bool IsLowFPSModeEnabled()
 {
-    return lowFPSMode;
+	return lowFPSMode;
 }
 
 inline byte GetSampleCountFlags()
 {
-    switch (currentRenderer)
-    {
-        case RENDERER_VULKAN:
-            return VK_GetSampleCountFlags();
-        case RENDERER_OPENGL:
-            return 0b1111;
-        default:
-            return 1;
-    }
+	switch (currentRenderer)
+	{
+		case RENDERER_VULKAN:
+			return VK_GetSampleCountFlags();
+		case RENDERER_OPENGL:
+			return 0b1111;
+		default:
+			return 1;
+	}
 }
 
 inline void DrawBatchedQuadsTextured(const BatchedQuadArray *batch, const unsigned char *imageData, const uint color)
 {
-    switch (currentRenderer)
-    {
-        case RENDERER_VULKAN:
-            VK_DrawTexturedQuadsBatched(batch->verts, batch->quad_count, imageData, color);
-            break;
-        case RENDERER_OPENGL:
-            GL_DrawTexturedArrays(batch->verts, batch->indices, batch->quad_count, imageData, color);
-            break;
-        default: break;
-    }
+	switch (currentRenderer)
+	{
+		case RENDERER_VULKAN:
+			VK_DrawTexturedQuadsBatched(batch->verts, batch->quad_count, imageData, color);
+			break;
+		case RENDERER_OPENGL:
+			GL_DrawTexturedArrays(batch->verts, batch->indices, batch->quad_count, imageData, color);
+			break;
+		default:
+			break;
+	}
 }
 
 inline void DrawBatchedQuadsColored(const BatchedQuadArray *batch, const uint color)
 {
-    switch (currentRenderer)
-    {
-        case RENDERER_VULKAN:
-            VK_DrawColoredQuadsBatched(batch->verts, batch->quad_count, color);
-            break;
-        case RENDERER_OPENGL:
-            GL_DrawColoredArrays(batch->verts, batch->indices, batch->quad_count, color);
-            break;
-        default: break;
-    }
+	switch (currentRenderer)
+	{
+		case RENDERER_VULKAN:
+			VK_DrawColoredQuadsBatched(batch->verts, batch->quad_count, color);
+			break;
+		case RENDERER_OPENGL:
+			GL_DrawColoredArrays(batch->verts, batch->indices, batch->quad_count, color);
+			break;
+		default:
+			break;
+	}
 }
 
 inline float X_TO_NDC(const float x)
 {
-    switch (currentRenderer)
-    {
-        case RENDERER_VULKAN: // NOLINT(*-branch-clone)
-            return VK_X_TO_NDC(x);
-        case RENDERER_OPENGL:
-            return GL_X_TO_NDC(x);
-        default:
-            return 0;
-    }
+	switch (currentRenderer)
+	{
+		case RENDERER_VULKAN: // NOLINT(*-branch-clone)
+			return VK_X_TO_NDC(x);
+		case RENDERER_OPENGL:
+			return GL_X_TO_NDC(x);
+		default:
+			return 0;
+	}
 }
 
 inline float Y_TO_NDC(const float y)
 {
-    switch (currentRenderer)
-    {
-        case RENDERER_VULKAN:
-            return VK_Y_TO_NDC(y);
-        case RENDERER_OPENGL:
-            return GL_Y_TO_NDC(y);
-        default:
-            return 0;
-    }
+	switch (currentRenderer)
+	{
+		case RENDERER_VULKAN:
+			return VK_Y_TO_NDC(y);
+		case RENDERER_OPENGL:
+			return GL_Y_TO_NDC(y);
+		default:
+			return 0;
+	}
 }
 
 void RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const byte *texture, const ModelShader shd)
 {
-    switch (currentRenderer)
-    {
-        case RENDERER_VULKAN:
-            return;
-        case RENDERER_OPENGL:
-            GL_RenderModel(m, MODEL_WORLD_MATRIX, texture, shd);
-        default: // yeah this can be left empty and it actually makes the ide happier than having a return
-    }
+	switch (currentRenderer)
+	{
+		case RENDERER_VULKAN:
+
+			break;
+		case RENDERER_OPENGL:
+			GL_RenderModel(m, MODEL_WORLD_MATRIX, texture, shd);
+		default:
+			break;
+	}
 }

@@ -33,7 +33,9 @@ bool AllocateLocalMemory()
 
 inline bool BindLocalMemory()
 {
-	VulkanTest(vkBindBufferMemory(device, buffers.local.buffer, memoryPools.localMemory.memory,
+	VulkanTest(vkBindBufferMemory(device,
+								  buffers.local.buffer,
+								  memoryPools.localMemory.memory,
 								  buffers.local.memoryAllocationInfo.offset),
 			   "Failed to bind local buffer memory!");
 
@@ -77,7 +79,9 @@ bool AllocateSharedMemory()
 
 inline bool BindSharedMemory()
 {
-	VulkanTest(vkBindBufferMemory(device, buffers.shared.buffer, memoryPools.sharedMemory.memory,
+	VulkanTest(vkBindBufferMemory(device,
+								  buffers.shared.buffer,
+								  memoryPools.sharedMemory.memory,
 								  buffers.shared.memoryAllocationInfo.offset),
 			   "Failed to bind shared buffer memory!");
 
@@ -86,7 +90,11 @@ inline bool BindSharedMemory()
 
 bool MapSharedMemory()
 {
-	VulkanTest(vkMapMemory(device, memoryPools.sharedMemory.memory, 0, VK_WHOLE_SIZE, 0,
+	VulkanTest(vkMapMemory(device,
+						   memoryPools.sharedMemory.memory,
+						   0,
+						   VK_WHOLE_SIZE,
+						   0,
 						   &memoryPools.sharedMemory.mappedMemory),
 			   "Failed to map shared buffer memory!");
 

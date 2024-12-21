@@ -42,9 +42,12 @@ VkResult VK_FrameStart()
 
 	VulkanTestReturnResult(vkResetFences(device, 1, &inFlightFences[currentFrame]), "Failed to reset Vulkan fences!");
 
-	const VkResult acquireNextImageResult = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX,
+	const VkResult acquireNextImageResult = vkAcquireNextImageKHR(device,
+																  swapChain,
+																  UINT64_MAX,
 																  imageAvailableSemaphores[currentFrame],
-																  VK_NULL_HANDLE, &swapchainImageIndex);
+																  VK_NULL_HANDLE,
+																  &swapchainImageIndex);
 
 	if (acquireNextImageResult == VK_ERROR_OUT_OF_DATE_KHR || acquireNextImageResult == VK_SUBOPTIMAL_KHR)
 	{
@@ -69,7 +72,10 @@ VkResult VK_FrameEnd()
 	{
 		if (currentFrame == 0)
 		{
-			VulkanTestReturnResult(vkWaitForFences(device, 1, &inFlightFences[MAX_FRAMES_IN_FLIGHT - 1], VK_TRUE,
+			VulkanTestReturnResult(vkWaitForFences(device,
+												   1,
+												   &inFlightFences[MAX_FRAMES_IN_FLIGHT - 1],
+												   VK_TRUE,
 												   UINT64_MAX),
 								   "Failed to wait for Vulkan fences!");
 		} else
@@ -110,14 +116,25 @@ VkResult VK_FrameEnd()
 	{
 		vkCmdBindPipeline(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.walls);
 
-		vkCmdBindVertexBuffers(commandBuffers[currentFrame], 0, 1, &buffers.walls.bufferInfo->buffer,
+		vkCmdBindVertexBuffers(commandBuffers[currentFrame],
+							   0,
+							   1,
+							   &buffers.walls.bufferInfo->buffer,
 							   &buffers.walls.verticesOffset);
 
-		vkCmdBindIndexBuffer(commandBuffers[currentFrame], buffers.walls.bufferInfo->buffer,
-							 buffers.walls.indicesOffset, VK_INDEX_TYPE_UINT32);
+		vkCmdBindIndexBuffer(commandBuffers[currentFrame],
+							 buffers.walls.bufferInfo->buffer,
+							 buffers.walls.indicesOffset,
+							 VK_INDEX_TYPE_UINT32);
 
-		vkCmdBindDescriptorSets(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1,
-								&descriptorSets[currentFrame], 0, NULL);
+		vkCmdBindDescriptorSets(commandBuffers[currentFrame],
+								VK_PIPELINE_BIND_POINT_GRAPHICS,
+								pipelineLayout,
+								0,
+								1,
+								&descriptorSets[currentFrame],
+								0,
+								NULL);
 
 		vkCmdDrawIndexed(commandBuffers[currentFrame], 6 * buffers.walls.wallCount, 1, 0, 0, 0);
 	}
@@ -126,14 +143,25 @@ VkResult VK_FrameEnd()
 
 	vkCmdBindPipeline(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.ui);
 
-	vkCmdBindVertexBuffers(commandBuffers[currentFrame], 0, 1, &buffers.ui.bufferInfo->buffer,
+	vkCmdBindVertexBuffers(commandBuffers[currentFrame],
+						   0,
+						   1,
+						   &buffers.ui.bufferInfo->buffer,
 						   &buffers.ui.verticesOffset);
 
-	vkCmdBindIndexBuffer(commandBuffers[currentFrame], buffers.ui.bufferInfo->buffer, buffers.ui.indicesOffset,
+	vkCmdBindIndexBuffer(commandBuffers[currentFrame],
+						 buffers.ui.bufferInfo->buffer,
+						 buffers.ui.indicesOffset,
 						 VK_INDEX_TYPE_UINT32);
 
-	vkCmdBindDescriptorSets(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1,
-							&descriptorSets[currentFrame], 0, NULL);
+	vkCmdBindDescriptorSets(commandBuffers[currentFrame],
+							VK_PIPELINE_BIND_POINT_GRAPHICS,
+							pipelineLayout,
+							0,
+							1,
+							&descriptorSets[currentFrame],
+							0,
+							NULL);
 
 	vkCmdDrawIndexed(commandBuffers[currentFrame], buffers.ui.quadCount * 6, 1, 0, 0, 0);
 
@@ -370,7 +398,15 @@ bool VK_LoadLevelWalls(const Level *level)
 
 bool VK_DrawColoredQuad(const int32_t x, const int32_t y, const int32_t w, const int32_t h, const uint32_t color)
 {
-	return DrawRectInternal(VK_X_TO_NDC(x), VK_Y_TO_NDC(y), VK_X_TO_NDC(x + w), VK_Y_TO_NDC(y + h), 0, 0, 0, 0, color,
+	return DrawRectInternal(VK_X_TO_NDC(x),
+							VK_Y_TO_NDC(y),
+							VK_X_TO_NDC(x + w),
+							VK_Y_TO_NDC(y + h),
+							0,
+							0,
+							0,
+							0,
+							color,
 							-1);
 }
 
@@ -396,8 +432,16 @@ bool VK_DrawColoredQuadsBatched(const float *vertices, const int32_t quadCount, 
 
 bool VK_DrawTexturedQuad(const int32_t x, const int32_t y, const int32_t w, const int32_t h, const uint8_t *texture)
 {
-	return DrawRectInternal(VK_X_TO_NDC(x), VK_Y_TO_NDC(y), VK_X_TO_NDC(x + w), VK_Y_TO_NDC(y + h), 0, 0, 1, 1,
-							0xFFFFFFFF, TextureIndex(texture));
+	return DrawRectInternal(VK_X_TO_NDC(x),
+							VK_Y_TO_NDC(y),
+							VK_X_TO_NDC(x + w),
+							VK_Y_TO_NDC(y + h),
+							0,
+							0,
+							1,
+							1,
+							0xFFFFFFFF,
+							TextureIndex(texture));
 }
 
 bool VK_DrawTexturedQuadMod(const int32_t x,
@@ -407,7 +451,15 @@ bool VK_DrawTexturedQuadMod(const int32_t x,
 							const uint8_t *texture,
 							const uint32_t color)
 {
-	return DrawRectInternal(VK_X_TO_NDC(x), VK_Y_TO_NDC(y), VK_X_TO_NDC(x + w), VK_Y_TO_NDC(y + h), 0, 0, 1, 1, color,
+	return DrawRectInternal(VK_X_TO_NDC(x),
+							VK_Y_TO_NDC(y),
+							VK_X_TO_NDC(x + w),
+							VK_Y_TO_NDC(y + h),
+							0,
+							0,
+							1,
+							1,
+							color,
 							TextureIndex(texture));
 }
 
@@ -429,8 +481,15 @@ bool VK_DrawTexturedQuadRegion(const int32_t x,
 	const float startU = (float)regionX / (float)width;
 	const float startV = (float)regionY / (float)height;
 
-	return DrawRectInternal(VK_X_TO_NDC(x), VK_Y_TO_NDC(y), VK_X_TO_NDC(x + w), VK_Y_TO_NDC(y + h), startU, startV,
-							startU + (float)regionW / (float)width, startV + (float)regionH / (float)height, 0xFFFFFFFF,
+	return DrawRectInternal(VK_X_TO_NDC(x),
+							VK_Y_TO_NDC(y),
+							VK_X_TO_NDC(x + w),
+							VK_Y_TO_NDC(y + h),
+							startU,
+							startV,
+							startU + (float)regionW / (float)width,
+							startV + (float)regionH / (float)height,
+							0xFFFFFFFF,
 							texturesAssetIDMap[ReadUintA(decompressed, IMAGE_ID_OFFSET)]);
 }
 
@@ -453,8 +512,15 @@ bool VK_DrawTexturedQuadRegionMod(const int32_t x,
 	const float startU = (float)regionX / (float)width;
 	const float startV = (float)regionY / (float)height;
 
-	return DrawRectInternal(VK_X_TO_NDC(x), VK_Y_TO_NDC(y), VK_X_TO_NDC(x + w), VK_Y_TO_NDC(y + h), startU, startV,
-							startU + (float)regionW / (float)width, startV + (float)regionH / (float)height, color,
+	return DrawRectInternal(VK_X_TO_NDC(x),
+							VK_Y_TO_NDC(y),
+							VK_X_TO_NDC(x + w),
+							VK_Y_TO_NDC(y + h),
+							startU,
+							startV,
+							startU + (float)regionW / (float)width,
+							startV + (float)regionH / (float)height,
+							color,
 							texturesAssetIDMap[ReadUintA(decompressed, IMAGE_ID_OFFSET)]);
 }
 

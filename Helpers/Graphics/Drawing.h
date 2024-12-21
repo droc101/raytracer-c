@@ -5,8 +5,8 @@
 #ifndef GAME_DRAWING_H
 #define GAME_DRAWING_H
 
-#include "SDL.h"
 #include "../../defines.h"
+#include "SDL.h"
 
 /**
  * Set the main window
@@ -131,8 +131,11 @@ void DrawTextureMod(Vector2 pos, Vector2 size, const unsigned char *imageData, u
  * @param region_start The start of the region (in pixels)
  * @param region_end The end of the region (in pixels)
  */
-void
-DrawTextureRegion(Vector2 pos, Vector2 size, const unsigned char *imageData, Vector2 region_start, Vector2 region_end);
+void DrawTextureRegion(Vector2 pos,
+					   Vector2 size,
+					   const unsigned char *imageData,
+					   Vector2 region_start,
+					   Vector2 region_end);
 
 /**
  * Draw a texture region on a rectangle with a color
@@ -143,8 +146,12 @@ DrawTextureRegion(Vector2 pos, Vector2 size, const unsigned char *imageData, Vec
  * @param region_end The end of the region (in pixels)
  * @param color The color to draw with
  */
-void DrawTextureRegionMod(Vector2 pos, Vector2 size, const unsigned char *imageData, Vector2 region_start,
-                          Vector2 region_end, uint color);
+void DrawTextureRegionMod(Vector2 pos,
+						  Vector2 size,
+						  const unsigned char *imageData,
+						  Vector2 region_start,
+						  Vector2 region_end,
+						  uint color);
 
 /**
  * Clear the screen with a color
@@ -178,7 +185,10 @@ Vector2 GetTextureSize(const unsigned char *imageData);
  * @param imageData The texture data
  * @warning This is nine draw calls.
  */
-void DrawNinePatchTexture(Vector2 pos, Vector2 size, int output_margins_px, int texture_margins_px,
-                    const byte *imageData);
+void DrawNinePatchTexture(Vector2 pos,
+						  Vector2 size,
+						  int output_margins_px,
+						  int texture_margins_px,
+						  const byte *imageData);
 
 #endif //GAME_DRAWING_H

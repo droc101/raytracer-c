@@ -17,16 +17,16 @@ typedef struct GL_Buffer GL_Buffer;
 
 struct GL_Shader
 {
-    GLuint vsh;
-    GLuint fsh;
-    GLuint program;
+	GLuint vsh;
+	GLuint fsh;
+	GLuint program;
 };
 
 struct GL_Buffer
 {
-    GLuint vao;
-    GLuint vbo;
-    GLuint ebo;
+	GLuint vao;
+	GLuint vbo;
+	GLuint ebo;
 };
 
 /**
@@ -76,9 +76,13 @@ GL_Buffer *GL_ConstructBuffer();
  * @param msg The message
  * @param data Extra data
  */
-void GL_DebugMessageCallback(GLenum source, GLenum type, GLuint id,
-                             GLenum severity, GLsizei length,
-                             const GLchar *msg, const void *data);
+void GL_DebugMessageCallback(GLenum source,
+							 GLenum type,
+							 GLuint id,
+							 GLenum severity,
+							 GLsizei length,
+							 const GLchar *msg,
+							 const void *data);
 
 
 /**

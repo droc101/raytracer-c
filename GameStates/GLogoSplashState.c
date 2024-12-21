@@ -3,56 +3,56 @@
 //
 
 #include "GLogoSplashState.h"
-#include "GMenuState.h"
 #include "../Assets/Assets.h"
 #include "../Helpers/Core/Input.h"
 #include "../Helpers/Graphics/Drawing.h"
 #include "../Structs/GlobalState.h"
 #include "../Structs/Vector2.h"
+#include "GMenuState.h"
 
 void GLogoSplashStateFixedUpdate(GlobalState *State)
 {
 #ifdef DEBUG_NOSPLASH
-    if (State->physicsFrame == 1)
-    {
-        GMenuStateSet();
-    }
-    if (State->physicsFrame > 0)
-    {
-        State->physicsFrame++;
-        return;
-    }
+	if (State->physicsFrame == 1)
+	{
+		GMenuStateSet();
+	}
+	if (State->physicsFrame > 0)
+	{
+		State->physicsFrame++;
+		return;
+	}
 #endif
 
-    if (State->physicsFrame == 20)
-    {
-        PlaySoundEffect(gzwav_sfx_coincling);
-    }
+	if (State->physicsFrame == 20)
+	{
+		PlaySoundEffect(gzwav_sfx_coincling);
+	}
 
-    if (State->physicsFrame == 120)
-    {
-        GMenuStateSet();
-    }
+	if (State->physicsFrame == 120)
+	{
+		GMenuStateSet();
+	}
 
-    State->physicsFrame++;
+	State->physicsFrame++;
 }
 
 // ReSharper disable once CppParameterMayBeConstPtrOrRef
 void GLogoSplashStateRender(GlobalState *State)
 {
-    SetColorUint(0x0);
-    ClearColor(0xFF000000);
-    if (State->physicsFrame < 20 || State->physicsFrame > 100)
-    {
-        return;
-    }
+	SetColorUint(0x0);
+	ClearColor(0xFF000000);
+	if (State->physicsFrame < 20 || State->physicsFrame > 100)
+	{
+		return;
+	}
 
-    const SDL_Rect destRect = {WindowWidth() / 2 - 150, WindowHeight() / 2 - 150, 300, 300};
-    DrawTexture(v2(destRect.x, destRect.y), v2(destRect.w, destRect.h), gztex_interface_studio);
+	const SDL_Rect destRect = {WindowWidth() / 2 - 150, WindowHeight() / 2 - 150, 300, 300};
+	DrawTexture(v2(destRect.x, destRect.y), v2(destRect.w, destRect.h), gztex_interface_studio);
 }
 
 void GLogoSplashStateSet()
 {
-    SetRenderCallback(GLogoSplashStateRender);
-    SetUpdateCallback(NULL, GLogoSplashStateFixedUpdate, LOGO_SPLASH_STATE); // Non-fixed is not needed for this state
+	SetRenderCallback(GLogoSplashStateRender);
+	SetUpdateCallback(NULL, GLogoSplashStateFixedUpdate, LOGO_SPLASH_STATE); // Non-fixed is not needed for this state
 }

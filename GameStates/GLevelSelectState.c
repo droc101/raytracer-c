@@ -4,73 +4,79 @@
 
 #include "GLevelSelectState.h"
 #include <stdio.h>
-#include "GMainState.h"
-#include "GMenuState.h"
 #include "../Assets/Assets.h"
-#include "../Helpers/LevelEntries.h"
 #include "../Helpers/Core/Input.h"
 #include "../Helpers/Core/MathEx.h"
 #include "../Helpers/Graphics/Drawing.h"
 #include "../Helpers/Graphics/Font.h"
+#include "../Helpers/LevelEntries.h"
 #include "../Structs/GlobalState.h"
 #include "../Structs/Vector2.h"
+#include "GMainState.h"
+#include "GMenuState.h"
 
 int GLevelSelectState_SelectedLevel = 0;
 
-void GLevelSelectStateUpdate(GlobalState */*State*/)
+void GLevelSelectStateUpdate(GlobalState * /*State*/)
 {
-    if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_B))
-    {
-        GMenuStateSet();
-    }
-    if (IsKeyJustPressed(SDL_SCANCODE_DOWN) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_DPAD_DOWN))
-    {
-        GLevelSelectState_SelectedLevel--;
-        GLevelSelectState_SelectedLevel = wrap(GLevelSelectState_SelectedLevel, 0, LEVEL_COUNT);
-    } else if (IsKeyJustPressed(SDL_SCANCODE_UP) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_DPAD_UP))
-    {
-        GLevelSelectState_SelectedLevel++;
-        GLevelSelectState_SelectedLevel = wrap(GLevelSelectState_SelectedLevel, 0, LEVEL_COUNT);
-    } else if (IsKeyJustPressed(SDL_SCANCODE_SPACE) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_A))
-    {
-        // check if the level is a stub
-        if (gLevelEntries[GLevelSelectState_SelectedLevel].levelData == NULL)
-        {
-            GMenuStateSet();
-            return;
-        }
-        ChangeLevelByID(GLevelSelectState_SelectedLevel);
-        GMainStateSet();
-    }
+	if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_B))
+	{
+		GMenuStateSet();
+	}
+	if (IsKeyJustPressed(SDL_SCANCODE_DOWN) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_DPAD_DOWN))
+	{
+		GLevelSelectState_SelectedLevel--;
+		GLevelSelectState_SelectedLevel = wrap(GLevelSelectState_SelectedLevel, 0, LEVEL_COUNT);
+	} else if (IsKeyJustPressed(SDL_SCANCODE_UP) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_DPAD_UP))
+	{
+		GLevelSelectState_SelectedLevel++;
+		GLevelSelectState_SelectedLevel = wrap(GLevelSelectState_SelectedLevel, 0, LEVEL_COUNT);
+	} else if (IsKeyJustPressed(SDL_SCANCODE_SPACE) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_A))
+	{
+		// check if the level is a stub
+		if (gLevelEntries[GLevelSelectState_SelectedLevel].levelData == NULL)
+		{
+			GMenuStateSet();
+			return;
+		}
+		ChangeLevelByID(GLevelSelectState_SelectedLevel);
+		GMainStateSet();
+	}
 }
 
-void GLevelSelectStateRender(GlobalState */*State*/)
+void GLevelSelectStateRender(GlobalState * /*State*/)
 {
-    SetColorUint(0xFF123456);
-    ClearColor(0xFF123456);
+	SetColorUint(0xFF123456);
+	ClearColor(0xFF123456);
 
-    const Vector2 bg_tile_size = v2(320, 240);
-    for (int x = 0; x < WindowWidth(); x += bg_tile_size.x)
-    {
-        for (int y = 0; y < WindowHeight(); y += bg_tile_size.y)
-        {
-            DrawTexture(v2(x, y), v2(bg_tile_size.x, bg_tile_size.y), gztex_interface_menu_bg_tile);
-        }
-    }
+	const Vector2 bgTileSize = v2(320, 240);
+	for (int x = 0; x < WindowWidth(); x += bgTileSize.x)
+	{
+		for (int y = 0; y < WindowHeight(); y += bgTileSize.y)
+		{
+			DrawTexture(v2(x, y), v2(bgTileSize.x, bgTileSize.y), gztex_interface_menu_bg_tile);
+		}
+	}
 
-    FontDrawString(v2(20, 20), GAME_TITLE, 128, 0xFFFFFFFF, false);
-    FontDrawString(v2(20, 150), "Press Space to start.", 32, 0xFFa0a0a0, false);
+	FontDrawString(v2(20, 20), GAME_TITLE, 128, 0xFFFFFFFF, false);
+	FontDrawString(v2(20, 150), "Press Space to start.", 32, 0xFFa0a0a0, false);
 
-    char *levelName = gLevelEntries[GLevelSelectState_SelectedLevel].internalName;
-    char levelNameBuffer[64];
-    sprintf(levelNameBuffer, "%02d %s", GLevelSelectState_SelectedLevel + 1, levelName);
-    DrawTextAligned(levelNameBuffer, 32, 0xFFFFFFFF, v2(50, 300), v2(WindowWidth() - 50, 300), FONT_HALIGN_LEFT,
-                    FONT_VALIGN_MIDDLE, false);
+	char *levelName = gLevelEntries[GLevelSelectState_SelectedLevel].internalName;
+	char levelNameBuffer[64];
+	sprintf(levelNameBuffer, "%02d %s", GLevelSelectState_SelectedLevel + 1, levelName);
+	DrawTextAligned(levelNameBuffer,
+					32,
+					0xFFFFFFFF,
+					v2(50, 300),
+					v2(WindowWidth() - 50, 300),
+					FONT_HALIGN_LEFT,
+					FONT_VALIGN_MIDDLE,
+					false);
 }
 
 void GLevelSelectStateSet()
 {
-    StopMusic();
-    SetRenderCallback(GLevelSelectStateRender);
-    SetUpdateCallback(GLevelSelectStateUpdate, NULL, LEVEL_SELECT_STATE); // Fixed update is not needed for this state
+	StopMusic();
+	SetRenderCallback(GLevelSelectStateRender);
+	SetUpdateCallback(GLevelSelectStateUpdate, NULL, LEVEL_SELECT_STATE); // Fixed update is not needed for this state
 }

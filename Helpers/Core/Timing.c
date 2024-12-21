@@ -10,29 +10,29 @@ static ulong StartTimeS;
 
 void InitTimers()
 {
-    struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts);
-    StartTimeNS = ts.tv_sec * 1000000000 + ts.tv_nsec;
-    StartTimeS = ts.tv_sec;
+	struct timespec ts;
+	clock_gettime(CLOCK_MONOTONIC, &ts);
+	StartTimeNS = ts.tv_sec * 1000000000 + ts.tv_nsec;
+	StartTimeS = ts.tv_sec;
 }
 
 ulong GetTimeNs()
 {
-    struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts);
-    return ts.tv_sec * 1000000000 + ts.tv_nsec - StartTimeNS;
+	struct timespec ts;
+	clock_gettime(CLOCK_MONOTONIC, &ts);
+	return ts.tv_sec * 1000000000 + ts.tv_nsec - StartTimeNS;
 }
 
 ulong GetTimeMs()
 {
-    struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts);
-    return (ts.tv_sec * 1000 + ts.tv_nsec / 1000000) - (StartTimeNS / 1000000);
+	struct timespec ts;
+	clock_gettime(CLOCK_MONOTONIC, &ts);
+	return (ts.tv_sec * 1000 + ts.tv_nsec / 1000000) - (StartTimeNS / 1000000);
 }
 
 ulong GetTimeS()
 {
-    struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts);
-    return ts.tv_sec - StartTimeS;
+	struct timespec ts;
+	clock_gettime(CLOCK_MONOTONIC, &ts);
+	return ts.tv_sec - StartTimeS;
 }

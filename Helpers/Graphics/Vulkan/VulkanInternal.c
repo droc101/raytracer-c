@@ -393,9 +393,11 @@ bool CreateSwapChain()
 		int32_t width;
 		int32_t height;
 		SDL_Vulkan_GetDrawableSize(vk_window, &width, &height);
-		extent.width = clamp(width, swapChainSupport.capabilities.minImageExtent.width,
+		extent.width = clamp(width,
+							 swapChainSupport.capabilities.minImageExtent.width,
 							 swapChainSupport.capabilities.maxImageExtent.width);
-		extent.height = clamp(height, swapChainSupport.capabilities.minImageExtent.height,
+		extent.height = clamp(height,
+							  swapChainSupport.capabilities.minImageExtent.height,
 							  swapChainSupport.capabilities.maxImageExtent.height);
 	}
 	uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
@@ -481,8 +483,12 @@ bool CreateImageViews()
 
 	for (uint32_t i = 0; i < swapChainCount; i++)
 	{
-		if (!CreateImageView(&swapChainImageViews[i], swapChainImages[i], swapChainImageFormat,
-							 VK_IMAGE_ASPECT_COLOR_BIT, 1, "Failed to create Vulkan swap chain image view!"))
+		if (!CreateImageView(&swapChainImageViews[i],
+							 swapChainImages[i],
+							 swapChainImageFormat,
+							 VK_IMAGE_ASPECT_COLOR_BIT,
+							 1,
+							 "Failed to create Vulkan swap chain image view!"))
 		{
 			return false;
 		}
@@ -532,8 +538,9 @@ bool CreateRenderPass()
 		  physicalDevice.properties.limits.framebufferDepthSampleCounts &
 		  msaaSamples))
 	{
-		ShowWarning("Invalid Settings", "Your GPU driver does not support the selected MSAA level!\n"
-										"A fallback has been set to avoid issues.");
+		ShowWarning("Invalid Settings",
+					"Your GPU driver does not support the selected MSAA level!\n"
+					"A fallback has been set to avoid issues.");
 		while (!(physicalDevice.properties.limits.framebufferColorSampleCounts &
 				 physicalDevice.properties.limits.framebufferDepthSampleCounts &
 				 msaaSamples))
@@ -1118,15 +1125,23 @@ bool CreateCommandPools()
 
 bool CreateColorImage()
 {
-	if (!CreateImage(&colorImage, &colorImageMemory, swapChainImageFormat,
-					 (VkExtent3D){.width = swapChainExtent.width, .height = swapChainExtent.height, .depth = 1}, 1,
-					 msaaSamples, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+	if (!CreateImage(&colorImage,
+					 &colorImageMemory,
+					 swapChainImageFormat,
+					 (VkExtent3D){.width = swapChainExtent.width, .height = swapChainExtent.height, .depth = 1},
+					 1,
+					 msaaSamples,
+					 VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 					 "color"))
 	{
 		return false;
 	}
 
-	if (!CreateImageView(&colorImageView, colorImage, swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1,
+	if (!CreateImageView(&colorImageView,
+						 colorImage,
+						 swapChainImageFormat,
+						 VK_IMAGE_ASPECT_COLOR_BIT,
+						 1,
 						 "Failed to create Vulkan color image view!"))
 	{
 		return false;
@@ -1137,16 +1152,23 @@ bool CreateColorImage()
 
 bool CreateDepthImage()
 {
-	if (!CreateImage(&depthImage, &depthImageMemory, depthImageFormat,
-					 (VkExtent3D){.width = swapChainExtent.width, .height = swapChainExtent.height, .depth = 1}, 1,
-					 msaaSamples, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
+	if (!CreateImage(&depthImage,
+					 &depthImageMemory,
+					 depthImageFormat,
+					 (VkExtent3D){.width = swapChainExtent.width, .height = swapChainExtent.height, .depth = 1},
+					 1,
+					 msaaSamples,
+					 VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
 					 "depth test"))
 	{
 		return false;
 	}
 
-	if (!CreateImageView(&depthImageView, depthImage, depthImageFormat,
-						 VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT, 1,
+	if (!CreateImageView(&depthImageView,
+						 depthImage,
+						 depthImageFormat,
+						 VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT,
+						 1,
 						 "Failed to create Vulkan depth image view!"))
 	{
 		return false;
@@ -1178,8 +1200,16 @@ bool CreateDepthImage()
 		.subresourceRange = subresourceRange,
 	};
 
-	vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
-						 0, 0, NULL, 0, NULL, 1, &transferBarrier);
+	vkCmdPipelineBarrier(commandBuffer,
+						 VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+						 VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+						 0,
+						 0,
+						 NULL,
+						 0,
+						 NULL,
+						 1,
+						 &transferBarrier);
 
 	if (!EndCommandBuffer(commandBuffer, graphicsCommandPool, graphicsQueue))
 	{
@@ -1240,7 +1270,11 @@ bool LoadTextures()
 		textures[textureIndex].mipmapLevels = GetState()->options.mipmaps
 													  ? (uint8_t)log2(max(extent.width, extent.height)) + 1
 													  : 1;
-		if (!CreateImage(&textures[textureIndex].image, NULL, format, extent, textures[textureIndex].mipmapLevels,
+		if (!CreateImage(&textures[textureIndex].image,
+						 NULL,
+						 format,
+						 extent,
+						 textures[textureIndex].mipmapLevels,
 						 VK_SAMPLE_COUNT_1_BIT,
 						 VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 						 "texture"))
@@ -1248,7 +1282,8 @@ bool LoadTextures()
 			return false;
 		}
 
-		vkGetImageMemoryRequirements(device, textures[textureIndex].image,
+		vkGetImageMemoryRequirements(device,
+									 textures[textureIndex].image,
 									 &textures[textureIndex].allocationInfo.memoryRequirements);
 
 		const VkDeviceSize alignment = textures[textureIndex].allocationInfo.memoryRequirements.alignment;
@@ -1300,7 +1335,9 @@ bool LoadTextures()
 
 	for (uint16_t textureIndex = 0; textureIndex < TEXTURE_ASSET_COUNT; textureIndex++)
 	{
-		VulkanTest(vkBindImageMemory(device, textures[textureIndex].image, textureMemory,
+		VulkanTest(vkBindImageMemory(device,
+									 textures[textureIndex].image,
+									 textureMemory,
 									 textures[textureIndex].allocationInfo.offset),
 				   "Failed to bind Vulkan texture memory!");
 
@@ -1309,8 +1346,12 @@ bool LoadTextures()
 		uint32_t height = ReadUintA(decompressed, IMAGE_HEIGHT_OFFSET);
 		void *data;
 
-		VulkanTest(vkMapMemory(device, memoryInfo.memory, textures[textureIndex].allocationInfo.offset,
-							   textures[textureIndex].allocationInfo.memoryRequirements.size, 0, &data),
+		VulkanTest(vkMapMemory(device,
+							   memoryInfo.memory,
+							   textures[textureIndex].allocationInfo.offset,
+							   textures[textureIndex].allocationInfo.memoryRequirements.size,
+							   0,
+							   &data),
 				   "Failed to map Vulkan texture staging buffer memory!");
 
 		memcpy(data, decompressed + sizeof(uint32_t) * 4, ReadUintA(decompressed, IMAGE_SIZE_OFFSET) * 4);
@@ -1342,8 +1383,16 @@ bool LoadTextures()
 			.subresourceRange = transferSubresourceRange,
 		};
 
-		vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0,
-							 NULL, 0, NULL, 1, &transferBarrier);
+		vkCmdPipelineBarrier(commandBuffer,
+							 VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+							 VK_PIPELINE_STAGE_TRANSFER_BIT,
+							 0,
+							 0,
+							 NULL,
+							 0,
+							 NULL,
+							 1,
+							 &transferBarrier);
 
 		if (!EndCommandBuffer(commandBuffer, graphicsCommandPool, graphicsQueue))
 		{
@@ -1375,8 +1424,12 @@ bool LoadTextures()
 			.imageExtent = imageExtent,
 		};
 
-		vkCmdCopyBufferToImage(commandBuffer, stagingBuffer, textures[textureIndex].image,
-							   VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &bufferCopyInfo);
+		vkCmdCopyBufferToImage(commandBuffer,
+							   stagingBuffer,
+							   textures[textureIndex].image,
+							   VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+							   1,
+							   &bufferCopyInfo);
 
 		if (!EndCommandBuffer(commandBuffer, graphicsCommandPool, graphicsQueue))
 		{
@@ -1410,8 +1463,16 @@ bool LoadTextures()
 				.subresourceRange = blitSubresourceRange,
 			};
 
-			vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0,
-								 NULL, 0, NULL, 1, &blitBarrier);
+			vkCmdPipelineBarrier(commandBuffer,
+								 VK_PIPELINE_STAGE_TRANSFER_BIT,
+								 VK_PIPELINE_STAGE_TRANSFER_BIT,
+								 0,
+								 0,
+								 NULL,
+								 0,
+								 NULL,
+								 1,
+								 &blitBarrier);
 
 			VkImageBlit blit = {
 				{
@@ -1444,8 +1505,13 @@ bool LoadTextures()
 				},
 			};
 
-			vkCmdBlitImage(commandBuffer, textures[textureIndex].image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-						   textures[textureIndex].image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit,
+			vkCmdBlitImage(commandBuffer,
+						   textures[textureIndex].image,
+						   VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+						   textures[textureIndex].image,
+						   VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+						   1,
+						   &blit,
 						   VK_FILTER_LINEAR);
 
 			const VkImageSubresourceRange mipmapSubresourceRange = {
@@ -1469,8 +1535,16 @@ bool LoadTextures()
 			};
 
 			// TODO Best practices validation doesn't like this
-			vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-								 0, 0, NULL, 0, NULL, 1, &mipmapBarrier);
+			vkCmdPipelineBarrier(commandBuffer,
+								 VK_PIPELINE_STAGE_TRANSFER_BIT,
+								 VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+								 0,
+								 0,
+								 NULL,
+								 0,
+								 NULL,
+								 1,
+								 &mipmapBarrier);
 
 			if (width > 1)
 			{
@@ -1502,8 +1576,16 @@ bool LoadTextures()
 			.subresourceRange = mipmapSubresourceRange,
 		};
 
-		vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0,
-							 NULL, 0, NULL, 1, &mipmapBarrier);
+		vkCmdPipelineBarrier(commandBuffer,
+							 VK_PIPELINE_STAGE_TRANSFER_BIT,
+							 VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+							 0,
+							 0,
+							 NULL,
+							 0,
+							 NULL,
+							 1,
+							 &mipmapBarrier);
 
 		if (!EndCommandBuffer(commandBuffer, graphicsCommandPool, graphicsQueue))
 		{
@@ -1521,8 +1603,11 @@ bool CreateTexturesImageView()
 {
 	for (uint16_t textureIndex = 0; textureIndex < TEXTURE_ASSET_COUNT; textureIndex++)
 	{
-		if (!CreateImageView(&texturesImageView[textureIndex], textures[textureIndex].image, VK_FORMAT_R8G8B8A8_UNORM,
-							 VK_IMAGE_ASPECT_COLOR_BIT, textures[textureIndex].mipmapLevels,
+		if (!CreateImageView(&texturesImageView[textureIndex],
+							 textures[textureIndex].image,
+							 VK_FORMAT_R8G8B8A8_UNORM,
+							 VK_IMAGE_ASPECT_COLOR_BIT,
+							 textures[textureIndex].mipmapLevels,
 							 "Failed to create Vulkan texture image view!"))
 		{
 			return false;

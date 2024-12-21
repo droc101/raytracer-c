@@ -57,7 +57,7 @@ float lerp(float a, float b, float f);
  * @param max Maximum value
  * @return Clamped number
  */
-#define clamp(val, min, max)(val < min ? min : val > max ? max : val)
+#define clamp(val, min, max) (val < min ? min : val > max ? max : val)
 
 /**
  * Convert degrees to radians
