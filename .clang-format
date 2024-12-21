@@ -4,18 +4,60 @@ BasedOnStyle: LLVM
 AccessModifierOffset: 0
 AlignAfterOpenBracket: Align
 AlignArrayOfStructures: None
-AlignConsecutiveAssignments: None
-AlignConsecutiveBitFields: None
-AlignConsecutiveDeclarations: None
-AlignConsecutiveMacros: None
+AlignConsecutiveAssignments:
+  Enabled: false
+  AcrossEmptyLines: false
+  AcrossComments: false
+  AlignCompound: false
+  AlignFunctionPointers: false
+  PadOperators: true
+AlignConsecutiveBitFields:
+  Enabled: false
+  AcrossEmptyLines: false
+  AcrossComments: false
+  AlignCompound: false
+  AlignFunctionPointers: false
+  PadOperators: true
+AlignConsecutiveDeclarations:
+  Enabled: false
+  AcrossEmptyLines: false
+  AcrossComments: false
+  AlignCompound: false
+  AlignFunctionPointers: false
+  PadOperators: true
+AlignConsecutiveMacros:
+  Enabled: false
+  AcrossEmptyLines: false
+  AcrossComments: false
+  AlignCompound: false
+  AlignFunctionPointers: false
+  PadOperators: true
 AlignConsecutiveShortCaseStatements:
   Enabled: false
   AcrossEmptyLines: false
   AcrossComments: false
   AlignCaseColons: false
-AlignConsecutiveTableGenBreakingDAGArgColons: None
-AlignConsecutiveTableGenCondOperatorColons: None
-AlignConsecutiveTableGenDefinitionColons: None
+AlignConsecutiveTableGenBreakingDAGArgColons:
+  Enabled: false
+  AcrossEmptyLines: false
+  AcrossComments: false
+  AlignCompound: false
+  AlignFunctionPointers: false
+  PadOperators: true
+AlignConsecutiveTableGenCondOperatorColons:
+  Enabled: false
+  AcrossEmptyLines: false
+  AcrossComments: false
+  AlignCompound: false
+  AlignFunctionPointers: false
+  PadOperators: true
+AlignConsecutiveTableGenDefinitionColons:
+  Enabled: false
+  AcrossEmptyLines: false
+  AcrossComments: false
+  AlignCompound: false
+  AlignFunctionPointers: false
+  PadOperators: true
 AlignEscapedNewlines: DontAlign
 AlignOperands: Align
 AlignTrailingComments:
@@ -141,17 +183,17 @@ ObjCSpaceAfterProperty: false
 ObjCSpaceBeforeProtocolList: false
 PPIndentWidth: -1
 PackConstructorInitializers: CurrentLine
-#PenaltyBreakAssignment:
-#PenaltyBreakBeforeFirstCallParameter:
+PenaltyBreakAssignment: 10000
+PenaltyBreakBeforeFirstCallParameter: 5000
 #PenaltyBreakComment:
 #PenaltyBreakFirstLessLess:
-#PenaltyBreakOpenParenthesis:
+PenaltyBreakOpenParenthesis: 700
 #PenaltyBreakScopeResolution:
 #PenaltyBreakString:
 #PenaltyBreakTemplateDeclaration:
 #PenaltyExcessCharacter:
 #PenaltyIndentedWhitespace:
-#PenaltyReturnTypeOnItsOwnLine:
+PenaltyReturnTypeOnItsOwnLine: 2000
 PointerAlignment: Right
 QualifierAlignment: Custom
 QualifierOrder:

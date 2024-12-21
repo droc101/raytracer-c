@@ -8,8 +8,8 @@
 #include <vulkan/vulkan.h>
 #include "../Drawing.h"
 
-#define VK_X_TO_NDC(x) ((float) (x) / WindowWidth() * 2.0f - 1.0f)
-#define VK_Y_TO_NDC(y) ((float) (y) / WindowHeight() * 2.0f - 1.0f)
+#define VK_X_TO_NDC(x) ((float)(x) / WindowWidth() * 2.0f - 1.0f)
+#define VK_Y_TO_NDC(y) ((float)(y) / WindowHeight() * 2.0f - 1.0f)
 
 /**
  * This function is used to create the Vulkan instance and surface, as well as configuring the environment properly.
@@ -50,25 +50,25 @@ bool VK_DrawTexturedQuad(int x, int y, int w, int h, const uint8_t *texture);
 bool VK_DrawTexturedQuadMod(int x, int y, int w, int h, const uint8_t *texture, uint32_t color);
 
 bool VK_DrawTexturedQuadRegion(int x,
-                               int y,
-                               int w,
-                               int h,
-                               int regionX,
-                               int regionY,
-                               int regionW,
-                               int regionH,
-                               const uint8_t *texture);
+							   int y,
+							   int w,
+							   int h,
+							   int regionX,
+							   int regionY,
+							   int regionW,
+							   int regionH,
+							   const uint8_t *texture);
 
 bool VK_DrawTexturedQuadRegionMod(int x,
-                                  int y,
-                                  int w,
-                                  int h,
-                                  int regionX,
-                                  int regionY,
-                                  int regionW,
-                                  int regionH,
-                                  const uint8_t *texture,
-                                  uint32_t color);
+								  int y,
+								  int w,
+								  int h,
+								  int regionX,
+								  int regionY,
+								  int regionW,
+								  int regionH,
+								  const uint8_t *texture,
+								  uint32_t color);
 
 bool VK_DrawTexturedQuadsBatched(const float *vertices, int quadCount, const uint8_t *texture, uint32_t color);
 
