@@ -7,6 +7,8 @@
 #include "../Core/Error.h"
 #include "../Core/MathEx.h"
 #include "GL/GLHelper.h"
+#include "../../Assets/Assets.h"
+#include "../../Structs/Vector2.h"
 
 Renderer currentRenderer;
 
@@ -200,4 +202,15 @@ void RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const byte *tex
 		default:
 			break;
 	}
+}
+
+void RenderMenuBackground()
+{
+	// sorry for the confusing variable names
+	const Vector2 bgTileSize = v2(320, 240); // size on screen
+	const Vector2 bgTexSize = GetTextureSize(gztex_interface_menu_bg_tile); // actual size of the texture
+
+	const Vector2 tilesOnScreen = v2(WindowWidth() / bgTileSize.x, WindowHeight() / bgTileSize.y);
+	const Vector2 tileRegion = v2(tilesOnScreen.x * bgTexSize.x, tilesOnScreen.y * bgTexSize.y);
+	DrawTextureRegion(v2(0, 0), v2(WindowWidth(), WindowHeight()), gztex_interface_menu_bg_tile, v2(0, 0), tileRegion);
 }
