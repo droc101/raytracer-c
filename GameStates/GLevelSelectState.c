@@ -4,7 +4,6 @@
 
 #include "GLevelSelectState.h"
 #include <stdio.h>
-#include "../Assets/Assets.h"
 #include "../Helpers/Core/Input.h"
 #include "../Helpers/Core/MathEx.h"
 #include "../Helpers/Graphics/Drawing.h"

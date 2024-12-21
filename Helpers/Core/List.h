@@ -42,14 +42,6 @@ void ListRemoveAt(List *list, int index);
 void ListInsertAfter(List *list, int index, void *data);
 
 /**
- * Get an item from the list by index
- * @param list List to get from
- * @param index Index to get
- * @return Data at index (not node)
- */
-void *ListGet(const List *list, int index);
-
-/**
  * Free the list structure
  * @param list List to free
  * @warning This does not free the data in the list

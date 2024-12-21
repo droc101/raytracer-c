@@ -3,7 +3,6 @@
 //
 
 #include "GSoundOptionsState.h"
-#include "../../Assets/Assets.h"
 #include "../../Helpers/Core/Input.h"
 #include "../../Helpers/Graphics/Drawing.h"
 #include "../../Helpers/Graphics/Font.h"
