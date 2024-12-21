@@ -3,154 +3,153 @@
 //
 
 #include "Actor.h"
+#include "../Helpers/Core/Error.h"
 #include "Vector2.h"
 #include "Wall.h"
-#include "../Helpers/Core/Error.h"
-
-// Empty template functions
-void ActorInit(Actor * /*this*/)
-{
-}
-
-void ActorUpdate(Actor */*this*/)
-{
-}
-
-void ActorDestroy(Actor */*this*/)
-{
-}
 
 #include "../Actor/Coin.h"
 #include "../Actor/Door.h"
 #include "../Actor/Goal.h"
 #include "../Actor/TestActor.h"
 
+// Empty template functions
+void ActorInit(Actor * /*this*/) {}
+
+void ActorUpdate(Actor * /*this*/) {}
+
+void ActorDestroy(Actor * /*this*/) {}
+
 ActorInitFunction ActorInitFuncs[] = {
-    ActorInit,
-    TestActorInit,
-    CoinInit,
-    GoalInit,
-    DoorInit
+	ActorInit,
+	TestActorInit,
+	CoinInit,
+	GoalInit,
+	DoorInit,
 };
 
 ActorUpdateFunction ActorUpdateFuncs[] = {
-    ActorUpdate,
-    TestActorUpdate,
-    CoinUpdate,
-    GoalUpdate,
-    DoorUpdate
+	ActorUpdate,
+	TestActorUpdate,
+	CoinUpdate,
+	GoalUpdate,
+	DoorUpdate,
 };
 
 ActorDestroyFunction ActorDestroyFuncs[] = {
-    ActorDestroy,
-    TestActorDestroy,
-    CoinDestroy,
-    GoalDestroy,
-    DoorDestroy
+	ActorDestroy,
+	TestActorDestroy,
+	CoinDestroy,
+	GoalDestroy,
+	DoorDestroy,
 };
 
 int ActorHealths[] = {
-    1,
-    1,
-    1,
-    1,
-    1
+	1,
+	1,
+	1,
+	1,
+	1,
 };
 
 char *ActorNames[] = {
-    "NullActor",
-    "TestActor",
-    "Coin",
-    "Goal",
-    "Door"
+	"NullActor",
+	"TestActor",
+	"Coin",
+	"Goal",
+	"Door",
 };
 
 // Array of actor parameter names
 // Each actor type has 4 parameters
 char ActorParamNames[][4][16] = {
-    {"N/A", "N/A", "N/A", "N/A"},
-    {"N/A", "N/A", "N/A", "N/A"},
-    {"Anim Frame", "Blue Coin?", "N/A", "N/A"},
-    {"N/A", "N/A", "N/A", "N/A"},
-    {"N/A", "N/A", "N/A", "N/A"}
+	{"N/A", "N/A", "N/A", "N/A"},
+	{"N/A", "N/A", "N/A", "N/A"},
+	{"Anim Frame", "Blue Coin?", "N/A", "N/A"},
+	{"N/A", "N/A", "N/A", "N/A"},
+	{"N/A", "N/A", "N/A", "N/A"},
 };
 
 char *GetActorName(const int actor)
 {
-    const int actorNameCount = sizeof(ActorNames) / sizeof(char *);
-    if (actor > actorNameCount - 1)
-    {
-        return "Invalid Actor!";
-    }
-    return ActorNames[actor];
+	const int actorNameCount = sizeof(ActorNames) / sizeof(char *);
+	if (actor > actorNameCount - 1)
+	{
+		return "Invalid Actor!";
+	}
+	return ActorNames[actor];
 }
 
 char *GetActorParamName(const int actor, const byte param)
 {
-    const int actorNameCount = sizeof(ActorNames) / sizeof(char *);
-    if (actor > actorNameCount - 1)
-    {
-        return "Invalid Actor!";
-    }
-    return ActorParamNames[actor][param];
+	const int actorNameCount = sizeof(ActorNames) / sizeof(char *);
+	if (actor > actorNameCount - 1)
+	{
+		return "Invalid Actor!";
+	}
+	return ActorParamNames[actor][param];
 }
 
 int GetActorTypeCount()
 {
-    return sizeof(ActorInitFuncs) / sizeof(void *);
+	return sizeof(ActorInitFuncs) / sizeof(void *);
 }
 
-Actor *CreateActor(const Vector2 position, const double rotation, const int actorType, const byte paramA,
-                   const byte paramB, const byte paramC, const byte paramD)
+Actor *CreateActor(const Vector2 position,
+				   const double rotation,
+				   const int actorType,
+				   const byte paramA,
+				   const byte paramB,
+				   const byte paramC,
+				   const byte paramD)
 {
-    Actor *actor = malloc(sizeof(Actor));
-    chk_malloc(actor);
-    actor->actorWall = NULL;
-    actor->position = position;
-    actor->rotation = rotation;
-    actor->solid = false;
-    actor->health = ActorHealths[actorType];
-    actor->paramA = paramA;
-    actor->paramB = paramB;
-    actor->paramC = paramC;
-    actor->paramD = paramD;
-    actor->yPosition = 0.0f;
-    actor->showShadow = true;
-    actor->shadowSize = 1.0f;
-    actor->actorModel = NULL;
-    actor->actorModelTexture = NULL;
-    actor->Init = ActorInitFuncs[actorType];
-    actor->Update = ActorUpdateFuncs[actorType];
-    actor->Destroy = ActorDestroyFuncs[actorType];
-    actor->Init(actor); // kindly allow the Actor to initialize itself
-    actor->actorType = actorType;
-    return actor;
+	Actor *actor = malloc(sizeof(Actor));
+	chk_malloc(actor);
+	actor->actorWall = NULL;
+	actor->position = position;
+	actor->rotation = rotation;
+	actor->solid = false;
+	actor->health = ActorHealths[actorType];
+	actor->paramA = paramA;
+	actor->paramB = paramB;
+	actor->paramC = paramC;
+	actor->paramD = paramD;
+	actor->yPosition = 0.0f;
+	actor->showShadow = true;
+	actor->shadowSize = 1.0f;
+	actor->actorModel = NULL;
+	actor->actorModelTexture = NULL;
+	actor->Init = ActorInitFuncs[actorType];
+	actor->Update = ActorUpdateFuncs[actorType];
+	actor->Destroy = ActorDestroyFuncs[actorType];
+	actor->Init(actor); // kindly allow the Actor to initialize itself
+	actor->actorType = actorType;
+	return actor;
 }
 
 void FreeActor(Actor *actor)
 {
-    actor->Destroy(actor);
-    free(actor);
-    actor = NULL;
+	actor->Destroy(actor);
+	free(actor);
+	actor = NULL;
 }
 
 bool GetTransformedWall(const Actor *actor, Wall *wall)
 {
-    if (actor->actorWall == NULL)
-    {
-        return false;
-    }
+	if (actor->actorWall == NULL)
+	{
+		return false;
+	}
 
-    memcpy(wall, actor->actorWall, sizeof(Wall)); // duplicate the wall struct without modifying the original
+	memcpy(wall, actor->actorWall, sizeof(Wall)); // duplicate the wall struct without modifying the original
 
-    // Rotate the wall
-    wall->a = Vector2Rotate(wall->a, actor->rotation);
-    wall->b = Vector2Rotate(wall->b, actor->rotation);
-    // Translate the wall
-    wall->a = Vector2Add(wall->a, actor->position);
-    wall->b = Vector2Add(wall->b, actor->position);
+	// Rotate the wall
+	wall->a = Vector2Rotate(wall->a, actor->rotation);
+	wall->b = Vector2Rotate(wall->b, actor->rotation);
+	// Translate the wall
+	wall->a = Vector2Add(wall->a, actor->position);
+	wall->b = Vector2Add(wall->b, actor->position);
 
-    WallBake(wall);
+	WallBake(wall);
 
-    return true;
+	return true;
 }

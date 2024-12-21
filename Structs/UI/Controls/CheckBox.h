@@ -5,8 +5,8 @@
 #ifndef GAME_CHECKBOX_H
 #define GAME_CHECKBOX_H
 
-#include "../UiStack.h"
 #include "../../Vector2.h"
+#include "../UiStack.h"
 
 typedef struct CheckBoxData CheckBoxData;
 
@@ -14,9 +14,9 @@ typedef void (*CheckboxCallback)(bool checked);
 
 struct CheckBoxData
 {
-    char *label;
-    bool checked;
-    CheckboxCallback callback;
+	char *label;
+	bool checked;
+	CheckboxCallback callback;
 };
 
 /**
@@ -29,9 +29,12 @@ struct CheckBoxData
  * @param checked Whether the checkbox is checked or not
  * @return The new Checkbox Control
  */
-Control *
-CreateCheckboxControl(Vector2 position, Vector2 size, char *label, CheckboxCallback callback, ControlAnchor anchor,
-                      bool checked);
+Control *CreateCheckboxControl(Vector2 position,
+							   Vector2 size,
+							   char *label,
+							   CheckboxCallback callback,
+							   ControlAnchor anchor,
+							   bool checked);
 
 void DestroyCheckbox(const Control *c);
 

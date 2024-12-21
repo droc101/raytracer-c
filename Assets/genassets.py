@@ -369,7 +369,7 @@ def obj_to_bytes(path):
 	header.extend(int_to_bytes(len(data)))  # Compressed length
 	header.extend(int_to_bytes(decompressed_len))  # Decompressed length
 	header.extend(int_to_bytes(aid))  # Asset ID
-	header.extend(int_to_bytes(9))  # Asset Type (9 = obj)
+	header.extend(int_to_bytes(7))  # Asset Type (7 = obj)
 
 	header.extend(data)
 

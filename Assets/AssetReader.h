@@ -55,7 +55,7 @@ void FreeModel(Model *model);
 #define ASSET_TYPE_WAV 2
 #define ASSET_TYPE_LEVEL 3
 #define ASSET_TYPE_GLSL 4
-// ... vulkan branch stuff 5 - 8
-#define ASSET_TYPE_MODEL 9
+// ... vulkan branch stuff 5 - 6
+#define ASSET_TYPE_MODEL 7
 
 #endif //GAME_ASSETREADER_H

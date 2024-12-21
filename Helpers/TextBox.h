@@ -19,8 +19,7 @@
 #define TEXT_BOX_THEME_WHITE 1
 #define TEXT_BOX_THEME_RED 2
 
-#define DEFINE_TEXT(text, rows, cols, x, y, h_align, v_align, theme) \
-    {text, rows, cols, x, y, h_align, v_align, theme}
+#define DEFINE_TEXT(text, rows, cols, x, y, h_align, v_align, theme) {text, rows, cols, x, y, h_align, v_align, theme}
 
 /**
  * Render a text box

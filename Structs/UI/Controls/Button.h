@@ -5,8 +5,8 @@
 #ifndef GAME_BUTTON_H
 #define GAME_BUTTON_H
 
-#include "../UiStack.h"
 #include "../../Vector2.h"
+#include "../UiStack.h"
 
 typedef struct ButtonData ButtonData;
 
@@ -14,9 +14,9 @@ typedef void (*ButtonCallback)();
 
 struct ButtonData
 {
-    char *text;
-    ButtonCallback callback;
-    bool enabled;
+	char *text;
+	ButtonCallback callback;
+	bool enabled;
 };
 
 /**

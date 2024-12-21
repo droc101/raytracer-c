@@ -16,52 +16,52 @@ typedef struct UiStack UiStack;
 
 enum ControlType
 {
-    BUTTON,
-    SLIDER,
-    CHECKBOX,
-    RADIO_BUTTON,
+	BUTTON,
+	SLIDER,
+	CHECKBOX,
+	RADIO_BUTTON,
 };
 
 enum ControlState
 {
-    NORMAL,
-    HOVER,
-    ACTIVE
+	NORMAL,
+	HOVER,
+	ACTIVE
 };
 
 enum ControlAnchor
 {
-    TOP_LEFT,
-    TOP_CENTER,
-    TOP_RIGHT,
-    MIDDLE_LEFT,
-    MIDDLE_CENTER,
-    MIDDLE_RIGHT,
-    BOTTOM_LEFT,
-    BOTTOM_CENTER,
-    BOTTOM_RIGHT
+	TOP_LEFT,
+	TOP_CENTER,
+	TOP_RIGHT,
+	MIDDLE_LEFT,
+	MIDDLE_CENTER,
+	MIDDLE_RIGHT,
+	BOTTOM_LEFT,
+	BOTTOM_CENTER,
+	BOTTOM_RIGHT
 };
 
 struct Control
 {
-    ControlType type;
-    ControlAnchor anchor;
-    Vector2 position;
-    Vector2 size;
+	ControlType type;
+	ControlAnchor anchor;
+	Vector2 position;
+	Vector2 size;
 
-    Vector2 anchoredPosition;
+	Vector2 anchoredPosition;
 
-    void *ControlData;
+	void *ControlData;
 };
 
 struct UiStack
 {
-    List *Controls;
+	List *Controls;
 
-    int ActiveControl;
-    ControlState ActiveControlState;
+	int ActiveControl;
+	ControlState ActiveControlState;
 
-    int focusedControl;
+	int focusedControl;
 };
 
 /**

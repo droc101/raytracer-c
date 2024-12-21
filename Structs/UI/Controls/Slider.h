@@ -6,26 +6,25 @@
 #define GAME_SLIDER_H
 
 #include "../UiStack.h"
-#include "../../Vector2.h"
 
 typedef struct SliderData SliderData;
 
 typedef void (*SliderCallback)(double);
-typedef char *(*SliderLabelFunc)(const Control *slider);
+typedef char *(*SliderLabelFunction)(const Control *slider);
 
 struct SliderData
 {
-    char *label;
+	char *label;
 
-    double min;
-    double max;
-    double value;
+	double min;
+	double max;
+	double value;
 
-    double step;
-    double altStep; // Step when holding shift
+	double step;
+	double altStep; // Step when holding shift
 
-    SliderCallback callback;
-    SliderLabelFunc getLabel;
+	SliderCallback callback;
+	SliderLabelFunction getLabel;
 };
 
 char *SliderLabelPercent(const Control *slider);
@@ -47,10 +46,17 @@ char *SliderLabelInteger(const Control *slider);
  * @param getLabel The function to get the label of the slider
  * @return The new Slider Control
  */
-Control *
-CreateSliderControl(Vector2 position, Vector2 size, char *label, void (*callback)(double), ControlAnchor anchor,
-                    double min, double max, double value, double step, double altStep,
-                    char *(*getLabel)(const Control *slider));
+Control *CreateSliderControl(Vector2 position,
+							 Vector2 size,
+							 char *label,
+							 SliderCallback callback,
+							 ControlAnchor anchor,
+							 double min,
+							 double max,
+							 double value,
+							 double step,
+							 double altStep,
+							 SliderLabelFunction getLabel);
 
 void DestroySlider(const Control *c);
 

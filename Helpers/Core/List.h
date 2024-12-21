@@ -12,23 +12,23 @@ typedef struct SizedArray SizedArray;
 // List item
 struct Node
 {
-    void *data;
-    Node *prev;
-    Node *next;
+	void *data;
+	Node *prev;
+	Node *next;
 };
 
 // Doubly linked list
 struct List
 {
-    Node *head;
-    Node *tail;
-    int size;
+	Node *head;
+	Node *tail;
+	int size;
 };
 
 struct SizedArray
 {
-    void **elements;
-    int size;
+	void **elements;
+	int size;
 };
 
 // Internal functions
