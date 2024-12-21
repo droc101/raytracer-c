@@ -56,11 +56,6 @@ void ListInsertAfter(List *list, const int index, void *data)
 	list->data = temp;
 }
 
-inline void *ListGet(const List *list, const int index)
-{
-	return list->data[index];
-}
-
 void ListFree(List *list)
 {
 	free(list->data);

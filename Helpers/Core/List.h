@@ -85,4 +85,11 @@ int ListFind(const List *list, const void *data);
  */
 void ListClear(List *list);
 
+/**
+ * Get an item from the list by index
+ * @param list The list to get from
+ * @param index The index to get
+ */
+#define ListGet(list, index) (list)->data[(index)]
+
 #endif //GAME_LIST_H
