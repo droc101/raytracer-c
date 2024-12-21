@@ -132,6 +132,7 @@ void ChangeLevel(Level *l)
 {
 	DestroyLevel(state.level);
 	state.level = l;
+	state.textBoxActive = false;
 	if (l->MusicID != 0)
 	{
 		ChangeMusic(music[l->MusicID - 1]);
