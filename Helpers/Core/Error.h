@@ -14,7 +14,7 @@
 #endif
 
 #define chk_malloc(ptr) \
-	if (ptr == NULL) Error("Memory allocation failed")
+	if ((ptr) == NULL) Error("Memory allocation failed")
 
 /**
  * Internal error handler

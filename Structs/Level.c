@@ -25,8 +25,6 @@ Level *CreateLevel()
 	l->FogColor = 0xff000000;
 	l->FogStart = 10;
 	l->FogEnd = 30;
-	l->staticWalls = NULL;
-	l->staticActors = NULL;
 	return l;
 }
 
@@ -43,42 +41,21 @@ void DestroyLevel(Level *l)
 		FreeActor(a);
 	}
 
-	if (l->staticWalls != NULL)
-	{
-		DestroySizedArray(l->staticWalls);
-	}
-
-	if (l->staticActors != NULL)
-	{
-		DestroySizedArray(l->staticActors);
-	}
-
 	ListFreeWithData(l->walls);
 	ListFree(l->actors); // actors are freed above (FreeActor)
 	free(l);
 	l = NULL;
 }
 
-void BakeWallArray(Level *l)
-{
-	l->staticWalls = ToSizedArray(l->walls);
-}
-
-void BakeActorArray(Level *l)
-{
-	l->staticActors = ToSizedArray(l->actors);
-}
-
 void AddActor(Actor *actor)
 {
-	Level *l = GetState()->level;
+	const Level *l = GetState()->level;
 	ListAdd(l->actors, actor);
-	BakeActorArray(l);
 }
 
 void RemoveActor(Actor *actor)
 {
-	Level *l = GetState()->level;
+	const Level *l = GetState()->level;
 	const int idx = ListFind(l->actors, actor);
 	if (idx == -1)
 	{
@@ -86,7 +63,6 @@ void RemoveActor(Actor *actor)
 	}
 	ListRemoveAt(l->actors, idx);
 	FreeActor(actor);
-	BakeActorArray(l);
 }
 
 void RenderLevel(const GlobalState *g)

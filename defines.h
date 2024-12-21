@@ -188,8 +188,6 @@ struct Level
 	uint FogColor; // The color of the fog
 	double FogStart; // The start of the fog
 	double FogEnd; // The end of the fog
-	SizedArray *staticWalls; // The static array of walls in the level
-	SizedArray *staticActors; // The static array of actors in the level
 	Player player;
 };
 

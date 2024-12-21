@@ -636,10 +636,10 @@ void GL_SetLevelParams(const mat4 *mvp, const Level *l)
 					   1,
 					   GL_FALSE,
 					   mvp[0][0]); // world -> screen
-	const uint scolor = l->SkyColor;
-	const float sr = (scolor >> 16 & 0xFF) / 255.0f;
-	const float sg = (scolor >> 8 & 0xFF) / 255.0f;
-	const float sb = (scolor & 0xFF) / 255.0f;
+	const uint skyColor = l->SkyColor;
+	const float sr = (skyColor >> 16 & 0xFF) / 255.0f;
+	const float sg = (skyColor >> 8 & 0xFF) / 255.0f;
+	const float sb = (skyColor & 0xFF) / 255.0f;
 	glUniform4f(glGetUniformLocation(sky->program, "col"), sr, sg, sb, 1.0f);
 
 	glUseProgram(model_shaded->program);
@@ -931,14 +931,14 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
 		GL_DrawFloor(floor_start, floor_end, WORLD_VIEW_MATRIX, l, wallTextures[l->CeilingTexture - 1], 0.5, 0.8);
 	}
 
-	for (int i = 0; i < l->staticWalls->size; i++)
+	for (int i = 0; i < l->walls->size; i++)
 	{
-		GL_DrawWall(SizedArrayGet(l->staticWalls, i), IDENTITY, cam, l);
+		GL_DrawWall(ListGet(l->walls, i), IDENTITY, cam, l);
 	}
 
-	for (int i = 0; i < l->staticActors->size; i++)
+	for (int i = 0; i < l->actors->size; i++)
 	{
-		const Actor *actor = SizedArrayGet(l->staticActors, i);
+		const Actor *actor = ListGet(l->actors, i);
 		mat4 *actor_xfm = ActorTransformMatrix(actor);
 		if (actor->actorModel == NULL)
 		{

@@ -145,13 +145,6 @@ void ChangeLevel(Level *l)
 		Wall *w = ListGet(l->walls, i);
 		WallBake(w);
 	}
-
-	if (l->staticWalls != NULL)
-	{
-		DestroySizedArray(l->staticWalls);
-	}
-	BakeWallArray(l);
-	BakeActorArray(l);
 }
 
 void ChangeMusic(const byte *asset)
