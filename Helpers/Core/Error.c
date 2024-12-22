@@ -8,16 +8,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <zlib.h>
 #include "../../defines.h"
 #include "../../Structs/GlobalState.h"
 #include "../../Structs/Options.h"
 #include "../Graphics/Drawing.h"
 #include "Logging.h"
-#include "zlib.h"
 
 SDL_MessageBoxColorScheme mbColorScheme;
 
-inline void _alloc_failure()
+_Noreturn inline void _GameAllocFailure()
 {
 	LogError("Memory Allocation Failed: %s\n", strerror(errno));
 	if (errno == ENOMEM)
@@ -35,7 +35,7 @@ _Noreturn void RestartProgram()
 	exit(1);
 }
 
-_Noreturn void Error_Internal(char *error, const char *file, const int line, const char *function)
+_Noreturn void _ErrorInternal(char *error, const char *file, const int line, const char *function)
 {
 	if (GetGameWindow() != NULL)
 	{
