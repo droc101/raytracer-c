@@ -65,8 +65,8 @@ void UseAmmo(int amount);
  * @param currentState used for checking the state
  * @param RenderGame render callback
  */
-void SetStateCallbacks(void (*UpdateGame)(GlobalState *State),
-					   void (*FixedUpdateGame)(GlobalState *State),
+void SetStateCallbacks(FrameUpdateFunction UpdateGame,
+					   FixedUpdateFunction FixedUpdateGame,
 					   CurrentState currentState,
 					   FrameRenderFunction RenderGame);
 
