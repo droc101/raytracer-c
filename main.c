@@ -20,15 +20,15 @@
 #include "Helpers/PlatformHelpers.h"
 #include "Structs/GlobalState.h"
 
-int main(const int argc, char *argv[])
+SDL_Surface *windowIcon;
+
+/**
+ * Attempt to initialize the executable path
+ * @param argc Program argument count
+ * @param argv Program arguments
+ */
+void ExecPathInit(const int argc, char *argv[])
 {
-	LogInit();
-	LogInfo("Build time: %s at %s\n", __DATE__, __TIME__);
-	LogInfo("Version: %s\n", VERSION);
-	LogInfo("Initializing Engine\n");
-
-	ErrorHandlerInit();
-
 	if (argc < 1)
 	{
 		// this should *never* happen, but let's be safe
@@ -44,7 +44,13 @@ int main(const int argc, char *argv[])
 	memset(GetState()->executablePath, 0, 261); // we do not mess around with user data in c.
 	strncpy(GetState()->executablePath, argv[0], 260);
 	LogInfo("Executable path: %s\n", GetState()->executablePath);
+}
 
+/**
+ * Initialize the SDL library
+ */
+void InitSDL()
+{
 	SDL_SetHint(SDL_HINT_APP_NAME, GAME_TITLE);
 
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMECONTROLLER) != 0)
@@ -52,23 +58,31 @@ int main(const int argc, char *argv[])
 		LogError("SDL_Init Error: %s\n", SDL_GetError());
 		Error("Failed to initialize SDL");
 	}
+}
 
-	PhysicsThreadInit();
-	InitState();
-
-	if (!RenderPreInit())
-	{
-		RenderInitError();
-	}
-
+/**
+ * Initialize the audio system (SDL_mixer)
+ */
+void InitAudio()
+{
 	Mix_AllocateChannels(SFX_CHANNEL_COUNT);
 
-	if (Mix_OpenAudio(48000, AUDIO_S16, 2, 2048) < 0)
+	if (Mix_OpenAudio(48000, AUDIO_S16, 2, 2048) == 0)
 	{
-		LogError("Mix_OpenAudio Error: %s\n", Mix_GetError());
-		Error("Failed to initialize audio system.");
+		GetState()->isAudioStarted = true;
 	}
+	else
+	{
+		GetState()->isAudioStarted = false;
+		LogError("Mix_OpenAudio Error: %s\n", Mix_GetError());
+	}
+}
 
+/**
+ * Initialize the game window and renderer
+ */
+void WindowAndRenderInit()
+{
 	const Uint32 rendererFlags = currentRenderer == RENDERER_OPENGL ? SDL_WINDOW_OPENGL : SDL_WINDOW_VULKAN;
 	SDL_Window *w = SDL_CreateWindow(GAME_TITLE,
 									 SDL_WINDOWPOS_UNDEFINED,
@@ -94,8 +108,87 @@ int main(const int argc, char *argv[])
 	SDL_SetWindowMinimumSize(w, MIN_WIDTH, MIN_HEIGHT);
 	SDL_SetWindowMaximumSize(w, MAX_WIDTH, MAX_HEIGHT);
 
-	SDL_Surface *icon = ToSDLSurface(gztex_interface_icon, "1");
-	SDL_SetWindowIcon(w, icon);
+	windowIcon = ToSDLSurface(gztex_interface_icon, "1");
+	SDL_SetWindowIcon(w, windowIcon);
+}
+
+/**
+ * Handle an SDL event
+ * @param e The SDL event to handle
+ * @param quit Whether the program should quit after handling the event
+ */
+void HandleEvent(const SDL_Event e, bool *quit)
+{
+	switch (e.type)
+	{
+		case SDL_QUIT:
+			*quit = true;
+		break;
+		case SDL_KEYUP:
+			HandleKeyUp(e.key.keysym.scancode);
+		break;
+		case SDL_KEYDOWN:
+			HandleKeyDown(e.key.keysym.scancode);
+		break;
+		case SDL_MOUSEMOTION:
+			HandleMouseMotion(e.motion.x, e.motion.y, e.motion.xrel, e.motion.yrel);
+		break;
+		case SDL_MOUSEBUTTONUP:
+			HandleMouseUp(e.button.button);
+		break;
+		case SDL_MOUSEBUTTONDOWN:
+			HandleMouseDown(e.button.button);
+		break;
+		case SDL_WINDOWEVENT:
+			if (e.window.event == SDL_WINDOWEVENT_RESIZED)
+			{
+				UpdateViewportSize();
+			}
+		break;
+		case SDL_CONTROLLERDEVICEADDED:
+			HandleControllerConnect();
+		break;
+		case SDL_CONTROLLERDEVICEREMOVED:
+			HandleControllerDisconnect(e.cdevice.which);
+		break;
+		case SDL_CONTROLLERBUTTONDOWN:
+			HandleControllerButtonDown(e.cbutton.button);
+		break;
+		case SDL_CONTROLLERBUTTONUP:
+			HandleControllerButtonUp(e.cbutton.button);
+		break;
+		case SDL_CONTROLLERAXISMOTION:
+			HandleControllerAxis(e.caxis.axis, e.caxis.value);
+		break;
+		default:
+			break;
+	}
+}
+
+int main(const int argc, char *argv[])
+{
+	LogInit();
+	LogInfo("Build time: %s at %s\n", __DATE__, __TIME__);
+	LogInfo("Version: %s\n", VERSION);
+	LogInfo("Initializing Engine\n");
+
+	ErrorHandlerInit();
+
+	ExecPathInit(argc, argv);
+
+	InitSDL();
+
+	PhysicsThreadInit();
+	InitState();
+
+	if (!RenderPreInit())
+	{
+		RenderInitError();
+	}
+
+	InitAudio();
+
+	WindowAndRenderInit();
 
 	InitCommonAssets();
 
@@ -119,50 +212,7 @@ int main(const int argc, char *argv[])
 
 		while (SDL_PollEvent(&e) != 0)
 		{
-			switch (e.type)
-			{
-				case SDL_QUIT:
-					quit = 1;
-					break;
-				case SDL_KEYUP:
-					HandleKeyUp(e.key.keysym.scancode);
-					break;
-				case SDL_KEYDOWN:
-					HandleKeyDown(e.key.keysym.scancode);
-					break;
-				case SDL_MOUSEMOTION:
-					HandleMouseMotion(e.motion.x, e.motion.y, e.motion.xrel, e.motion.yrel);
-					break;
-				case SDL_MOUSEBUTTONUP:
-					HandleMouseUp(e.button.button);
-					break;
-				case SDL_MOUSEBUTTONDOWN:
-					HandleMouseDown(e.button.button);
-					break;
-				case SDL_WINDOWEVENT:
-					if (e.window.event == SDL_WINDOWEVENT_RESIZED)
-					{
-						UpdateViewportSize();
-					}
-					break;
-				case SDL_CONTROLLERDEVICEADDED:
-					HandleControllerConnect();
-					break;
-				case SDL_CONTROLLERDEVICEREMOVED:
-					HandleControllerDisconnect(e.cdevice.which);
-					break;
-				case SDL_CONTROLLERBUTTONDOWN:
-					HandleControllerButtonDown(e.cbutton.button);
-					break;
-				case SDL_CONTROLLERBUTTONUP:
-					HandleControllerButtonUp(e.cbutton.button);
-					break;
-				case SDL_CONTROLLERAXISMOTION:
-					HandleControllerAxis(e.caxis.axis, e.caxis.value);
-					break;
-				default:
-					break;
-			}
+			HandleEvent(e, &quit);
 		}
 		ClearDepthOnly();
 
@@ -207,7 +257,7 @@ int main(const int argc, char *argv[])
 	PhysicsThreadTerminate();
 	DestroyGlobalState();
 	SDL_DestroyWindow(GetGameWindow());
-	SDL_FreeSurface(icon);
+	SDL_FreeSurface(windowIcon);
 	DestroyCommonAssets();
 	InvalidateAssetCache(); // Free all assets
 	RenderDestroy();

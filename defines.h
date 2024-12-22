@@ -286,6 +286,7 @@ struct GlobalState
 
 	double uiScale; // The scale of the UI.
 	bool freezeEvents; // Whether to freeze the event loop. This should only be used for debugging.
+	bool isAudioStarted; // Whether the audio system has been started successfully
 };
 
 // Actor (interactable/moving wall) struct

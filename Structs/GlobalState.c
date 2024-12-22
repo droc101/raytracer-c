@@ -150,6 +150,7 @@ void ChangeLevel(Level *l)
 
 void ChangeMusic(const byte *asset)
 {
+	if (!state.isAudioStarted) return;
 	if (AssetGetType(asset) != ASSET_TYPE_MP3)
 	{
 		LogWarning("ChangeMusic Error: Asset is not a music file.\n");
@@ -171,6 +172,7 @@ void ChangeMusic(const byte *asset)
 
 void StopMusic()
 {
+	if (!state.isAudioStarted) return;
 	if (state.music != NULL)
 	{
 		// stop and free the current music
@@ -182,6 +184,7 @@ void StopMusic()
 
 void PlaySoundEffect(const byte *asset)
 {
+	if (!state.isAudioStarted) return;
 	if (AssetGetType(asset) != ASSET_TYPE_WAV)
 	{
 		LogError("PlaySoundEffect Error: Asset is not a sound effect file.\n");
@@ -220,11 +223,14 @@ void DestroyGlobalState()
 		Mix_FreeMusic(state.music);
 	}
 	// free sound effects
-	for (int i = 0; i < SFX_CHANNEL_COUNT; i++)
+	if (state.isAudioStarted)
 	{
-		if (state.channels[i] != NULL)
+		for (int i = 0; i < SFX_CHANNEL_COUNT; i++)
 		{
-			Mix_FreeChunk(state.channels[i]);
+			if (state.channels[i] != NULL)
+			{
+				Mix_FreeChunk(state.channels[i]);
+			}
 		}
 	}
 }
