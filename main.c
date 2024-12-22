@@ -110,6 +110,10 @@ int main(const int argc, char *argv[])
 	bool quit = false;
 	while (!quit)
 	{
+		while (GetState()->freezeEvents)
+        {
+            SDL_Delay(100);
+        }
 		const ulong frameStart = GetTimeNs();
 
 		while (SDL_PollEvent(&e) != 0)

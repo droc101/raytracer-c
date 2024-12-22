@@ -285,6 +285,7 @@ struct GlobalState
 	char executablePath[261]; // The path to the executable
 
 	double uiScale; // The scale of the UI.
+	bool freezeEvents; // Whether to freeze the event loop. This should only be used for debugging.
 };
 
 // Actor (interactable/moving wall) struct

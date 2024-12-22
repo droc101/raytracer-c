@@ -26,6 +26,12 @@ _Noreturn void RestartProgram()
 
 _Noreturn void Error_Internal(char *error, const char *file, const int line, const char *function)
 {
+	if (GetGameWindow() != NULL)
+	{
+		GetState()->freezeEvents = true;
+		SDL_SetRelativeMouseMode(SDL_FALSE);
+	}
+
 	char buf[256];
 #ifndef NDEBUG
 	sprintf(buf, "%s\n \n%s:%d (%s)", error, file, line, function);
