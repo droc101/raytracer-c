@@ -24,7 +24,7 @@ List *CreateList()
 void ListAdd(List *list, void *data)
 {
 	list->size++;
-	void **temp = reallocarray(list->data, list->size, sizeof(void *));
+	void **temp = reallocarray(list->data, list->size, sizeof(void *)); // The size should never be 0 here, so we don't need to check for that
 	chk_malloc(temp);
 	list->data = temp;
 	list->data[list->size - 1] = data;
@@ -38,6 +38,10 @@ void ListRemoveAt(List *list, const int index)
 	}
 	list->size--;
 	void **temp = reallocarray(list->data, list->size, sizeof(void *));
+	if (list->size == 0 && temp == NULL) // reallocarray with size 0 frees the memory
+	{
+		temp = malloc(0);
+	}
 	chk_malloc(temp);
 	list->data = temp;
 }
@@ -45,7 +49,7 @@ void ListRemoveAt(List *list, const int index)
 void ListInsertAfter(List *list, const int index, void *data)
 {
 	list->size++;
-	void **temp = reallocarray(list->data, list->size, sizeof(void *));
+	void **temp = reallocarray(list->data, list->size, sizeof(void *)); // The size should never be 0 here, so we don't need to check for that
 	chk_malloc(temp);
 
 	for (int i = list->size - 1; i > index; i--)
@@ -91,7 +95,7 @@ int ListFind(const List *list, const void *data)
 void ListClear(List *list)
 {
 	list->size = 0;
-	void **tmp = reallocarray(list->data, 0, sizeof(void *));
-	chk_malloc(tmp);
-	list->data = tmp;
+	free(list->data);
+	list->data = calloc(0, sizeof(void *));
+	chk_malloc(list->data);
 }
