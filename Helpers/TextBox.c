@@ -42,10 +42,10 @@ void TextBoxRender(const TextBox *box, const int page)
 	const int width = box->cols * TEXT_BOX_FONT_WIDTH + BOX_OUTER_PADDING * 2;
 	const int height = box->rows * TEXT_BOX_FONT_SIZE + BOX_OUTER_PADDING * 2;
 
-	if (box->h_align == TEXT_BOX_H_ALIGN_CENTER)
+	if (box->hAlign == TEXT_BOX_H_ALIGN_CENTER)
 	{
 		topLeft.x = (WindowWidth() - width) / 2; // NOLINT(*-integer-division)
-	} else if (box->h_align == TEXT_BOX_H_ALIGN_RIGHT)
+	} else if (box->hAlign == TEXT_BOX_H_ALIGN_RIGHT)
 	{
 		topLeft.x = WindowWidth() - width;
 	} else
@@ -53,10 +53,10 @@ void TextBoxRender(const TextBox *box, const int page)
 		topLeft.x = 0;
 	}
 
-	if (box->v_align == TEXT_BOX_V_ALIGN_CENTER)
+	if (box->vAlign == TEXT_BOX_V_ALIGN_CENTER)
 	{
 		topLeft.y = (WindowHeight() - height) / 2; // NOLINT(*-integer-division)
-	} else if (box->v_align == TEXT_BOX_V_ALIGN_BOTTOM)
+	} else if (box->vAlign == TEXT_BOX_V_ALIGN_BOTTOM)
 	{
 		topLeft.y = WindowHeight() - height;
 	} else

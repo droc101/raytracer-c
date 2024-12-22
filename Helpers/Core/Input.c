@@ -16,8 +16,8 @@ byte mouseButtons[4];
 
 int mouseX;
 int mouseY;
-int mouseXrel;
-int mouseYrel;
+int mouseRelativeX;
+int mouseRelativeY;
 
 // 0 is left, 1 is right for axes (not 🪓)
 Vector2 leftStick;
@@ -100,12 +100,12 @@ void HandleControllerAxis(const SDL_GameControllerAxis axis, const Sint16 value)
 	}
 }
 
-void HandleMouseMotion(const int x, const int y, const int xrel, const int yrel)
+void HandleMouseMotion(const int x, const int y, const int xRel, const int yRel)
 {
 	mouseX = x;
 	mouseY = y;
-	mouseXrel = xrel;
-	mouseYrel = yrel;
+	mouseRelativeX = xRel;
+	mouseRelativeY = yRel;
 }
 
 void HandleMouseDown(const int button)
@@ -163,8 +163,8 @@ void UpdateInputStates()
 		}
 	}
 
-	mouseXrel = 0;
-	mouseYrel = 0;
+	mouseRelativeX = 0;
+	mouseRelativeY = 0;
 }
 
 bool IsButtonPressed(const int button)
@@ -219,7 +219,7 @@ Vector2 GetMousePos()
 
 Vector2 GetMouseRel()
 {
-	return v2(mouseXrel, mouseYrel);
+	return v2(mouseRelativeX, mouseRelativeY);
 }
 
 void ConsumeKey(const int code)

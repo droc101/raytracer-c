@@ -52,21 +52,21 @@ typedef struct EditorNode
 } EditorNode;
 
 #pragma region Editor State Variables
-double EditorZoom = 20.0;
-double EditorPanX = 0.0;
-double EditorPanY = 0.0;
-bool EditorInitComplete = false;
-bool EditorSnapToGrid = true;
+double editorZoom = 20.0;
+double editorPanX = 0.0;
+double editorPanY = 0.0;
+bool editorInitComplete = false;
+bool editorSnapToGrid = true;
 
-int EditorSelectedNode = -1;
+int editorSelectedNode = -1;
 
-int EditorBaseControlCount = -1;
+int editorBaseControlCount = -1;
 
-EditorMode CurrentEditorMode = EDITOR_MODE_MOVE;
+EditorMode currentEditorMode = EDITOR_MODE_MOVE;
 
 UiStack *editorUiStack;
 
-List *EditorNodes;
+List *editorNodes;
 
 bool isAddModeDragging = false;
 #pragma endregion
@@ -79,14 +79,14 @@ byte level_fogB;
 double level_fogStart;
 double level_fogEnd;
 
-uint level_floor_tex;
-byte level_ceil_tex;
+uint level_floorTex;
+byte level_ceilTex;
 
 byte level_skyR;
 byte level_skyG;
 byte level_skyB;
 
-uint musicId;
+uint level_musicID;
 #pragma endregion
 
 char *SliderActorNameLabelCallback(const Control *slider)
@@ -102,20 +102,20 @@ Level *NodesToLevel()
 {
 	Level *l = CreateLevel();
 
-	l->FogColor = 0xFF << 24 | level_fogR << 16 | level_fogG << 8 | level_fogB;
-	l->FogStart = level_fogStart;
-	l->FogEnd = level_fogEnd;
+	l->fogColor = 0xFF << 24 | level_fogR << 16 | level_fogG << 8 | level_fogB;
+	l->fogStart = level_fogStart;
+	l->fogEnd = level_fogEnd;
 
-	l->FloorTexture = level_floor_tex;
-	l->CeilingTexture = level_ceil_tex;
-	l->SkyColor = 0xFF << 24 | level_skyR << 16 | level_skyG << 8 | level_skyB;
+	l->floorTexture = level_floorTex;
+	l->ceilingTexture = level_ceilTex;
+	l->skyColor = 0xFF << 24 | level_skyR << 16 | level_skyG << 8 | level_skyB;
 
-	l->MusicID = musicId;
+	l->musicID = level_musicID;
 
 	// reconstruct the level from the editor nodes
-	for (int i = 0; i < EditorNodes->size; i++)
+	for (int i = 0; i < editorNodes->size; i++)
 	{
-		const EditorNode *node = ListGet(EditorNodes, i);
+		const EditorNode *node = ListGet(editorNodes, i);
 		switch (node->type)
 		{
 			case NODE_PLAYER:
@@ -177,18 +177,18 @@ void CreateSlider(char *label,
 
 void SetMusicSlider(const double value)
 {
-	musicId = (byte)value;
+	level_musicID = (byte)value;
 }
 
 void SetNodeRotationSlider(const double value)
 {
-	EditorNode *node = ListGet(EditorNodes, EditorSelectedNode);
+	EditorNode *node = ListGet(editorNodes, editorSelectedNode);
 	node->rotation = degToRad(value);
 }
 
 void SetNodeExtraSlider(const double value)
 {
-	EditorNode *node = ListGet(EditorNodes, EditorSelectedNode);
+	EditorNode *node = ListGet(editorNodes, editorSelectedNode);
 	node->extra = (uint)value;
 }
 
@@ -219,12 +219,12 @@ void SetFogEndSlider(const double value)
 
 void SetFloorTexSlider(const double value)
 {
-	level_floor_tex = (uint)value;
+	level_floorTex = (uint)value;
 }
 
 void SetCeilTexSlider(const double value)
 {
-	level_ceil_tex = (byte)value;
+	level_ceilTex = (byte)value;
 }
 
 void SetSkyRSlider(const double value)
@@ -244,28 +244,28 @@ void SetSkyBSlider(const double value)
 
 void SetActorParamASlider(const double value)
 {
-	EditorNode *node = ListGet(EditorNodes, EditorSelectedNode);
+	EditorNode *node = ListGet(editorNodes, editorSelectedNode);
 	// ReSharper disable once CppRedundantParentheses
 	node->extra2 = (node->extra2 & 0x00FFFFFF) | (byte)value << 24;
 }
 
 void SetActorParamBSlider(const double value)
 {
-	EditorNode *node = ListGet(EditorNodes, EditorSelectedNode);
+	EditorNode *node = ListGet(editorNodes, editorSelectedNode);
 	// ReSharper disable once CppRedundantParentheses
 	node->extra2 = (node->extra2 & 0xFF00FFFF) | (byte)value << 16;
 }
 
 void SetActorParamCSlider(const double value)
 {
-	EditorNode *node = ListGet(EditorNodes, EditorSelectedNode);
+	EditorNode *node = ListGet(editorNodes, editorSelectedNode);
 	// ReSharper disable once CppRedundantParentheses
 	node->extra2 = (node->extra2 & 0xFFFF00FF) | (byte)value << 8;
 }
 
 void SetActorParamDSlider(const double value)
 {
-	EditorNode *node = ListGet(EditorNodes, EditorSelectedNode);
+	EditorNode *node = ListGet(editorNodes, editorSelectedNode);
 	// ReSharper disable once CppRedundantParentheses
 	node->extra2 = (node->extra2 & 0xFFFFFF00) | (byte)value;
 }
@@ -281,8 +281,8 @@ void GEditorStateUpdate(GlobalState * /*State*/)
 	if (IsMouseButtonPressed(SDL_BUTTON_RIGHT))
 	{
 		const Vector2 mouseDelta = GetMouseRel();
-		EditorPanX += mouseDelta.x;
-		EditorPanY += mouseDelta.y;
+		editorPanX += mouseDelta.x;
+		editorPanY += mouseDelta.y;
 	}
 
 	if (editorUiStack->ActiveControl != -1)
@@ -290,14 +290,14 @@ void GEditorStateUpdate(GlobalState * /*State*/)
 		return; // eat input if we are interacting with a control
 	}
 
-	if (CurrentEditorMode == EDITOR_MODE_MOVE)
+	if (currentEditorMode == EDITOR_MODE_MOVE)
 	{
 		// check if we are hovering over a node
-		for (int i = 0; i < EditorNodes->size; i++)
+		for (int i = 0; i < editorNodes->size; i++)
 		{
-			const EditorNode *node = ListGet(EditorNodes, i);
-			const Vector2 screenPos = v2(node->position.x * EditorZoom + EditorPanX,
-										 node->position.y * EditorZoom + EditorPanY);
+			const EditorNode *node = ListGet(editorNodes, i);
+			const Vector2 screenPos = v2(node->position.x * editorZoom + editorPanX,
+										 node->position.y * editorZoom + editorPanY);
 
 			bool hovered = false;
 			const Vector2 mousePos = GetMousePos();
@@ -311,35 +311,35 @@ void GEditorStateUpdate(GlobalState * /*State*/)
 
 			if (hovered && IsMouseButtonJustPressed(SDL_BUTTON_LEFT))
 			{
-				EditorSelectedNode = i;
+				editorSelectedNode = i;
 			}
 		}
 
 		if (IsMouseButtonJustReleased(SDL_BUTTON_LEFT))
 		{
-			EditorSelectedNode = -1;
+			editorSelectedNode = -1;
 		}
 
 		// move the selected node to the mouse position
-		if (EditorSelectedNode != -1)
+		if (editorSelectedNode != -1)
 		{
-			EditorNode *node = ListGet(EditorNodes, EditorSelectedNode);
+			EditorNode *node = ListGet(editorNodes, editorSelectedNode);
 			const Vector2 mousePos = GetMousePos();
-			node->position = v2((mousePos.x - EditorPanX) / EditorZoom, (mousePos.y - EditorPanY) / EditorZoom);
+			node->position = v2((mousePos.x - editorPanX) / editorZoom, (mousePos.y - editorPanY) / editorZoom);
 
-			if (EditorSnapToGrid)
+			if (editorSnapToGrid)
 			{
 				node->position.x = round(node->position.x);
 				node->position.y = round(node->position.y);
 			}
 		}
-	} else if (CurrentEditorMode == EDITOR_MODE_DELETE)
+	} else if (currentEditorMode == EDITOR_MODE_DELETE)
 	{
-		for (int i = 0; i < EditorNodes->size; i++)
+		for (int i = 0; i < editorNodes->size; i++)
 		{
-			const EditorNode *node = ListGet(EditorNodes, i);
-			const Vector2 screenPos = v2(node->position.x * EditorZoom + EditorPanX,
-										 node->position.y * EditorZoom + EditorPanY);
+			const EditorNode *node = ListGet(editorNodes, i);
+			const Vector2 screenPos = v2(node->position.x * editorZoom + editorPanX,
+										 node->position.y * editorZoom + editorPanY);
 
 			bool hovered = false;
 			const Vector2 mousePos = GetMousePos();
@@ -355,22 +355,22 @@ void GEditorStateUpdate(GlobalState * /*State*/)
 			{
 				if (node->type != NODE_PLAYER)
 				{
-					ListRemoveAt(EditorNodes, i);
+					ListRemoveAt(editorNodes, i);
 					// if we are deleting a wall, we need to delete both nodes
 					if (node->type == NODE_WALL_A)
 					{
-						ListRemoveAt(EditorNodes, i);
+						ListRemoveAt(editorNodes, i);
 					} else if (node->type == NODE_WALL_B)
 					{
-						ListRemoveAt(EditorNodes, i - 1);
+						ListRemoveAt(editorNodes, i - 1);
 					}
 				}
 				break; // don't delete more than one node per click
 			}
 		}
-	} else if (CurrentEditorMode == EDITOR_MODE_ADD)
+	} else if (currentEditorMode == EDITOR_MODE_ADD)
 	{
-		const Control *modeSld = ListGet(editorUiStack->Controls, 0 + EditorBaseControlCount);
+		const Control *modeSld = ListGet(editorUiStack->Controls, 0 + editorBaseControlCount);
 		const SliderData *sldData = (SliderData *)modeSld->ControlData;
 		const int mode = sldData->value;
 		switch (mode)
@@ -380,16 +380,16 @@ void GEditorStateUpdate(GlobalState * /*State*/)
 				if (IsMouseButtonJustPressed(SDL_BUTTON_LEFT))
 				{
 					const Vector2 mousePos = GetMousePos();
-					Vector2 worldPos = v2((mousePos.x - EditorPanX) / EditorZoom,
-										  (mousePos.y - EditorPanY) / EditorZoom);
+					Vector2 worldPos = v2((mousePos.x - editorPanX) / editorZoom,
+										  (mousePos.y - editorPanY) / editorZoom);
 
-					if (EditorSnapToGrid)
+					if (editorSnapToGrid)
 					{
 						worldPos.x = round(worldPos.x);
 						worldPos.y = round(worldPos.y);
 					}
 
-					const Control *texSld = ListGet(editorUiStack->Controls, 1 + EditorBaseControlCount);
+					const Control *texSld = ListGet(editorUiStack->Controls, 1 + editorBaseControlCount);
 					const SliderData *texData = (SliderData *)texSld->ControlData;
 					const int tex = texData->value;
 
@@ -402,13 +402,13 @@ void GEditorStateUpdate(GlobalState * /*State*/)
 					nodeA->extra = tex;
 					const float uv = 1.0;
 					nodeA->extra2 = uv;
-					ListAdd(EditorNodes, nodeA);
+					ListAdd(editorNodes, nodeA);
 
 					EditorNode *nodeB = malloc(sizeof(EditorNode));
 					chk_malloc(nodeB);
 					nodeB->type = NODE_WALL_B;
 					nodeB->position = worldPos;
-					ListAdd(EditorNodes, nodeB);
+					ListAdd(editorNodes, nodeB);
 
 					isAddModeDragging = true;
 				} else if (IsMouseButtonJustReleased(SDL_BUTTON_LEFT))
@@ -419,23 +419,23 @@ void GEditorStateUpdate(GlobalState * /*State*/)
 					// delete the 2 nodes we just created if escape is pressed
 					if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE))
 					{
-						ListRemoveAt(EditorNodes, EditorNodes->size - 1);
-						ListRemoveAt(EditorNodes, EditorNodes->size - 1);
+						ListRemoveAt(editorNodes, editorNodes->size - 1);
+						ListRemoveAt(editorNodes, editorNodes->size - 1);
 						isAddModeDragging = false;
 						return;
 					}
 
 					const Vector2 mousePos = GetMousePos();
-					Vector2 worldPos = v2((mousePos.x - EditorPanX) / EditorZoom,
-										  (mousePos.y - EditorPanY) / EditorZoom);
+					Vector2 worldPos = v2((mousePos.x - editorPanX) / editorZoom,
+										  (mousePos.y - editorPanY) / editorZoom);
 
-					if (EditorSnapToGrid)
+					if (editorSnapToGrid)
 					{
 						worldPos.x = round(worldPos.x);
 						worldPos.y = round(worldPos.y);
 					}
 
-					EditorNode *nodeB = ListGet(EditorNodes, EditorNodes->size - 1);
+					EditorNode *nodeB = ListGet(editorNodes, editorNodes->size - 1);
 					nodeB->position = worldPos;
 				}
 				break;
@@ -448,10 +448,10 @@ void GEditorStateUpdate(GlobalState * /*State*/)
 					chk_malloc(node);
 					node->type = NODE_ACTOR;
 					const Vector2 mousePos = GetMousePos();
-					Vector2 worldPos = v2((mousePos.x - EditorPanX) / EditorZoom,
-										  (mousePos.y - EditorPanY) / EditorZoom);
+					Vector2 worldPos = v2((mousePos.x - editorPanX) / editorZoom,
+										  (mousePos.y - editorPanY) / editorZoom);
 
-					if (EditorSnapToGrid)
+					if (editorSnapToGrid)
 					{
 						worldPos.x = round(worldPos.x);
 						worldPos.y = round(worldPos.y);
@@ -461,20 +461,20 @@ void GEditorStateUpdate(GlobalState * /*State*/)
 					node->rotation = 0;
 					node->extra = 1;
 					node->extra2 = 0;
-					ListAdd(EditorNodes, node);
+					ListAdd(editorNodes, node);
 				}
 				break;
 			}
 			default:
 				break;
 		}
-	} else if (CurrentEditorMode == EDITOR_MODE_PROPERTIES)
+	} else if (currentEditorMode == EDITOR_MODE_PROPERTIES)
 	{
-		for (int i = 0; i < EditorNodes->size; i++)
+		for (int i = 0; i < editorNodes->size; i++)
 		{
-			const EditorNode *node = ListGet(EditorNodes, i);
-			const Vector2 screenPos = v2(node->position.x * EditorZoom + EditorPanX,
-										 node->position.y * EditorZoom + EditorPanY);
+			const EditorNode *node = ListGet(editorNodes, i);
+			const Vector2 screenPos = v2(node->position.x * editorZoom + editorPanX,
+										 node->position.y * editorZoom + editorPanY);
 
 			bool hovered = false;
 			const Vector2 mousePos = GetMousePos();
@@ -488,16 +488,16 @@ void GEditorStateUpdate(GlobalState * /*State*/)
 
 			if (hovered && IsMouseButtonJustPressed(SDL_BUTTON_LEFT))
 			{
-				EditorSelectedNode = i;
+				editorSelectedNode = i;
 			}
 		}
 
-		while (editorUiStack->Controls->size > EditorBaseControlCount)
+		while (editorUiStack->Controls->size > editorBaseControlCount)
 		{
-			UiStackRemove(editorUiStack, ListGet(editorUiStack->Controls, EditorBaseControlCount));
+			UiStackRemove(editorUiStack, ListGet(editorUiStack->Controls, editorBaseControlCount));
 		}
 
-		const EditorNode *node = ListGet(EditorNodes, EditorSelectedNode);
+		const EditorNode *node = ListGet(editorNodes, editorSelectedNode);
 		switch (node->type)
 		{
 			case NODE_PLAYER:
@@ -599,9 +599,9 @@ void GEditorStateRender(GlobalState * /*State*/)
 	SetColorUint(0xFF123456);
 	ClearColor(0xFF123456);
 
-	const int gridSpacing = EditorZoom;
-	const int gridOffsetX = (int)EditorPanX % gridSpacing;
-	const int gridOffsetY = (int)EditorPanY % gridSpacing;
+	const int gridSpacing = editorZoom;
+	const int gridOffsetX = (int)editorPanX % gridSpacing;
+	const int gridOffsetY = (int)editorPanY % gridSpacing;
 
 	SetColorUint(0xFF808080);
 	for (int x = gridOffsetX; x < WindowWidth(); x += gridSpacing)
@@ -614,15 +614,15 @@ void GEditorStateRender(GlobalState * /*State*/)
 	}
 
 	SetColorUint(0xFF0000FF);
-	DrawLine(v2(EditorPanX, 0), v2(EditorPanX, WindowHeight()), 2.0f);
+	DrawLine(v2(editorPanX, 0), v2(editorPanX, WindowHeight()), 2.0f);
 	SetColorUint(0xFFFF0000);
-	DrawLine(v2(0, EditorPanY), v2(WindowWidth(), EditorPanY), 2.0f);
+	DrawLine(v2(0, editorPanY), v2(WindowWidth(), editorPanY), 2.0f);
 
 	// draw world space numbers along bottom and right
 	char buf[32];
 	for (int x = gridOffsetX; x < WindowWidth(); x += gridSpacing)
 	{
-		const int worldSpaceX = (int)((x - EditorPanX) / EditorZoom);
+		const int worldSpaceX = (int)((x - editorPanX) / editorZoom);
 
 		if (worldSpaceX % 5 != 0)
 		{
@@ -640,7 +640,7 @@ void GEditorStateRender(GlobalState * /*State*/)
 	}
 	for (int y = gridOffsetY; y < WindowHeight(); y += gridSpacing)
 	{
-		const int worldSpaceY = (int)((y - EditorPanY) / EditorZoom);
+		const int worldSpaceY = (int)((y - editorPanY) / editorZoom);
 
 		if (worldSpaceY % 5 != 0)
 		{
@@ -659,18 +659,18 @@ void GEditorStateRender(GlobalState * /*State*/)
 
 	// Draw nodes
 	int hoveredNode = -1;
-	for (int i = 0; i < EditorNodes->size; i++)
+	for (int i = 0; i < editorNodes->size; i++)
 	{
-		const EditorNode *node = ListGet(EditorNodes, i);
-		const Vector2 screenPos = v2(node->position.x * EditorZoom + EditorPanX,
-									 node->position.y * EditorZoom + EditorPanY);
+		const EditorNode *node = ListGet(editorNodes, i);
+		const Vector2 screenPos = v2(node->position.x * editorZoom + editorPanX,
+									 node->position.y * editorZoom + editorPanY);
 
 		if (node->type == NODE_WALL_A)
 		{
 			// Draw a line to the next node, which should be the wall's other end
-			const EditorNode *nodeB = ListGet(EditorNodes, i + 1);
-			const Vector2 screenPosB = v2(nodeB->position.x * EditorZoom + EditorPanX,
-										  nodeB->position.y * EditorZoom + EditorPanY);
+			const EditorNode *nodeB = ListGet(editorNodes, i + 1);
+			const Vector2 screenPosB = v2(nodeB->position.x * editorZoom + editorPanX,
+										  nodeB->position.y * editorZoom + editorPanY);
 			SetColorUint(0xFFFFFFFF);
 			DrawLine(v2(screenPos.x, screenPos.y), v2(screenPosB.x, screenPosB.y), 2);
 		}
@@ -701,12 +701,12 @@ void GEditorStateRender(GlobalState * /*State*/)
 			hoveredNode = i;
 		}
 
-		if (EditorSelectedNode == i)
+		if (editorSelectedNode == i)
 		{
 			color = 0xFFFFFF00;
 		}
 
-		if (hovered || EditorSelectedNode == i)
+		if (hovered || editorSelectedNode == i)
 		{
 			SetColorUint(0xFFFFFFFF);
 			DrawRect(screenPos.x - 6, screenPos.y - 6, 12, 12);
@@ -725,9 +725,9 @@ void GEditorStateRender(GlobalState * /*State*/)
 
 	if (hoveredNode != -1)
 	{
-		const EditorNode *node = ListGet(EditorNodes, hoveredNode);
-		const Vector2 screenPos = v2(node->position.x * EditorZoom + EditorPanX,
-									 node->position.y * EditorZoom + EditorPanY);
+		const EditorNode *node = ListGet(editorNodes, hoveredNode);
+		const Vector2 screenPos = v2(node->position.x * editorZoom + editorPanX,
+									 node->position.y * editorZoom + editorPanY);
 
 		char nodeInfo[96];
 		switch (node->type)
@@ -771,9 +771,9 @@ void GEditorStateRender(GlobalState * /*State*/)
 	DrawUiStack(editorUiStack);
 
 	// if we are editing the properties of a wall a node, draw its texture
-	if (CurrentEditorMode == EDITOR_MODE_PROPERTIES && EditorSelectedNode != -1)
+	if (currentEditorMode == EDITOR_MODE_PROPERTIES && editorSelectedNode != -1)
 	{
-		const EditorNode *node = ListGet(EditorNodes, EditorSelectedNode);
+		const EditorNode *node = ListGet(editorNodes, editorSelectedNode);
 		if (node->type == NODE_WALL_A)
 		{
 			const byte *tex = wallTextures[node->extra];
@@ -783,9 +783,9 @@ void GEditorStateRender(GlobalState * /*State*/)
 				DrawTexture(v2(dst.x, dst.y), v2(dst.w, dst.h), tex);
 			}
 		}
-	} else if (CurrentEditorMode == EDITOR_MODE_ADD)
+	} else if (currentEditorMode == EDITOR_MODE_ADD)
 	{
-		const Control *texSld = ListGet(editorUiStack->Controls, 1 + EditorBaseControlCount);
+		const Control *texSld = ListGet(editorUiStack->Controls, 1 + editorBaseControlCount);
 		const SliderData *sliderData = (SliderData *)texSld->ControlData;
 
 		const byte *tex = wallTextures[(int)sliderData->value];
@@ -807,19 +807,19 @@ void CreateButton(char *text, const Vector2 position, const Vector2 size, void (
 
 void BtnZoomIn()
 {
-	EditorZoom += 2.0;
-	EditorZoom = clampf(EditorZoom, 10.0, 60.0);
+	editorZoom += 2.0;
+	editorZoom = clampf(editorZoom, 10.0, 60.0);
 }
 
 void BtnZoomOut()
 {
-	EditorZoom -= 2.0;
-	EditorZoom = clampf(EditorZoom, 10.0, 60.0);
+	editorZoom -= 2.0;
+	editorZoom = clampf(editorZoom, 10.0, 60.0);
 }
 
 void BtnZoomReset()
 {
-	EditorZoom = 20.0;
+	editorZoom = 20.0;
 }
 
 void BtnCopyBytecode()
@@ -846,29 +846,29 @@ void BtnCopyBytecode()
 
 void ToggleSnapToGrid(const bool enabled)
 {
-	EditorSnapToGrid = enabled;
+	editorSnapToGrid = enabled;
 }
 
 void BtnPrevNode()
 {
-	if (CurrentEditorMode == EDITOR_MODE_PROPERTIES)
+	if (currentEditorMode == EDITOR_MODE_PROPERTIES)
 	{
-		EditorSelectedNode--;
-		if (EditorSelectedNode < 0)
+		editorSelectedNode--;
+		if (editorSelectedNode < 0)
 		{
-			EditorSelectedNode = EditorNodes->size - 1;
+			editorSelectedNode = editorNodes->size - 1;
 		}
 	}
 }
 
 void BtnNextNode()
 {
-	if (CurrentEditorMode == EDITOR_MODE_PROPERTIES)
+	if (currentEditorMode == EDITOR_MODE_PROPERTIES)
 	{
-		EditorSelectedNode++;
-		if (EditorSelectedNode >= EditorNodes->size)
+		editorSelectedNode++;
+		if (editorSelectedNode >= editorNodes->size)
 		{
-			EditorSelectedNode = 0;
+			editorSelectedNode = 0;
 		}
 	}
 }
@@ -876,9 +876,9 @@ void BtnNextNode()
 void SetEditorMode(bool /*c*/, byte /*g*/, const byte id)
 {
 	// Remove all controls that were added for the previous mode
-	while (editorUiStack->Controls->size > EditorBaseControlCount)
+	while (editorUiStack->Controls->size > editorBaseControlCount)
 	{
-		UiStackRemove(editorUiStack, ListGet(editorUiStack->Controls, EditorBaseControlCount));
+		UiStackRemove(editorUiStack, ListGet(editorUiStack->Controls, editorBaseControlCount));
 	}
 
 	int sy = 250;
@@ -887,7 +887,7 @@ void SetEditorMode(bool /*c*/, byte /*g*/, const byte id)
 
 	if (id == 0)
 	{
-		CurrentEditorMode = EDITOR_MODE_ADD;
+		currentEditorMode = EDITOR_MODE_ADD;
 		CreateSlider("Add Actor?", 0, 1, 0, 1, 1, v2(10, sy), v2(200, szy), NULL, SliderLabelInteger);
 		sy += szy + sp;
 		CreateSlider("Wall Tex",
@@ -902,18 +902,18 @@ void SetEditorMode(bool /*c*/, byte /*g*/, const byte id)
 					 SliderLabelInteger);
 	} else if (id == 1)
 	{
-		EditorSelectedNode = -1;
-		CurrentEditorMode = EDITOR_MODE_MOVE;
+		editorSelectedNode = -1;
+		currentEditorMode = EDITOR_MODE_MOVE;
 	} else if (id == 2)
 	{
-		CurrentEditorMode = EDITOR_MODE_DELETE;
+		currentEditorMode = EDITOR_MODE_DELETE;
 	} else if (id == 3)
 	{
-		CurrentEditorMode = EDITOR_MODE_PROPERTIES;
-		EditorSelectedNode = 0;
+		currentEditorMode = EDITOR_MODE_PROPERTIES;
+		editorSelectedNode = 0;
 	} else if (id == 4)
 	{
-		CurrentEditorMode = EDITOR_MODE_LEVEL;
+		currentEditorMode = EDITOR_MODE_LEVEL;
 		CreateSlider("Fog R", 0, 255, level_fogR, 1, 16, v2(10, sy), v2(200, 24), SetFogRSlider, SliderLabelInteger);
 		sy += szy + sp;
 		CreateSlider("Fog G", 0, 255, level_fogG, 1, 16, v2(10, sy), v2(200, 24), SetFogGSlider, SliderLabelInteger);
@@ -927,7 +927,7 @@ void SetEditorMode(bool /*c*/, byte /*g*/, const byte id)
 		CreateSlider("Floor Tex",
 					 0,
 					 WALL_TEXTURE_COUNT - 1,
-					 level_floor_tex,
+					 level_floorTex,
 					 1,
 					 16,
 					 v2(10, sy),
@@ -938,7 +938,7 @@ void SetEditorMode(bool /*c*/, byte /*g*/, const byte id)
 		CreateSlider("Ceil Tex",
 					 0,
 					 WALL_TEXTURE_COUNT,
-					 level_ceil_tex,
+					 level_ceilTex,
 					 1,
 					 16,
 					 v2(10, sy),
@@ -955,7 +955,7 @@ void SetEditorMode(bool /*c*/, byte /*g*/, const byte id)
 		CreateSlider("Music",
 					 0,
 					 MUSIC_COUNT,
-					 musicId,
+					 level_musicID,
 					 1,
 					 1,
 					 v2(10, sy),
@@ -968,23 +968,23 @@ void SetEditorMode(bool /*c*/, byte /*g*/, const byte id)
 void BtnLoad()
 {
 	// clear all editor nodes
-	ListFreeWithData(EditorNodes);
-	EditorNodes = CreateList();
+	ListFreeWithData(editorNodes);
+	editorNodes = CreateList();
 
 	const Level *l = GetState()->level;
 
 	// load level properties
-	level_fogR = l->FogColor >> 16;
-	level_fogG = l->FogColor >> 8;
-	level_fogB = l->FogColor;
-	level_fogStart = l->FogStart;
-	level_fogEnd = l->FogEnd;
-	level_ceil_tex = l->CeilingTexture;
-	level_floor_tex = l->FloorTexture;
-	level_skyR = l->SkyColor >> 16;
-	level_skyG = l->SkyColor >> 8;
-	level_skyB = l->SkyColor;
-	musicId = l->MusicID;
+	level_fogR = l->fogColor >> 16;
+	level_fogG = l->fogColor >> 8;
+	level_fogB = l->fogColor;
+	level_fogStart = l->fogStart;
+	level_fogEnd = l->fogEnd;
+	level_ceilTex = l->ceilingTexture;
+	level_floorTex = l->floorTexture;
+	level_skyR = l->skyColor >> 16;
+	level_skyG = l->skyColor >> 8;
+	level_skyB = l->skyColor;
+	level_musicID = l->musicID;
 
 	// add a node for the player
 	EditorNode *playerNode = malloc(sizeof(EditorNode));
@@ -992,7 +992,7 @@ void BtnLoad()
 	playerNode->type = NODE_PLAYER;
 	playerNode->position = l->player.pos;
 	playerNode->rotation = fmod(l->player.angle, 2 * PI);
-	ListAdd(EditorNodes, playerNode);
+	ListAdd(editorNodes, playerNode);
 
 	// add a node for each actor
 	for (int i = 0; i < ListGetSize(l->actors); i++)
@@ -1011,7 +1011,7 @@ void BtnLoad()
 		extra2 |= (a->paramC & 0xFF) << 8;
 		extra2 |= a->paramD & 0xFF;
 		actorNode->extra2 = extra2;
-		ListAdd(EditorNodes, actorNode);
+		ListAdd(editorNodes, actorNode);
 	}
 
 	// add a node for each wall
@@ -1025,14 +1025,14 @@ void BtnLoad()
 		wallNodeA->position = w->a;
 		wallNodeA->extra = w->texId;
 		wallNodeA->extra2 = w->uvScale;
-		ListAdd(EditorNodes, wallNodeA);
+		ListAdd(editorNodes, wallNodeA);
 
 		EditorNode *wallNodeB = malloc(sizeof(EditorNode));
 		chk_malloc(wallNodeB);
 		wallNodeB->type = NODE_WALL_B;
 		wallNodeB->index = i;
 		wallNodeB->position = w->b;
-		ListAdd(EditorNodes, wallNodeB);
+		ListAdd(editorNodes, wallNodeB);
 	}
 }
 
@@ -1045,14 +1045,14 @@ void BtnTest()
 
 void GEditorStateSet()
 {
-	if (!EditorInitComplete)
+	if (!editorInitComplete)
 	{
 		// center the view to 0,0
-		EditorPanX = WindowWidth() / 2.0;
-		EditorPanY = WindowHeight() / 2.0;
+		editorPanX = WindowWidth() / 2.0;
+		editorPanY = WindowHeight() / 2.0;
 
 		editorUiStack = CreateUiStack();
-		EditorNodes = CreateList();
+		editorNodes = CreateList();
 		// will be freed immediately after this function, but we create it here to avoid nullptr free
 
 		int sx = 10;
@@ -1087,17 +1087,17 @@ void GEditorStateSet()
 										  "Snap",
 										  ToggleSnapToGrid,
 										  TOP_LEFT,
-										  EditorSnapToGrid));
+										  editorSnapToGrid));
 
 		UiStackPush(editorUiStack, CreateButtonControl(v2(-60, 10), v2(120, 24), "Load", BtnLoad, TOP_RIGHT));
 		UiStackPush(editorUiStack, CreateButtonControl(v2(-60, 30), v2(120, 24), "Test", BtnTest, TOP_RIGHT));
 		UiStackPush(editorUiStack, CreateButtonControl(v2(-60, 50), v2(120, 24), "Save", BtnCopyBytecode, TOP_RIGHT));
 
-		EditorBaseControlCount = ListGetSize(editorUiStack->Controls);
+		editorBaseControlCount = ListGetSize(editorUiStack->Controls);
 
 		SetEditorMode(false, 0, 0);
 
-		EditorInitComplete = true;
+		editorInitComplete = true;
 	}
 
 	SetRenderCallback(GEditorStateRender);

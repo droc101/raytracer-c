@@ -15,55 +15,55 @@
 Level *LoadLevel(const byte *data)
 {
 	Level *l = CreateLevel();
-	int i = 0;
+	int dataOffset = 0;
 	bool done = false;
 	while (!done)
 	{
-		const byte opcode = data[i];
-		i++;
+		const byte opcode = data[dataOffset];
+		dataOffset++;
 		switch (opcode)
 		{
 			case LEVEL_CMD_WALL:
 			{
-				const double v1 = ReadDouble(data, &i);
-				const double vt2 = ReadDouble(data, &i);
-				const double v3 = ReadDouble(data, &i);
-				const double v4 = ReadDouble(data, &i);
-				const uint tid = ReadUint(data, &i);
-				const float uvScale = ReadFloat(data, &i);
-				const Vector2 va = v2(v1, vt2);
-				const Vector2 vb = v2(v3, v4);
-				Wall *w = CreateWall(va, vb, wallTextures[tid], uvScale, 0.0);
+				const double firstVertX = ReadDouble(data, &dataOffset);
+				const double firstVertY = ReadDouble(data, &dataOffset);
+				const double secondVertX = ReadDouble(data, &dataOffset);
+				const double secondVertY = ReadDouble(data, &dataOffset);
+				const uint textureID = ReadUint(data, &dataOffset);
+				const float uvScale = ReadFloat(data, &dataOffset);
+				const Vector2 firstVertex = v2(firstVertX, firstVertY);
+				const Vector2 secondVertex = v2(secondVertX, secondVertY);
+				Wall *w = CreateWall(firstVertex, secondVertex, wallTextures[textureID], uvScale, 0.0);
 				ListAdd(l->walls, w);
 				break;
 			}
 			case LEVEL_CMD_PLAYER:
 			{
-				const double x = ReadDouble(data, &i);
-				const double y = ReadDouble(data, &i);
-				const double r = ReadDouble(data, &i);
-				l->player.pos = v2(x, y);
-				l->player.angle = r;
+				const double playerX = ReadDouble(data, &dataOffset);
+				const double playerY = ReadDouble(data, &dataOffset);
+				const double playerRotation = ReadDouble(data, &dataOffset);
+				l->player.pos = v2(playerX, playerY);
+				l->player.angle = playerRotation;
 				break;
 			}
 			case LEVEL_CMD_COLORS:
 			{
-				const uint sky = ReadUint(data, &i);
-				i += sizeof(uint); // skip the second color
-				l->SkyColor = sky;
+				const uint skyColor = ReadUint(data, &dataOffset);
+				dataOffset += sizeof(uint); // skip the second color
+				l->skyColor = skyColor;
 				break;
 			}
 			case LEVEL_CMD_ACTOR:
 			{
-				const double x = ReadDouble(data, &i);
-				const double y = ReadDouble(data, &i);
-				const double r = ReadDouble(data, &i);
-				const int type = ReadUint(data, &i);
-				const byte paramA = ReadByte(data, &i);
-				const byte paramB = ReadByte(data, &i);
-				const byte paramC = ReadByte(data, &i);
-				const byte paramD = ReadByte(data, &i);
-				Actor *a = CreateActor(v2(x, y), r, type, paramA, paramB, paramC, paramD);
+				const double actorX = ReadDouble(data, &dataOffset);
+				const double actorY = ReadDouble(data, &dataOffset);
+				const double actorRotation = ReadDouble(data, &dataOffset);
+				const int actorType = ReadUint(data, &dataOffset);
+				const byte paramA = ReadByte(data, &dataOffset);
+				const byte paramB = ReadByte(data, &dataOffset);
+				const byte paramC = ReadByte(data, &dataOffset);
+				const byte paramD = ReadByte(data, &dataOffset);
+				Actor *a = CreateActor(v2(actorX, actorY), actorRotation, actorType, paramA, paramB, paramC, paramD);
 				ListAdd(l->actors, a);
 				break;
 			}
@@ -74,30 +74,30 @@ Level *LoadLevel(const byte *data)
 			}
 			case LEVEL_CMD_FOG:
 			{
-				const uint color = ReadUint(data, &i);
-				const double start = ReadDouble(data, &i);
-				const double end = ReadDouble(data, &i);
-				l->FogColor = color;
-				l->FogStart = start;
-				l->FogEnd = end;
+				const uint fogColor = ReadUint(data, &dataOffset);
+				const double fogStartDistance = ReadDouble(data, &dataOffset);
+				const double fogEndDistance = ReadDouble(data, &dataOffset);
+				l->fogColor = fogColor;
+				l->fogStart = fogStartDistance;
+				l->fogEnd = fogEndDistance;
 				break;
 			}
 			case LEVEL_CMD_FLOOR_CEIL:
 			{
-				const uint floor = ReadUint(data, &i);
-				const uint ceil = ReadUint(data, &i);
-				l->FloorTexture = floor;
-				l->CeilingTexture = ceil;
+				const uint floorTextureID = ReadUint(data, &dataOffset);
+				const uint ceilingTextureID = ReadUint(data, &dataOffset);
+				l->floorTexture = floorTextureID;
+				l->ceilingTexture = ceilingTextureID;
 				break;
 			}
 			case LEVEL_CMD_MUSIC:
 			{
-				const uint music = ReadUint(data, &i);
-				l->MusicID = music;
+				const uint musicID = ReadUint(data, &dataOffset);
+				l->musicID = musicID;
 				break;
 			}
 			default:
-				LogError("Unknown level opcode %u at offset %u", opcode, i);
+				LogError("Unknown level opcode %u at offset %u", opcode, dataOffset);
 				Error("Unknown Level OpCode");
 		}
 	}
@@ -106,70 +106,70 @@ Level *LoadLevel(const byte *data)
 
 LevelBytecode *GenerateBytecode(const Level *l)
 {
-	byte *data = malloc(1048576);
-	chk_malloc(data);
-	int i = 0;
+	byte *dataBuffer = malloc(1048576);
+	chk_malloc(dataBuffer);
+	int dataBufferOffset = 0;
 	for (int j = 0; j < l->walls->size; j++)
 	{
 		const Wall *w = ListGet(l->walls, j);
-		data[i] = LEVEL_CMD_WALL;
-		i++;
+		dataBuffer[dataBufferOffset] = LEVEL_CMD_WALL;
+		dataBufferOffset++;
 
 		const int wall_texID = FindWallTextureIndex(w->tex);
 
-		WriteDouble(data, &i, w->a.x);
-		WriteDouble(data, &i, w->a.y);
-		WriteDouble(data, &i, w->b.x);
-		WriteDouble(data, &i, w->b.y);
-		WriteUint(data, &i, wall_texID);
-		WriteFloat(data, &i, w->uvScale);
+		WriteDouble(dataBuffer, &dataBufferOffset, w->a.x);
+		WriteDouble(dataBuffer, &dataBufferOffset, w->a.y);
+		WriteDouble(dataBuffer, &dataBufferOffset, w->b.x);
+		WriteDouble(dataBuffer, &dataBufferOffset, w->b.y);
+		WriteUint(dataBuffer, &dataBufferOffset, wall_texID);
+		WriteFloat(dataBuffer, &dataBufferOffset, w->uvScale);
 	}
 	for (int j = 0; j < l->actors->size; j++)
 	{
 		const Actor *a = ListGet(l->actors, j);
-		data[i] = LEVEL_CMD_ACTOR;
-		i++;
-		WriteDouble(data, &i, a->position.x);
-		WriteDouble(data, &i, a->position.y);
-		WriteDouble(data, &i, a->rotation);
-		WriteUint(data, &i, a->actorType);
-		WriteByte(data, &i, a->paramA);
-		WriteByte(data, &i, a->paramB);
-		WriteByte(data, &i, a->paramC);
-		WriteByte(data, &i, a->paramD);
+		dataBuffer[dataBufferOffset] = LEVEL_CMD_ACTOR;
+		dataBufferOffset++;
+		WriteDouble(dataBuffer, &dataBufferOffset, a->position.x);
+		WriteDouble(dataBuffer, &dataBufferOffset, a->position.y);
+		WriteDouble(dataBuffer, &dataBufferOffset, a->rotation);
+		WriteUint(dataBuffer, &dataBufferOffset, a->actorType);
+		WriteByte(dataBuffer, &dataBufferOffset, a->paramA);
+		WriteByte(dataBuffer, &dataBufferOffset, a->paramB);
+		WriteByte(dataBuffer, &dataBufferOffset, a->paramC);
+		WriteByte(dataBuffer, &dataBufferOffset, a->paramD);
 	}
-	data[i] = LEVEL_CMD_PLAYER;
-	i++;
-	WriteDouble(data, &i, l->player.pos.x);
-	WriteDouble(data, &i, l->player.pos.y);
-	WriteDouble(data, &i, l->player.angle);
-	data[i] = LEVEL_CMD_COLORS;
-	i++;
-	WriteUint(data, &i, l->SkyColor);
-	WriteUint(data, &i, 0);
-	data[i] = LEVEL_CMD_FOG;
-	i++;
-	WriteUint(data, &i, l->FogColor);
-	WriteDouble(data, &i, l->FogStart);
-	WriteDouble(data, &i, l->FogEnd);
-	data[i] = LEVEL_CMD_FLOOR_CEIL;
-	i++;
-	WriteUint(data, &i, l->FloorTexture);
-	WriteUint(data, &i, l->CeilingTexture);
-	data[i] = LEVEL_CMD_MUSIC;
-	i++;
-	WriteUint(data, &i, l->MusicID);
-	data[i] = LEVEL_CMD_FINISH;
-	i++;
+	dataBuffer[dataBufferOffset] = LEVEL_CMD_PLAYER;
+	dataBufferOffset++;
+	WriteDouble(dataBuffer, &dataBufferOffset, l->player.pos.x);
+	WriteDouble(dataBuffer, &dataBufferOffset, l->player.pos.y);
+	WriteDouble(dataBuffer, &dataBufferOffset, l->player.angle);
+	dataBuffer[dataBufferOffset] = LEVEL_CMD_COLORS;
+	dataBufferOffset++;
+	WriteUint(dataBuffer, &dataBufferOffset, l->skyColor);
+	WriteUint(dataBuffer, &dataBufferOffset, 0);
+	dataBuffer[dataBufferOffset] = LEVEL_CMD_FOG;
+	dataBufferOffset++;
+	WriteUint(dataBuffer, &dataBufferOffset, l->fogColor);
+	WriteDouble(dataBuffer, &dataBufferOffset, l->fogStart);
+	WriteDouble(dataBuffer, &dataBufferOffset, l->fogEnd);
+	dataBuffer[dataBufferOffset] = LEVEL_CMD_FLOOR_CEIL;
+	dataBufferOffset++;
+	WriteUint(dataBuffer, &dataBufferOffset, l->floorTexture);
+	WriteUint(dataBuffer, &dataBufferOffset, l->ceilingTexture);
+	dataBuffer[dataBufferOffset] = LEVEL_CMD_MUSIC;
+	dataBufferOffset++;
+	WriteUint(dataBuffer, &dataBufferOffset, l->musicID);
+	dataBuffer[dataBufferOffset] = LEVEL_CMD_FINISH;
+	dataBufferOffset++;
 
-	void *tmp = realloc(data, i);
+	void *tmp = realloc(dataBuffer, dataBufferOffset);
 	chk_malloc(tmp);
-	data = tmp;
+	dataBuffer = tmp;
 
 	LevelBytecode *lb = malloc(sizeof(LevelBytecode));
 	chk_malloc(lb);
-	lb->data = data;
-	lb->size = i;
+	lb->data = dataBuffer;
+	lb->size = dataBufferOffset;
 
 	return lb;
 }

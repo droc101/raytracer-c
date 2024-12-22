@@ -22,9 +22,12 @@ const byte *music[MUSIC_COUNT] = {
 	gzmpg_audio_field,
 };
 
+/**
+ * callback for when a channel finishes playing (so we can free it)
+ * @param channel The channel that finished
+ */
 void ChannelFinished(const int channel)
 {
-	// callback for when a channel finishes playing (so we can free it)
 	state.channels[channel] = NULL;
 }
 
@@ -44,7 +47,7 @@ void InitState()
 	{
 		state.channels[i] = NULL;
 	}
-	state.CameraY = 0;
+	state.cameraY = 0;
 	state.textBoxActive = false;
 	state.cam = CreateCamera();
 	LoadOptions(&state.options);
@@ -72,7 +75,7 @@ void ShowTextBox(const TextBox tb)
 	state.textBoxActive = true;
 }
 
-GlobalState *GetState()
+inline GlobalState *GetState()
 {
 	return &state;
 }
@@ -133,9 +136,9 @@ void ChangeLevel(Level *l)
 	DestroyLevel(state.level);
 	state.level = l;
 	state.textBoxActive = false;
-	if (l->MusicID != 0)
+	if (l->musicID != 0)
 	{
-		ChangeMusic(music[l->MusicID - 1]);
+		ChangeMusic(music[l->musicID - 1]);
 	} else
 	{
 		StopMusic();

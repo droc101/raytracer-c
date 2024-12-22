@@ -84,20 +84,20 @@ void InitAudio()
 void WindowAndRenderInit()
 {
 	const Uint32 rendererFlags = currentRenderer == RENDERER_OPENGL ? SDL_WINDOW_OPENGL : SDL_WINDOW_VULKAN;
-	SDL_Window *w = SDL_CreateWindow(GAME_TITLE,
+	SDL_Window *window = SDL_CreateWindow(GAME_TITLE,
 									 SDL_WINDOWPOS_UNDEFINED,
 									 SDL_WINDOWPOS_UNDEFINED,
 									 DEF_WIDTH,
 									 DEF_HEIGHT,
 									 rendererFlags | SDL_WINDOW_RESIZABLE);
-	if (w == NULL)
+	if (window == NULL)
 	{
 		LogError("SDL_CreateWindow Error: %s\n", SDL_GetError());
 		Error("Failed to create window.");
 	}
-	DwmDarkMode(w);
-	SDL_SetWindowFullscreen(w, GetState()->options.fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
-	SetGameWindow(w);
+	DwmDarkMode(window);
+	SDL_SetWindowFullscreen(window, GetState()->options.fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+	SetGameWindow(window);
 	UpdateViewportSize();
 
 	if (!RenderInit())
@@ -105,42 +105,42 @@ void WindowAndRenderInit()
 		RenderInitError();
 	}
 
-	SDL_SetWindowMinimumSize(w, MIN_WIDTH, MIN_HEIGHT);
-	SDL_SetWindowMaximumSize(w, MAX_WIDTH, MAX_HEIGHT);
+	SDL_SetWindowMinimumSize(window, MIN_WIDTH, MIN_HEIGHT);
+	SDL_SetWindowMaximumSize(window, MAX_WIDTH, MAX_HEIGHT);
 
 	windowIcon = ToSDLSurface(gztex_interface_icon, "1");
-	SDL_SetWindowIcon(w, windowIcon);
+	SDL_SetWindowIcon(window, windowIcon);
 }
 
 /**
  * Handle an SDL event
- * @param e The SDL event to handle
- * @param quit Whether the program should quit after handling the event
+ * @param event The SDL event to handle
+ * @param shouldQuit Whether the program should quit after handling the event
  */
-void HandleEvent(const SDL_Event e, bool *quit)
+void HandleEvent(const SDL_Event event, bool *shouldQuit)
 {
-	switch (e.type)
+	switch (event.type)
 	{
 		case SDL_QUIT:
-			*quit = true;
+			*shouldQuit = true;
 		break;
 		case SDL_KEYUP:
-			HandleKeyUp(e.key.keysym.scancode);
+			HandleKeyUp(event.key.keysym.scancode);
 		break;
 		case SDL_KEYDOWN:
-			HandleKeyDown(e.key.keysym.scancode);
+			HandleKeyDown(event.key.keysym.scancode);
 		break;
 		case SDL_MOUSEMOTION:
-			HandleMouseMotion(e.motion.x, e.motion.y, e.motion.xrel, e.motion.yrel);
+			HandleMouseMotion(event.motion.x, event.motion.y, event.motion.xrel, event.motion.yrel);
 		break;
 		case SDL_MOUSEBUTTONUP:
-			HandleMouseUp(e.button.button);
+			HandleMouseUp(event.button.button);
 		break;
 		case SDL_MOUSEBUTTONDOWN:
-			HandleMouseDown(e.button.button);
+			HandleMouseDown(event.button.button);
 		break;
 		case SDL_WINDOWEVENT:
-			if (e.window.event == SDL_WINDOWEVENT_RESIZED)
+			if (event.window.event == SDL_WINDOWEVENT_RESIZED)
 			{
 				UpdateViewportSize();
 			}
@@ -149,16 +149,16 @@ void HandleEvent(const SDL_Event e, bool *quit)
 			HandleControllerConnect();
 		break;
 		case SDL_CONTROLLERDEVICEREMOVED:
-			HandleControllerDisconnect(e.cdevice.which);
+			HandleControllerDisconnect(event.cdevice.which);
 		break;
 		case SDL_CONTROLLERBUTTONDOWN:
-			HandleControllerButtonDown(e.cbutton.button);
+			HandleControllerButtonDown(event.cbutton.button);
 		break;
 		case SDL_CONTROLLERBUTTONUP:
-			HandleControllerButtonUp(e.cbutton.button);
+			HandleControllerButtonUp(event.cbutton.button);
 		break;
 		case SDL_CONTROLLERAXISMOTION:
-			HandleControllerAxis(e.caxis.axis, e.caxis.value);
+			HandleControllerAxis(event.caxis.axis, event.caxis.value);
 		break;
 		default:
 			break;
@@ -200,9 +200,9 @@ int main(const int argc, char *argv[])
 
 	LogInfo("Engine initialized, entering mainloop\n");
 
-	SDL_Event e;
-	bool quit = false;
-	while (!quit)
+	SDL_Event event;
+	bool shouldQuit = false;
+	while (!shouldQuit)
 	{
 		while (GetState()->freezeEvents)
         {
@@ -210,35 +210,35 @@ int main(const int argc, char *argv[])
         }
 		const ulong frameStart = GetTimeNs();
 
-		while (SDL_PollEvent(&e) != 0)
+		while (SDL_PollEvent(&event) != 0)
 		{
-			HandleEvent(e, &quit);
+			HandleEvent(event, &shouldQuit);
 		}
 		ClearDepthOnly();
 
 		ResetDPrintYPos();
 
-		GlobalState *g = GetState();
+		GlobalState *state = GetState();
 
-		SDL_SetRelativeMouseMode(g->currentState == MAIN_STATE ? SDL_TRUE : SDL_FALSE);
+		SDL_SetRelativeMouseMode(state->currentState == MAIN_STATE ? SDL_TRUE : SDL_FALSE);
 		// warp the mouse to the center of the screen if we are in the main game state
-		if (g->currentState == MAIN_STATE)
+		if (state->currentState == MAIN_STATE)
 		{
 			const Vector2 realWndSize = ActualWindowSize();
 			SDL_WarpMouseInWindow(GetGameWindow(), realWndSize.x / 2, realWndSize.y / 2);
 		}
 
-		if (g->UpdateGame)
+		if (state->UpdateGame)
 		{
-			g->UpdateGame(g);
+			state->UpdateGame(state);
 		}
 
-		g->cam->x = (float)g->level->player.pos.x;
-		g->cam->y = (float)g->CameraY;
-		g->cam->z = (float)g->level->player.pos.y;
-		g->cam->yaw = (float)g->level->player.angle;
+		state->cam->x = (float)state->level->player.pos.x;
+		state->cam->y = (float)state->cameraY;
+		state->cam->z = (float)state->level->player.pos.y;
+		state->cam->yaw = (float)state->level->player.angle;
 
-		g->RenderGame(g);
+		state->RenderGame(state);
 
 		FrameGraphDraw();
 
@@ -246,9 +246,9 @@ int main(const int argc, char *argv[])
 
 		UpdateInputStates();
 
-		if (g->requestExit)
+		if (state->requestExit)
 		{
-			quit = true;
+			shouldQuit = true;
 		}
 
 		FrameGraphUpdate(GetTimeNs() - frameStart);

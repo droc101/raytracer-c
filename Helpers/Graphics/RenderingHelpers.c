@@ -14,27 +14,27 @@ Renderer currentRenderer;
 
 mat4 *GetMatrix(const Camera *cam)
 {
-	vec3 cam_pos = {cam->x, cam->y, cam->z};
-	const float aspect = (float)WindowWidth() / (float)WindowHeight();
+	vec3 cameraPosition = {cam->x, cam->y, cam->z};
+	const float aspectRatio = (float)WindowWidth() / (float)WindowHeight();
 
 	mat4 IDENTITY = GLM_MAT4_IDENTITY_INIT;
 	mat4 PERSPECTIVE = GLM_MAT4_ZERO_INIT;
-	glm_perspective(glm_rad(cam->fov), aspect, NEAR_Z, FAR_Z, PERSPECTIVE);
+	glm_perspective(glm_rad(cam->fov), aspectRatio, NEAR_Z, FAR_Z, PERSPECTIVE);
 
-	vec3 look_at = {cosf(cam->yaw), 0, sinf(cam->yaw)};
+	vec3 lookAt = {cosf(cam->yaw), 0, sinf(cam->yaw)};
 	vec3 up = {0, 1, 0};
 
 	// TODO: roll and pitch are messed up
 
-	glm_vec3_rotate(look_at, cam->roll, (vec3){0, 0, 1}); // Roll
-	glm_vec3_rotate(look_at, cam->pitch, (vec3){1, 0, 0}); // Pitch
+	glm_vec3_rotate(lookAt, cam->roll, (vec3){0, 0, 1}); // Roll
+	glm_vec3_rotate(lookAt, cam->pitch, (vec3){1, 0, 0}); // Pitch
 
-	look_at[0] += cam_pos[0];
-	look_at[1] += cam_pos[1];
-	look_at[2] += cam_pos[2];
+	lookAt[0] += cameraPosition[0];
+	lookAt[1] += cameraPosition[1];
+	lookAt[2] += cameraPosition[2];
 
 	mat4 VIEW = GLM_MAT4_ZERO_INIT;
-	glm_lookat(cam_pos, look_at, up, VIEW);
+	glm_lookat(cameraPosition, lookAt, up, VIEW);
 
 	mat4 MODEL_VIEW = GLM_MAT4_ZERO_INIT;
 	glm_mat4_mul(VIEW, IDENTITY, MODEL_VIEW);
@@ -77,8 +77,7 @@ bool RenderInit()
 		case RENDERER_VULKAN:
 			return false;
 		case RENDERER_OPENGL:
-			const bool gli = GL_Init(GetGameWindow());
-			return gli;
+			return GL_Init(GetGameWindow());
 		default:
 			return false;
 	}

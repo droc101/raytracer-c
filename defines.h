@@ -144,8 +144,8 @@ struct Vector2
 struct Camera
 {
 	float x;
-	float z;
 	float y;
+	float z;
 
 	float pitch;
 	float yaw;
@@ -167,8 +167,8 @@ struct Wall
 	Vector2 b; // The second point of the wall
 	const byte *tex; // The raw asset data for the texture
 	int texId; // The texture ID
-	double Length; // The length of the wall (Call WallBake to update)
-	double Angle; // The angle of the wall (Call WallBake to update)
+	double length; // The length of the wall (Call WallBake to update)
+	double angle; // The angle of the wall (Call WallBake to update)
 	double dx;
 	double dy;
 	float uvScale; // The X scale of the texture
@@ -181,23 +181,23 @@ struct Level
 {
 	List *actors; // The list of actors in the level. You must bake this into staticActors before it is used.
 	List *walls; // The list of walls in the level. You must bake this into staticWalls before it is used.
-	uint SkyColor; // The color of the sky
-	uint FloorTexture; // The texture index of the floor
-	uint CeilingTexture; // The texture index + 1 of the ceiling. 0 is no ceiling
-	uint MusicID; // The music ID
-	uint FogColor; // The color of the fog
-	double FogStart; // The start of the fog
-	double FogEnd; // The end of the fog
+	uint skyColor; // The color of the sky
+	uint floorTexture; // The texture index of the floor
+	uint ceilingTexture; // The texture index + 1 of the ceiling. 0 is no ceiling
+	uint musicID; // The music ID
+	uint fogColor; // The color of the fog
+	double fogStart; // The start of the fog
+	double fogEnd; // The end of the fog
 	Player player;
 };
 
 // Utility functions are in Structs/ray.h
 struct RayCastResult
 {
-	Vector2 CollisionPoint; // The point of collision
-	double Distance; // The distance to the collision
-	bool Collided; // Whether the ray collided with anything
-	Wall CollisionWall; // The wall that was collided with
+	Vector2 collisionPoint; // The point of collision
+	double distance; // The distance to the collision
+	bool collided; // Whether the ray collided with anything
+	Wall collisionWall; // The wall that was collided with
 };
 
 struct TextBox
@@ -208,8 +208,8 @@ struct TextBox
 	int x; // The x position of the text box
 	int y; // The y position of the text box
 
-	int h_align; // The horizontal alignment of the text box
-	int v_align; // The vertical alignment of the text box
+	int hAlign; // The horizontal alignment of the text box
+	int vAlign; // The vertical alignment of the text box
 
 	int theme; // The theme of the text box
 
@@ -271,7 +271,7 @@ struct GlobalState
 	bool requestExit; // Request to exit the game
 	Mix_Music *music; // background music
 	Mix_Chunk *channels[SFX_CHANNEL_COUNT]; // sound effects
-	double CameraY; // The Y position of the camera
+	double cameraY; // The Y position of the camera
 	int levelID; // The current level ID
 
 	bool textBoxActive; // Whether the text box is active

@@ -46,9 +46,9 @@ int PhysicsThreadMain(void *)
 			continue;
 		}
 		// The function is copied to a local variable so we can unlock the mutex during its runtime
-		const FixedUpdateFunction function = PhysicsThreadFunction;
+		const FixedUpdateFunction UpdateFunction = PhysicsThreadFunction;
 		SDL_UnlockMutex(PhysicsThreadMutex);
-		function(GetState());
+		UpdateFunction(GetState());
 
 		ulong timeEnd = SDL_GetTicks64();
 		ulong timeElapsed = timeEnd - timeStart;

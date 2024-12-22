@@ -18,13 +18,13 @@ Level *CreateLevel()
 	l->walls = CreateList();
 	l->player.pos = v2s(0);
 	l->player.angle = 0;
-	l->SkyColor = 0xff82c5ff;
-	l->FloorTexture = 0;
-	l->CeilingTexture = 0;
-	l->MusicID = 0;
-	l->FogColor = 0xff000000;
-	l->FogStart = 10;
-	l->FogEnd = 30;
+	l->skyColor = 0xff82c5ff;
+	l->floorTexture = 0;
+	l->ceilingTexture = 0;
+	l->musicID = 0;
+	l->fogColor = 0xff000000;
+	l->fogStart = 10;
+	l->fogEnd = 30;
 	return l;
 }
 

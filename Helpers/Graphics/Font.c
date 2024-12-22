@@ -29,13 +29,13 @@ int FontFindChar(const char target)
 
 Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, const uint color, const bool small)
 {
-	const int str_len = strlen(str);
-	float *verts = malloc(sizeof(float[4][4]) * str_len);
+	const int stringLength = strlen(str);
+	float *verts = malloc(sizeof(float[4][4]) * stringLength);
 	chk_malloc(verts);
-	uint *indices = malloc(sizeof(uint[6]) * str_len);
+	uint *indices = malloc(sizeof(uint[6]) * stringLength);
 	chk_malloc(indices);
-	memset(verts, 0, sizeof(float[4][4]) * str_len);
-	memset(indices, 0, sizeof(uint[6]) * str_len);
+	memset(verts, 0, sizeof(float[4][4]) * stringLength);
+	memset(indices, 0, sizeof(uint[6]) * stringLength);
 
 	int x = pos.x;
 	int y = pos.y;
@@ -54,34 +54,34 @@ Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, cons
 			y += size;
 		}
 
-		const float uv_per_char = 1.0f / strlen(fontChars);
+		const float uvPerChar = 1.0f / strlen(fontChars);
 		int index = FontFindChar(tolower(str[i]));
 		if (index == -1)
 		{
 			index = FontFindChar('U');
 		}
 
-		const Vector2 ndc_pos = v2(X_TO_NDC(x), Y_TO_NDC(y));
-		const Vector2 ndc_pos_end = v2(X_TO_NDC(x + sizeX), Y_TO_NDC(y + size));
-		const float charUV = uv_per_char * index;
-		const float charUVEnd = uv_per_char * (index + 1);
+		const Vector2 ndcPos = v2(X_TO_NDC(x), Y_TO_NDC(y));
+		const Vector2 ndcPosEnd = v2(X_TO_NDC(x + sizeX), Y_TO_NDC(y + size));
+		const float charUV = uvPerChar * index;
+		const float charUVEnd = uvPerChar * (index + 1);
 
 		const mat4 quad = {
-			{ndc_pos.x, ndc_pos.y, charUV, 0},
-			{ndc_pos.x, ndc_pos_end.y, charUV, 1},
-			{ndc_pos_end.x, ndc_pos_end.y, charUVEnd, 1},
-			{ndc_pos_end.x, ndc_pos.y, charUVEnd, 0},
+			{ndcPos.x, ndcPos.y, charUV, 0},
+			{ndcPos.x, ndcPosEnd.y, charUV, 1},
+			{ndcPosEnd.x, ndcPosEnd.y, charUVEnd, 1},
+			{ndcPosEnd.x, ndcPos.y, charUVEnd, 0},
 		};
 
 		memcpy(verts + i * 16, quad, sizeof(quad));
 
-		uint quad_indices[6] = {0, 1, 2, 0, 2, 3};
+		uint quadIndices[6] = {0, 1, 2, 0, 2, 3};
 		for (int j = 0; j < 6; j++)
 		{
-			quad_indices[j] += i * 4;
+			quadIndices[j] += i * 4;
 		}
 
-		memcpy(indices + i * 6, quad_indices, sizeof(quad_indices));
+		memcpy(indices + i * 6, quadIndices, sizeof(quadIndices));
 
 		x += sizeX;
 		i++;
@@ -90,7 +90,7 @@ Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, cons
 	BatchedQuadArray quads;
 	quads.verts = verts;
 	quads.indices = indices;
-	quads.quad_count = str_len;
+	quads.quad_count = stringLength;
 	DrawBatchedQuadsTextured(&quads, small ? gztex_interface_small_fonts : gztex_interface_font, color);
 
 	free(verts);

@@ -32,20 +32,20 @@ _Noreturn void Error_Internal(char *error, const char *file, const int line, con
 		SDL_SetRelativeMouseMode(SDL_FALSE);
 	}
 
-	char buf[256];
+	char messageBuffer[256];
 #ifndef NDEBUG
-	sprintf(buf, "%s\n \n%s:%d (%s)", error, file, line, function);
+	sprintf(messageBuffer, "%s\n \n%s:%d (%s)", error, file, line, function);
 #else
 	sprintf(buf, "%s", error);
 #endif
 
-	LogError(buf);
+	LogError(messageBuffer);
 
-	char finalMb[768];
-	sprintf(finalMb,
+	char messageBoxTextBuffer[768];
+	sprintf(messageBoxTextBuffer,
 			"Sorry, but the game has crashed.\n\n%s\n\nEngine Version: %s\nSDL Version: %d.%d.%d\nSDL_Mixer Version: "
 			"%d.%d.%d\nZlib Version: %s",
-			buf,
+			messageBuffer,
 			VERSION,
 			SDL_MAJOR_VERSION,
 			SDL_MINOR_VERSION,
@@ -56,16 +56,16 @@ _Noreturn void Error_Internal(char *error, const char *file, const int line, con
 			ZLIB_VERSION);
 
 	SDL_MessageBoxData mb;
-	mb.message = finalMb;
+	mb.message = messageBoxTextBuffer;
 	mb.title = "Error";
 
 #ifdef NDEBUG
-	const int btnc = 2;
+	const int buttonCount = 2;
 #else
-	const int btnc = 3;
+	const int buttonCount = 3;
 #endif
 
-	SDL_MessageBoxButtonData buttons[btnc];
+	SDL_MessageBoxButtonData buttons[buttonCount];
 	buttons[0].buttonid = 0;
 	buttons[0].text = "Exit";
 	buttons[0].flags = SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
@@ -79,17 +79,17 @@ _Noreturn void Error_Internal(char *error, const char *file, const int line, con
 #endif
 
 	mb.buttons = buttons;
-	mb.numbuttons = btnc;
+	mb.numbuttons = buttonCount;
 
 	mb.colorScheme = &mbColorScheme;
 
 	mb.window = GetGameWindow();
 	mb.flags = SDL_MESSAGEBOX_ERROR;
 
-	int buttonid;
-	SDL_ShowMessageBox(&mb, &buttonid);
+	int pressedButtonID;
+	SDL_ShowMessageBox(&mb, &pressedButtonID);
 
-	switch (buttonid)
+	switch (pressedButtonID)
 	{
 		case 0:
 			exit(1);
@@ -140,10 +140,10 @@ void PromptRelaunch(const char *title, const char *description, const char *yesB
 	mb.window = GetGameWindow();
 	mb.flags = SDL_MESSAGEBOX_ERROR;
 
-	int buttonid;
-	SDL_ShowMessageBox(&mb, &buttonid);
+	int pressedButtonID;
+	SDL_ShowMessageBox(&mb, &pressedButtonID);
 
-	if (buttonid == 1)
+	if (pressedButtonID == 1)
 	{
 		RestartProgram();
 	}
@@ -179,9 +179,9 @@ _Noreturn void RenderInitError()
 	mb.window = NULL;
 	mb.flags = SDL_MESSAGEBOX_ERROR;
 
-	int buttonid;
-	SDL_ShowMessageBox(&mb, &buttonid);
-	if (buttonid == 0)
+	int pressedButtonID;
+	SDL_ShowMessageBox(&mb, &pressedButtonID);
+	if (pressedButtonID == 0)
 	{
 		if (GetState()->options.renderer == RENDERER_OPENGL)
 		{

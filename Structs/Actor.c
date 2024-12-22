@@ -91,7 +91,7 @@ char *GetActorParamName(const int actor, const byte param)
 
 int GetActorTypeCount()
 {
-	return sizeof(ActorInitFuncs) / sizeof(void *);
+	return sizeof(ActorInitFuncs) / sizeof(ActorInitFunction);
 }
 
 Actor *CreateActor(const Vector2 position,
