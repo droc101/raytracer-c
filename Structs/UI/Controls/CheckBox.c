@@ -13,7 +13,7 @@
 Control *CreateCheckboxControl(const Vector2 position,
 							   const Vector2 size,
 							   char *label,
-							   void (*callback)(bool),
+							   CheckboxCallback callback,
 							   const ControlAnchor anchor,
 							   const bool checked)
 {

@@ -13,7 +13,7 @@
 Control *CreateRadioButtonControl(const Vector2 position,
 								  const Vector2 size,
 								  char *label,
-								  void (*callback)(bool, byte, byte),
+								  RadioButtonCallback callback,
 								  const ControlAnchor anchor,
 								  const bool checked,
 								  const byte groupId,

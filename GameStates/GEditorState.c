@@ -799,7 +799,7 @@ void GEditorStateRender(GlobalState * /*State*/)
 #endif
 }
 
-void CreateButton(char *text, const Vector2 position, const Vector2 size, void (*callback)(), bool /*enabled*/)
+void CreateButton(char *text, const Vector2 position, const Vector2 size, ButtonCallback callback, bool /*enabled*/)
 {
 	Control *button = CreateButtonControl(position, size, text, callback, TOP_LEFT);
 	UiStackPush(editorUiStack, button);
