@@ -22,6 +22,7 @@
 
 int main(const int argc, char *argv[])
 {
+	LogInit();
 	LogInfo("Build time: %s at %s\n", __DATE__, __TIME__);
 	LogInfo("Version: %s\n", VERSION);
 	LogInfo("Initializing Engine\n");
@@ -214,6 +215,7 @@ int main(const int argc, char *argv[])
 	Mix_Quit();
 	SDL_QuitSubSystem(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER);
 	SDL_Quit();
+	LogDestroy();
 	return 0;
 }
 

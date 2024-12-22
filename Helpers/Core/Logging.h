@@ -13,9 +13,12 @@
 #define FLUSH_ON_WARNING true
 #define FLUSH_ON_ERROR true
 
+void LogInit();
+
+void LogDestroy();
 
 // ReSharper disable once CppConstParameterInDeclaration
-void LogInternal(const char *type, int color, bool flush, const char *message, const va_list args);
+void LogInternal(const char *type, int color, bool flush, const char *message, va_list args);
 
 /**
  * Log an info message
