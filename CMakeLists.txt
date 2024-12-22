@@ -16,7 +16,7 @@ if (WIN32)
 endif ()
 
 # Enable LTO in release builds
-if (CMAKE_BUILD_TYPE STREQUAL "Release")
+if (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
     include(CheckIPOSupported)
     check_ipo_supported(RESULT result)
     if (result)
