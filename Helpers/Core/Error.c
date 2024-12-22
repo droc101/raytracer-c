@@ -36,7 +36,7 @@ _Noreturn void Error_Internal(char *error, const char *file, const int line, con
 #ifndef NDEBUG
 	sprintf(messageBuffer, "%s\n \n%s:%d (%s)", error, file, line, function);
 #else
-	sprintf(buf, "%s", error);
+	sprintf(messageBuffer, "%s", error);
 #endif
 
 	LogError(messageBuffer);
