@@ -74,7 +74,7 @@ void LogInfo(const char *message, ...)
 
 void LogDebug(const char *message, ...)
 {
-#ifndef NDEBUG
+#ifdef BUILDSTYLE_DEBUG
 	va_list args;
 	va_start(args, message);
 	va_end(args);

@@ -132,7 +132,7 @@ bool GL_Init(SDL_Window *wnd)
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_SCISSOR_TEST);
 
-#ifndef NDEBUG
+#ifdef BUILDSTYLE_DEBUG
 	glEnable(GL_DEBUG_OUTPUT);
 	glDebugMessageCallback(GL_DebugMessageCallback, NULL);
 #endif

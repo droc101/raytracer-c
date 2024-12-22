@@ -50,7 +50,7 @@ void GMenuStateRender(GlobalState * /*State*/)
 	logoRect.h = 320;
 	DrawTexture(v2(logoRect.x, logoRect.y), v2(logoRect.w, logoRect.h), gztex_interface_menu_logo);
 
-#ifndef NDEBUG
+#ifdef BUILDSTYLE_DEBUG
 	FontDrawString(v2(20, 200), "DEBUG BUILD", 16, 0xFF00FF00, true);
 #endif
 

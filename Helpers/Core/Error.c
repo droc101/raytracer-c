@@ -44,7 +44,7 @@ _Noreturn void Error_Internal(char *error, const char *file, const int line, con
 	}
 
 	char messageBuffer[256];
-#ifndef NDEBUG
+#ifdef BUILDSTYLE_DEBUG
 	sprintf(messageBuffer, "%s\n \n%s:%d (%s)", error, file, line, function);
 #else
 	sprintf(messageBuffer, "%s", error);
@@ -70,7 +70,7 @@ _Noreturn void Error_Internal(char *error, const char *file, const int line, con
 	mb.message = messageBoxTextBuffer;
 	mb.title = "Error";
 
-#ifdef NDEBUG
+#ifdef BUILDSTYLE_RELEASE
 	const int buttonCount = 2;
 #else
 	const int buttonCount = 3;
@@ -83,7 +83,7 @@ _Noreturn void Error_Internal(char *error, const char *file, const int line, con
 	buttons[1].buttonid = 1;
 	buttons[1].text = "Restart";
 	buttons[1].flags = 0;
-#ifndef NDEBUG
+#ifdef BUILDSTYLE_DEBUG
 	buttons[2].buttonid = 2;
 	buttons[2].text = "Debug";
 	buttons[2].flags = 0;
@@ -248,7 +248,7 @@ void ErrorHandlerInit()
 	mbColorScheme.colors[SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND] = buttonBg;
 	mbColorScheme.colors[SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED] = text;
 
-#ifdef NDEBUG
+#ifdef BUILDSTYLE_RELEASE
 	signal(SIGSEGV, SignalHandler);
 	signal(SIGFPE, SignalHandler);
 #endif
