@@ -92,6 +92,8 @@ void GInputOptionsStateSet()
 	}
 	UiStackResetFocus(inputOptionsStack);
 
-	SetRenderCallback(GInputOptionsStateRender);
-	SetUpdateCallback(GInputOptionsStateUpdate, NULL, INPUT_OPTIONS_STATE); // Fixed update is not needed for this state
+	SetStateCallbacks(GInputOptionsStateUpdate,
+					  NULL,
+					  INPUT_OPTIONS_STATE,
+					  GInputOptionsStateRender); // Fixed update is not needed for this state
 }

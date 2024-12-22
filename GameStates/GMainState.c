@@ -210,6 +210,5 @@ void GMainStateRender(GlobalState *State)
 
 void GMainStateSet()
 {
-	SetRenderCallback(GMainStateRender);
-	SetUpdateCallback(GMainStateUpdate, GMainStateFixedUpdate, MAIN_STATE);
+	SetStateCallbacks(GMainStateUpdate, GMainStateFixedUpdate, MAIN_STATE, GMainStateRender);
 }

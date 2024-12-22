@@ -116,6 +116,8 @@ void GSoundOptionsStateSet()
 	}
 	UiStackResetFocus(soundOptionsStack);
 
-	SetRenderCallback(GSoundOptionsStateRender);
-	SetUpdateCallback(GSoundOptionsStateUpdate, NULL, SOUND_OPTIONS_STATE); // Fixed update is not needed for this state
+	SetStateCallbacks(GSoundOptionsStateUpdate,
+					  NULL,
+					  SOUND_OPTIONS_STATE,
+					  GSoundOptionsStateRender); // Fixed update is not needed for this state
 }

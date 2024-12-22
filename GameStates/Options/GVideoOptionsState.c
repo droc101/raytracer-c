@@ -177,6 +177,8 @@ void GVideoOptionsStateSet()
 	UiStackResetFocus(videoOptionsStack);
 	hasChangedVideoOptions = false;
 
-	SetRenderCallback(GVideoOptionsStateRender);
-	SetUpdateCallback(GVideoOptionsStateUpdate, NULL, VIDEO_OPTIONS_STATE); // Fixed update is not needed for this state
+	SetStateCallbacks(GVideoOptionsStateUpdate,
+					  NULL,
+					  VIDEO_OPTIONS_STATE,
+					  GVideoOptionsStateRender); // Fixed update is not needed for this state
 }

@@ -1100,6 +1100,5 @@ void GEditorStateSet()
 		editorInitComplete = true;
 	}
 
-	SetRenderCallback(GEditorStateRender);
-	SetUpdateCallback(GEditorStateUpdate, NULL, EDITOR_STATE);
+	SetStateCallbacks(GEditorStateUpdate, NULL, EDITOR_STATE, GEditorStateRender);
 }

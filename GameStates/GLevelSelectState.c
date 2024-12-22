@@ -70,6 +70,8 @@ void GLevelSelectStateRender(GlobalState * /*State*/)
 void GLevelSelectStateSet()
 {
 	StopMusic();
-	SetRenderCallback(GLevelSelectStateRender);
-	SetUpdateCallback(GLevelSelectStateUpdate, NULL, LEVEL_SELECT_STATE); // Fixed update is not needed for this state
+	SetStateCallbacks(GLevelSelectStateUpdate,
+					  NULL,
+					  LEVEL_SELECT_STATE,
+					  GLevelSelectStateRender); // Fixed update is not needed for this state
 }

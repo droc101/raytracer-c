@@ -69,6 +69,5 @@ void GOptionsStateSet()
 	}
 	UiStackResetFocus(optionsStack);
 
-	SetRenderCallback(GOptionsStateRender);
-	SetUpdateCallback(GOptionsStateUpdate, NULL, OPTIONS_STATE); // Fixed update is not needed for this state
+	SetStateCallbacks(GOptionsStateUpdate, NULL, OPTIONS_STATE, GOptionsStateRender); // Fixed update is not needed for this state
 }

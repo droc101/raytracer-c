@@ -117,6 +117,5 @@ void GPauseStateSet()
 	UiStackResetFocus(pauseStack);
 
 	PlaySoundEffect(gzwav_sfx_popup);
-	SetRenderCallback(GPauseStateRender);
-	SetUpdateCallback(GPauseStateUpdate, NULL, PAUSE_STATE); // Fixed update is not needed for this state
+	SetStateCallbacks(GPauseStateUpdate, NULL, PAUSE_STATE, GPauseStateRender); // Fixed update is not needed for this state
 }
