@@ -14,7 +14,9 @@
 #endif
 
 #define chk_malloc(ptr) \
-	if ((ptr) == NULL) Error("Memory allocation failed")
+	if ((ptr) == NULL) _alloc_failure();
+
+void _alloc_failure();
 
 /**
  * Internal error handler

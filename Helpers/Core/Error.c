@@ -3,6 +3,7 @@
 //
 
 #include "Error.h"
+#include <errno.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,6 +16,16 @@
 #include "zlib.h"
 
 SDL_MessageBoxColorScheme mbColorScheme;
+
+inline void _alloc_failure()
+{
+	LogError("Memory Allocation Failed: %s\n", strerror(errno));
+	if (errno == ENOMEM)
+	{
+		exit(1); // We should not attempt to do complex things if we are out of memory
+	}
+	Error("Memory Allocation Failed");
+}
 
 _Noreturn void RestartProgram()
 {

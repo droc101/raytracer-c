@@ -167,12 +167,11 @@ void HandleEvent(const SDL_Event event, bool *shouldQuit)
 
 int main(const int argc, char *argv[])
 {
+	ErrorHandlerInit();
 	LogInit();
 	LogInfo("Build time: %s at %s\n", __DATE__, __TIME__);
 	LogInfo("Version: %s\n", VERSION);
 	LogInfo("Initializing Engine\n");
-
-	ErrorHandlerInit();
 
 	ExecPathInit(argc, argv);
 
