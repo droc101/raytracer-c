@@ -46,18 +46,18 @@ Vector2 CollideWall(const Wall *w, const Vector2 position, Vector2 moveVec)
 Vector2 Move(Vector2 position, Vector2 moveVec, const void *ignore)
 {
 	const Level *l = GetState()->level;
-	for (int i = 0; i < l->staticWalls->size; i++)
+	for (int i = 0; i < l->walls->size; i++)
 	{
-		const Wall *w = SizedArrayGet(l->staticWalls, i);
+		const Wall *w = ListGet(l->walls, i);
 		if (w == ignore)
 		{
 			continue;
 		}
 		moveVec = CollideWall(w, position, moveVec);
 	}
-	for (int i = 0; i < l->staticActors->size; i++)
+	for (int i = 0; i < l->actors->size; i++)
 	{
-		const Actor *a = SizedArrayGet(l->staticActors, i);
+		const Actor *a = ListGet(l->actors, i);
 		if (a == ignore)
 		{
 			continue;

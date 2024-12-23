@@ -5,8 +5,39 @@
 #include "Logging.h"
 #include <stdio.h>
 
+#include "Error.h"
+
 /// The length of the longest value passed to the type argument of the LogInternal function (including the null) plus 7
 #define bufferLength 14
+
+FILE *LogFile = NULL;
+
+void LogInit()
+{
+	char *folderPath = SDL_GetPrefPath(APPDATA_ORG_NAME, APPDATA_APP_NAME);
+	const char *fileName = "game.log";
+	char *filePath = malloc(strlen(folderPath) + strlen(fileName) + 1);
+	chk_malloc(filePath);
+	strcpy(filePath, folderPath);
+	strcat(filePath, fileName);
+
+	SDL_free(folderPath);
+
+	LogFile = fopen(filePath, "w");
+	free(filePath);
+	if (LogFile == NULL)
+	{
+		Error("Failed to open log file");
+	}
+}
+
+void LogDestroy()
+{
+	if (LogFile != NULL)
+	{
+		fclose(LogFile);
+	}
+}
 
 void LogInternal(const char *type, const int color, const bool flush, const char *message, ...)
 {

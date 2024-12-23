@@ -12,7 +12,7 @@
 #include "../Structs/Vector2.h"
 
 double framerates[FRAMEGRAPH_HISTORY_SIZE] = {0};
-long lastUpdTime = LONG_MIN;
+long framegraphLastUpdateTime = LONG_MIN;
 
 void FG_PushIntoArray(const double value)
 {
@@ -26,13 +26,13 @@ void FG_PushIntoArray(const double value)
 void FrameGraphUpdate(const ulong ns)
 {
 	// If it's not time to update the graph, return
-	if (GetTimeMs() - lastUpdTime < FRAMEGRAPH_INTERVAL)
+	if (GetTimeMs() - framegraphLastUpdateTime < FRAMEGRAPH_INTERVAL)
 	{
 		return;
 	}
 
 	FG_PushIntoArray(ns == 0 ? 1 : ns);
-	lastUpdTime = GetTimeMs();
+	framegraphLastUpdateTime = GetTimeMs();
 }
 
 void FrameGraphDraw()

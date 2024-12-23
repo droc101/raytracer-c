@@ -139,4 +139,9 @@ float Y_TO_NDC(float y);
  */
 void RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const byte *texture, ModelShader shd);
 
+/**
+ * Render the background of the menu screen
+ */
+void RenderMenuBackground();
+
 #endif //GAME_RENDERINGHELPERS_H

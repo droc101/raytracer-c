@@ -4,37 +4,15 @@
 
 #ifndef GAME_LIST_H
 #define GAME_LIST_H
+#include <stddef.h>
 
-typedef struct Node Node;
 typedef struct List List;
-typedef struct SizedArray SizedArray;
 
-// List item
-struct Node
-{
-	void *data;
-	Node *prev;
-	Node *next;
-};
-
-// Doubly linked list
 struct List
 {
-	Node *head;
-	Node *tail;
 	int size;
+	void **data;
 };
-
-struct SizedArray
-{
-	void **elements;
-	int size;
-};
-
-// Internal functions
-Node *CreateListNode(void *data);
-
-// Public functions
 
 /**
  * Create a new list
@@ -50,13 +28,6 @@ List *CreateList();
 void ListAdd(List *list, void *data);
 
 /**
- * Remove a node from the list
- * @param list List to remove from
- * @param node List node (NOT DATA) to remove
- */
-void ListRemove(List *list, Node *node);
-
-/**
  * Remove an item from the list by index
  * @param list List to remove from
  * @param index Index to remove
@@ -66,18 +37,10 @@ void ListRemoveAt(List *list, int index);
 /**
  * Insert an item after a node
  * @param list List to insert into
- * @param prevNode Node to insert after
+ * @param index Index to insert after
  * @param data Data to insert
  */
-void ListInsertAfter(List *list, Node *prevNode, void *data);
-
-/**
- * Get an item from the list by index
- * @param list List to get from
- * @param index Index to get
- * @return Data at index (not node)
- */
-void *ListGet(const List *list, int index);
+void ListInsertAfter(List *list, int index, void *data);
 
 /**
  * Free the list structure
@@ -116,24 +79,19 @@ int ListFind(const List *list, const void *data);
 void ListClear(List *list);
 
 /**
- * Create a sized array from a list
- * @param list List to convert
- * @return Sized array
+ * Get an item from the list by index
+ * @param list The list to get from
+ * @param index The index to get
  */
-SizedArray *ToSizedArray(const List *list);
+#define ListGet(list, index) (list)->data[(index)]
 
 /**
- * Get an element from a sized array
- * @param array The @c SizedArray to get the element from
- * @param index The index of the element to get
- * @warning This does no safety checks, make sure the index is valid
+ * Reallocates memory for an array of arrayLength elements of size bytes each.
+ * @param ptr Pointer to the memory block to be reallocated.
+ * @param arrayLength Number of elements.
+ * @param elementSize Size of each element.
+ * @return Pointer to the reallocated memory block.
  */
-#define SizedArrayGet(array, index) ((array)->elements[(index)])
-
-/**
- * Free a sized array
- * @param array Array to free
- */
-void DestroySizedArray(SizedArray *array);
+void *GameReallocArray(void *ptr, size_t arrayLength, size_t elementSize);
 
 #endif //GAME_LIST_H

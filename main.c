@@ -21,14 +21,15 @@
 #include "Helpers/PlatformHelpers.h"
 #include "Structs/GlobalState.h"
 
-int main(const int argc, char *argv[])
+SDL_Surface *windowIcon;
+
+/**
+ * Attempt to initialize the executable path
+ * @param argc Program argument count
+ * @param argv Program arguments
+ */
+void ExecPathInit(const int argc, char *argv[])
 {
-	LogInfo("Build time: %s at %s\n", __DATE__, __TIME__);
-	LogInfo("Version: %s\n", VERSION);
-	LogInfo("Initializing Engine\n");
-
-	ErrorHandlerInit();
-
 	if (argc < 1)
 	{
 		// this should *never* happen, but let's be safe
@@ -44,7 +45,13 @@ int main(const int argc, char *argv[])
 	memset(GetState()->executablePath, 0, 261); // we do not mess around with user data in c.
 	strncpy(GetState()->executablePath, argv[0], 260);
 	LogInfo("Executable path: %s\n", GetState()->executablePath);
+}
 
+/**
+ * Initialize the SDL library
+ */
+void InitSDL()
+{
 	SDL_SetHint(SDL_HINT_APP_NAME, GAME_TITLE);
 
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMECONTROLLER) != 0)
@@ -52,6 +59,141 @@ int main(const int argc, char *argv[])
 		LogError("SDL_Init Error: %s\n", SDL_GetError());
 		Error("Failed to initialize SDL");
 	}
+}
+
+/**
+ * Initialize the audio system (SDL_mixer)
+ */
+void InitAudio()
+{
+	Mix_AllocateChannels(SFX_CHANNEL_COUNT);
+
+	if (Mix_OpenAudio(48000, AUDIO_S16, 2, 2048) == 0)
+	{
+		GetState()->isAudioStarted = true;
+	}
+	else
+	{
+		GetState()->isAudioStarted = false;
+		LogError("Mix_OpenAudio Error: %s\n", Mix_GetError());
+	}
+}
+
+/**
+ * Initialize the game window and renderer
+ */
+void WindowAndRenderInit()
+{
+	const Uint32 rendererFlags = currentRenderer == RENDERER_OPENGL ? SDL_WINDOW_OPENGL : SDL_WINDOW_VULKAN;
+	SDL_Window *window = SDL_CreateWindow(GAME_TITLE,
+									 SDL_WINDOWPOS_UNDEFINED,
+									 SDL_WINDOWPOS_UNDEFINED,
+									 DEF_WIDTH,
+									 DEF_HEIGHT,
+									 rendererFlags | SDL_WINDOW_RESIZABLE);
+	if (window == NULL)
+	{
+		LogError("SDL_CreateWindow Error: %s\n", SDL_GetError());
+		Error("Failed to create window.");
+	}
+	DwmDarkMode(window);
+	SDL_SetWindowFullscreen(window, GetState()->options.fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+	SetGameWindow(window);
+	UpdateViewportSize();
+
+	if (!RenderInit())
+	{
+		RenderInitError();
+	}
+
+	SDL_SetWindowMinimumSize(window, MIN_WIDTH, MIN_HEIGHT);
+	SDL_SetWindowMaximumSize(window, MAX_WIDTH, MAX_HEIGHT);
+
+	windowIcon = ToSDLSurface(gztex_interface_icon, "1");
+	SDL_SetWindowIcon(window, windowIcon);
+}
+
+/**
+ * Handle an SDL event
+ * @param event The SDL event to handle
+ * @param shouldQuit Whether the program should quit after handling the event
+ */
+void HandleEvent(const SDL_Event event, bool *shouldQuit)
+{
+	switch (event.type)
+	{
+		case SDL_QUIT:
+			*shouldQuit = true;
+		break;
+		case SDL_KEYUP:
+			HandleKeyUp(event.key.keysym.scancode);
+		break;
+		case SDL_KEYDOWN:
+			HandleKeyDown(event.key.keysym.scancode);
+		break;
+		case SDL_MOUSEMOTION:
+			HandleMouseMotion(event.motion.x, event.motion.y, event.motion.xrel, event.motion.yrel);
+		break;
+		case SDL_MOUSEBUTTONUP:
+			HandleMouseUp(event.button.button);
+		break;
+		case SDL_MOUSEBUTTONDOWN:
+			HandleMouseDown(event.button.button);
+		break;
+		case SDL_WINDOWEVENT:
+			switch (event.window.event)
+			{
+				case SDL_WINDOWEVENT_RESIZED:
+				case SDL_WINDOWEVENT_SIZE_CHANGED:
+				case SDL_WINDOWEVENT_MAXIMIZED:
+					UpdateViewportSize();
+				break;
+				case SDL_WINDOWEVENT_RESTORED:
+					WindowRestored();
+				break;
+				case SDL_WINDOWEVENT_MINIMIZED:
+					WindowObscured();
+				break;
+				case SDL_WINDOWEVENT_FOCUS_LOST:
+					SetLowFPS(true);
+				break;
+				case SDL_WINDOWEVENT_FOCUS_GAINED:
+					SetLowFPS(false);
+				break;
+				default: break;
+			}
+		break;
+		case SDL_CONTROLLERDEVICEADDED:
+			HandleControllerConnect();
+		break;
+		case SDL_CONTROLLERDEVICEREMOVED:
+			HandleControllerDisconnect(event.cdevice.which);
+		break;
+		case SDL_CONTROLLERBUTTONDOWN:
+			HandleControllerButtonDown(event.cbutton.button);
+		break;
+		case SDL_CONTROLLERBUTTONUP:
+			HandleControllerButtonUp(event.cbutton.button);
+		break;
+		case SDL_CONTROLLERAXISMOTION:
+			HandleControllerAxis(event.caxis.axis, event.caxis.value);
+		break;
+		default:
+			break;
+	}
+}
+
+int main(const int argc, char *argv[])
+{
+	ErrorHandlerInit();
+	LogInit();
+	LogInfo("Build time: %s at %s\n", __DATE__, __TIME__);
+	LogInfo("Version: %s\n", VERSION);
+	LogInfo("Initializing Engine\n");
+
+	ExecPathInit(argc, argv);
+
+	InitSDL();
 
 	PhysicsThreadInit();
 	InitState();
@@ -61,41 +203,9 @@ int main(const int argc, char *argv[])
 		RenderInitError();
 	}
 
-	Mix_AllocateChannels(SFX_CHANNEL_COUNT);
+	InitAudio();
 
-	if (Mix_OpenAudio(48000, AUDIO_S16, 2, 2048) < 0)
-	{
-		LogError("Mix_OpenAudio Error: %s\n", Mix_GetError());
-		Error("Failed to initialize audio system.");
-	}
-
-	const Uint32 rendererFlags = currentRenderer == RENDERER_OPENGL ? SDL_WINDOW_OPENGL : SDL_WINDOW_VULKAN;
-	SDL_Window *w = SDL_CreateWindow(GAME_TITLE,
-									 SDL_WINDOWPOS_UNDEFINED,
-									 SDL_WINDOWPOS_UNDEFINED,
-									 DEF_WIDTH,
-									 DEF_HEIGHT,
-									 rendererFlags | SDL_WINDOW_RESIZABLE);
-	if (w == NULL)
-	{
-		LogError("SDL_CreateWindow Error: %s\n", SDL_GetError());
-		Error("Failed to create window.");
-	}
-	DwmDarkMode(w);
-	SDL_SetWindowFullscreen(w, GetState()->options.fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
-	SetGameWindow(w);
-	UpdateViewportSize();
-
-	if (!RenderInit())
-	{
-		RenderInitError();
-	}
-
-	SDL_SetWindowMinimumSize(w, MIN_WIDTH, MIN_HEIGHT);
-	SDL_SetWindowMaximumSize(w, MAX_WIDTH, MAX_HEIGHT);
-
-	SDL_Surface *icon = ToSDLSurface(gztex_interface_icon, "1");
-	SDL_SetWindowIcon(w, icon);
+	WindowAndRenderInit();
 
 	InitCommonAssets();
 
@@ -107,83 +217,27 @@ int main(const int argc, char *argv[])
 
 	LogInfo("Engine initialized, entering mainloop\n");
 
-	SDL_Event e;
-	bool quit = false;
-	while (!quit)
+	SDL_Event event;
+	bool shouldQuit = false;
+	while (!shouldQuit)
 	{
+		while (GetState()->freezeEvents)
+        {
+            SDL_Delay(100);
+        }
 		const ulong frameStart = GetTimeNs();
 
-		while (SDL_PollEvent(&e) != 0)
+		while (SDL_PollEvent(&event) != 0)
 		{
-			switch (e.type)
-			{
-				case SDL_QUIT:
-					quit = 1;
-					break;
-				case SDL_KEYUP:
-					HandleKeyUp(e.key.keysym.scancode);
-					break;
-				case SDL_KEYDOWN:
-					HandleKeyDown(e.key.keysym.scancode);
-					break;
-				case SDL_MOUSEMOTION:
-					HandleMouseMotion(e.motion.x, e.motion.y, e.motion.xrel, e.motion.yrel);
-					break;
-				case SDL_MOUSEBUTTONUP:
-					HandleMouseUp(e.button.button);
-					break;
-				case SDL_MOUSEBUTTONDOWN:
-					HandleMouseDown(e.button.button);
-					break;
-				case SDL_WINDOWEVENT:
-					switch (e.window.event)
-					{
-						case SDL_WINDOWEVENT_RESIZED:
-						case SDL_WINDOWEVENT_SIZE_CHANGED:
-						case SDL_WINDOWEVENT_MAXIMIZED:
-							UpdateViewportSize();
-						break;
-						case SDL_WINDOWEVENT_RESTORED:
-							WindowRestored();
-						break;
-						case SDL_WINDOWEVENT_MINIMIZED:
-							WindowObscured();
-						break;
-						case SDL_WINDOWEVENT_FOCUS_LOST:
-							SetLowFPS(true);
-						break;
-						case SDL_WINDOWEVENT_FOCUS_GAINED:
-							SetLowFPS(false);
-						break;
-						default: break;
-					}
-					break;
-				case SDL_CONTROLLERDEVICEADDED:
-					HandleControllerConnect();
-					break;
-				case SDL_CONTROLLERDEVICEREMOVED:
-					HandleControllerDisconnect(e.cdevice.which);
-					break;
-				case SDL_CONTROLLERBUTTONDOWN:
-					HandleControllerButtonDown(e.cbutton.button);
-					break;
-				case SDL_CONTROLLERBUTTONUP:
-					HandleControllerButtonUp(e.cbutton.button);
-					break;
-				case SDL_CONTROLLERAXISMOTION:
-					HandleControllerAxis(e.caxis.axis, e.caxis.value);
-					break;
-				default:
-					break;
-			}
+			HandleEvent(event, &shouldQuit);
 		}
-		GlobalState *g = GetState();
+		GlobalState *state = GetState();
 
 		if (FrameStart() != VK_SUCCESS)
 		{
-			if (g->UpdateGame)
+			if (state->UpdateGame)
 			{
-				g->UpdateGame(g);
+				state->UpdateGame(state);
 			}
 			if (IsLowFPSModeEnabled())
 			{
@@ -196,25 +250,25 @@ int main(const int argc, char *argv[])
 
 		ResetDPrintYPos();
 
-		SDL_SetRelativeMouseMode(g->currentState == MAIN_STATE ? SDL_TRUE : SDL_FALSE);
+		SDL_SetRelativeMouseMode(state->currentState == MAIN_STATE ? SDL_TRUE : SDL_FALSE);
 		// warp the mouse to the center of the screen if we are in the main game state
-		if (g->currentState == MAIN_STATE)
+		if (state->currentState == MAIN_STATE)
 		{
 			const Vector2 realWndSize = ActualWindowSize();
 			SDL_WarpMouseInWindow(GetGameWindow(), (int)realWndSize.x / 2, (int)realWndSize.y / 2);
 		}
 
-		if (g->UpdateGame)
+		if (state->UpdateGame)
 		{
-			g->UpdateGame(g);
+			state->UpdateGame(state);
 		}
 
-		g->cam->x = (float)g->level->player.pos.x;
-		g->cam->y = (float)g->CameraY;
-		g->cam->z = (float)g->level->player.pos.y;
-		g->cam->yaw = (float)g->level->player.angle;
+		state->cam->x = (float)state->level->player.pos.x;
+		state->cam->y = (float)state->cameraY;
+		state->cam->z = (float)state->level->player.pos.y;
+		state->cam->yaw = (float)state->level->player.angle;
 
-		g->RenderGame(g);
+		state->RenderGame(state);
 
 		FrameGraphDraw();
 
@@ -222,9 +276,9 @@ int main(const int argc, char *argv[])
 
 		UpdateInputStates();
 
-		if (g->requestExit)
+		if (state->requestExit)
 		{
-			quit = true;
+			shouldQuit = true;
 		}
 
 		if (IsLowFPSModeEnabled()) SDL_Delay(33);
@@ -234,7 +288,7 @@ int main(const int argc, char *argv[])
 	PhysicsThreadTerminate();
 	DestroyGlobalState();
 	SDL_DestroyWindow(GetGameWindow());
-	SDL_FreeSurface(icon);
+	SDL_FreeSurface(windowIcon);
 	DestroyCommonAssets();
 	InvalidateAssetCache(); // Free all assets
 	RenderDestroy();
@@ -242,6 +296,7 @@ int main(const int argc, char *argv[])
 	Mix_Quit();
 	SDL_QuitSubSystem(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER);
 	SDL_Quit();
+	LogDestroy();
 	return 0;
 }
 

@@ -7,18 +7,18 @@
 #include "../Helpers/Core/Logging.h"
 #include "../Helpers/Graphics/Font.h"
 
-int DPrintYPos = 10;
+int dprintYPosition = 10;
 
 void ResetDPrintYPos()
 {
-	DPrintYPos = 10;
+	dprintYPosition = 10;
 }
 
 void DPrint(const char *str, const uint color)
 {
 #ifdef ENABLE_DEBUG_PRINT
-	FontDrawString((Vector2){12, DPrintYPos + 2}, str, 16, 0xFF000000, true);
-	DPrintYPos += FontDrawString((Vector2){10, DPrintYPos}, str, 16, color, true).y - DPrintYPos + 8;
+	FontDrawString((Vector2){12, dprintYPosition + 2}, str, 16, 0xFF000000, true);
+	dprintYPosition += FontDrawString((Vector2){10, dprintYPosition}, str, 16, color, true).y - dprintYPosition + 8;
 #endif
 }
 

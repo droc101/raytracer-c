@@ -3,10 +3,10 @@
 //
 
 #include "GInputOptionsState.h"
-#include "../../Assets/Assets.h"
 #include "../../Helpers/Core/Input.h"
 #include "../../Helpers/Graphics/Drawing.h"
 #include "../../Helpers/Graphics/Font.h"
+#include "../../Helpers/Graphics/RenderingHelpers.h"
 #include "../../Structs/GlobalState.h"
 #include "../../Structs/UI/Controls/Button.h"
 #include "../../Structs/UI/Controls/CheckBox.h"
@@ -41,13 +41,7 @@ void CbOptionsControllerMode(const bool value)
 
 void GInputOptionsStateRender(GlobalState * /*State*/)
 {
-	// sorry for the confusing variable names
-	const Vector2 bgTileSize = v2(320, 240); // size on screen
-	const Vector2 bgTexSize = GetTextureSize(gztex_interface_menu_bg_tile); // actual size of the texture
-
-	const Vector2 tilesOnScreen = v2(WindowWidth() / bgTileSize.x, WindowHeight() / bgTileSize.y);
-	const Vector2 tileRegion = v2(tilesOnScreen.x * bgTexSize.x, tilesOnScreen.y * bgTexSize.y);
-	DrawTextureRegion(v2(0, 0), v2(WindowWidth(), WindowHeight()), gztex_interface_menu_bg_tile, v2(0, 0), tileRegion);
+	RenderMenuBackground();
 
 	DrawTextAligned("Input Options",
 					32,
@@ -98,6 +92,8 @@ void GInputOptionsStateSet()
 	}
 	UiStackResetFocus(inputOptionsStack);
 
-	SetRenderCallback(GInputOptionsStateRender);
-	SetUpdateCallback(GInputOptionsStateUpdate, NULL, INPUT_OPTIONS_STATE); // Fixed update is not needed for this state
+	SetStateCallbacks(GInputOptionsStateUpdate,
+					  NULL,
+					  INPUT_OPTIONS_STATE,
+					  GInputOptionsStateRender); // Fixed update is not needed for this state
 }

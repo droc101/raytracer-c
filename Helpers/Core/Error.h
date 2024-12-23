@@ -7,14 +7,16 @@
 
 #include "../../config.h"
 
-#if !defined NDEBUG || defined ERROR_TRACE_IN_RELEASE
-#define Error(error) Error_Internal(error, __FILE_NAME__, __LINE__, __func__)
+#if defined BUILDSTYLE_RELEASE || defined ERROR_TRACE_IN_RELEASE
+#define Error(error) _ErrorInternal(error, __FILE_NAME__, __LINE__, __func__)
 #else
-#define Error(error) Error_Internal(error, "none", 0, "none")
+#define Error(error) _ErrorInternal(error, "none", 0, "none")
 #endif
 
 #define chk_malloc(ptr) \
-	if (ptr == NULL) Error("Memory allocation failed")
+	if ((ptr) == NULL) _GameAllocFailure();
+
+_Noreturn void _GameAllocFailure();
 
 /**
  * Internal error handler
@@ -24,7 +26,7 @@
  * @param function Function name
  * @warning Do not use this function directly, use the @c Error macro instead
  */
-_Noreturn void Error_Internal(char *error, const char *file, int line, const char *function);
+_Noreturn void _ErrorInternal(char *error, const char *file, int line, const char *function);
 
 /**
  * Friendly error handler

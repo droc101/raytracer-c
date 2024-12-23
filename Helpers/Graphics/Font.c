@@ -53,7 +53,7 @@ Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, cons
 			y += (int)size;
 		}
 
-		const double uv_per_char = 1.0 / strlen(fontChars);
+		const double uvPerChar = 1.0 / strlen(fontChars);
 		// ReSharper disable once CppRedundantCastExpression
 		int index = FontFindChar((char)tolower(str[i]));
 		if (index == -1)
@@ -61,27 +61,27 @@ Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, cons
 			index = FontFindChar('U');
 		}
 
-		const Vector2 ndc_pos = v2(X_TO_NDC(x), Y_TO_NDC(y));
-		const Vector2 ndc_pos_end = v2(X_TO_NDC(x + width), Y_TO_NDC(y + size));
-		const double charUV = uv_per_char * index;
-		const double charUVEnd = uv_per_char * (index + 1) - uvPixel;
+		const Vector2 ndcPos = v2(X_TO_NDC(x), Y_TO_NDC(y));
+		const Vector2 ndcPosEnd = v2(X_TO_NDC(x + width), Y_TO_NDC(y + size));
+		const double charUV = uvPerChar * index;
+		const double charUVEnd = uvPerChar * (index + 1) - uvPixel;
 
 		const mat4 quad = {
-			{(float)ndc_pos.x, (float)ndc_pos.y, (float)charUV, 0},
-			{(float)ndc_pos.x, (float)ndc_pos_end.y, (float)charUV, 1},
-			{(float)ndc_pos_end.x, (float)ndc_pos_end.y, (float)charUVEnd, 1},
-			{(float)ndc_pos_end.x, (float)ndc_pos.y, (float)charUVEnd, 0},
+			{(float)ndcPos.x, (float)ndcPos.y, (float)charUV, 0},
+			{(float)ndcPos.x, (float)ndcPosEnd.y, (float)charUV, 1},
+			{(float)ndcPosEnd.x, (float)ndcPosEnd.y, (float)charUVEnd, 1},
+			{(float)ndcPosEnd.x, (float)ndcPos.y, (float)charUVEnd, 0},
 		};
 
 		memcpy(verts + i * 16, quad, sizeof(quad));
 
-		uint quad_indices[6] = {0, 1, 2, 0, 2, 3};
+		uint quadIndices[6] = {0, 1, 2, 0, 2, 3};
 		for (int j = 0; j < 6; j++)
 		{
-			quad_indices[j] += i * 4;
+			quadIndices[j] += i * 4;
 		}
 
-		memcpy(indices + i * 6, quad_indices, sizeof(quad_indices));
+		memcpy(indices + i * 6, quadIndices, sizeof(quadIndices));
 
 		x += width;
 		i++;

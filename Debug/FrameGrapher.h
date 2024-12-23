@@ -25,9 +25,6 @@
 #define FRAMEGRAPH_V_SCALE 2
 #define FRAMEGRAPH_H_SCALE 8
 
-// Enable or disable the physicsFrame graph (just the rendering)
-#define FRAMEGRAPH_ENABLE
-
 // Enable or disable the 2nd graph line for linear time
 #define FRAMEGRAPH_SHOW_LINEAR_TIME_GRAPH
 

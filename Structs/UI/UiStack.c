@@ -8,7 +8,6 @@
 #include "../../Helpers/Core/Error.h"
 #include "../../Helpers/Core/Input.h"
 #include "../../Helpers/Graphics/Drawing.h"
-#include "../GlobalState.h"
 #include "../Vector2.h"
 
 #include "Controls/Button.h"

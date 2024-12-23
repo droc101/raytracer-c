@@ -43,7 +43,6 @@ byte *DecompressAsset(const byte *asset)
 	const uint decompressedSize = ReadUint(asset, &offset);
 	// Read the decompressed size (4 bytes after the compressed size
 	const uint assetId = ReadUint(asset, &offset); // Read the asset ID (4 bytes after the decompressed size)
-	//uint type = ReadUint(asset, &offset); // Read the asset type (4 bytes after the asset ID)
 
 	if (assetId >= ASSET_COUNT)
 	{

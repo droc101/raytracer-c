@@ -12,6 +12,9 @@
 #define FLUSH_ON_WARNING true
 #define FLUSH_ON_ERROR true
 
+void LogInit();
+
+void LogDestroy();
 
 void LogInternal(const char *type, int color, bool flush, const char *message, ...);
 
@@ -21,7 +24,7 @@ void LogInternal(const char *type, int color, bool flush, const char *message, .
  */
 #define LogInfo(...) LogInternal("INFO", 37, FLUSH_ON_INFO, __VA_ARGS__)
 
-#ifndef NDEBUG
+#ifdef BUILDSTYLE_DEBUG
 /**
  * Log an info message, but only in debug builds
  * @param ... Format arguments

@@ -65,13 +65,13 @@ inline void SetColorUint(const uint color)
 
 byte *GetColorUint(const uint color)
 {
-	byte *buf = malloc(4);
-	chk_malloc(buf);
-	buf[0] = color >> 16 & 0xFF;
-	buf[1] = color >> 8 & 0xFF;
-	buf[2] = color >> 0 & 0xFF;
-	buf[3] = color >> 24 & 0xFF;
-	return buf;
+	byte *colorBuf = malloc(4);
+	chk_malloc(colorBuf);
+	colorBuf[0] = color >> 16 & 0xFF;
+	colorBuf[1] = color >> 8 & 0xFF;
+	colorBuf[2] = color >> 0 & 0xFF;
+	colorBuf[3] = color >> 24 & 0xFF;
+	return colorBuf;
 }
 
 SDL_Surface *ToSDLSurface(const unsigned char *imageData, const char *filterMode)
@@ -81,22 +81,20 @@ SDL_Surface *ToSDLSurface(const unsigned char *imageData, const char *filterMode
 		Error("ToSDLSurface: Asset is not a texture");
 	}
 
-	const byte *Decompressed = DecompressAsset(imageData);
+	const byte *decompressedImage = DecompressAsset(imageData);
 
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, filterMode);
 
-	//uint size = ReadUintA(Decompressed, 0);
-	const uint width = ReadUintA(Decompressed, IMAGE_WIDTH_OFFSET);
-	const uint height = ReadUintA(Decompressed, IMAGE_HEIGHT_OFFSET);
-	//uint id = ReadUintA(Decompressed, 12);
+	const uint imageWidth = ReadUintA(decompressedImage, IMAGE_WIDTH_OFFSET);
+	const uint imageHeight = ReadUintA(decompressedImage, IMAGE_HEIGHT_OFFSET);
 
-	const byte *pixelData = Decompressed + sizeof(uint) * 4; // Skip the first 4 bytes
+	const byte *pixelData = decompressedImage + sizeof(uint) * 4; // Skip the first 4 bytes
 
 	SDL_Surface *surface = SDL_CreateRGBSurfaceFrom((void *)pixelData,
-													width,
-													height,
+													imageWidth,
+													imageHeight,
 													32,
-													width * 4,
+													imageWidth * 4,
 													0x00ff0000,
 													0x0000ff00,
 													0x000000ff,
@@ -347,12 +345,12 @@ inline void DrawRect(const int x, const int y, const int w, const int h)
 
 Vector2 GetTextureSize(const unsigned char *imageData)
 {
-	const byte *Decompressed = DecompressAsset(imageData);
+	const byte *decompressedImage = DecompressAsset(imageData);
 
-	const uint width = ReadUintA(Decompressed, IMAGE_WIDTH_OFFSET);
-	const uint height = ReadUintA(Decompressed, IMAGE_HEIGHT_OFFSET);
+	const uint imageWidth = ReadUintA(decompressedImage, IMAGE_WIDTH_OFFSET);
+	const uint imageHeight = ReadUintA(decompressedImage, IMAGE_HEIGHT_OFFSET);
 
-	return v2(width, height);
+	return v2(imageWidth, imageHeight);
 }
 
 void DrawNinePatchTexture(const Vector2 pos,
@@ -361,49 +359,49 @@ void DrawNinePatchTexture(const Vector2 pos,
 						  const int texture_margins_px,
 						  const byte *imageData)
 {
-	const Vector2 ts = GetTextureSize(imageData);
+	const Vector2 textureSize = GetTextureSize(imageData);
 
 	DrawTextureRegion(pos, v2s(output_margins_px), imageData, v2s(0), v2s(texture_margins_px)); // top left
 	DrawTextureRegion(v2(pos.x, pos.y + output_margins_px),
 					  v2(output_margins_px, size.y - texture_margins_px * 2),
 					  imageData,
 					  v2(0, texture_margins_px),
-					  v2(texture_margins_px, ts.y - texture_margins_px * 2)); // middle left
+					  v2(texture_margins_px, textureSize.y - texture_margins_px * 2)); // middle left
 	DrawTextureRegion(v2(pos.x, pos.y + size.y - output_margins_px),
 					  v2s(output_margins_px),
 					  imageData,
-					  v2(0, ts.y - texture_margins_px),
+					  v2(0, textureSize.y - texture_margins_px),
 					  v2s(texture_margins_px)); // bottom left
 
 	DrawTextureRegion(v2(pos.x + output_margins_px, pos.y),
 					  v2(size.x - texture_margins_px * 2, output_margins_px),
 					  imageData,
 					  v2(texture_margins_px, 0),
-					  v2(ts.x - texture_margins_px * 2, texture_margins_px)); // top middle
+					  v2(textureSize.x - texture_margins_px * 2, texture_margins_px)); // top middle
 	DrawTextureRegion(v2(pos.x + output_margins_px, pos.y + output_margins_px),
 					  v2(size.x - texture_margins_px * 2, size.y - texture_margins_px * 2),
 					  imageData,
 					  v2(texture_margins_px, texture_margins_px),
-					  v2(ts.x - texture_margins_px * 2, ts.y - texture_margins_px * 2)); // middle middle
+					  v2(textureSize.x - texture_margins_px * 2, textureSize.y - texture_margins_px * 2)); // middle middle
 	DrawTextureRegion(v2(pos.x + output_margins_px, pos.y + (size.y - output_margins_px)),
 					  v2(size.x - texture_margins_px * 2, output_margins_px),
 					  imageData,
-					  v2(texture_margins_px, ts.y - texture_margins_px),
-					  v2(ts.x - texture_margins_px * 2, texture_margins_px)); // bottom middle
+					  v2(texture_margins_px, textureSize.y - texture_margins_px),
+					  v2(textureSize.x - texture_margins_px * 2, texture_margins_px)); // bottom middle
 
 	DrawTextureRegion(v2(pos.x + (size.x - output_margins_px), pos.y),
 					  v2s(output_margins_px),
 					  imageData,
-					  v2(ts.x - texture_margins_px, 0),
+					  v2(textureSize.x - texture_margins_px, 0),
 					  v2s(texture_margins_px)); // top right
 	DrawTextureRegion(v2(pos.x + (size.x - output_margins_px), pos.y + output_margins_px),
 					  v2(output_margins_px, size.y - texture_margins_px * 2),
 					  imageData,
-					  v2(ts.x - texture_margins_px, texture_margins_px),
-					  v2(texture_margins_px, ts.y - texture_margins_px * 2)); // middle right
+					  v2(textureSize.x - texture_margins_px, texture_margins_px),
+					  v2(texture_margins_px, textureSize.y - texture_margins_px * 2)); // middle right
 	DrawTextureRegion(v2(pos.x + (size.x - output_margins_px), pos.y + (size.y - output_margins_px)),
 					  v2s(output_margins_px),
 					  imageData,
-					  v2(ts.x - texture_margins_px, ts.y - texture_margins_px),
+					  v2(textureSize.x - texture_margins_px, textureSize.y - texture_margins_px),
 					  v2s(texture_margins_px)); // bottom right
 }

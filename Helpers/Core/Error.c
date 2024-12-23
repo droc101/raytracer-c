@@ -3,18 +3,29 @@
 //
 
 #include "Error.h"
+#include <errno.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <zlib.h>
 #include "../../defines.h"
 #include "../../Structs/GlobalState.h"
 #include "../../Structs/Options.h"
 #include "../Graphics/Drawing.h"
 #include "Logging.h"
-#include "zlib.h"
 
 SDL_MessageBoxColorScheme mbColorScheme;
+
+_Noreturn inline void _GameAllocFailure()
+{
+	LogError("Memory Allocation Failed: %s\n", strerror(errno));
+	if (errno == ENOMEM)
+	{
+		exit(1); // We should not attempt to do complex things if we are out of memory
+	}
+	Error("Memory Allocation Failed");
+}
 
 _Noreturn void RestartProgram()
 {
@@ -24,22 +35,28 @@ _Noreturn void RestartProgram()
 	exit(1);
 }
 
-_Noreturn void Error_Internal(char *error, const char *file, const int line, const char *function)
+_Noreturn void _ErrorInternal(char *error, const char *file, const int line, const char *function)
 {
-	char buf[256];
-#ifndef NDEBUG
-	sprintf(buf, "%s\n \n%s:%d (%s)", error, file, line, function);
+	if (GetGameWindow() != NULL)
+	{
+		GetState()->freezeEvents = true;
+		SDL_SetRelativeMouseMode(SDL_FALSE);
+	}
+
+	char messageBuffer[256];
+#ifdef BUILDSTYLE_DEBUG
+	sprintf(messageBuffer, "%s\n \n%s:%d (%s)", error, file, line, function);
 #else
-	sprintf(buf, "%s", error);
+	sprintf(messageBuffer, "%s", error);
 #endif
 
-	LogError(buf);
+	LogError(messageBuffer);
 
-	char finalMb[768];
-	sprintf(finalMb,
+	char messageBoxTextBuffer[768];
+	sprintf(messageBoxTextBuffer,
 			"Sorry, but the game has crashed.\n\n%s\n\nEngine Version: %s\nSDL Version: %d.%d.%d\nSDL_Mixer Version: "
 			"%d.%d.%d\nZlib Version: %s",
-			buf,
+			messageBuffer,
 			VERSION,
 			SDL_MAJOR_VERSION,
 			SDL_MINOR_VERSION,
@@ -50,40 +67,40 @@ _Noreturn void Error_Internal(char *error, const char *file, const int line, con
 			ZLIB_VERSION);
 
 	SDL_MessageBoxData mb;
-	mb.message = finalMb;
+	mb.message = messageBoxTextBuffer;
 	mb.title = "Error";
 
-#ifdef NDEBUG
-	const int btnc = 2;
+#ifdef BUILDSTYLE_RELEASE
+	const int buttonCount = 2;
 #else
-	const int btnc = 3;
+	const int buttonCount = 3;
 #endif
 
-	SDL_MessageBoxButtonData buttons[btnc];
+	SDL_MessageBoxButtonData buttons[buttonCount];
 	buttons[0].buttonid = 0;
 	buttons[0].text = "Exit";
 	buttons[0].flags = SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
 	buttons[1].buttonid = 1;
 	buttons[1].text = "Restart";
 	buttons[1].flags = 0;
-#ifndef NDEBUG
+#ifdef BUILDSTYLE_DEBUG
 	buttons[2].buttonid = 2;
 	buttons[2].text = "Debug";
 	buttons[2].flags = 0;
 #endif
 
 	mb.buttons = buttons;
-	mb.numbuttons = btnc;
+	mb.numbuttons = buttonCount;
 
 	mb.colorScheme = &mbColorScheme;
 
 	mb.window = GetGameWindow();
 	mb.flags = SDL_MESSAGEBOX_ERROR;
 
-	int buttonid;
-	SDL_ShowMessageBox(&mb, &buttonid);
+	int pressedButtonID;
+	SDL_ShowMessageBox(&mb, &pressedButtonID);
 
-	switch (buttonid)
+	switch (pressedButtonID)
 	{
 		case 0:
 			exit(1);
@@ -139,10 +156,10 @@ void PromptRelaunch(const char *title, const char *description, const char *yesB
 	mb.window = GetGameWindow();
 	mb.flags = SDL_MESSAGEBOX_ERROR;
 
-	int buttonid;
-	SDL_ShowMessageBox(&mb, &buttonid);
+	int pressedButtonID;
+	SDL_ShowMessageBox(&mb, &pressedButtonID);
 
-	if (buttonid == 1)
+	if (pressedButtonID == 1)
 	{
 		RestartProgram();
 	}
@@ -178,9 +195,9 @@ _Noreturn void RenderInitError()
 	mb.window = NULL;
 	mb.flags = SDL_MESSAGEBOX_ERROR;
 
-	int buttonid;
-	SDL_ShowMessageBox(&mb, &buttonid);
-	if (buttonid == 0)
+	int pressedButtonID;
+	SDL_ShowMessageBox(&mb, &pressedButtonID);
+	if (pressedButtonID == 0)
 	{
 		if (GetState()->options.renderer == RENDERER_OPENGL)
 		{
@@ -236,7 +253,7 @@ void ErrorHandlerInit()
 	mbColorScheme.colors[SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND] = buttonBg;
 	mbColorScheme.colors[SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED] = text;
 
-#ifdef NDEBUG
+#ifdef BUILDSTYLE_RELEASE
 	signal(SIGSEGV, SignalHandler);
 	signal(SIGFPE, SignalHandler);
 #endif

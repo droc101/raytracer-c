@@ -13,7 +13,7 @@
 Control *CreateButtonControl(const Vector2 position,
 							 const Vector2 size,
 							 char *text,
-							 void (*callback)(),
+							 ButtonCallback callback,
 							 const ControlAnchor anchor)
 {
 	Control *btn = CreateEmptyControl();

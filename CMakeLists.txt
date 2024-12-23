@@ -5,9 +5,9 @@ set(CMAKE_C_STANDARD 11)
 
 set(CMAKE_C_FLAGS "-Wall -Wno-discarded-qualifiers") # shut.
 
-set(CMAKE_C_FLAGS_DEBUG "-g -O0")
-set(CMAKE_C_FLAGS_RELEASE "-g0 -O3 -s -DNDEBUG -Wl,--gc-sections -fdata-sections -ffunction-sections")
-set(CMAKE_C_FLAGS_RELWITHDEBINFO "-g -O3 -Wl,--gc-sections -fdata-sections -ffunction-sections")
+set(CMAKE_C_FLAGS_DEBUG "-g -O0 -DBUILDSTYLE_DEBUG")
+set(CMAKE_C_FLAGS_RELEASE "-g0 -O3 -s -DNDEBUG -Wl,--gc-sections -fdata-sections -ffunction-sections -DBUILDSTYLE_RELEASE")
+set(CMAKE_C_FLAGS_RELWITHDEBINFO "-g -O3 -Wl,--gc-sections -fdata-sections -ffunction-sections -DBUILDSTYLE_DEBUG")
 
 # Add --static flag when building on Windows to include libwinpthread-1.dll
 if (WIN32)
@@ -16,11 +16,14 @@ if (WIN32)
 endif ()
 
 # Enable LTO in release builds
-if (CMAKE_BUILD_TYPE STREQUAL "Release")
+if (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
     include(CheckIPOSupported)
     check_ipo_supported(RESULT result)
     if (result)
         set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+        message(STATUS "IPO is supported")
+    else ()
+        message(WARNING "IPO is not supported: ${result}")
     endif ()
 endif ()
 

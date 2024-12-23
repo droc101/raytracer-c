@@ -38,10 +38,10 @@ void HandleKeyUp(int code);
  * Handles mouse motion event
  * @param x X position
  * @param y Y position
- * @param xrel Relative X position
- * @param yrel Relative Y position
+ * @param xRel Relative X position
+ * @param yRel Relative Y position
  */
-void HandleMouseMotion(int x, int y, int xrel, int yrel);
+void HandleMouseMotion(int x, int y, int xRel, int yRel);
 
 /**
  * Handles mouse down event

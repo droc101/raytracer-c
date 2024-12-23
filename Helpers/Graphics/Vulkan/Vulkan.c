@@ -295,7 +295,7 @@ bool VK_LoadLevelWalls(const Level *level)
 	VkBuffer stagingBuffer;
 	void *data;
 
-	buffers.walls.wallCount = level->staticWalls->size;
+	buffers.walls.wallCount = level->walls->size;
 	if (buffers.walls.wallCount > buffers.walls.maxWallCount)
 	{
 		vkDestroyBuffer(device, buffers.local.buffer, NULL);
@@ -313,7 +313,7 @@ bool VK_LoadLevelWalls(const Level *level)
 	uint32_t indices[buffers.walls.wallCount * 6];
 	for (uint32_t i = 0; i < buffers.walls.wallCount; i++)
 	{
-		const Wall *wall = SizedArrayGet(level->staticWalls, i);
+		const Wall *wall = ListGet(level->walls, i);
 		const float halfHeight = wall->height / 2.0f;
 		const vec2 startVertex = {(float)wall->a.x, (float)wall->a.y};
 		const vec2 endVertex = {(float)wall->b.x, (float)wall->b.y};

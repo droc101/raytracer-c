@@ -118,13 +118,13 @@ void GMainStateFixedUpdate(GlobalState *State)
 		moveVec = Vector2Normalize(moveVec);
 	}
 
-	double spd = MOVE_SPEED;
+	double speed = MOVE_SPEED;
 	if (IsKeyPressed(SDL_SCANCODE_LSHIFT) || GetAxis(SDL_CONTROLLER_AXIS_TRIGGERLEFT) > 0.5)
 	{
-		spd = SLOW_MOVE_SPEED;
+		speed = SLOW_MOVE_SPEED;
 	}
 
-	moveVec = Vector2Scale(moveVec, spd);
+	moveVec = Vector2Scale(moveVec, speed);
 	moveVec = Vector2Rotate(moveVec, l->player.angle);
 
 	l->player.pos = Move(l->player.pos, moveVec, NULL);
@@ -139,31 +139,31 @@ void GMainStateFixedUpdate(GlobalState *State)
 	}
 
 	// view bobbing (scam edition) 💀 (it's better now trust me)
-	if (spd == SLOW_MOVE_SPEED)
+	if (speed == SLOW_MOVE_SPEED)
 	{
 		if (isMoving)
 		{
-			State->CameraY = sin(State->physicsFrame / 7.0) * 0.005 - 0.1;
+			State->cameraY = sin(State->physicsFrame / 7.0) * 0.005 - 0.1;
 		} else
 		{
-			State->CameraY = lerp(State->CameraY, -0.1, 0.1);
+			State->cameraY = lerp(State->cameraY, -0.1, 0.1);
 		}
 	} else
 	{
 		if (isMoving)
 		{
-			State->CameraY = sin(State->physicsFrame / 7.0) * 0.04;
+			State->cameraY = sin(State->physicsFrame / 7.0) * 0.04;
 		} else
 		{
-			State->CameraY = lerp(State->CameraY, 0, 0.1);
+			State->cameraY = lerp(State->cameraY, 0, 0.1);
 		}
 	}
 
 	l->player.angle = wrap(l->player.angle, 0, 2 * PI);
 
-	for (int i = 0; i < l->staticActors->size; i++)
+	for (int i = 0; i < l->actors->size; i++)
 	{
-		Actor *a = SizedArrayGet(l->staticActors, i);
+		Actor *a = ListGet(l->actors, i);
 		a->Update(a);
 	}
 
@@ -204,12 +204,11 @@ void GMainStateRender(GlobalState *State)
 			l->player.angle,
 			radToDeg(l->player.angle));
 
-	DPrintF("Walls: %d", 0xFFFFFFFF, false, l->staticWalls->size);
-	DPrintF("Actors: %d", 0xFFFFFFFF, false, l->staticActors->size);
+	DPrintF("Walls: %d", 0xFFFFFFFF, false, l->walls->size);
+	DPrintF("Actors: %d", 0xFFFFFFFF, false, l->actors->size);
 }
 
 void GMainStateSet()
 {
-	SetRenderCallback(GMainStateRender);
-	SetUpdateCallback(GMainStateUpdate, GMainStateFixedUpdate, MAIN_STATE);
+	SetStateCallbacks(GMainStateUpdate, GMainStateFixedUpdate, MAIN_STATE, GMainStateRender);
 }

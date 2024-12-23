@@ -34,7 +34,9 @@
 // Skip the splash screen
 //#define DEBUG_NOSPLASH
 
-// See /Debug/FrameGrapher.h for physicsFrame grapher settings
+// Enable or disable the frame graph (just the rendering)
+#define FRAMEGRAPH_ENABLE
+// See /Debug/FrameGrapher.h for additional frame grapher settings
 
 // Press F6 while in game to open the level editor
 #define ENABLE_LEVEL_EDITOR

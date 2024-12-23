@@ -4,11 +4,11 @@
 
 #include "GLevelSelectState.h"
 #include <stdio.h>
-#include "../Assets/Assets.h"
 #include "../Helpers/Core/Input.h"
 #include "../Helpers/Core/MathEx.h"
 #include "../Helpers/Graphics/Drawing.h"
 #include "../Helpers/Graphics/Font.h"
+#include "../Helpers/Graphics/RenderingHelpers.h"
 #include "../Helpers/LevelEntries.h"
 #include "../Structs/GlobalState.h"
 #include "../Structs/Vector2.h"
@@ -49,14 +49,7 @@ void GLevelSelectStateRender(GlobalState * /*State*/)
 	SetColorUint(0xFF123456);
 	ClearColor(0xFF123456);
 
-	const Vector2 bgTileSize = v2(320, 240);
-	for (int x = 0; x < WindowWidth(); x += bgTileSize.x)
-	{
-		for (int y = 0; y < WindowHeight(); y += bgTileSize.y)
-		{
-			DrawTexture(v2(x, y), v2(bgTileSize.x, bgTileSize.y), gztex_interface_menu_bg_tile);
-		}
-	}
+	RenderMenuBackground();
 
 	FontDrawString(v2(20, 20), GAME_TITLE, 128, 0xFFFFFFFF, false);
 	FontDrawString(v2(20, 150), "Press Space to start.", 32, 0xFFa0a0a0, false);
@@ -77,6 +70,8 @@ void GLevelSelectStateRender(GlobalState * /*State*/)
 void GLevelSelectStateSet()
 {
 	StopMusic();
-	SetRenderCallback(GLevelSelectStateRender);
-	SetUpdateCallback(GLevelSelectStateUpdate, NULL, LEVEL_SELECT_STATE); // Fixed update is not needed for this state
+	SetStateCallbacks(GLevelSelectStateUpdate,
+					  NULL,
+					  LEVEL_SELECT_STATE,
+					  GLevelSelectStateRender); // Fixed update is not needed for this state
 }

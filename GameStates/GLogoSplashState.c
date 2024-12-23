@@ -53,6 +53,8 @@ void GLogoSplashStateRender(GlobalState *State)
 
 void GLogoSplashStateSet()
 {
-	SetRenderCallback(GLogoSplashStateRender);
-	SetUpdateCallback(NULL, GLogoSplashStateFixedUpdate, LOGO_SPLASH_STATE); // Non-fixed is not needed for this state
+	SetStateCallbacks(NULL,
+					  GLogoSplashStateFixedUpdate,
+					  LOGO_SPLASH_STATE,
+					  GLogoSplashStateRender); // Non-fixed is not needed for this state
 }

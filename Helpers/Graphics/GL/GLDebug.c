@@ -3,7 +3,7 @@
 //
 
 #include "../../Core/Logging.h"
-#ifndef NDEBUG
+#ifdef BUILDSTYLE_DEBUG
 
 #include <GL/glew.h>
 #include "GLInternal.h"

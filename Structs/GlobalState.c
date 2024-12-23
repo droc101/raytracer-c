@@ -23,9 +23,12 @@ const byte *music[MUSIC_COUNT] = {
 	gzmpg_audio_field,
 };
 
+/**
+ * callback for when a channel finishes playing (so we can free it)
+ * @param channel The channel that finished
+ */
 void ChannelFinished(const int channel)
 {
-	// callback for when a channel finishes playing (so we can free it)
 	state.channels[channel] = NULL;
 }
 
@@ -45,7 +48,7 @@ void InitState()
 	{
 		state.channels[i] = NULL;
 	}
-	state.CameraY = 0;
+	state.cameraY = 0;
 	state.textBoxActive = false;
 	state.cam = CreateCamera();
 	LoadOptions(&state.options);
@@ -73,7 +76,7 @@ void ShowTextBox(const TextBox tb)
 	state.textBoxActive = true;
 }
 
-GlobalState *GetState()
+inline GlobalState *GetState()
 {
 	return &state;
 }
@@ -114,28 +117,26 @@ void UseAmmo(const int amount)
 	}
 }
 
-void SetUpdateCallback(const FrameUpdateFunction UpdateGame,
+void SetStateCallbacks(const FrameUpdateFunction UpdateGame,
 					   const FixedUpdateFunction FixedUpdateGame,
-					   const CurrentState currentState)
+					   const CurrentState currentState,
+					   const FrameRenderFunction RenderGame)
 {
 	state.physicsFrame = 0;
 	state.UpdateGame = UpdateGame;
 	state.currentState = currentState;
-	PhysicsThreadSetFunction(FixedUpdateGame);
-}
-
-void SetRenderCallback(const FrameRenderFunction RenderGame)
-{
 	state.RenderGame = RenderGame;
+	PhysicsThreadSetFunction(FixedUpdateGame);
 }
 
 void ChangeLevel(Level *l)
 {
 	DestroyLevel(state.level);
 	state.level = l;
-	if (l->MusicID != 0)
+	state.textBoxActive = false;
+	if (l->musicID != 0)
 	{
-		ChangeMusic(music[l->MusicID - 1]);
+		ChangeMusic(music[l->musicID - 1]);
 	} else
 	{
 		StopMusic();
@@ -147,17 +148,12 @@ void ChangeLevel(Level *l)
 		WallBake(w);
 	}
 
-	if (l->staticWalls != NULL)
-	{
-		DestroySizedArray(l->staticWalls);
-	}
-	BakeWallArray(l);
-	BakeActorArray(l);
 	LoadLevelWalls(l);
 }
 
 void ChangeMusic(const byte *asset)
 {
+	if (!state.isAudioStarted) return;
 	if (AssetGetType(asset) != ASSET_TYPE_MP3)
 	{
 		LogWarning("ChangeMusic Error: Asset is not a music file.\n");
@@ -179,6 +175,7 @@ void ChangeMusic(const byte *asset)
 
 void StopMusic()
 {
+	if (!state.isAudioStarted) return;
 	if (state.music != NULL)
 	{
 		// stop and free the current music
@@ -190,6 +187,7 @@ void StopMusic()
 
 void PlaySoundEffect(const byte *asset)
 {
+	if (!state.isAudioStarted) return;
 	if (AssetGetType(asset) != ASSET_TYPE_WAV)
 	{
 		LogError("PlaySoundEffect Error: Asset is not a sound effect file.\n");
@@ -228,11 +226,14 @@ void DestroyGlobalState()
 		Mix_FreeMusic(state.music);
 	}
 	// free sound effects
-	for (int i = 0; i < SFX_CHANNEL_COUNT; i++)
+	if (state.isAudioStarted)
 	{
-		if (state.channels[i] != NULL)
+		for (int i = 0; i < SFX_CHANNEL_COUNT; i++)
 		{
-			Mix_FreeChunk(state.channels[i]);
+			if (state.channels[i] != NULL)
+			{
+				Mix_FreeChunk(state.channels[i]);
+			}
 		}
 	}
 }

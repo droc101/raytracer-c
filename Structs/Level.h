@@ -20,18 +20,6 @@ Level *CreateLevel();
 void DestroyLevel(Level *l);
 
 /**
- * Bake a static wall array from the level
- * @param l Level to bake
- */
-void BakeWallArray(Level *l);
-
-/**
- * Bake a static actor array from the level
- * @param l Level to bake
- */
-void BakeActorArray(Level *l);
-
-/**
  * Add an actor to the level
  * @param actor Actor to add
  * @note This is intended to be used during gameplay, not level loading
