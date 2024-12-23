@@ -3,14 +3,14 @@
 //
 
 #include "List.h"
+
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "../../defines.h"
-#include "Error.h"
-
-#ifdef WIN32
 #include "../PlatformHelpers.h"
-#endif
+#include "Error.h"
+#include "Logging.h"
 
 List *CreateList()
 {
@@ -28,7 +28,7 @@ List *CreateList()
 void ListAdd(List *list, void *data)
 {
 	list->size++;
-	void **temp = reallocarray(list->data, list->size, sizeof(void *)); // The size should never be 0 here, so we don't need to check for that
+	void **temp = GameReallocArray(list->data, list->size, sizeof(void *)); // The size should never be 0 here, so we don't need to check for that
 	chk_malloc(temp);
 	list->data = temp;
 	list->data[list->size - 1] = data;
@@ -41,7 +41,7 @@ void ListRemoveAt(List *list, const int index)
 		list->data[i] = list->data[i + 1];
 	}
 	list->size--;
-	void **temp = reallocarray(list->data, list->size, sizeof(void *));
+	void **temp = GameReallocArray(list->data, list->size, sizeof(void *));
 	if (list->size == 0 && temp == NULL) // reallocarray with size 0 frees the memory
 	{
 		temp = malloc(0);
@@ -53,7 +53,7 @@ void ListRemoveAt(List *list, const int index)
 void ListInsertAfter(List *list, const int index, void *data)
 {
 	list->size++;
-	void **temp = reallocarray(list->data, list->size, sizeof(void *)); // The size should never be 0 here, so we don't need to check for that
+	void **temp = GameReallocArray(list->data, list->size, sizeof(void *)); // The size should never be 0 here, so we don't need to check for that
 	chk_malloc(temp);
 
 	for (int i = list->size - 1; i > index; i--)
@@ -102,4 +102,15 @@ void ListClear(List *list)
 	free(list->data);
 	list->data = calloc(0, sizeof(void *));
 	chk_malloc(list->data);
+}
+
+void *GameReallocArray(void *ptr, const size_t arrayLength, const size_t elementSize)
+{
+	if (arrayLength > SIZE_MAX / elementSize)
+	{
+		LogWarning("GameReallocArray: arrayLength * elementSize exceeds SIZE_MAX, returning NULL");
+		errno = ENOMEM;
+		return NULL;
+	}
+	return realloc(ptr, arrayLength * elementSize);
 }

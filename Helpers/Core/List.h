@@ -4,6 +4,7 @@
 
 #ifndef GAME_LIST_H
 #define GAME_LIST_H
+#include <stddef.h>
 
 typedef struct List List;
 
@@ -83,5 +84,14 @@ void ListClear(List *list);
  * @param index The index to get
  */
 #define ListGet(list, index) (list)->data[(index)]
+
+/**
+ * Reallocates memory for an array of arrayLength elements of size bytes each.
+ * @param ptr Pointer to the memory block to be reallocated.
+ * @param arrayLength Number of elements.
+ * @param elementSize Size of each element.
+ * @return Pointer to the reallocated memory block.
+ */
+void *GameReallocArray(void *ptr, size_t arrayLength, size_t elementSize);
 
 #endif //GAME_LIST_H

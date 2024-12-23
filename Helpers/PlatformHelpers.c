@@ -29,26 +29,3 @@ void DwmDarkMode(SDL_Window *window)
 	}
 #endif
 }
-
-#ifdef WIN32
-/**
- * Reallocates memory for an array of nmemb elements of size bytes each.
- * @param ptr Pointer to the memory block to be reallocated.
- * @param nmemb Number of elements.
- * @param size Size of each element.
- * @return Pointer to the reallocated memory block.
- * @note Dear Microsoft, Please explode.
- */
-void *reallocarray(void *ptr, size_t nmemb, size_t size)
-{
-	if (nmemb == 0 || size == 0)
-	{
-		return NULL;
-	}
-	if (nmemb > SIZE_MAX / size)
-	{
-		return NULL;
-	}
-	return realloc(ptr, nmemb * size);
-}
-#endif
