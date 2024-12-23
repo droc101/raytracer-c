@@ -89,6 +89,8 @@ byte level_skyB;
 uint level_musicID;
 #pragma endregion
 
+#pragma region Helpers
+
 char *SliderActorNameLabelCallback(const Control *slider)
 {
 	const SliderData *data = (SliderData *)slider->ControlData;
@@ -150,7 +152,8 @@ Level *NodesToLevel()
 	return l;
 }
 
-void CreateButton(char *text, const Vector2 position, const Vector2 size, ButtonCallback callback, bool /*enabled*/)
+void CreateButton(char *text, const Vector2 position, const Vector2 size,
+				  const ButtonCallback callback, bool /*enabled*/)
 {
 	Control *button = CreateButtonControl(position, size, text, callback, TOP_LEFT);
 	UiStackPush(editorUiStack, button);
@@ -180,6 +183,174 @@ void CreateSlider(char *label,
 										  getLabel);
 	UiStackPush(editorUiStack, slider);
 }
+
+
+void RenderGrid()
+{
+	const int gridSpacing = editorZoom;
+	const int gridOffsetX = (int)editorPanX % gridSpacing;
+	const int gridOffsetY = (int)editorPanY % gridSpacing;
+
+	SetColorUint(0xFF808080);
+	for (int x = gridOffsetX; x < WindowWidth(); x += gridSpacing)
+	{
+		DrawLine(v2(x, 0), v2(x, WindowHeight()), 1.0f);
+	}
+	for (int y = gridOffsetY; y < WindowHeight(); y += gridSpacing)
+	{
+		DrawLine(v2(0, y), v2(WindowWidth(), y), 1.0f);
+	}
+
+	SetColorUint(0xFF0000FF);
+	DrawLine(v2(editorPanX, 0), v2(editorPanX, WindowHeight()), 2.0f);
+	SetColorUint(0xFFFF0000);
+	DrawLine(v2(0, editorPanY), v2(WindowWidth(), editorPanY), 2.0f);
+
+	// draw world space numbers along bottom and right
+	char buf[32];
+	for (int x = gridOffsetX; x < WindowWidth(); x += gridSpacing)
+	{
+		const int worldSpaceX = (int)((x - editorPanX) / editorZoom);
+
+		if (worldSpaceX % 5 != 0)
+		{
+			continue;
+		}
+		sprintf(buf, "%d", worldSpaceX);
+		DrawTextAligned(buf,
+						16,
+						0xFFFFFFFF,
+						v2(x - 50, WindowHeight() - 25),
+						v2(100, 20),
+						FONT_HALIGN_CENTER,
+						FONT_VALIGN_MIDDLE,
+						false);
+	}
+	for (int y = gridOffsetY; y < WindowHeight(); y += gridSpacing)
+	{
+		const int worldSpaceY = (int)((y - editorPanY) / editorZoom);
+
+		if (worldSpaceY % 5 != 0)
+		{
+			continue;
+		}
+		sprintf(buf, "%d", worldSpaceY);
+		DrawTextAligned(buf,
+						16,
+						0xFFFFFFFF,
+						v2(WindowWidth() - 110, y - 10),
+						v2(100, 20),
+						FONT_HALIGN_RIGHT,
+						FONT_VALIGN_MIDDLE,
+						false);
+	}
+}
+
+void DrawNode(const EditorNode *node, int *hoveredNode, const int i)
+{
+	const Vector2 screenPos = v2(node->position.x * editorZoom + editorPanX,
+								 node->position.y * editorZoom + editorPanY);
+
+	if (node->type == NODE_WALL_A)
+	{
+		// Draw a line to the next node, which should be the wall's other end
+		const EditorNode *nodeB = ListGet(editorNodes, i + 1);
+		const Vector2 screenPosB = v2(nodeB->position.x * editorZoom + editorPanX,
+									  nodeB->position.y * editorZoom + editorPanY);
+		SetColorUint(0xFFFFFFFF);
+		DrawLine(v2(screenPos.x, screenPos.y), v2(screenPosB.x, screenPosB.y), 2);
+	}
+
+	uint color = 0;
+	switch (node->type)
+	{
+		case NODE_PLAYER:
+			color = 0xFF00FF00;
+			break;
+		case NODE_ACTOR:
+			color = 0xFFFF0000;
+			break;
+		case NODE_WALL_A:
+			color = 0xFF0000FF;
+			break;
+		case NODE_WALL_B:
+			color = 0xFF0000A0;
+			break;
+	}
+
+	bool hovered = false;
+	const Vector2 mousePos = GetMousePos();
+	if (mousePos.x >= screenPos.x - 5 &&
+		mousePos.x <= screenPos.x + 5 &&
+		mousePos.y >= screenPos.y - 5 &&
+		mousePos.y <= screenPos.y + 5)
+	{
+		hovered = true;
+		*hoveredNode = i;
+	}
+
+	if (editorSelectedNode == i)
+	{
+		color = 0xFFFFFF00;
+	}
+
+	if (hovered || editorSelectedNode == i)
+	{
+		SetColorUint(0xFFFFFFFF);
+		DrawRect(screenPos.x - 6, screenPos.y - 6, 12, 12);
+	}
+
+	SetColorUint(color);
+	DrawRect(screenPos.x - 5, screenPos.y - 5, 10, 10);
+
+	// for player and actor nodes, draw a line indicating rotation
+	if (node->type == NODE_PLAYER || node->type == NODE_ACTOR)
+	{
+		const Vector2 lineEnd = v2(screenPos.x + cos(node->rotation) * 20, screenPos.y + sin(node->rotation) * 20);
+		DrawLine(screenPos, lineEnd, 1);
+	}
+}
+
+void DrawNodeTooltip(const EditorNode *node)
+{
+	const Vector2 screenPos = v2(node->position.x * editorZoom + editorPanX,
+								 node->position.y * editorZoom + editorPanY);
+
+	char nodeInfo[96];
+	switch (node->type)
+	{
+		case NODE_PLAYER:
+			sprintf(nodeInfo,
+					"Player: %.2f, %.2f\nRotation: %.2f",
+					node->position.x,
+					node->position.y,
+					radToDeg(node->rotation));
+			break;
+		case NODE_ACTOR:
+			sprintf(nodeInfo,
+					"Actor: 0x%04x\nPosition: %.2f, %.2f\nRotation: %.2f",
+					node->extra,
+					node->position.x,
+					node->position.y,
+					radToDeg(node->rotation));
+			break;
+		case NODE_WALL_A:
+			sprintf(nodeInfo, "Wall (A): %.2f, %.2f\nTexture: 0x%04x", node->position.x, node->position.y, node->extra);
+			break;
+		case NODE_WALL_B:
+			sprintf(nodeInfo, "Wall (B): %.2f, %.2f", node->position.x, node->position.y);
+			break;
+	}
+
+	const Vector2 measuredText = MeasureText(nodeInfo, 16, false);
+	const int textWidth = measuredText.x;
+	const int textHeight = measuredText.y;
+	SetColorUint(0x80000000);
+	DrawRect(screenPos.x + 10, screenPos.y, textWidth + 20, textHeight + 20);
+	FontDrawString(v2(screenPos.x + 20, screenPos.y + 10), nodeInfo, 16, 0xFFFFFFFF, false);
+}
+
+#pragma endregion
 
 #pragma region Callbacks
 
@@ -519,6 +690,8 @@ void BtnTest()
 
 #pragma endregion
 
+#pragma region Mode Update Functions
+
 void UpdateMoveMode()
 {
 	// check if we are hovering over a node
@@ -833,6 +1006,8 @@ void UpdatePropertiesMode()
 	}
 }
 
+#pragma endregion
+
 void GEditorStateUpdate(GlobalState * /*State*/)
 {
 #ifdef ENABLE_LEVEL_EDITOR
@@ -885,171 +1060,6 @@ void GEditorStateUpdate(GlobalState * /*State*/)
 		}
 	}
 #endif
-}
-
-void RenderGrid()
-{
-	const int gridSpacing = editorZoom;
-	const int gridOffsetX = (int)editorPanX % gridSpacing;
-	const int gridOffsetY = (int)editorPanY % gridSpacing;
-
-	SetColorUint(0xFF808080);
-	for (int x = gridOffsetX; x < WindowWidth(); x += gridSpacing)
-	{
-		DrawLine(v2(x, 0), v2(x, WindowHeight()), 1.0f);
-	}
-	for (int y = gridOffsetY; y < WindowHeight(); y += gridSpacing)
-	{
-		DrawLine(v2(0, y), v2(WindowWidth(), y), 1.0f);
-	}
-
-	SetColorUint(0xFF0000FF);
-	DrawLine(v2(editorPanX, 0), v2(editorPanX, WindowHeight()), 2.0f);
-	SetColorUint(0xFFFF0000);
-	DrawLine(v2(0, editorPanY), v2(WindowWidth(), editorPanY), 2.0f);
-
-	// draw world space numbers along bottom and right
-	char buf[32];
-	for (int x = gridOffsetX; x < WindowWidth(); x += gridSpacing)
-	{
-		const int worldSpaceX = (int)((x - editorPanX) / editorZoom);
-
-		if (worldSpaceX % 5 != 0)
-		{
-			continue;
-		}
-		sprintf(buf, "%d", worldSpaceX);
-		DrawTextAligned(buf,
-						16,
-						0xFFFFFFFF,
-						v2(x - 50, WindowHeight() - 25),
-						v2(100, 20),
-						FONT_HALIGN_CENTER,
-						FONT_VALIGN_MIDDLE,
-						false);
-	}
-	for (int y = gridOffsetY; y < WindowHeight(); y += gridSpacing)
-	{
-		const int worldSpaceY = (int)((y - editorPanY) / editorZoom);
-
-		if (worldSpaceY % 5 != 0)
-		{
-			continue;
-		}
-		sprintf(buf, "%d", worldSpaceY);
-		DrawTextAligned(buf,
-						16,
-						0xFFFFFFFF,
-						v2(WindowWidth() - 110, y - 10),
-						v2(100, 20),
-						FONT_HALIGN_RIGHT,
-						FONT_VALIGN_MIDDLE,
-						false);
-	}
-}
-
-void DrawNode(const EditorNode *node, int *hoveredNode, const int i)
-{
-	const Vector2 screenPos = v2(node->position.x * editorZoom + editorPanX,
-								 node->position.y * editorZoom + editorPanY);
-
-	if (node->type == NODE_WALL_A)
-	{
-		// Draw a line to the next node, which should be the wall's other end
-		const EditorNode *nodeB = ListGet(editorNodes, i + 1);
-		const Vector2 screenPosB = v2(nodeB->position.x * editorZoom + editorPanX,
-									  nodeB->position.y * editorZoom + editorPanY);
-		SetColorUint(0xFFFFFFFF);
-		DrawLine(v2(screenPos.x, screenPos.y), v2(screenPosB.x, screenPosB.y), 2);
-	}
-
-	uint color = 0;
-	switch (node->type)
-	{
-		case NODE_PLAYER:
-			color = 0xFF00FF00;
-			break;
-		case NODE_ACTOR:
-			color = 0xFFFF0000;
-			break;
-		case NODE_WALL_A:
-			color = 0xFF0000FF;
-			break;
-		case NODE_WALL_B:
-			color = 0xFF0000A0;
-			break;
-	}
-
-	bool hovered = false;
-	const Vector2 mousePos = GetMousePos();
-	if (mousePos.x >= screenPos.x - 5 &&
-		mousePos.x <= screenPos.x + 5 &&
-		mousePos.y >= screenPos.y - 5 &&
-		mousePos.y <= screenPos.y + 5)
-	{
-		hovered = true;
-		*hoveredNode = i;
-	}
-
-	if (editorSelectedNode == i)
-	{
-		color = 0xFFFFFF00;
-	}
-
-	if (hovered || editorSelectedNode == i)
-	{
-		SetColorUint(0xFFFFFFFF);
-		DrawRect(screenPos.x - 6, screenPos.y - 6, 12, 12);
-	}
-
-	SetColorUint(color);
-	DrawRect(screenPos.x - 5, screenPos.y - 5, 10, 10);
-
-	// for player and actor nodes, draw a line indicating rotation
-	if (node->type == NODE_PLAYER || node->type == NODE_ACTOR)
-	{
-		const Vector2 lineEnd = v2(screenPos.x + cos(node->rotation) * 20, screenPos.y + sin(node->rotation) * 20);
-		DrawLine(screenPos, lineEnd, 1);
-	}
-}
-
-void DrawNodeTooltip(const EditorNode *node)
-{
-	const Vector2 screenPos = v2(node->position.x * editorZoom + editorPanX,
-								 node->position.y * editorZoom + editorPanY);
-
-	char nodeInfo[96];
-	switch (node->type)
-	{
-		case NODE_PLAYER:
-			sprintf(nodeInfo,
-					"Player: %.2f, %.2f\nRotation: %.2f",
-					node->position.x,
-					node->position.y,
-					radToDeg(node->rotation));
-			break;
-		case NODE_ACTOR:
-			sprintf(nodeInfo,
-					"Actor: 0x%04x\nPosition: %.2f, %.2f\nRotation: %.2f",
-					node->extra,
-					node->position.x,
-					node->position.y,
-					radToDeg(node->rotation));
-			break;
-		case NODE_WALL_A:
-			sprintf(nodeInfo, "Wall (A): %.2f, %.2f\nTexture: 0x%04x", node->position.x, node->position.y, node->extra);
-			break;
-		case NODE_WALL_B:
-			sprintf(nodeInfo, "Wall (B): %.2f, %.2f", node->position.x, node->position.y);
-			break;
-	}
-
-	const Vector2 measuredText = MeasureText(nodeInfo, 16, false);
-	const int textWidth = measuredText.x;
-	const int textHeight = measuredText.y;
-	SetColorUint(0x80000000);
-	DrawRect(screenPos.x + 10, screenPos.y, textWidth + 20, textHeight + 20);
-	FontDrawString(v2(screenPos.x + 20, screenPos.y + 10), nodeInfo, 16, 0xFFFFFFFF, false);
 }
 
 void GEditorStateRender(GlobalState * /*State*/)
