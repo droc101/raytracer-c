@@ -8,6 +8,10 @@
 #include "../../defines.h"
 #include "Error.h"
 
+#ifdef WIN32
+#include "../PlatformHelpers.h"
+#endif
+
 List *CreateList()
 {
 	List *list = malloc(sizeof(List));
