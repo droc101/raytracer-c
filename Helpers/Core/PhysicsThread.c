@@ -9,6 +9,7 @@
 #include "../../Structs/GlobalState.h"
 #include "Error.h"
 #include "Logging.h"
+#include "Timing.h"
 
 SDL_Thread *PhysicsThread;
 SDL_mutex *PhysicsThreadMutex;
@@ -31,9 +32,10 @@ bool PhysicsThreadPostQuit = false;
  */
 int PhysicsThreadMain(void *)
 {
+	double lastFrameTime = PHYSICS_TARGET_NS_D;
 	while (true)
 	{
-		const ulong timeStart = SDL_GetTicks64();
+		const ulong timeStart = GetTimeNs();
 		SDL_LockMutex(PhysicsThreadMutex);
 		if (PhysicsThreadPostQuit)
 		{
@@ -43,23 +45,29 @@ int PhysicsThreadMain(void *)
 		if (PhysicsThreadFunction == NULL)
 		{
 			SDL_UnlockMutex(PhysicsThreadMutex);
+			SDL_Delay(1); // pls no spin 🥺
 			continue;
 		}
 		// The function is copied to a local variable so we can unlock the mutex during its runtime
 		const FixedUpdateFunction UpdateFunction = PhysicsThreadFunction;
 		SDL_UnlockMutex(PhysicsThreadMutex);
-		UpdateFunction(GetState());
 
-		ulong timeEnd = SDL_GetTicks64();
+		// delta is the portion of one "tick" that the last frame took (including idle time)
+		// ticks should be around 1/60th of a second
+		const double delta = lastFrameTime / PHYSICS_TARGET_NS_D;
+		UpdateFunction(GetState(), delta);
+
+		ulong timeEnd = GetTimeNs();
 		ulong timeElapsed = timeEnd - timeStart;
-		while (timeElapsed < PHYSICS_TARGET_MS)
+		if (timeElapsed < PHYSICS_TARGET_NS)
 		{
-			// SDL_Delay is inaccurate at low values (often 15 or lower)
-			// and as we are targeting 60 TPS (16ms) we need more accuracy
-			// so we are unfortunately forced to spin
-			timeEnd = SDL_GetTicks64();
-			timeElapsed = timeEnd - timeStart;
+			ulong delay_ms = (PHYSICS_TARGET_NS - timeElapsed) / 1000000;
+			SDL_Delay(delay_ms);
 		}
+		timeEnd = GetTimeNs();
+		GetTimeNs();
+		timeElapsed = timeEnd - timeStart;
+		lastFrameTime = timeElapsed;
 	}
 }
 

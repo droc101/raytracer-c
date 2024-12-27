@@ -9,7 +9,7 @@
 
 void TestActorInit(Actor *this);
 
-void TestActorUpdate(Actor *this);
+void TestActorUpdate(Actor *this, double delta);
 
 void TestActorDestroy(Actor *this);
 

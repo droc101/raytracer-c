@@ -9,7 +9,7 @@
 
 void DoorInit(Actor *this);
 
-void DoorUpdate(Actor *this);
+void DoorUpdate(Actor *this, double /*delta*/);
 
 void DoorDestroy(Actor *this);
 

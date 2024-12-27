@@ -69,7 +69,7 @@ void GMainStateUpdate(GlobalState *State)
 	State->level->player.angle += GetMouseRel().x * (State->options.mouseSpeed / 120.0);
 }
 
-void GMainStateFixedUpdate(GlobalState *State)
+void GMainStateFixedUpdate(GlobalState *State, double delta)
 {
 	if (State->textBoxActive)
 	{
@@ -118,11 +118,14 @@ void GMainStateFixedUpdate(GlobalState *State)
 		moveVec = Vector2Normalize(moveVec);
 	}
 
+
 	double speed = MOVE_SPEED;
 	if (IsKeyPressed(SDL_SCANCODE_LSHIFT) || GetAxis(SDL_CONTROLLER_AXIS_TRIGGERLEFT) > 0.5)
 	{
 		speed = SLOW_MOVE_SPEED;
 	}
+
+	speed *= delta;
 
 	moveVec = Vector2Scale(moveVec, speed);
 	moveVec = Vector2Rotate(moveVec, l->player.angle);
@@ -164,7 +167,7 @@ void GMainStateFixedUpdate(GlobalState *State)
 	for (int i = 0; i < l->actors->size; i++)
 	{
 		Actor *a = ListGet(l->actors, i);
-		a->Update(a);
+		a->Update(a, delta);
 	}
 
 	State->physicsFrame++;

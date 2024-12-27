@@ -42,7 +42,7 @@ typedef struct ModelHeader ModelHeader;
 typedef struct Options Options;
 
 // Function signatures
-typedef void (*FixedUpdateFunction)(GlobalState *state);
+typedef void (*FixedUpdateFunction)(GlobalState *state, double delta);
 
 typedef void (*FrameUpdateFunction)(GlobalState *state);
 
@@ -52,7 +52,7 @@ typedef void (*TextBoxCloseFunction)(TextBox *textBox);
 
 typedef void (*ActorInitFunction)(Actor *self);
 
-typedef void (*ActorUpdateFunction)(Actor *self);
+typedef void (*ActorUpdateFunction)(Actor *self, double delta);
 
 typedef void (*ActorDestroyFunction)(Actor *self);
 
@@ -64,7 +64,9 @@ typedef void (*ActorDestroyFunction)(Actor *self);
 #define TO_STR(x) STR(x)
 #define PI 3.14159265358979323846
 #define PHYSICS_TARGET_MS (1000 / PHYSICS_TARGET_TPS)
+#define PHYSICS_TARGET_MS_D (1000.0 / PHYSICS_TARGET_TPS)
 #define PHYSICS_TARGET_NS (1000000000 / PHYSICS_TARGET_TPS) // nanoseconds because precision
+#define PHYSICS_TARGET_NS_D (1000000000.0 / PHYSICS_TARGET_TPS)
 
 #pragma endregion
 
