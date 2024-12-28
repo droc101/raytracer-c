@@ -6,6 +6,7 @@
 #include "Assets/Assets.h"
 #include "config.h"
 #include "Debug/DPrint.h"
+#include "Debug/FrameBenchmark.h"
 #include "Debug/FrameGrapher.h"
 #include "defines.h"
 #include "GameStates/GLogoSplashState.h"
@@ -208,6 +209,9 @@ int main(const int argc, char *argv[])
             SDL_Delay(100);
         }
 		const ulong frameStart = GetTimeNs();
+#ifdef BENCHMARK_SYSTEM_ENABLE
+		BenchFrameStart();
+#endif
 
 		while (SDL_PollEvent(&event) != 0)
 		{
@@ -232,6 +236,13 @@ int main(const int argc, char *argv[])
 			state->UpdateGame(state);
 		}
 
+#ifdef BENCHMARK_SYSTEM_ENABLE
+		if (IsKeyJustPressed(SDL_SCANCODE_F8))
+		{
+			BenchToggle();
+		}
+#endif
+
 		state->cam->x = (float)state->level->player.pos.x;
 		state->cam->y = (float)state->cameraY;
 		state->cam->z = (float)state->level->player.pos.y;
@@ -249,6 +260,10 @@ int main(const int argc, char *argv[])
 		{
 			shouldQuit = true;
 		}
+
+#ifdef BENCHMARK_SYSTEM_ENABLE
+		BenchFrameEnd();
+#endif
 
 		FrameGraphUpdate(GetTimeNs() - frameStart);
 	}

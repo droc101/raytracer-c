@@ -133,6 +133,8 @@ add_executable(
         GameStates/Options/GInputOptionsState.h
         Helpers/Core/PhysicsThread.c
         Helpers/Core/PhysicsThread.h
+        Debug/FrameBenchmark.c
+        Debug/FrameBenchmark.h
 )
 
 set(SDL2_PATH "${CMAKE_SOURCE_DIR}/lib/SDL2/x86_64-w64-mingw32")

@@ -50,6 +50,9 @@
 // Show error trace in release builds (function, source, and line #)
 #define ERROR_TRACE_IN_RELEASE
 
+// Enable or disable the frame benchmark system
+#define BENCHMARK_SYSTEM_ENABLE
+
 #pragma endregion
 
 // Program information
