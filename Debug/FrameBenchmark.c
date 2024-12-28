@@ -35,7 +35,9 @@ void BenchFrameStart()
 	{
 		return;
 	}
+#ifdef BENCHMARK_RECORD_HIGH_LOW_TIMES
 	benchFrameStartTime = GetTimeNs();
+#endif
 }
 
 void BenchFrameEnd()
@@ -44,6 +46,7 @@ void BenchFrameEnd()
 	{
 		return;
 	}
+#ifdef BENCHMARK_RECORD_HIGH_LOW_TIMES
 	const ulong frameTime = GetTimeNs() - benchFrameStartTime;
 	if (frameTime < lowestFrameNs)
 	{
@@ -53,6 +56,7 @@ void BenchFrameEnd()
 	{
 		highestFrameNs = frameTime;
 	}
+#endif
 	benchFrameCount++;
 }
 
@@ -66,14 +70,17 @@ void BenchFinish()
 
 	avgFrameTime /= 1000000.0;
 
-	const double lowestFrameTime = (double)lowestFrameNs / 1000000.0;
-	const double highestFrameTime = (double)highestFrameNs / 1000000.0;
-
 	LogDebug("Benchmark finished\n");
 	LogDebug("Average frame time: %f ms\n", avgFrameTime);
 	LogDebug("Average FPS: %f\n", avgFps);
+
+#ifdef BENCHMARK_RECORD_HIGH_LOW_TIMES
+	const double lowestFrameTime = (double)lowestFrameNs / 1000000.0;
+	const double highestFrameTime = (double)highestFrameNs / 1000000.0;
+
 	LogDebug("Lowest frame time: %f ms\n", lowestFrameTime);
 	LogDebug("Highest frame time: %f ms\n", highestFrameTime);
+#endif
 
 }
 
