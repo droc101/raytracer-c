@@ -15,6 +15,7 @@
 #include "../Structs/UI/UiStack.h"
 #include "GLevelSelectState.h"
 #include "GMainState.h"
+#include "GOptionsState.h"
 
 UiStack *pauseStack = NULL;
 
@@ -97,6 +98,11 @@ void BtnPauseResume()
 	GMainStateSet();
 }
 
+void BtnOptions()
+{
+	GOptionsStateSet(true);
+}
+
 void BtnPauseExit()
 {
 #ifdef USE_LEVEL_SELECT
@@ -112,7 +118,8 @@ void GPauseStateSet()
 	{
 		pauseStack = CreateUiStack();
 		UiStackPush(pauseStack, CreateButtonControl(v2(0, 20), v2(300, 40), "Resume", BtnPauseResume, MIDDLE_CENTER));
-		UiStackPush(pauseStack, CreateButtonControl(v2(0, 70), v2(300, 40), "Exit Level", BtnPauseExit, MIDDLE_CENTER));
+		UiStackPush(pauseStack, CreateButtonControl(v2(0, 70), v2(300, 40), "Options", BtnOptions, MIDDLE_CENTER));
+		UiStackPush(pauseStack, CreateButtonControl(v2(0, 120), v2(300, 40), "Exit Level", BtnPauseExit, MIDDLE_CENTER));
 	}
 	UiStackResetFocus(pauseStack);
 

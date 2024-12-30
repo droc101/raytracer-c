@@ -5,6 +5,10 @@
 #ifndef GAME_GOPTIONSSTATE_H
 #define GAME_GOPTIONSSTATE_H
 
-void GOptionsStateSet();
+#include "../defines.h"
+
+extern bool optionsStateInGame;
+
+void GOptionsStateSet(bool inGame);
 
 #endif //GAME_GOPTIONSSTATE_H

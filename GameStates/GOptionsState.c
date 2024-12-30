@@ -8,18 +8,27 @@
 #include "../Helpers/Graphics/Font.h"
 #include "../Helpers/Graphics/RenderingHelpers.h"
 #include "../Structs/GlobalState.h"
+#include "../Structs/Level.h"
 #include "../Structs/UI/Controls/Button.h"
 #include "../Structs/UI/UiStack.h"
 #include "GMenuState.h"
+#include "GPauseState.h"
 #include "Options/GInputOptionsState.h"
 #include "Options/GSoundOptionsState.h"
 #include "Options/GVideoOptionsState.h"
 
 UiStack *optionsStack;
+bool optionsStateInGame = false;
 
 void BtnOptionsBack()
 {
-	GMenuStateSet();
+	if (optionsStateInGame)
+	{
+		GPauseStateSet();
+	} else
+	{
+		GMenuStateSet();
+	}
 }
 
 void GOptionsStateUpdate(GlobalState * /*State*/)
@@ -30,9 +39,17 @@ void GOptionsStateUpdate(GlobalState * /*State*/)
 	}
 }
 
-void GOptionsStateRender(GlobalState * /*State*/)
+void GOptionsStateRender(GlobalState *state)
 {
-	RenderMenuBackground();
+	if (optionsStateInGame)
+	{
+		RenderLevel(state);
+		SetColorUint(0x80000000);
+		DrawRect(0, 0, WindowWidth(), WindowHeight());
+	} else
+	{
+		RenderMenuBackground();
+	}
 
 	DrawTextAligned("Options",
 					32,
@@ -47,8 +64,9 @@ void GOptionsStateRender(GlobalState * /*State*/)
 	DrawUiStack(optionsStack);
 }
 
-void GOptionsStateSet()
+void GOptionsStateSet(bool inGame)
 {
+	optionsStateInGame = inGame;
 	if (optionsStack == NULL)
 	{
 		optionsStack = CreateUiStack();

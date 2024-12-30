@@ -8,6 +8,7 @@
 #include "../../Helpers/Graphics/Font.h"
 #include "../../Helpers/Graphics/RenderingHelpers.h"
 #include "../../Structs/GlobalState.h"
+#include "../../Structs/Level.h"
 #include "../../Structs/UI/Controls/Button.h"
 #include "../../Structs/UI/Controls/Slider.h"
 #include "../../Structs/UI/UiStack.h"
@@ -17,7 +18,7 @@ UiStack *soundOptionsStack;
 
 void BtnSoundOptionsBack()
 {
-	GOptionsStateSet();
+	GOptionsStateSet(optionsStateInGame);
 }
 
 void SldOptionsMasterVolume(const double value)
@@ -46,9 +47,17 @@ void GSoundOptionsStateUpdate(GlobalState * /*State*/)
 	}
 }
 
-void GSoundOptionsStateRender(GlobalState * /*State*/)
+void GSoundOptionsStateRender(GlobalState *state)
 {
-	RenderMenuBackground();
+	if (optionsStateInGame)
+	{
+		RenderLevel(state);
+		SetColorUint(0x80000000);
+		DrawRect(0, 0, WindowWidth(), WindowHeight());
+	} else
+	{
+		RenderMenuBackground();
+	}
 
 	DrawTextAligned("Sound Options",
 					32,

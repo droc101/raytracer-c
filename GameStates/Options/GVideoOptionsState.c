@@ -10,6 +10,7 @@
 #include "../../Helpers/Graphics/Font.h"
 #include "../../Helpers/Graphics/RenderingHelpers.h"
 #include "../../Structs/GlobalState.h"
+#include "../../Structs/Level.h"
 #include "../../Structs/Options.h"
 #include "../../Structs/UI/Controls/Button.h"
 #include "../../Structs/UI/Controls/CheckBox.h"
@@ -31,7 +32,7 @@ void BtnVideoOptionsBack()
 					   "Yes",
 					   "No");
 	}
-	GOptionsStateSet();
+	GOptionsStateSet(optionsStateInGame);
 }
 
 char *SliderLabelMSAA(const Control *slider)
@@ -86,9 +87,17 @@ void GVideoOptionsStateUpdate(GlobalState * /*State*/)
 	}
 }
 
-void GVideoOptionsStateRender(GlobalState * /*State*/)
+void GVideoOptionsStateRender(GlobalState *state)
 {
-	RenderMenuBackground();
+	if (optionsStateInGame)
+	{
+		RenderLevel(state);
+		SetColorUint(0x80000000);
+		DrawRect(0, 0, WindowWidth(), WindowHeight());
+	} else
+	{
+		RenderMenuBackground();
+	}
 
 	DrawTextAligned("Video Options",
 					32,
