@@ -34,6 +34,12 @@ void SldOptionsMouseSensitivity(const double value)
 	GetState()->options.mouseSpeed = value;
 }
 
+void SldOptionsRumbleStrength(const double value)
+{
+	GetState()->options.rumbleStrength = value;
+	Rumble(1.0, 200);
+}
+
 void CbOptionsControllerMode(const bool value)
 {
 	GetState()->options.controllerMode = value;
@@ -84,6 +90,19 @@ void GInputOptionsStateSet()
 										  CbOptionsControllerMode,
 										  TOP_CENTER,
 										  GetState()->options.controllerMode));
+		opY += opSpacing;
+		UiStackPush(inputOptionsStack,
+					CreateSliderControl(v2(0, opY),
+										v2(480, 40),
+										"Rumble Strength",
+										SldOptionsRumbleStrength,
+										TOP_CENTER,
+										0.0,
+										1.0,
+										GetState()->options.rumbleStrength,
+										0.25,
+										0.25,
+										SliderLabelPercent));
 		opY += opSpacing;
 
 

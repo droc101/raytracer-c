@@ -225,6 +225,7 @@ struct Options
 	// Controls
 	bool controllerMode; // Whether the game is in controller mode
 	double mouseSpeed; // The look speed (it affects controller speed too)
+	float rumbleStrength; // The strength of the rumble
 
 	// Video
 	Renderer renderer; // The renderer to use

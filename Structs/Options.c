@@ -20,6 +20,7 @@ void DefaultOptions(Options *options)
 	options->controllerMode = false;
 	options->msaa = MSAA_4X;
 	options->mipmaps = true;
+	options->rumbleStrength = 1.0f;
 }
 
 bool ValidateOptions(const Options *options)
