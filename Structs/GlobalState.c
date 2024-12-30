@@ -60,10 +60,8 @@ void InitState()
 
 void UpdateVolume()
 {
-	const double sfxVol = state.options.sfxVolume;
-	const double musicVol = state.options.musicVolume;
-	const double masterVol = state.options.masterVolume;
-	Mix_MasterVolume((int)(masterVol * MIX_MAX_VOLUME));
+	const double sfxVol = state.options.sfxVolume * state.options.masterVolume;
+	const double musicVol = state.options.musicVolume * state.options.masterVolume;
 	Mix_Volume(-1, (int)(sfxVol * MIX_MAX_VOLUME));
 	Mix_VolumeMusic((int)(musicVol * MIX_MAX_VOLUME));
 }
