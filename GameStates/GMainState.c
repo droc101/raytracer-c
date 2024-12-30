@@ -24,6 +24,7 @@ void GMainStateUpdate(GlobalState *State)
 {
 	if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_START))
 	{
+		PlaySoundEffect(gzwav_sfx_popup);
 		GPauseStateSet();
 		return;
 	}
