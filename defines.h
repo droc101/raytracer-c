@@ -226,6 +226,7 @@ struct Options
 	bool controllerMode; // Whether the game is in controller mode
 	double mouseSpeed; // The look speed (it affects controller speed too)
 	float rumbleStrength; // The strength of the rumble
+	bool cameraInvertX; // Whether to invert the camera X axis (controller only)
 
 	// Video
 	Renderer renderer; // The renderer to use

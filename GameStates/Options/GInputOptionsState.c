@@ -45,6 +45,11 @@ void CbOptionsControllerMode(const bool value)
 	GetState()->options.controllerMode = value;
 }
 
+void CbOptionsInvertCamera(const bool value)
+{
+	GetState()->options.cameraInvertX = value;
+}
+
 void GInputOptionsStateRender(GlobalState * /*State*/)
 {
 	RenderMenuBackground();
@@ -103,6 +108,14 @@ void GInputOptionsStateSet()
 										0.25,
 										0.25,
 										SliderLabelPercent));
+		opY += opSpacing;
+		UiStackPush(inputOptionsStack,
+					CreateCheckboxControl(v2(0, opY),
+										  v2(480, 40),
+										  "Invert Camera (Controller Only)",
+										  CbOptionsInvertCamera,
+										  TOP_CENTER,
+										  GetState()->options.cameraInvertX));
 		opY += opSpacing;
 
 

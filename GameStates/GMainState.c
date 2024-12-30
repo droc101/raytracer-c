@@ -69,14 +69,14 @@ void GMainStateUpdate(GlobalState *State)
 	State->level->player.angle += GetMouseRel().x * (State->options.mouseSpeed / 120.0);
 }
 
-void GMainStateFixedUpdate(GlobalState *State, double delta)
+void GMainStateFixedUpdate(GlobalState *state, double delta)
 {
-	if (State->textBoxActive)
+	if (state->textBoxActive)
 	{
 		return;
 	}
 
-	Level *l = State->level;
+	Level *l = state->level;
 	Vector2 moveVec = v2(0, 0);
 	if (UseController())
 	{
@@ -134,10 +134,14 @@ void GMainStateFixedUpdate(GlobalState *State, double delta)
 
 	if (UseController())
 	{
-		const double cx = GetAxis(SDL_CONTROLLER_AXIS_RIGHTX);
+		double cx = GetAxis(SDL_CONTROLLER_AXIS_RIGHTX);
+		if (state->options.cameraInvertX)
+		{
+			cx *= -1;
+		}
 		if (fabs(cx) > 0.1)
 		{
-			l->player.angle += cx * (State->options.mouseSpeed / 11.25);
+			l->player.angle += cx * (state->options.mouseSpeed / 11.25);
 		}
 	}
 
@@ -146,19 +150,19 @@ void GMainStateFixedUpdate(GlobalState *State, double delta)
 	{
 		if (isMoving)
 		{
-			State->cameraY = sin(State->physicsFrame / 7.0) * 0.005 - 0.1;
+			state->cameraY = sin(state->physicsFrame / 7.0) * 0.005 - 0.1;
 		} else
 		{
-			State->cameraY = lerp(State->cameraY, -0.1, 0.1);
+			state->cameraY = lerp(state->cameraY, -0.1, 0.1);
 		}
 	} else
 	{
 		if (isMoving)
 		{
-			State->cameraY = sin(State->physicsFrame / 7.0) * 0.04;
+			state->cameraY = sin(state->physicsFrame / 7.0) * 0.04;
 		} else
 		{
-			State->cameraY = lerp(State->cameraY, 0, 0.1);
+			state->cameraY = lerp(state->cameraY, 0, 0.1);
 		}
 	}
 
@@ -170,7 +174,7 @@ void GMainStateFixedUpdate(GlobalState *State, double delta)
 		a->Update(a, delta);
 	}
 
-	State->physicsFrame++;
+	state->physicsFrame++;
 }
 
 // ReSharper disable once CppParameterMayBeConstPtrOrRef

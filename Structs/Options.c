@@ -21,6 +21,7 @@ void DefaultOptions(Options *options)
 	options->msaa = MSAA_4X;
 	options->mipmaps = true;
 	options->rumbleStrength = 1.0f;
+	options->cameraInvertX = true;
 }
 
 bool ValidateOptions(const Options *options)
