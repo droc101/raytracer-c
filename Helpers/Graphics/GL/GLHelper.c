@@ -405,6 +405,7 @@ GLuint GL_LoadTextureFromAsset(const unsigned char *imageData)
 	{
 		if (glIsTexture(GL_Textures[GL_AssetTextureMap[id]]))
 		{
+			glBindTexture(GL_TEXTURE_2D, GL_Textures[GL_AssetTextureMap[id]]);
 			return GL_AssetTextureMap[id];
 		}
 	}
@@ -423,7 +424,7 @@ int GL_RegisterTexture(const unsigned char *pixelData, const int width, const in
 	const int slot = GL_NextFreeSlot;
 
 	glGenTextures(1, &GL_Textures[slot]);
-	glActiveTexture(GL_TEXTURE0 + slot);
+	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, GL_Textures[slot]);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixelData);
 
@@ -486,7 +487,7 @@ void GL_DrawTexture_Internal(const Vector2 pos,
 {
 	glUseProgram(uiTextured->program);
 
-	const GLuint tex = GL_LoadTextureFromAsset(imageData);
+	GL_LoadTextureFromAsset(imageData);
 
 	const float a = (color >> 24 & 0xFF) / 255.0f;
 	const float r = (color >> 16 & 0xFF) / 255.0f;
@@ -500,8 +501,6 @@ void GL_DrawTexture_Internal(const Vector2 pos,
 				region_start.y,
 				region_end.x,
 				region_end.y);
-
-	glUniform1i(glGetUniformLocation(uiTextured->program, "alb"), tex);
 
 	const Vector2 ndcPos = v2(GL_X_TO_NDC(pos.x), GL_Y_TO_NDC(pos.y));
 	const Vector2 ndcPosEnd = v2(GL_X_TO_NDC(pos.x + size.x), GL_Y_TO_NDC(pos.y + size.y));
@@ -657,9 +656,7 @@ void GL_DrawWall(const Wall *w, const mat4 *mdl, const Camera *cam, const Level 
 {
 	glUseProgram(wall->program);
 
-	const GLuint tex = GL_LoadTextureFromAsset(w->tex);
-
-	glUniform1i(glGetUniformLocation(wall->program, "alb"), tex);
+	GL_LoadTextureFromAsset(w->tex);
 
 	glUniformMatrix4fv(glGetUniformLocation(wall->program, "MODEL_WORLD_MATRIX"),
 					   1,
@@ -715,9 +712,7 @@ void GL_DrawFloor(const Vector2 vp1,
 {
 	glUseProgram(floorAndCeiling->program);
 
-	const GLuint tex = GL_LoadTextureFromAsset(texture);
-
-	glUniform1i(glGetUniformLocation(floorAndCeiling->program, "alb"), tex);
+	GL_LoadTextureFromAsset(texture);
 
 	glUniformMatrix4fv(glGetUniformLocation(floorAndCeiling->program, "WORLD_VIEW_MATRIX"),
 					   1,
@@ -766,9 +761,7 @@ void GL_DrawShadow(const Vector2 vp1, const Vector2 vp2, const mat4 *mvp, const 
 {
 	glUseProgram(shadow->program);
 
-	const GLuint tex = GL_LoadTextureFromAsset(gztex_vfx_shadow);
-
-	glUniform1i(glGetUniformLocation(shadow->program, "alb"), tex);
+	GL_LoadTextureFromAsset(gztex_vfx_shadow);
 
 	glUniformMatrix4fv(glGetUniformLocation(shadow->program, "WORLD_VIEW_MATRIX"),
 					   1,
@@ -868,7 +861,7 @@ void GL_DrawTexturedArrays(const float *vertices,
 {
 	glUseProgram(uiTextured->program);
 
-	const GLuint tex = GL_LoadTextureFromAsset(imageData);
+	GL_LoadTextureFromAsset(imageData);
 
 	const float a = (color >> 24 & 0xFF) / 255.0f;
 	const float r = (color >> 16 & 0xFF) / 255.0f;
@@ -878,8 +871,6 @@ void GL_DrawTexturedArrays(const float *vertices,
 	glUniform4f(glGetUniformLocation(uiTextured->program, "col"), r, g, b, a);
 
 	glUniform4f(glGetUniformLocation(uiTextured->program, "region"), -1, 0, 0, 0);
-
-	glUniform1i(glGetUniformLocation(uiTextured->program, "alb"), tex);
 
 	glBindVertexArray(glBuffer->vao);
 
@@ -993,9 +984,7 @@ void GL_RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const byte *
 
 	glUseProgram(shd->program);
 
-	const GLuint tex = GL_LoadTextureFromAsset(texture);
-
-	glUniform1i(glGetUniformLocation(shd->program, "alb"), tex);
+	GL_LoadTextureFromAsset(texture);
 
 	glUniformMatrix4fv(glGetUniformLocation(shd->program, "MODEL_WORLD_MATRIX"),
 					   1,
