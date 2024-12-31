@@ -56,7 +56,7 @@ bool FindGameController()
 	return false;
 }
 
-void Rumble(const float strength, const int time)
+void Rumble(const float strength, const uint time)
 {
 	if (UseController() && haptic != NULL)
 	{

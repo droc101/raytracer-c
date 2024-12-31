@@ -184,6 +184,6 @@ bool UseController();
  * @param strength The base strength of the rumble (0.0 - 1.0)
  * @param time The time to rumble in milliseconds
  */
-void Rumble(const float strength, const int time);
+void Rumble(const float strength, const uint time);
 
 #endif //GAME_INPUT_H
