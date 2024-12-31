@@ -2,7 +2,7 @@
 
 ![](Assets/actor/BLOB2.png)
 
-Old-School FPS game written in C using [SDL2](https://www.libsdl.org/) for input and audio, GL/Vulkan for rendering, and [zlib](https://www.zlib.net/) for asset compression.
+Old-School FPS game written in C using [SDL3](https://www.libsdl.org/) for input and audio, GL/Vulkan for rendering, and [zlib](https://www.zlib.net/) for asset compression.
 Runs on Windows and Linux.
 
 ### Building
