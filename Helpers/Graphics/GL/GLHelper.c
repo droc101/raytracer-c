@@ -900,8 +900,6 @@ inline void GL_UpdateViewportSize()
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
-	LogDebug("New vp size: %dx%d\n", w, h);
-
 	GL_Textures[0] = fbtex;
 }
 
