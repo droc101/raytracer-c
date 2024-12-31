@@ -54,6 +54,9 @@ void ExecPathInit(const int argc, char *argv[])
 void InitSDL()
 {
 	SDL_SetHint(SDL_HINT_APP_NAME, GAME_TITLE);
+#ifdef __LINUX__
+	SDL_SetHint(SDL_HINT_VIDEODRIVER, "wayland,x11"); // required to fix an nvidia bug with glCopyTexImage2D
+#endif
 
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMECONTROLLER | SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC) != 0)
 	{

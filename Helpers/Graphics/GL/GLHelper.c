@@ -884,7 +884,7 @@ inline void GL_UpdateViewportSize()
 	SDL_GL_GetDrawableSize(GetGameWindow(), &w, &h);
 	glViewport(0, 0, w, h);
 
-	if (glIsTexture(GL_Textures[0]))
+	if (GL_Textures[0] != -1)
 	{
 		glDeleteTextures(1, &GL_Textures[0]);
 	}
