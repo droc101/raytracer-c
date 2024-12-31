@@ -101,7 +101,7 @@ bool ProcessUiStack(UiStack *stack)
 		c->anchoredPosition = CalculateControlPosition(c);
 	}
 
-	if (IsMouseButtonPressed(SDL_BUTTON_LEFT) || IsButtonPressed(SDL_CONTROLLER_BUTTON_A))
+	if (IsMouseButtonPressed(SDL_BUTTON_LEFT) || IsButtonPressed(SDL_GAMEPAD_BUTTON_SOUTH))
 	{
 		stack->focusedControl = stack->ActiveControl;
 		stack->ActiveControlState = ACTIVE;
@@ -115,7 +115,7 @@ bool ProcessUiStack(UiStack *stack)
 	{
 		stack->ActiveControl = stack->focusedControl;
 		stack->ActiveControlState = HOVER;
-		if (IsButtonPressed(SDL_CONTROLLER_BUTTON_A))
+		if (IsButtonPressed(SDL_GAMEPAD_BUTTON_SOUTH))
 		{
 			stack->ActiveControlState = ACTIVE;
 		}
@@ -135,7 +135,7 @@ bool ProcessUiStack(UiStack *stack)
 				stack->ActiveControl = i;
 				if (IsMouseButtonPressed(SDL_BUTTON_LEFT) ||
 					IsKeyJustPressed(SDL_SCANCODE_SPACE) ||
-					IsButtonJustPressed(SDL_CONTROLLER_BUTTON_A))
+					IsButtonJustPressed(SDL_GAMEPAD_BUTTON_SOUTH))
 				{
 					stack->ActiveControlState = ACTIVE;
 					// make this control the focused control
@@ -151,7 +151,7 @@ bool ProcessUiStack(UiStack *stack)
 
 	// process tab and shift+tab to cycle through controls
 	if ((IsKeyJustPressed(SDL_SCANCODE_TAB) && !IsKeyPressed(SDL_SCANCODE_LSHIFT)) ||
-		IsButtonJustPressed(SDL_CONTROLLER_BUTTON_DPAD_DOWN))
+		IsButtonJustPressed(SDL_GAMEPAD_BUTTON_DPAD_DOWN))
 	{
 		if (stack->focusedControl == -1)
 		{
@@ -161,7 +161,7 @@ bool ProcessUiStack(UiStack *stack)
 			stack->focusedControl = (stack->focusedControl + 1) % stack->Controls->size;
 		}
 	} else if ((IsKeyJustPressed(SDL_SCANCODE_TAB) && IsKeyPressed(SDL_SCANCODE_LSHIFT)) ||
-			   IsButtonJustPressed(SDL_CONTROLLER_BUTTON_DPAD_UP))
+			   IsButtonJustPressed(SDL_GAMEPAD_BUTTON_DPAD_UP))
 	{
 		if (stack->focusedControl == -1)
 		{
@@ -280,7 +280,7 @@ bool HasKeyboardActivation(UiStack * /*stack*/, Control * /*Control*/)
 {
 	return IsKeyJustPressed(SDL_SCANCODE_RETURN) ||
 		   IsKeyJustPressed(SDL_SCANCODE_SPACE) ||
-		   IsButtonJustReleased(SDL_CONTROLLER_BUTTON_A);
+		   IsButtonJustReleased(SDL_GAMEPAD_BUTTON_SOUTH);
 }
 
 bool HasActivation(UiStack *stack, Control *Control)

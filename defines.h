@@ -5,10 +5,11 @@
 #ifndef GAME_DEFINES_H
 #define GAME_DEFINES_H
 
-#include <SDL.h>
-#include <SDL_mixer.h>
+#include <SDL3/SDL.h>
+#include <SDL3_mixer/SDL_mixer.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include "config.h"
 #include "Helpers/Core/List.h"
 

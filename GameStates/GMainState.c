@@ -22,7 +22,7 @@
 
 void GMainStateUpdate(GlobalState *State)
 {
-	if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_START))
+	if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE) || IsButtonJustPressed(SDL_GAMEPAD_BUTTON_START))
 	{
 		PlaySoundEffect(gzwav_sfx_popup);
 		GPauseStateSet();
@@ -38,7 +38,7 @@ void GMainStateUpdate(GlobalState *State)
 
 	if (State->textBoxActive)
 	{
-		if (IsKeyJustPressed(SDL_SCANCODE_SPACE) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_A))
+		if (IsKeyJustPressed(SDL_SCANCODE_SPACE) || IsButtonJustPressed(SDL_GAMEPAD_BUTTON_SOUTH))
 		{
 			State->textBoxPage++;
 			if (State->textBoxPage >= StringLineCount(State->textBox.text) / State->textBox.rows)
@@ -81,8 +81,8 @@ void GMainStateFixedUpdate(GlobalState *state, double delta)
 	Vector2 moveVec = v2(0, 0);
 	if (UseController())
 	{
-		moveVec.y = GetAxis(SDL_CONTROLLER_AXIS_LEFTX);
-		moveVec.x = -GetAxis(SDL_CONTROLLER_AXIS_LEFTY);
+		moveVec.y = GetAxis(SDL_GAMEPAD_AXIS_LEFTX);
+		moveVec.x = -GetAxis(SDL_GAMEPAD_AXIS_LEFTY);
 		if (fabs(moveVec.x) < 0.1)
 		{
 			moveVec.x = 0;
@@ -94,18 +94,18 @@ void GMainStateFixedUpdate(GlobalState *state, double delta)
 
 	} else
 	{
-		if (IsKeyPressed(SDL_SCANCODE_W) || GetAxis(SDL_CONTROLLER_AXIS_LEFTY) < -0.5)
+		if (IsKeyPressed(SDL_SCANCODE_W) || GetAxis(SDL_GAMEPAD_AXIS_LEFTY) < -0.5)
 		{
 			moveVec.x += 1;
-		} else if (IsKeyPressed(SDL_SCANCODE_S) || GetAxis(SDL_CONTROLLER_AXIS_LEFTY) > 0.5)
+		} else if (IsKeyPressed(SDL_SCANCODE_S) || GetAxis(SDL_GAMEPAD_AXIS_LEFTY) > 0.5)
 		{
 			moveVec.x -= 1;
 		}
 
-		if (IsKeyPressed(SDL_SCANCODE_A) || GetAxis(SDL_CONTROLLER_AXIS_LEFTX) < -0.5)
+		if (IsKeyPressed(SDL_SCANCODE_A) || GetAxis(SDL_GAMEPAD_AXIS_LEFTX) < -0.5)
 		{
 			moveVec.y -= 1;
-		} else if (IsKeyPressed(SDL_SCANCODE_D) || GetAxis(SDL_CONTROLLER_AXIS_LEFTX) > 0.5)
+		} else if (IsKeyPressed(SDL_SCANCODE_D) || GetAxis(SDL_GAMEPAD_AXIS_LEFTX) > 0.5)
 		{
 			moveVec.y += 1;
 		}
@@ -121,7 +121,7 @@ void GMainStateFixedUpdate(GlobalState *state, double delta)
 
 
 	double speed = MOVE_SPEED;
-	if (IsKeyPressed(SDL_SCANCODE_LSHIFT) || GetAxis(SDL_CONTROLLER_AXIS_TRIGGERLEFT) > 0.5)
+	if (IsKeyPressed(SDL_SCANCODE_LSHIFT) || GetAxis(SDL_GAMEPAD_AXIS_LEFT_TRIGGER) > 0.5)
 	{
 		speed = SLOW_MOVE_SPEED;
 	}
@@ -135,7 +135,7 @@ void GMainStateFixedUpdate(GlobalState *state, double delta)
 
 	if (UseController())
 	{
-		double cx = GetAxis(SDL_CONTROLLER_AXIS_RIGHTX);
+		double cx = GetAxis(SDL_GAMEPAD_AXIS_RIGHTX);
 		if (state->options.cameraInvertX)
 		{
 			cx *= -1;

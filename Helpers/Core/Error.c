@@ -40,7 +40,7 @@ _Noreturn void _ErrorInternal(char *error, const char *file, const int line, con
 	if (GetGameWindow() != NULL)
 	{
 		GetState()->freezeEvents = true;
-		SDL_SetRelativeMouseMode(SDL_FALSE);
+		SDL_SetWindowRelativeMouseMode(GetGameWindow(), false);
 	}
 
 	char messageBuffer[256];
@@ -60,10 +60,10 @@ _Noreturn void _ErrorInternal(char *error, const char *file, const int line, con
 			VERSION,
 			SDL_MAJOR_VERSION,
 			SDL_MINOR_VERSION,
-			SDL_PATCHLEVEL,
+			SDL_MICRO_VERSION,
 			SDL_MIXER_MAJOR_VERSION,
 			SDL_MIXER_MINOR_VERSION,
-			SDL_MIXER_PATCHLEVEL,
+			SDL_MIXER_MICRO_VERSION,
 			ZLIB_VERSION);
 
 	SDL_MessageBoxData mb;
@@ -77,14 +77,14 @@ _Noreturn void _ErrorInternal(char *error, const char *file, const int line, con
 #endif
 
 	SDL_MessageBoxButtonData buttons[buttonCount];
-	buttons[0].buttonid = 0;
+	buttons[0].buttonID = 0;
 	buttons[0].text = "Exit";
 	buttons[0].flags = SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
-	buttons[1].buttonid = 1;
+	buttons[1].buttonID = 1;
 	buttons[1].text = "Restart";
 	buttons[1].flags = 0;
 #ifdef BUILDSTYLE_DEBUG
-	buttons[2].buttonid = 2;
+	buttons[2].buttonID = 2;
 	buttons[2].text = "Debug";
 	buttons[2].flags = 0;
 #endif
@@ -136,10 +136,10 @@ void PromptRelaunch(const char *title, const char *description, const char *yesB
 	mb.title = title;
 
 	SDL_MessageBoxButtonData buttons[2];
-	buttons[0].buttonid = 0;
+	buttons[0].buttonID = 0;
 	buttons[0].text = noBtn;
 	buttons[0].flags = 0;
-	buttons[1].buttonid = 1;
+	buttons[1].buttonID = 1;
 	buttons[1].text = yesBtn;
 	buttons[1].flags = SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
 
@@ -178,10 +178,10 @@ _Noreturn void RenderInitError()
 
 	mb.numbuttons = 2;
 	SDL_MessageBoxButtonData buttons[2];
-	buttons[0].buttonid = 0;
+	buttons[0].buttonID = 0;
 	buttons[0].text = GetState()->options.renderer == RENDERER_OPENGL ? "Try Vulkan" : "Try OpenGL";
 	buttons[0].flags = SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
-	buttons[1].buttonid = 1;
+	buttons[1].buttonID = 1;
 	buttons[1].text = "Exit";
 	buttons[1].flags = 0;
 

@@ -137,15 +137,16 @@ add_executable(
         Debug/FrameBenchmark.h
 )
 
+# TODO: Windows Support
 set(SDL2_PATH "${CMAKE_SOURCE_DIR}/lib/SDL2/x86_64-w64-mingw32")
 set(SDL2_MIXER_PATH "${CMAKE_SOURCE_DIR}/lib/SDL2_mixer/x86_64-w64-mingw32")
 set(ZLIB_ROOT "${CMAKE_SOURCE_DIR}/lib/zlib")
 
-find_package(SDL2 REQUIRED) # Platform abstraction
-include_directories(${SDL2_INCLUDE_DIR})
+find_package(SDL3 REQUIRED) # Platform abstraction
+include_directories(${SDL3_INCLUDE_DIR})
 
-find_package(SDL2_mixer REQUIRED) # Audio
-include_directories(${SDL2_MIXER_INCLUDE_DIR})
+find_package(SDL3_mixer REQUIRED) # Audio
+include_directories(${SDL3_MIXER_INCLUDE_DIR})
 
 find_package(ZLIB REQUIRED) # Decompression
 include_directories(${ZLIB_INCLUDE_DIRS})
@@ -169,7 +170,7 @@ elseif (WIN32) # Thank you Windows, I hate you.
 endif ()
 
 if (UNIX)
-    target_link_libraries(game -lGL -lGLU ${SDL2_LIBRARY} ${ZLIB_LIBRARIES} ${SDL2_MIXER_LIBRARY} m SDL2 SDL2_mixer z ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES}) # extra l* flags are needed on Linux
+    target_link_libraries(game -lGL -lGLU ${SDL3_LIBRARY} ${ZLIB_LIBRARIES} ${SDL3_MIXER_LIBRARY} m SDL3 SDL3_mixer z ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES}) # extra l* flags are needed on Linux
 elseif (WIN32)
     target_link_libraries(game PRIVATE ${SDL2_LIBRARY} ${ZLIB_LIBRARIES} ${SDL2_MIXER_LIBRARY} ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} opengl32 dwmapi) # Don't pass extra l* flags on Windows (it isn't happy with them)
 endif ()

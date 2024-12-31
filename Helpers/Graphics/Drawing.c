@@ -13,7 +13,7 @@
 #include "../Core/Logging.h"
 #include "GL/GLHelper.h"
 #include "RenderingHelpers.h"
-#include "SDL.h"
+#include <SDL3/SDL.h>
 
 SDL_Window *window;
 
@@ -81,7 +81,7 @@ SDL_Surface *ToSDLSurface(const unsigned char *imageData, const char *filterMode
 
 	const byte *decompressedImage = DecompressAsset(imageData);
 
-	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, filterMode);
+	// SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, filterMode); // TODO: Determine if needed
 
 	const uint imageWidth = ReadUintA(decompressedImage, IMAGE_WIDTH_OFFSET);
 	const uint imageHeight = ReadUintA(decompressedImage, IMAGE_HEIGHT_OFFSET);

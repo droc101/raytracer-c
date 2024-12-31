@@ -48,7 +48,7 @@ char *SliderLabelMSAA(const Control *slider)
 void CbOptionsFullscreen(const bool value)
 {
 	GetState()->options.fullscreen = value;
-	SDL_SetWindowFullscreen(GetGameWindow(), value ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+	SDL_SetWindowFullscreen(GetGameWindow(), value ? SDL_WINDOW_FULLSCREEN : 0);
 }
 
 void RbOptionsRenderer(const bool /*value*/, const byte /*groupId*/, const byte id)
@@ -81,7 +81,7 @@ void SldOptionsMsaa(const double value)
 
 void GVideoOptionsStateUpdate(GlobalState * /*State*/)
 {
-	if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_B))
+	if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE) || IsButtonJustPressed(SDL_GAMEPAD_BUTTON_EAST))
 	{
 		BtnVideoOptionsBack();
 	}

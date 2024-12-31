@@ -110,19 +110,19 @@ void HandleControllerAxis(const SDL_GameControllerAxis axis, const Sint16 value)
 	const double dValue = value / 32767.0;
 	switch (axis)
 	{
-		case SDL_CONTROLLER_AXIS_LEFTX:
+		case SDL_GAMEPAD_AXIS_LEFTX:
 			leftStick.x = dValue;
 			break;
-		case SDL_CONTROLLER_AXIS_LEFTY:
+		case SDL_GAMEPAD_AXIS_LEFTY:
 			leftStick.y = dValue;
 			break;
-		case SDL_CONTROLLER_AXIS_RIGHTX:
+		case SDL_GAMEPAD_AXIS_RIGHTX:
 			rightStick.x = dValue;
 			break;
 		case SDL_CONTROLLER_AXIS_RIGHTY:
 			rightStick.y = dValue;
 			break;
-		case SDL_CONTROLLER_AXIS_TRIGGERLEFT:
+		case SDL_GAMEPAD_AXIS_LEFT_TRIGGER:
 			triggers.x = dValue;
 			break;
 		case SDL_CONTROLLER_AXIS_TRIGGERRIGHT:
@@ -290,15 +290,15 @@ double GetAxis(const SDL_GameControllerAxis axis)
 {
 	switch (axis)
 	{
-		case SDL_CONTROLLER_AXIS_LEFTX:
+		case SDL_GAMEPAD_AXIS_LEFTX:
 			return leftStick.x;
-		case SDL_CONTROLLER_AXIS_LEFTY:
+		case SDL_GAMEPAD_AXIS_LEFTY:
 			return leftStick.y;
-		case SDL_CONTROLLER_AXIS_RIGHTX:
+		case SDL_GAMEPAD_AXIS_RIGHTX:
 			return rightStick.x;
 		case SDL_CONTROLLER_AXIS_RIGHTY:
 			return rightStick.y;
-		case SDL_CONTROLLER_AXIS_TRIGGERLEFT:
+		case SDL_GAMEPAD_AXIS_LEFT_TRIGGER:
 			return triggers.x;
 		case SDL_CONTROLLER_AXIS_TRIGGERRIGHT:
 			return triggers.y;

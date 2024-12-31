@@ -95,10 +95,10 @@ void UpdateSlider(UiStack *stack, Control *c, Vector2 /*localMousePos*/, uint ct
 	// handle l and r arrow keys
 	if (stack->focusedControl == ctlIndex)
 	{
-		if (IsKeyJustPressed(SDL_SCANCODE_LEFT) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_DPAD_LEFT))
+		if (IsKeyJustPressed(SDL_SCANCODE_LEFT) || IsButtonJustPressed(SDL_GAMEPAD_BUTTON_DPAD_LEFT))
 		{
 			ConsumeKey(SDL_SCANCODE_LEFT);
-			ConsumeButton(SDL_CONTROLLER_BUTTON_DPAD_LEFT);
+			ConsumeButton(SDL_GAMEPAD_BUTTON_DPAD_LEFT);
 			data->value -= data->step;
 			if (data->value < data->min)
 			{
@@ -108,10 +108,10 @@ void UpdateSlider(UiStack *stack, Control *c, Vector2 /*localMousePos*/, uint ct
 			{
 				data->callback(data->value);
 			}
-		} else if (IsKeyJustPressed(SDL_SCANCODE_RIGHT) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_DPAD_RIGHT))
+		} else if (IsKeyJustPressed(SDL_SCANCODE_RIGHT) || IsButtonJustPressed(SDL_GAMEPAD_BUTTON_DPAD_RIGHT))
 		{
 			ConsumeKey(SDL_SCANCODE_RIGHT);
-			ConsumeButton(SDL_CONTROLLER_BUTTON_DPAD_RIGHT);
+			ConsumeButton(SDL_GAMEPAD_BUTTON_DPAD_RIGHT);
 			data->value += data->step;
 			if (data->value > data->max)
 			{

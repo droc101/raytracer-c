@@ -3,8 +3,7 @@
 //
 
 #include "PhysicsThread.h"
-#include <SDL_thread.h>
-
+#include <SDL3/SDL_thread.h>
 #include "../../defines.h"
 #include "../../Structs/GlobalState.h"
 #include "Error.h"
@@ -12,7 +11,7 @@
 #include "Timing.h"
 
 SDL_Thread *PhysicsThread;
-SDL_mutex *PhysicsThreadMutex;
+SDL_Mutex *PhysicsThreadMutex;
 
 /**
  * The function to run in the physics thread

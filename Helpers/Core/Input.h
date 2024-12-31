@@ -16,11 +16,11 @@ void HandleControllerDisconnect(Sint32 which);
 
 void HandleControllerConnect();
 
-void HandleControllerButtonUp(SDL_GameControllerButton button);
+void HandleControllerButtonUp(SDL_GamepadButton button);
 
-void HandleControllerButtonDown(SDL_GameControllerButton button);
+void HandleControllerButtonDown(SDL_GamepadButton button);
 
-void HandleControllerAxis(SDL_GameControllerAxis axis, Sint16 value);
+void HandleControllerAxis(SDL_GamepadAxis axis, Sint16 value);
 
 /**
  * Handles key down event
@@ -171,7 +171,7 @@ void ConsumeAllMouseButtons();
  * @param axis The axis to get the value of
  * @return The value of the axis (between -1 and 1)
  */
-double GetAxis(SDL_GameControllerAxis axis);
+double GetAxis(SDL_GamepadAxis axis);
 
 /**
  * Checks if a controller is being used

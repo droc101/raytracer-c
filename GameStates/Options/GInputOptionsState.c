@@ -24,7 +24,7 @@ void BtnInputOptionsBack()
 
 void GInputOptionsStateUpdate(GlobalState * /*State*/)
 {
-	if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_B))
+	if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE) || IsButtonJustPressed(SDL_GAMEPAD_BUTTON_EAST))
 	{
 		BtnInputOptionsBack();
 	}
