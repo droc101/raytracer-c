@@ -138,8 +138,8 @@ add_executable(
 )
 
 # TODO: Windows Support
-set(SDL2_PATH "${CMAKE_SOURCE_DIR}/lib/SDL2/x86_64-w64-mingw32")
-set(SDL2_MIXER_PATH "${CMAKE_SOURCE_DIR}/lib/SDL2_mixer/x86_64-w64-mingw32")
+set(SDL3_PATH "${CMAKE_SOURCE_DIR}/lib/SDL3/x86_64-w64-mingw32")
+set(SDL3_MIXER_PATH "${CMAKE_SOURCE_DIR}/lib/SDL3_mixer/x86_64-w64-mingw32")
 set(ZLIB_ROOT "${CMAKE_SOURCE_DIR}/lib/zlib")
 
 find_package(SDL3 REQUIRED) # Platform abstraction
@@ -172,7 +172,7 @@ endif ()
 if (UNIX)
     target_link_libraries(game -lGL -lGLU ${SDL3_LIBRARY} ${ZLIB_LIBRARIES} ${SDL3_MIXER_LIBRARY} m SDL3 SDL3_mixer z ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES}) # extra l* flags are needed on Linux
 elseif (WIN32)
-    target_link_libraries(game PRIVATE ${SDL2_LIBRARY} ${ZLIB_LIBRARIES} ${SDL2_MIXER_LIBRARY} ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} opengl32 dwmapi) # Don't pass extra l* flags on Windows (it isn't happy with them)
+    target_link_libraries(game PRIVATE ${SDL3_LIBRARY} ${ZLIB_LIBRARIES} ${SDL3_MIXER_LIBRARY} ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} opengl32 dwmapi) # Don't pass extra l* flags on Windows (it isn't happy with them)
 endif ()
 
 add_custom_target( # Python script for generating assets code
