@@ -5,6 +5,7 @@
 #include "GLHelper.h"
 
 #include <cglm/cglm.h>
+#include <SDL3/SDL_video.h>
 #include "../../../Assets/AssetReader.h"
 #include "../../../Assets/Assets.h"
 #include "../../../Structs/GlobalState.h"
@@ -98,7 +99,7 @@ bool GL_Init(SDL_Window *wnd)
 	err = glewInit();
 	if (err != GLEW_OK)
 	{
-		SDL_GL_DeleteContext(ctx);
+		SDL_GL_DestroyContext(ctx);
 		GL_Error("Failed to start OpenGL. Your GPU or drivers may not support OpenGL 4.6.");
 		return false;
 	}
@@ -164,7 +165,7 @@ void GL_UpdateFramebufferTexture()
 	glBindTexture(GL_TEXTURE_2D, GL_Textures[0]);
 	int w;
 	int h;
-	SDL_GL_GetDrawableSize(GetGameWindow(), &w, &h);
+	SDL_GetWindowSizeInPixels(GetGameWindow(), &w, &h);
 
 	glReadBuffer(GL_BACK);
 
@@ -298,7 +299,7 @@ void GL_DestroyGL()
 	glUseProgram(0);
 	glDisableVertexAttribArray(0);
 	GL_DestroyBuffer(glBuffer);
-	SDL_GL_DeleteContext(ctx);
+	SDL_GL_DestroyContext(ctx);
 }
 
 inline float GL_X_TO_NDC(const float x)
@@ -881,7 +882,7 @@ inline void GL_Disable3D()
 inline void GL_UpdateViewportSize()
 {
 	int w, h;
-	SDL_GL_GetDrawableSize(GetGameWindow(), &w, &h);
+	SDL_GetWindowSizeInPixels(GetGameWindow(), &w, &h);
 	glViewport(0, 0, w, h);
 
 	if (GL_Textures[0] != -1)

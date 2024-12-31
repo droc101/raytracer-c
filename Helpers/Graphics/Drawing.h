@@ -51,10 +51,9 @@ void DrawRect(int x, int y, int w, int h);
 /**
  * Convert a texture asset to an SDL_Surface
  * @param imageData Decompressed image data
- * @param filterMode Texture filtering mode
  * @return The @c SDL_Surface
  */
-SDL_Surface *ToSDLSurface(const unsigned char *imageData, const char *filterMode);
+SDL_Surface *ToSDLSurface(const unsigned char *imageData);
 
 /**
  * Set the color to draw with

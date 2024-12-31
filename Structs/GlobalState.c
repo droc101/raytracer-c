@@ -148,26 +148,25 @@ void ChangeLevel(Level *l)
 
 void ChangeMusic(const byte *asset)
 {
-	// TODO: Fix
+	if (!state.isAudioStarted) return;
+	if (AssetGetType(asset) != ASSET_TYPE_MP3)
+	{
+		LogWarning("ChangeMusic Error: Asset is not a music file.\n");
+		return;
+	}
 
-	// if (!state.isAudioStarted) return;
-	// if (AssetGetType(asset) != ASSET_TYPE_MP3)
-	// {
-	// 	LogWarning("ChangeMusic Error: Asset is not a music file.\n");
-	// 	return;
-	// }
-	//
-	// StopMusic(); // stop the current music and free its data
-	// const byte *mp3 = DecompressAsset(asset);
-	// const uint mp3Size = AssetGetSize(asset);
-	// Mix_Music *mus = Mix_LoadMUS_RW(SDL_RWFromConstMem(mp3, mp3Size), 1);
-	// if (mus == NULL)
-	// {
-	// 	printf("Mix_LoadMUS_RW Error: %s\n", Mix_GetError());
-	// 	return;
-	// }
-	// state.music = mus;
-	// Mix_FadeInMusic(mus, -1, 500);
+	StopMusic(); // stop the current music and free its data
+	const byte *mp3 = DecompressAsset(asset);
+	const uint mp3Size = AssetGetSize(asset);
+
+	Mix_Music *mus = Mix_LoadMUS_IO(SDL_IOFromConstMem(mp3, mp3Size), 1);
+	if (mus == NULL)
+	{
+		printf("Mix_LoadMUS_RW Error: %s\n", SDL_GetError());
+		return;
+	}
+	state.music = mus;
+	Mix_FadeInMusic(mus, -1, 500);
 }
 
 void StopMusic()
@@ -184,34 +183,33 @@ void StopMusic()
 
 void PlaySoundEffect(const byte *asset)
 {
-	// TODO: Fix
 
-	// if (!state.isAudioStarted) return;
-	// if (AssetGetType(asset) != ASSET_TYPE_WAV)
-	// {
-	// 	LogError("PlaySoundEffect Error: Asset is not a sound effect file.\n");
-	// 	return;
-	// }
-	//
-	// const byte *wav = DecompressAsset(asset);
-	// const uint wavSize = AssetGetSize(asset);
-	// Mix_Chunk *chunk = Mix_LoadWAV_RW(SDL_RWFromConstMem(wav, wavSize), 1);
-	// if (chunk == NULL)
-	// {
-	// 	LogError("Mix_LoadWAV_RW Error: %s\n", Mix_GetError());
-	// 	return;
-	// }
-	// for (int i = 0; i < SFX_CHANNEL_COUNT; i++)
-	// {
-	// 	if (state.channels[i] == NULL)
-	// 	{
-	// 		state.channels[i] = chunk;
-	// 		Mix_PlayChannel(i, chunk, 0);
-	// 		return;
-	// 	}
-	// }
-	// LogError("PlaySoundEffect Error: No available channels.\n");
-	// Mix_FreeChunk(chunk);
+	if (!state.isAudioStarted) return;
+	if (AssetGetType(asset) != ASSET_TYPE_WAV)
+	{
+		LogError("PlaySoundEffect Error: Asset is not a sound effect file.\n");
+		return;
+	}
+
+	const byte *wav = DecompressAsset(asset);
+	const uint wavSize = AssetGetSize(asset);
+	Mix_Chunk *chunk = Mix_LoadWAV_IO(SDL_IOFromConstMem(wav, wavSize), 1);
+	if (chunk == NULL)
+	{
+		LogError("Mix_LoadWAV_RW Error: %s\n", SDL_GetError());
+		return;
+	}
+	for (int i = 0; i < SFX_CHANNEL_COUNT; i++)
+	{
+		if (state.channels[i] == NULL)
+		{
+			state.channels[i] = chunk;
+			Mix_PlayChannel(i, chunk, 0);
+			return;
+		}
+	}
+	LogError("PlaySoundEffect Error: No available channels.\n");
+	Mix_FreeChunk(chunk);
 }
 
 void DestroyGlobalState()

@@ -72,7 +72,7 @@ byte *GetColorUint(const uint color)
 	return colorBuf;
 }
 
-SDL_Surface *ToSDLSurface(const unsigned char *imageData, const char *filterMode)
+SDL_Surface *ToSDLSurface(const unsigned char *imageData)
 {
 	if (AssetGetType(imageData) != ASSET_TYPE_TEXTURE)
 	{
@@ -81,22 +81,13 @@ SDL_Surface *ToSDLSurface(const unsigned char *imageData, const char *filterMode
 
 	const byte *decompressedImage = DecompressAsset(imageData);
 
-	// SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, filterMode); // TODO: Determine if needed
-
 	const uint imageWidth = ReadUintA(decompressedImage, IMAGE_WIDTH_OFFSET);
 	const uint imageHeight = ReadUintA(decompressedImage, IMAGE_HEIGHT_OFFSET);
 
 	const byte *pixelData = decompressedImage + sizeof(uint) * 4; // Skip the first 4 bytes
 
-	SDL_Surface *surface = SDL_CreateRGBSurfaceFrom((void *)pixelData,
-													imageWidth,
-													imageHeight,
-													32,
-													imageWidth * 4,
-													0x00ff0000,
-													0x0000ff00,
-													0x000000ff,
-													0xff000000);
+	SDL_Surface *surface = SDL_CreateSurfaceFrom(imageWidth, imageHeight, SDL_GetPixelFormatForMasks(32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000), pixelData, imageWidth * 4);
+
 	if (surface == NULL)
 	{
 		LogError("Failed to create surface: %s\n", SDL_GetError());
