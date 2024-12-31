@@ -186,4 +186,12 @@ bool UseController();
  */
 void Rumble(const float strength, const uint time);
 
+/**
+ * Rumble the controller (if available) with different strengths for each motor
+ * @param leftStrength The strength of the left rumble (0.0 - 1.0)
+ * @param rightStrength The strength of the right rumble (0.0 - 1.0)
+ * @param time The time to rumble in milliseconds
+ */
+void RumbleLR(const float leftStrength, const float rightStrength, const uint time);
+
 #endif //GAME_INPUT_H

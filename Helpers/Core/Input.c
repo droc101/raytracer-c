@@ -27,10 +27,8 @@ Vector2 rightStick;
 Vector2 triggers;
 
 SDL_Gamepad *controller;
-SDL_Joystick *stick;
-SDL_Haptic *haptic;
+bool ctlHaptic = false;
 
-// TODO: Controller does not support haptic, but does with SDL2
 bool FindGameController()
 {
 	int stickCount;
@@ -47,20 +45,16 @@ bool FindGameController()
 		if (SDL_IsGamepad(i))
 		{
 			controller = SDL_OpenGamepad(i);
-			stick = SDL_GetGamepadJoystick(controller);
-			if (SDL_IsJoystickHaptic(stick))
+			if (controller == NULL)
 			{
-				haptic = SDL_OpenHapticFromJoystick(stick);
-				if (SDL_InitHapticRumble(haptic) < 0)
-				{
-					LogError("Failed to initialize rumble: %s\n", SDL_GetError());
-					haptic = NULL;
-				}
-			} else
-			{
-				LogDebug("Gamepad %d does not support haptic\n", i);
-				haptic = NULL;
+				LogError("Failed to open gamepad %d: %s\n", i, SDL_GetError());
+				SDL_free(sticks);
+				return false;
 			}
+
+			SDL_PropertiesID gpp = SDL_GetGamepadProperties(controller);
+			ctlHaptic = SDL_GetBooleanProperty(gpp, SDL_PROP_GAMEPAD_CAP_RUMBLE_BOOLEAN, false);
+
 			SDL_free(sticks);
 			return true;
 		}
@@ -73,9 +67,16 @@ bool FindGameController()
 
 void Rumble(const float strength, const uint time)
 {
-	if (UseController() && haptic != NULL)
+	RumbleLR(strength, strength, time);
+}
+
+void RumbleLR(const float leftStrength, const float rightStrength, const uint time)
+{
+	if (UseController() && ctlHaptic)
 	{
-		SDL_PlayHapticRumble(haptic, strength * GetState()->options.rumbleStrength, time);
+		ushort hapticStrengthLeft = (leftStrength * GetState()->options.rumbleStrength) * 0xFFFF;
+		ushort hapticStrengthRight = (rightStrength * GetState()->options.rumbleStrength) * 0xFFFF;
+		SDL_RumbleGamepad(controller, hapticStrengthLeft, hapticStrengthRight, time);
 	}
 }
 
@@ -90,14 +91,7 @@ void HandleControllerDisconnect(const Sint32 which)
 		return;
 	}
 	SDL_CloseGamepad(controller);
-	SDL_CloseJoystick(stick);
-	if (haptic)
-	{
-		SDL_CloseHaptic(haptic);
-	}
 	controller = NULL;
-	stick = NULL;
-	haptic = NULL;
 	FindGameController(); // try to find another controller
 }
 
