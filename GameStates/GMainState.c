@@ -38,7 +38,7 @@ void GMainStateUpdate(GlobalState *State)
 
 	if (State->textBoxActive)
 	{
-		if (IsKeyJustPressed(SDL_SCANCODE_SPACE) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_A))
+		if (IsKeyJustPressed(SDL_SCANCODE_SPACE) || IsButtonJustPressed(CONTROLLER_OK))
 		{
 			State->textBoxPage++;
 			if (State->textBoxPage >= StringLineCount(State->textBox.text) / State->textBox.rows)

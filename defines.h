@@ -68,6 +68,9 @@ typedef void (*ActorDestroyFunction)(Actor *self);
 #define PHYSICS_TARGET_NS (1000000000 / PHYSICS_TARGET_TPS) // nanoseconds because precision
 #define PHYSICS_TARGET_NS_D (1000000000.0 / PHYSICS_TARGET_TPS)
 
+#define CONTROLLER_OK (GetState()->options.controllerSwapOkCancel ? SDL_CONTROLLER_BUTTON_B : SDL_CONTROLLER_BUTTON_A)
+#define CONTROLLER_CANCEL (GetState()->options.controllerSwapOkCancel ? SDL_CONTROLLER_BUTTON_A : SDL_CONTROLLER_BUTTON_B)
+
 #pragma endregion
 
 #pragma region Enum definitions
@@ -227,6 +230,7 @@ struct Options
 	double mouseSpeed; // The look speed (it affects controller speed too)
 	float rumbleStrength; // The strength of the rumble
 	bool cameraInvertX; // Whether to invert the camera X axis (controller only)
+	bool controllerSwapOkCancel; // Whether to swap the controller A and B buttons
 
 	// Video
 	Renderer renderer; // The renderer to use

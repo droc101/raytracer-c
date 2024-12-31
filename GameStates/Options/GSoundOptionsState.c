@@ -41,7 +41,7 @@ void SldOptionsSfxVolume(const double value)
 
 void GSoundOptionsStateUpdate(GlobalState * /*State*/)
 {
-	if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_B))
+	if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE) || IsButtonJustPressed(CONTROLLER_CANCEL))
 	{
 		BtnSoundOptionsBack();
 	}

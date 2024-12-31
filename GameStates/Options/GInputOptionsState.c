@@ -24,7 +24,7 @@ void BtnInputOptionsBack()
 
 void GInputOptionsStateUpdate(GlobalState * /*State*/)
 {
-	if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_B))
+	if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE) || IsButtonJustPressed(CONTROLLER_CANCEL))
 	{
 		BtnInputOptionsBack();
 	}
@@ -49,6 +49,11 @@ void CbOptionsControllerMode(const bool value)
 void CbOptionsInvertCamera(const bool value)
 {
 	GetState()->options.cameraInvertX = value;
+}
+
+void CbOptionsSwapOkCancel(const bool value)
+{
+	GetState()->options.controllerSwapOkCancel = value;
 }
 
 void GInputOptionsStateRender(GlobalState *state)
@@ -123,6 +128,14 @@ void GInputOptionsStateSet()
 										  CbOptionsInvertCamera,
 										  TOP_CENTER,
 										  GetState()->options.cameraInvertX));
+		opY += opSpacing;
+		UiStackPush(inputOptionsStack,
+					CreateCheckboxControl(v2(0, opY),
+										  v2(480, 40),
+										  "Swap OK/Cancel buttons (Controller Only)",
+										  CbOptionsSwapOkCancel,
+										  TOP_CENTER,
+										  GetState()->options.controllerSwapOkCancel));
 		opY += opSpacing;
 
 
