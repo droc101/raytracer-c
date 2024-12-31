@@ -77,6 +77,19 @@ void GInputOptionsStateRender(GlobalState *state)
 
 	ProcessUiStack(inputOptionsStack);
 	DrawUiStack(inputOptionsStack);
+
+	DrawTextAligned("Controller Options", 16, -1, v2(0, 160), v2(WindowWidth(), 40), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
+
+	if (GetState()->options.controllerMode)
+	{
+		DrawTextAligned("Controller Name:", 12, -1, v2(0, 400), v2(WindowWidth(), 40), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
+		const char *controllerName = GetControllerName();
+		if (!controllerName)
+		{
+			controllerName = "No Controller Connected";
+		}
+		DrawTextAligned(controllerName, 12, -1, v2(0, 420), v2(WindowWidth(), 40), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
+	}
 }
 
 void GInputOptionsStateSet()
@@ -99,7 +112,7 @@ void GInputOptionsStateSet()
 										0.01,
 										0.1,
 										SliderLabelPercent));
-		opY += opSpacing;
+		opY += opSpacing * 3;
 		UiStackPush(inputOptionsStack,
 					CreateCheckboxControl(v2(0, opY),
 										  v2(480, 40),
@@ -124,7 +137,7 @@ void GInputOptionsStateSet()
 		UiStackPush(inputOptionsStack,
 					CreateCheckboxControl(v2(0, opY),
 										  v2(480, 40),
-										  "Invert Camera (Controller Only)",
+										  "Invert Camera",
 										  CbOptionsInvertCamera,
 										  TOP_CENTER,
 										  GetState()->options.cameraInvertX));
@@ -132,7 +145,7 @@ void GInputOptionsStateSet()
 		UiStackPush(inputOptionsStack,
 					CreateCheckboxControl(v2(0, opY),
 										  v2(480, 40),
-										  "Swap OK/Cancel buttons (Controller Only)",
+										  "Swap OK/Cancel buttons",
 										  CbOptionsSwapOkCancel,
 										  TOP_CENTER,
 										  GetState()->options.controllerSwapOkCancel));

@@ -90,7 +90,8 @@ void HandleControllerConnect()
 {
 	if (controller)
 	{
-		return;
+		// disconnect the current controller to use the new one
+		HandleControllerDisconnect(SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(controller)));
 	}
 	FindGameController();
 }
@@ -310,4 +311,13 @@ double GetAxis(const SDL_GameControllerAxis axis)
 bool UseController()
 {
 	return GetState()->options.controllerMode && controller != NULL;
+}
+
+const char *GetControllerName()
+{
+	if (!UseController())
+	{
+		return NULL;
+	}
+	return SDL_GameControllerName(controller);
 }

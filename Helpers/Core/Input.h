@@ -186,4 +186,10 @@ bool UseController();
  */
 void Rumble(const float strength, const uint time);
 
+/**
+ * Get the name of the connected controller
+ * @return The name of the connected controller, or NULL if no controller is connected
+ */
+const char *GetControllerName();
+
 #endif //GAME_INPUT_H
