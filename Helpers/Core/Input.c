@@ -100,7 +100,7 @@ void HandleControllerConnect()
 	if (controller)
 	{
 		// disconnect the current controller to use the new one
-		HandleControllerDisconnect(SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(controller)));
+		HandleControllerDisconnect(SDL_GetJoystickID(SDL_GetGamepadJoystick(controller)));
 	}
 	FindGameController();
 }
@@ -328,5 +328,5 @@ const char *GetControllerName()
 	{
 		return NULL;
 	}
-	return SDL_GameControllerName(controller);
+	return SDL_GetGamepadName(controller);
 }

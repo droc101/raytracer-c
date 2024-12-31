@@ -97,7 +97,7 @@ void GMainStateFixedUpdate(GlobalState *state, double delta)
 		if (IsKeyPressed(SDL_SCANCODE_W) || GetAxis(SDL_GAMEPAD_AXIS_LEFTY) < -0.5)
 		{
 			moveVec.x += 1;
-		} else if (IsKeyPressed(SDL_SCANCODE_S) || GetAxis(SDL_CONTROLLER_AXIS_LEFTY) > 0.5)
+		} else if (IsKeyPressed(SDL_SCANCODE_S) || GetAxis(SDL_GAMEPAD_AXIS_LEFTY) > 0.5)
 		{
 			moveVec.x -= 1;
 		}
