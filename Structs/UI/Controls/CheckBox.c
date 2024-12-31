@@ -50,7 +50,7 @@ void UpdateCheckbox(UiStack *stack, Control *c, Vector2 /*localMousePos*/, uint 
 
 		ConsumeMouseButton(SDL_BUTTON_LEFT);
 		ConsumeKey(SDL_SCANCODE_SPACE);
-		ConsumeButton(SDL_GAMEPAD_BUTTON_SOUTH);
+		ConsumeButton(CONTROLLER_OK);
 
 		if (data->callback != NULL)
 		{

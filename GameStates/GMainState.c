@@ -38,7 +38,7 @@ void GMainStateUpdate(GlobalState *State)
 
 	if (State->textBoxActive)
 	{
-		if (IsKeyJustPressed(SDL_SCANCODE_SPACE) || IsButtonJustPressed(SDL_GAMEPAD_BUTTON_SOUTH))
+		if (IsKeyJustPressed(SDL_SCANCODE_SPACE) || IsButtonJustPressed(CONTROLLER_OK))
 		{
 			State->textBoxPage++;
 			if (State->textBoxPage >= StringLineCount(State->textBox.text) / State->textBox.rows)
@@ -97,7 +97,7 @@ void GMainStateFixedUpdate(GlobalState *state, double delta)
 		if (IsKeyPressed(SDL_SCANCODE_W) || GetAxis(SDL_GAMEPAD_AXIS_LEFTY) < -0.5)
 		{
 			moveVec.x += 1;
-		} else if (IsKeyPressed(SDL_SCANCODE_S) || GetAxis(SDL_GAMEPAD_AXIS_LEFTY) > 0.5)
+		} else if (IsKeyPressed(SDL_SCANCODE_S) || GetAxis(SDL_CONTROLLER_AXIS_LEFTY) > 0.5)
 		{
 			moveVec.x -= 1;
 		}

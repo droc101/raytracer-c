@@ -23,7 +23,7 @@ UiStack *pauseStack = NULL;
 void GPauseStateUpdate(GlobalState * /*State*/)
 {
 	if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE) ||
-		IsButtonJustPressed(SDL_GAMEPAD_BUTTON_EAST) ||
+		IsButtonJustPressed(CONTROLLER_CANCEL) ||
 		IsButtonJustPressed(SDL_GAMEPAD_BUTTON_START))
 	{
 		PlaySoundEffect(gzwav_sfx_popdown);

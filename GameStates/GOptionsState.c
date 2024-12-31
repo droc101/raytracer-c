@@ -33,7 +33,7 @@ void BtnOptionsBack()
 
 void GOptionsStateUpdate(GlobalState * /*State*/)
 {
-	if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE) || IsButtonJustPressed(SDL_GAMEPAD_BUTTON_EAST))
+	if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE) || IsButtonJustPressed(CONTROLLER_CANCEL))
 	{
 		BtnOptionsBack();
 	}
@@ -68,8 +68,8 @@ void GOptionsStateSet(bool inGame)
 	if (optionsStack == NULL)
 	{
 		optionsStack = CreateUiStack();
-		int opY = 40;
-		const int opSpacing = 25;
+		int opY = 80;
+		const int opSpacing = 45;
 
 		UiStackPush(optionsStack,
 					CreateButtonControl(v2(0, opY), v2(480, 40), "Video Options", GVideoOptionsStateSet, TOP_CENTER));

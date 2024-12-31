@@ -19,7 +19,7 @@ int GLevelSelectState_SelectedLevel = 0;
 
 void GLevelSelectStateUpdate(GlobalState * /*State*/)
 {
-	if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE) || IsButtonJustPressed(SDL_GAMEPAD_BUTTON_EAST))
+	if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE) || IsButtonJustPressed(CONTROLLER_CANCEL))
 	{
 		GMenuStateSet();
 	}
@@ -31,7 +31,7 @@ void GLevelSelectStateUpdate(GlobalState * /*State*/)
 	{
 		GLevelSelectState_SelectedLevel++;
 		GLevelSelectState_SelectedLevel = wrap(GLevelSelectState_SelectedLevel, 0, LEVEL_COUNT);
-	} else if (IsKeyJustPressed(SDL_SCANCODE_SPACE) || IsButtonJustPressed(SDL_GAMEPAD_BUTTON_SOUTH))
+	} else if (IsKeyJustPressed(SDL_SCANCODE_SPACE) || IsButtonJustPressed(CONTROLLER_OK))
 	{
 		// check if the level is a stub
 		if (gLevelEntries[GLevelSelectState_SelectedLevel].levelData == NULL)

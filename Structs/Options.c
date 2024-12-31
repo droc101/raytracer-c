@@ -22,6 +22,7 @@ void DefaultOptions(Options *options)
 	options->mipmaps = true;
 	options->rumbleStrength = 1.0f;
 	options->cameraInvertX = true;
+	options->controllerSwapOkCancel = false;
 }
 
 bool ValidateOptions(const Options *options)

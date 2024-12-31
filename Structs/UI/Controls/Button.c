@@ -46,7 +46,7 @@ void UpdateButton(UiStack *stack, Control *c, Vector2 /*localMousePos*/, uint /*
 		PlaySoundEffect(gzwav_sfx_click);
 		ConsumeMouseButton(SDL_BUTTON_LEFT);
 		ConsumeKey(SDL_SCANCODE_SPACE);
-		ConsumeButton(SDL_GAMEPAD_BUTTON_SOUTH);
+		ConsumeButton(CONTROLLER_OK);
 		data->callback();
 	}
 }
