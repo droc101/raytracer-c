@@ -75,8 +75,8 @@ void GSoundOptionsStateSet()
 	if (soundOptionsStack == NULL)
 	{
 		soundOptionsStack = CreateUiStack();
-		int opY = 40;
-		const int opSpacing = 25;
+		int opY = 80;
+		const int opSpacing = 45;
 		UiStackPush(soundOptionsStack,
 					CreateSliderControl(v2(0, opY),
 										v2(480, 40),

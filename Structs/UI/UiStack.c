@@ -216,12 +216,15 @@ Vector2 CalculateControlPosition(const Control *control)
 			break;
 		case TOP_CENTER:
 			pos.x = (WindowWidth() - control->size.x) / 2;
+			pos.y = 0;
 			break;
 		case TOP_RIGHT:
 			pos.x = WindowWidth() - control->size.x;
+			pos.y = 0;
 			break;
 		case MIDDLE_LEFT:
 			pos.y = (WindowHeight() - control->size.y) / 2;
+			pos.x = 0;
 			break;
 		case MIDDLE_CENTER:
 			pos = v2((WindowWidth() - control->size.x) / 2, (WindowHeight() - control->size.y) / 2);
@@ -231,6 +234,7 @@ Vector2 CalculateControlPosition(const Control *control)
 			break;
 		case BOTTOM_LEFT:
 			pos.y = WindowHeight() - control->size.y;
+			pos.x = 0;
 			break;
 		case BOTTOM_CENTER:
 			pos = v2((WindowWidth() - control->size.x) / 2, WindowHeight() - control->size.y);

@@ -79,8 +79,8 @@ void GInputOptionsStateSet()
 	if (inputOptionsStack == NULL)
 	{
 		inputOptionsStack = CreateUiStack();
-		int opY = 40;
-		const int opSpacing = 25;
+		int opY = 80;
+		const int opSpacing = 45;
 
 		UiStackPush(inputOptionsStack,
 					CreateSliderControl(v2(0, opY),

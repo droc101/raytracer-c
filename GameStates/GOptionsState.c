@@ -68,8 +68,8 @@ void GOptionsStateSet(bool inGame)
 	if (optionsStack == NULL)
 	{
 		optionsStack = CreateUiStack();
-		int opY = 40;
-		const int opSpacing = 25;
+		int opY = 80;
+		const int opSpacing = 45;
 
 		UiStackPush(optionsStack,
 					CreateButtonControl(v2(0, opY), v2(480, 40), "Video Options", GVideoOptionsStateSet, TOP_CENTER));

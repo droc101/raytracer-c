@@ -944,7 +944,7 @@ void UpdatePropertiesMode()
 						 node->extra,
 						 1,
 						 16,
-						 v2(10, 300),
+						 v2(10, 280),
 						 v2(200, 24),
 						 SetNodeExtraSlider,
 						 SliderActorNameLabelCallback);
@@ -954,7 +954,7 @@ void UpdatePropertiesMode()
 						 node->extra2 >> 24 & 0xFF,
 						 1,
 						 16,
-						 v2(10, 350),
+						 v2(10, 310),
 						 v2(200, 24),
 						 SetActorParamASlider,
 						 SliderLabelInteger);
@@ -964,7 +964,7 @@ void UpdatePropertiesMode()
 						 node->extra2 >> 16 & 0xFF,
 						 1,
 						 16,
-						 v2(10, 400),
+						 v2(10, 340),
 						 v2(200, 24),
 						 SetActorParamBSlider,
 						 SliderLabelInteger);
@@ -974,7 +974,7 @@ void UpdatePropertiesMode()
 						 node->extra2 >> 8 & 0xFF,
 						 1,
 						 16,
-						 v2(10, 450),
+						 v2(10, 370),
 						 v2(200, 24),
 						 SetActorParamCSlider,
 						 SliderLabelInteger);
@@ -984,7 +984,7 @@ void UpdatePropertiesMode()
 						 node->extra2 & 0xFF,
 						 1,
 						 16,
-						 v2(10, 500),
+						 v2(10, 400),
 						 v2(200, 24),
 						 SetActorParamDSlider,
 						 SliderLabelInteger);
@@ -1160,8 +1160,8 @@ void GEditorStateSet()
 										  editorSnapToGrid));
 
 		UiStackPush(editorUiStack, CreateButtonControl(v2(-60, 10), v2(120, 24), "Load", BtnLoad, TOP_RIGHT));
-		UiStackPush(editorUiStack, CreateButtonControl(v2(-60, 30), v2(120, 24), "Test", BtnTest, TOP_RIGHT));
-		UiStackPush(editorUiStack, CreateButtonControl(v2(-60, 50), v2(120, 24), "Save", BtnCopyBytecode, TOP_RIGHT));
+		UiStackPush(editorUiStack, CreateButtonControl(v2(-60, 40), v2(120, 24), "Test", BtnTest, TOP_RIGHT));
+		UiStackPush(editorUiStack, CreateButtonControl(v2(-60, 70), v2(120, 24), "Save", BtnCopyBytecode, TOP_RIGHT));
 
 		editorBaseControlCount = ListGetSize(editorUiStack->Controls);
 

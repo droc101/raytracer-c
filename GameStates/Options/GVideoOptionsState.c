@@ -115,8 +115,8 @@ void GVideoOptionsStateSet()
 	if (videoOptionsStack == NULL)
 	{
 		videoOptionsStack = CreateUiStack();
-		int opY = 40;
-		const int opSpacing = 25;
+		int opY = 80;
+		const int opSpacing = 45;
 		UiStackPush(videoOptionsStack,
 					CreateCheckboxControl(v2(0, opY),
 										  v2(480, 40),
