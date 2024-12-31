@@ -107,4 +107,10 @@ void RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const byte *tex
  */
 void RenderMenuBackground();
 
+void RenderInGameMenuBackground();
+
+void DrawBlur(const Vector2 pos,
+				 const Vector2 size,
+				 const float blurRadius);
+
 #endif //GAME_RENDERINGHELPERS_H

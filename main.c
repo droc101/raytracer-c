@@ -20,6 +20,7 @@
 #include "Helpers/Graphics/RenderingHelpers.h"
 #include "Helpers/PlatformHelpers.h"
 #include "Structs/GlobalState.h"
+#include "Structs/Vector2.h"
 
 SDL_Surface *windowIcon;
 

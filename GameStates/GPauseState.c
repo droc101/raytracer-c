@@ -8,6 +8,7 @@
 #include "../Helpers/Core/Input.h"
 #include "../Helpers/Graphics/Drawing.h"
 #include "../Helpers/Graphics/Font.h"
+#include "../Helpers/Graphics/RenderingHelpers.h"
 #include "../Helpers/LevelEntries.h"
 #include "../Structs/GlobalState.h"
 #include "../Structs/Level.h"
@@ -33,10 +34,7 @@ void GPauseStateUpdate(GlobalState * /*State*/)
 // ReSharper disable once CppParameterMayBeConstPtrOrRef
 void GPauseStateRender(GlobalState *State)
 {
-	RenderLevel(State);
-
-	SetColorUint(0x80000000);
-	DrawRect(0, 0, WindowWidth(), WindowHeight());
+	RenderInGameMenuBackground();
 
 	DrawTextAligned("Game Paused",
 					32,

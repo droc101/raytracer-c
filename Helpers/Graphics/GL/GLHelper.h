@@ -225,4 +225,8 @@ void GL_RenderLevel(const Level *l, const Camera *cam);
  */
 void GL_RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const byte *texture, ModelShader shader);
 
+void GL_DrawBlur(const Vector2 pos,
+				 const Vector2 size,
+				 const float blurRadius);
+
 #endif //GAME_GLHELPER_H

@@ -55,9 +55,7 @@ void GInputOptionsStateRender(GlobalState *state)
 {
 	if (optionsStateInGame)
 	{
-		RenderLevel(state);
-		SetColorUint(0x80000000);
-		DrawRect(0, 0, WindowWidth(), WindowHeight());
+		RenderInGameMenuBackground();
 	} else
 	{
 		RenderMenuBackground();

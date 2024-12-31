@@ -9,6 +9,7 @@
 #include "GL/GLHelper.h"
 #include "../../Assets/Assets.h"
 #include "../../Structs/Vector2.h"
+#include "../../Structs/Level.h"
 
 Renderer currentRenderer;
 
@@ -212,4 +213,30 @@ void RenderMenuBackground()
 	const Vector2 tilesOnScreen = v2(WindowWidth() / bgTileSize.x, WindowHeight() / bgTileSize.y);
 	const Vector2 tileRegion = v2(tilesOnScreen.x * bgTexSize.x, tilesOnScreen.y * bgTexSize.y);
 	DrawTextureRegion(v2(0, 0), v2(WindowWidth(), WindowHeight()), gztex_interface_menu_bg_tile, v2(0, 0), tileRegion);
+}
+
+void RenderInGameMenuBackground()
+{
+	RenderLevel(GetState());
+
+	DrawBlur(v2(0, 0), v2(WindowWidth(), WindowHeight()), 4.0f);
+
+	SetColorUint(0x80000000);
+	DrawRect(0, 0, WindowWidth(), WindowHeight());
+}
+
+void DrawBlur(const Vector2 pos,
+				 const Vector2 size,
+				 const float blurRadius)
+{
+	switch (currentRenderer)
+	{
+		case RENDERER_VULKAN:
+
+			break;
+		case RENDERER_OPENGL:
+			GL_DrawBlur(pos, size, blurRadius);
+		default:
+			break;
+	}
 }
