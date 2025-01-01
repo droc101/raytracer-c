@@ -38,7 +38,6 @@ bool FindGameController()
 		LogError("Failed to get gamepads: %s\n", SDL_GetError());
 		return false;
 	}
-	LogDebug("Stick count: %d\n", stickCount);
 	for (int si = 0; si < stickCount; si++)
 	{
 		const SDL_JoystickID i = sticks[si];
@@ -59,8 +58,6 @@ bool FindGameController()
 			LogInfo("Using controller \"%s\"\n", SDL_GetGamepadName(controller));
 			return true;
 		}
-		LogDebug("Stick %d is not a gamepad\n", i);
-
 	}
 	SDL_free(sticks);
 	return false;

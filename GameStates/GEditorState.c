@@ -9,6 +9,7 @@
 #include "../Helpers/CommonAssets.h"
 #include "../Helpers/Core/Error.h"
 #include "../Helpers/Core/Input.h"
+#include "../Helpers/Core/Logging.h"
 #include "../Helpers/Core/MathEx.h"
 #include "../Helpers/Graphics/Drawing.h"
 #include "../Helpers/Graphics/Font.h"
@@ -467,26 +468,40 @@ void BtnZoomReset()
 	editorZoom = 20.0;
 }
 
-void BtnCopyBytecode()
+void SDLCALL SaveDialogCallback(void *userdata, const char * const *filelist, int filter)
 {
-	LevelBytecode *bc = GenerateBytecode(GetState()->level);
-	char *buf = malloc(bc->size * 2 + 1);
-	chk_malloc(buf);
-	for (int i = 0; i < bc->size; i++)
+	LevelBytecode *bc = (LevelBytecode *)userdata;
+	if (!filelist || !*filelist) // error or cancel
 	{
-		sprintf(buf + i * 2, "%02x", bc->data[i]);
+		free(bc->data);
+		free(bc);
+		LogError("File dialog encountered an error or was cancelled.");
+		return;
 	}
-	buf[bc->size * 2] = '\0';
 
-	SDL_SetClipboardText(buf);
-	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,
-							 "Bytecode copied",
-							 "The level bytecode has been copied to the clipboard.",
-							 NULL);
+	const char *filename = filelist[0];
+
+	FILE *file = fopen(filename, "wb");
+	if (!file)
+	{
+		Error("Failed to open file for writing");
+	}
+	fwrite(bc->data, 1, bc->size, file);
+	fclose(file);
 
 	free(bc->data);
 	free(bc);
-	free(buf);
+}
+
+void BtnCopyBytecode()
+{
+	LevelBytecode *bc = GenerateBytecode(GetState()->level);
+
+	const SDL_DialogFileFilter filters[] = {
+		{ "Level Data File", "bin" }
+	};
+
+	SDL_ShowSaveFileDialog(SaveDialogCallback, bc, GetGameWindow(), filters, 1, NULL);
 }
 
 void ToggleSnapToGrid(const bool enabled)
