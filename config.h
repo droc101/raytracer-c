@@ -59,7 +59,7 @@
 #pragma endregion
 
 // Program information
-#define COPYRIGHT "2024 Droc101 Development"
+#define COPYRIGHT "2025 Droc101 Development"
 #define GAME_TITLE "Game." // Used for window title
 
 #define VERSION_MAJOR 0
