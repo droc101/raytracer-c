@@ -53,7 +53,10 @@ void ExecPathInit(const int argc, char *argv[])
  */
 void InitSDL()
 {
-	SDL_SetHint(SDL_HINT_APP_NAME, GAME_TITLE);
+	SDL_SetAppMetadata(GAME_TITLE, VERSION, GAME_ID);
+	SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_CREATOR_STRING, APPDATA_ORG_NAME);
+	SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_COPYRIGHT_STRING, COPYRIGHT);
+	SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_TYPE_STRING, "game");
 #ifdef SDL_PLATFORM_LINUX
 	SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "wayland,x11"); // required to fix an nvidia bug with glCopyTexImage2D
 #endif
@@ -97,7 +100,7 @@ void WindowAndRenderInit()
 	SDL_Window *window = SDL_CreateWindow(GAME_TITLE,
 									 DEF_WIDTH,
 									 DEF_HEIGHT,
-									 rendererFlags | SDL_WINDOW_RESIZABLE);
+									 rendererFlags | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY);
 	if (window == NULL)
 	{
 		LogError("SDL_CreateWindow Error: %s\n", SDL_GetError());

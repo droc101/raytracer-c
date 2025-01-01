@@ -60,8 +60,7 @@ int PhysicsThreadMain(void *)
 		ulong timeElapsed = timeEnd - timeStart;
 		if (timeElapsed < PHYSICS_TARGET_NS)
 		{
-			ulong delay_ms = (PHYSICS_TARGET_NS - timeElapsed) / 1000000;
-			SDL_Delay(delay_ms);
+			SDL_DelayNS(PHYSICS_TARGET_NS - timeElapsed);
 		}
 		timeEnd = GetTimeNs();
 		GetTimeNs();

@@ -61,6 +61,7 @@
 // Program information
 #define COPYRIGHT "2025 Droc101 Development"
 #define GAME_TITLE "Game." // Used for window title
+#define GAME_ID "dev.droc101.game"
 
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 0
