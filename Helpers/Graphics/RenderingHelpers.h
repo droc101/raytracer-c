@@ -103,14 +103,24 @@ float Y_TO_NDC(float y);
 void RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const byte *texture, ModelShader shd);
 
 /**
- * Render the background of the menu screen
+ * Render the background of the menu screen (main menu, options, level select, etc.)
  */
 void RenderMenuBackground();
 
+/**
+ * Render the background of the in-game menu (pause, in-game options, etc.)
+ */
 void RenderInGameMenuBackground();
 
-void DrawBlur(const Vector2 pos,
-				 const Vector2 size,
-				 const float blurRadius);
+/**
+ * Render a blur-background rectangle
+ * @param pos The position of the rectangle in pixels
+ * @param size The size of the rectangle in pixels
+ * @param blurRadius The radius of the blur in pixels
+ * @note This is a very slow operation, use sparingly
+ */
+void DrawBlur(Vector2 pos,
+				 Vector2 size,
+				 float blurRadius);
 
 #endif //GAME_RENDERINGHELPERS_H

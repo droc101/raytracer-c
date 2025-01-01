@@ -12,14 +12,34 @@
 #define INP_PRESSED 2
 #define INP_JUST_RELEASED 3
 
+/**
+ * Handles controller disconnect event
+ * @param which The controller that was disconnected
+ */
 void HandleControllerDisconnect(Sint32 which);
 
+/**
+ * Handles controller connect event
+ */
 void HandleControllerConnect();
 
+/**
+ * Handles controller button up event
+ * @param button The button code
+ */
 void HandleControllerButtonUp(SDL_GameControllerButton button);
 
+/**
+ * Handles controller button down event
+ * @param button The button code
+ */
 void HandleControllerButtonDown(SDL_GameControllerButton button);
 
+/**
+ * Handles controller axis event
+ * @param axis The axis code
+ * @param value The value of the axis
+ */
 void HandleControllerAxis(SDL_GameControllerAxis axis, Sint16 value);
 
 /**

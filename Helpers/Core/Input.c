@@ -50,6 +50,7 @@ bool FindGameController()
 			{
 				haptic = NULL;
 			}
+			LogInfo("Using controller \"%s\"\n", SDL_GameControllerName(controller));
 			return true;
 		}
 	}
