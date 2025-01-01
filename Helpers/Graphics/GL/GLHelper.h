@@ -8,7 +8,6 @@
 #include <cglm/cglm.h>
 #include <SDL3/SDL.h>
 #include "../Drawing.h"
-#include "SDL.h"
 
 /**
  * Set SDL_GL flags (this must be done before the SDL window is created)
