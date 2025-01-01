@@ -56,6 +56,7 @@ bool FindGameController()
 			ctlHaptic = SDL_GetBooleanProperty(gpp, SDL_PROP_GAMEPAD_CAP_RUMBLE_BOOLEAN, false);
 
 			SDL_free(sticks);
+			LogInfo("Using controller \"%s\"\n", SDL_GameControllerName(controller));
 			return true;
 		}
 		LogDebug("Stick %d is not a gamepad\n", i);

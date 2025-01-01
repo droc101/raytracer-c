@@ -13,8 +13,14 @@
 #define FLUSH_ON_WARNING true
 #define FLUSH_ON_ERROR true
 
+/**
+ * Initialize the logging system
+ */
 void LogInit();
 
+/**
+ * Destroy the logging system
+ */
 void LogDestroy();
 
 // ReSharper disable once CppConstParameterInDeclaration
