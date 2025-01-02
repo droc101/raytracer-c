@@ -6,6 +6,8 @@
 #include <cglm/clipspace/persp_lh_zo.h>
 #include <cglm/clipspace/view_lh_zo.h>
 
+#include "VulkanInternal.h"
+
 #pragma region variables
 SDL_Window *vk_window;
 bool minimized = false;
@@ -18,6 +20,7 @@ SwapChainSupportDetails swapChainSupport;
 VkDevice device = NULL;
 VkQueue graphicsQueue;
 VkQueue presentQueue;
+VkQueue transferQueue;
 VkSwapchainKHR swapChain = VK_NULL_HANDLE;
 VkImage *swapChainImages;
 uint32_t swapChainCount = 0;
@@ -31,6 +34,7 @@ VkPipelineCache pipelineCache = VK_NULL_HANDLE;
 Pipelines pipelines = {.walls = VK_NULL_HANDLE, .ui = VK_NULL_HANDLE};
 VkFramebuffer *swapChainFramebuffers = NULL;
 VkCommandPool graphicsCommandPool = VK_NULL_HANDLE;
+VkCommandPool transferCommandPool = VK_NULL_HANDLE;
 VkCommandBuffer commandBuffers[MAX_FRAMES_IN_FLIGHT];
 VkSemaphore imageAvailableSemaphores[MAX_FRAMES_IN_FLIGHT];
 VkSemaphore renderFinishedSemaphores[MAX_FRAMES_IN_FLIGHT];
@@ -43,14 +47,12 @@ MemoryPools memoryPools = {
 		.size = 0,
 		.mappedMemory = NULL,
 		.memory = VK_NULL_HANDLE,
-		.memoryTypeBits = 0,
 		.type = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 	},
 	{
 		.size = 0,
 		.mappedMemory = NULL,
 		.memory = VK_NULL_HANDLE,
-		.memoryTypeBits = 0,
 		.type = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 	},
 };
@@ -183,15 +185,22 @@ bool CreateImage(VkImage *image,
 	uint32_t pQueueFamilyIndices[queueFamilyIndices.familyCount];
 	switch (queueFamilyIndices.familyCount)
 	{
-		case 2:
-			pQueueFamilyIndices[0] = queueFamilyIndices.graphicsFamily;
-			pQueueFamilyIndices[1] = queueFamilyIndices.presentFamily;
-			break;
 		case 1:
 			pQueueFamilyIndices[0] = queueFamilyIndices.graphicsFamily;
 			break;
+		case 2:
+			pQueueFamilyIndices[0] = queueFamilyIndices.graphicsFamily;
+			pQueueFamilyIndices[1] = queueFamilyIndices.families & QUEUE_FAMILY_TRANSFER
+											 ? queueFamilyIndices.transferFamily
+											 : queueFamilyIndices.presentFamily;
+			break;
+		case 3:
+			pQueueFamilyIndices[0] = queueFamilyIndices.graphicsFamily;
+			pQueueFamilyIndices[1] = queueFamilyIndices.presentFamily;
+			pQueueFamilyIndices[2] = queueFamilyIndices.transferFamily;
+			break;
 		default:
-			VulkanLogError("Failed to create VkImageCreateInfoKHR due to invalid queueFamilyIndices!");
+			VulkanLogError("Failed to create VkSwapchainCreateInfoKHR due to invalid queueFamilyIndices!\n");
 			return false;
 	}
 
@@ -207,7 +216,8 @@ bool CreateImage(VkImage *image,
 		.samples = samples,
 		.tiling = VK_IMAGE_TILING_OPTIMAL,
 		.usage = usageFlags,
-		.sharingMode = queueFamilyIndices.familyCount == 1 ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_CONCURRENT,
+		.sharingMode = queueFamilyIndices.families & QUEUE_FAMILY_PRESENTATION ? VK_SHARING_MODE_CONCURRENT
+																			   : VK_SHARING_MODE_EXCLUSIVE,
 		.queueFamilyIndexCount = queueFamilyIndices.familyCount,
 		.pQueueFamilyIndices = pQueueFamilyIndices,
 		.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
@@ -302,24 +312,27 @@ bool EndCommandBuffer(VkCommandBuffer commandBuffer, const VkCommandPool command
 	return true;
 }
 
-bool CreateBuffer(VkBuffer *buffer,
-				  const VkDeviceSize size,
-				  const VkBufferUsageFlags usageFlags,
-				  const bool newAllocation,
-				  MemoryAllocationInfo *allocationInfo)
+bool CreateBuffer(Buffer *buffer, const bool newAllocation)
 {
 	uint32_t pQueueFamilyIndices[queueFamilyIndices.familyCount];
 	switch (queueFamilyIndices.familyCount)
 	{
-		case 2:
-			pQueueFamilyIndices[0] = queueFamilyIndices.graphicsFamily;
-			pQueueFamilyIndices[1] = queueFamilyIndices.presentFamily;
-			break;
 		case 1:
 			pQueueFamilyIndices[0] = queueFamilyIndices.graphicsFamily;
 			break;
+		case 2:
+			pQueueFamilyIndices[0] = queueFamilyIndices.graphicsFamily;
+			pQueueFamilyIndices[1] = queueFamilyIndices.families & QUEUE_FAMILY_TRANSFER
+											 ? queueFamilyIndices.transferFamily
+											 : queueFamilyIndices.presentFamily;
+			break;
+		case 3:
+			pQueueFamilyIndices[0] = queueFamilyIndices.graphicsFamily;
+			pQueueFamilyIndices[1] = queueFamilyIndices.presentFamily;
+			pQueueFamilyIndices[2] = queueFamilyIndices.transferFamily;
+			break;
 		default:
-			VulkanLogError("Failed to create VkBufferCreateInfo due to invalid queueFamilyIndices!");
+			VulkanLogError("Failed to create VkSwapchainCreateInfoKHR due to invalid queueFamilyIndices!\n");
 			return false;
 	}
 
@@ -327,23 +340,23 @@ bool CreateBuffer(VkBuffer *buffer,
 		.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
 		.pNext = NULL,
 		.flags = 0,
-		.size = size,
-		.usage = usageFlags,
-		.sharingMode = queueFamilyIndices.familyCount == 1 ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_CONCURRENT,
+		.size = buffer->size,
+		.usage = buffer->memoryAllocationInfo.usageFlags,
+		.sharingMode = queueFamilyIndices.families & QUEUE_FAMILY_PRESENTATION ? VK_SHARING_MODE_CONCURRENT
+																			   : VK_SHARING_MODE_EXCLUSIVE,
 		.queueFamilyIndexCount = queueFamilyIndices.familyCount,
 		.pQueueFamilyIndices = pQueueFamilyIndices,
 	};
 
-	VulkanTest(vkCreateBuffer(device, &bufferInfo, NULL, buffer), "Failed to create Vulkan buffer!");
+	VulkanTest(vkCreateBuffer(device, &bufferInfo, NULL, &buffer->buffer), "Failed to create Vulkan buffer!");
 
-	vkGetBufferMemoryRequirements(device, *buffer, &allocationInfo->memoryRequirements);
-	const VkDeviceSize memorySize = allocationInfo->memoryRequirements.alignment *
-									(VkDeviceSize)ceil((double)allocationInfo->memoryRequirements.size /
-													   (double)allocationInfo->memoryRequirements.alignment);
+	vkGetBufferMemoryRequirements(device, buffer->buffer, &buffer->memoryAllocationInfo.memoryRequirements);
+	const VkDeviceSize memorySize = buffer->memoryAllocationInfo.memoryRequirements.alignment *
+									(VkDeviceSize)
+											ceil((double)buffer->memoryAllocationInfo.memoryRequirements.size /
+												 (double)buffer->memoryAllocationInfo.memoryRequirements.alignment);
 
-	allocationInfo->offset = allocationInfo->memoryInfo->size;
-	allocationInfo->memoryInfo->size += memorySize;
-	allocationInfo->memoryInfo->memoryTypeBits |= allocationInfo->memoryRequirements.memoryTypeBits;
+	buffer->memoryAllocationInfo.memoryInfo->size = memorySize;
 
 	if (!newAllocation)
 	{
@@ -352,9 +365,9 @@ bool CreateBuffer(VkBuffer *buffer,
 
 	for (uint32_t i = 0; i < physicalDevice.memoryProperties.memoryTypeCount; i++)
 	{
-		if (allocationInfo->memoryRequirements.memoryTypeBits & 1 << i &&
-			(physicalDevice.memoryProperties.memoryTypes[i].propertyFlags & allocationInfo->memoryInfo->type) ==
-					allocationInfo->memoryInfo->type)
+		if (buffer->memoryAllocationInfo.memoryRequirements.memoryTypeBits & 1 << i &&
+			(physicalDevice.memoryProperties.memoryTypes[i].propertyFlags &
+			 buffer->memoryAllocationInfo.memoryInfo->type) == buffer->memoryAllocationInfo.memoryInfo->type)
 		{
 			const VkMemoryAllocateInfo allocInfo = {
 				.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
@@ -363,22 +376,25 @@ bool CreateBuffer(VkBuffer *buffer,
 				.memoryTypeIndex = i,
 			};
 
-			VulkanTest(vkAllocateMemory(device, &allocInfo, NULL, &allocationInfo->memoryInfo->memory),
+			VulkanTest(vkAllocateMemory(device, &allocInfo, NULL, &buffer->memoryAllocationInfo.memoryInfo->memory),
 					   "Failed to allocate Vulkan buffer memory!");
 
-			VulkanTest(vkBindBufferMemory(device, *buffer, allocationInfo->memoryInfo->memory, 0),
+			VulkanTest(vkBindBufferMemory(device, buffer->buffer, buffer->memoryAllocationInfo.memoryInfo->memory, 0),
 					   "Failed to bind Vulkan buffer memory!");
 
 			return true;
 		}
 	}
 
-	VulkanLogError("Failed to find suitable memory type for buffer!");
+	VulkanLogError("Failed to find suitable memory type for buffer!\n");
 
 	return false;
 }
 
-bool CopyBuffer(const VkBuffer srcBuffer, const VkBuffer dstBuffer, const VkDeviceSize size)
+bool CopyBuffer(const VkBuffer srcBuffer,
+				const VkBuffer dstBuffer,
+				const uint32_t regionCount,
+				const VkBufferCopy *regions)
 {
 	const VkCommandBuffer commandBuffer;
 	if (!BeginCommandBuffer(&commandBuffer, graphicsCommandPool))
@@ -386,8 +402,7 @@ bool CopyBuffer(const VkBuffer srcBuffer, const VkBuffer dstBuffer, const VkDevi
 		return false;
 	}
 
-	const VkBufferCopy copyRegion = {0, 0, size};
-	vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+	vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, regionCount, regions);
 
 	if (!EndCommandBuffer(commandBuffer, graphicsCommandPool, graphicsQueue))
 	{
@@ -446,6 +461,38 @@ void CleanupSyncObjects()
 
 		vkDestroyFence(device, inFlightFences[i], NULL);
 	}
+}
+
+bool RecreateSwapChain()
+{
+	VulkanTest(vkDeviceWaitIdle(device), "Failed to wait for device to become idle!");
+
+	CleanupSwapChain();
+	CleanupColorImage();
+	CleanupDepthImage();
+	CleanupPipeline();
+	CleanupSyncObjects();
+
+	return CreateSwapChain() &&
+		   CreateImageViews() &&
+		   CreateGraphicsPipelines() &&
+		   CreateColorImage() &&
+		   CreateDepthImage() &&
+		   CreateFramebuffers() &&
+		   CreateSyncObjects();
+}
+
+bool DestroyBuffer(Buffer *buffer)
+{
+	VulkanTest(vkDeviceWaitIdle(device), "Failed to wait for device to become idle!");
+
+	vkDestroyBuffer(device, buffer->buffer, NULL);
+	buffer->buffer = VK_NULL_HANDLE;
+
+	vkFreeMemory(device, buffer->memoryAllocationInfo.memoryInfo->memory, NULL);
+	buffer->memoryAllocationInfo = (MemoryAllocationInfo){0};
+
+	return true;
 }
 
 void UpdateUniformBuffer(const Camera *camera, const uint32_t currentFrame)
@@ -542,114 +589,38 @@ bool DrawQuadInternal(const mat4 vertices_posXY_uvZW, const uint32_t color, cons
 
 	if (buffers.ui.quadCount >= buffers.ui.maxQuads)
 	{
-		if (buffers.ui.quadCount >= buffers.ui.fallbackMaxQuads)
+		buffers.ui.maxQuads += 16;
+		buffers.ui.shouldResize = true;
+
+		UiVertex *newVertices = realloc(buffers.ui.vertices, sizeof(UiVertex) * buffers.ui.maxQuads * 4);
+		if (!newVertices)
 		{
-			if (buffers.ui.fallbackMaxQuads)
-			{
-				buffers.ui.fallbackMaxQuads += 16;
+			free(newVertices); // newVertices should be NULL, but it's best to be safe
+			free(buffers.ui.vertices);
+			buffers.ui.vertices = NULL;
 
-				UiVertex *newVertices = realloc(buffers.ui.fallbackVertices,
-												sizeof(UiVertex) * buffers.ui.fallbackMaxQuads * 4);
-				if (!newVertices)
-				{
-					free(newVertices);
-					free(buffers.ui.fallbackVertices);
+			VulkanLogError("realloc of UI vertex buffer data pointer failed!\n");
 
-					VulkanLogError("realloc of fallback UI vertex buffer failed!");
-
-					return false;
-				}
-				buffers.ui.fallbackVertices = newVertices;
-
-				uint32_t *newIndices = realloc(buffers.ui.fallbackVertices,
-											   sizeof(UiVertex) * buffers.ui.fallbackMaxQuads * 4);
-				if (!newIndices)
-				{
-					free(newVertices);
-					free(buffers.ui.fallbackVertices);
-
-					free(newIndices);
-					free(buffers.ui.fallbackIndices);
-
-					VulkanLogError("realloc of fallback UI index buffer failed!");
-
-					return false;
-				}
-				buffers.ui.fallbackIndices = newIndices;
-			} else
-			{
-				buffers.ui.fallbackMaxQuads = buffers.ui.maxQuads + 16;
-
-				buffers.ui.fallbackVertices = malloc(sizeof(UiVertex) * buffers.ui.fallbackMaxQuads * 4);
-				if (!buffers.ui.fallbackVertices)
-				{
-					VulkanLogError("malloc of fallback UI vertex buffer failed!");
-					return false;
-				}
-				memcpy(buffers.ui.fallbackVertices, buffers.ui.vertices, sizeof(UiVertex) * buffers.ui.maxQuads * 4);
-
-				buffers.ui.fallbackIndices = malloc(sizeof(uint32_t) * buffers.ui.fallbackMaxQuads * 6);
-				if (!buffers.ui.fallbackIndices)
-				{
-					VulkanLogError("malloc of fallback UI index buffer failed!");
-
-					return false;
-				}
-				memcpy(buffers.ui.fallbackIndices, buffers.ui.indices, sizeof(uint32_t) * buffers.ui.maxQuads * 6);
-			}
+			return false;
 		}
+		buffers.ui.vertices = newVertices;
 
-		buffers.ui.fallbackVertices[4 * buffers.ui.quadCount] = (UiVertex){
-			{
-				vertices_posXY_uvZW[0][0],
-				vertices_posXY_uvZW[0][1],
-				vertices_posXY_uvZW[0][2],
-				vertices_posXY_uvZW[0][3],
-			},
-			{r, g, b, a},
-			textureIndex,
-		};
-		buffers.ui.fallbackVertices[4 * buffers.ui.quadCount + 1] = (UiVertex){
-			{
-				vertices_posXY_uvZW[1][0],
-				vertices_posXY_uvZW[1][1],
-				vertices_posXY_uvZW[1][2],
-				vertices_posXY_uvZW[1][3],
-			},
-			{r, g, b, a},
-			textureIndex,
-		};
-		buffers.ui.fallbackVertices[4 * buffers.ui.quadCount + 2] = (UiVertex){
-			{
-				vertices_posXY_uvZW[2][0],
-				vertices_posXY_uvZW[2][1],
-				vertices_posXY_uvZW[2][2],
-				vertices_posXY_uvZW[2][3],
-			},
-			{r, g, b, a},
-			textureIndex,
-		};
-		buffers.ui.fallbackVertices[4 * buffers.ui.quadCount + 3] = (UiVertex){
-			{
-				vertices_posXY_uvZW[3][0],
-				vertices_posXY_uvZW[3][1],
-				vertices_posXY_uvZW[3][2],
-				vertices_posXY_uvZW[3][3],
-			},
-			{r, g, b, a},
-			textureIndex,
-		};
+		uint32_t *newIndices = realloc(buffers.ui.indices, sizeof(uint32_t) * buffers.ui.maxQuads * 6);
+		if (!newIndices)
+		{
+			free(newVertices); // newVertices should be NULL, but it's best to be safe
+			free(buffers.ui.vertices);
+			buffers.ui.vertices = NULL;
 
-		buffers.ui.fallbackIndices[6 * buffers.ui.quadCount] = buffers.ui.quadCount * 4;
-		buffers.ui.fallbackIndices[6 * buffers.ui.quadCount + 1] = buffers.ui.quadCount * 4 + 1;
-		buffers.ui.fallbackIndices[6 * buffers.ui.quadCount + 2] = buffers.ui.quadCount * 4 + 2;
-		buffers.ui.fallbackIndices[6 * buffers.ui.quadCount + 3] = buffers.ui.quadCount * 4;
-		buffers.ui.fallbackIndices[6 * buffers.ui.quadCount + 4] = buffers.ui.quadCount * 4 + 2;
-		buffers.ui.fallbackIndices[6 * buffers.ui.quadCount + 5] = buffers.ui.quadCount * 4 + 3;
+			free(newIndices); // newIndices should be NULL, but it's best to be safe
+			free(buffers.ui.indices);
+			buffers.ui.indices = NULL;
 
-		buffers.ui.quadCount++;
+			VulkanLogError("realloc of UI index buffer data pointer failed!\n");
 
-		return true;
+			return false;
+		}
+		buffers.ui.indices = newIndices;
 	}
 
 	buffers.ui.vertices[4 * buffers.ui.quadCount] = (UiVertex){

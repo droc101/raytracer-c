@@ -17,13 +17,13 @@ bool CreateInstance()
 	uint32_t extensionCount;
 	if (SDL_Vulkan_GetInstanceExtensions(vk_window, &extensionCount, NULL) == SDL_FALSE)
 	{
-		VulkanLogError("Failed to acquire Vulkan extensions required for SDL window!");
+		VulkanLogError("Failed to acquire Vulkan extensions required for SDL window!\n");
 		return false;
 	}
 	const char *extensionNames[extensionCount];
 	if (SDL_Vulkan_GetInstanceExtensions(vk_window, &extensionCount, extensionNames) == SDL_FALSE)
 	{
-		VulkanLogError("Failed to acquire Vulkan extensions required for SDL window!");
+		VulkanLogError("Failed to acquire Vulkan extensions required for SDL window!\n");
 		return false;
 	}
 	VkApplicationInfo applicationInfo = {
@@ -139,7 +139,7 @@ bool CreateSurface()
 {
 	if (SDL_Vulkan_CreateSurface(vk_window, instance, &surface) == SDL_FALSE)
 	{
-		VulkanLogError("Failed to create Vulkan window surface");
+		VulkanLogError("Failed to create Vulkan window surface\n");
 		return false;
 	}
 
@@ -152,7 +152,7 @@ bool PickPhysicalDevice()
 	VulkanTest(vkEnumeratePhysicalDevices(instance, &deviceCount, NULL), "Failed to enumerate physical devices!");
 	if (deviceCount == 0)
 	{
-		VulkanLogError("Failed to find any GPUs with Vulkan support!");
+		VulkanLogError("Failed to find any GPUs with Vulkan support!\n");
 		return false;
 	}
 	VkPhysicalDevice devices[deviceCount];
@@ -165,7 +165,9 @@ bool PickPhysicalDevice()
 			.graphicsFamily = -1,
 			.presentFamily = -1,
 			.uniquePresentFamily = -1,
-			.familyCount = 0,
+			.transferFamily = -1,
+			.families = QUEUE_FAMILY_GRAPHICS,
+			.familyCount = 1,
 		};
 		const VkPhysicalDevice pDevice = devices[i];
 
@@ -180,11 +182,12 @@ bool PickPhysicalDevice()
 		vkGetPhysicalDeviceQueueFamilyProperties(pDevice, &familyCount, NULL);
 		VkQueueFamilyProperties families[familyCount];
 		vkGetPhysicalDeviceQueueFamilyProperties(pDevice, &familyCount, families);
-		for (uint32_t index = 0; index < familyCount; index++)
+		for (uint32_t index = 0; index < familyCount;
+			 index++) // TODO: This does not necessarily find the most optimal presentation family
 		{
 			VkBool32 presentSupport = VK_FALSE;
 			VulkanTest(vkGetPhysicalDeviceSurfaceSupportKHR(pDevice, index, surface, &presentSupport),
-					   "Failed to check Vulkan device for presentation support!");
+					   "Failed to check device for presentation support!");
 
 			if (families[index].queueFlags & VK_QUEUE_GRAPHICS_BIT)
 			{
@@ -193,13 +196,21 @@ bool PickPhysicalDevice()
 				{
 					queueFamilyIndices.presentFamily = index;
 				}
-			} else if (presentSupport)
+			} else
 			{
-				queueFamilyIndices.uniquePresentFamily = index;
+				if (families[index].queueFlags & VK_QUEUE_TRANSFER_BIT)
+				{
+					queueFamilyIndices.transferFamily = index;
+				}
+				if (presentSupport)
+				{
+					queueFamilyIndices.uniquePresentFamily = index;
+				}
 			}
 
 			if ((queueFamilyIndices.presentFamily == -1 && queueFamilyIndices.uniquePresentFamily == -1) ||
-				queueFamilyIndices.graphicsFamily == -1)
+				queueFamilyIndices.graphicsFamily == -1 ||
+				queueFamilyIndices.transferFamily == -1)
 			{
 				continue;
 			}
@@ -211,18 +222,25 @@ bool PickPhysicalDevice()
 		{
 			queueFamilyIndices.presentFamily = queueFamilyIndices.uniquePresentFamily;
 		}
+		if (queueFamilyIndices.transferFamily == -1)
+		{
+			queueFamilyIndices.transferFamily = queueFamilyIndices.graphicsFamily;
+		}
 
-		if (queueFamilyIndices.graphicsFamily == queueFamilyIndices.presentFamily)
+		if (queueFamilyIndices.graphicsFamily != queueFamilyIndices.presentFamily)
 		{
-			queueFamilyIndices.familyCount = 1;
-		} else
+			queueFamilyIndices.families |= QUEUE_FAMILY_PRESENTATION;
+			queueFamilyIndices.familyCount++;
+		}
+		if (queueFamilyIndices.graphicsFamily != queueFamilyIndices.transferFamily)
 		{
-			queueFamilyIndices.familyCount = 2;
+			queueFamilyIndices.families |= QUEUE_FAMILY_TRANSFER;
+			queueFamilyIndices.familyCount++;
 		}
 
 		uint32_t extensionCount;
 		VulkanTest(vkEnumerateDeviceExtensionProperties(pDevice, NULL, &extensionCount, NULL),
-				   "Failed to enumerate Vulkan device extensions!");
+				   "Failed to enumerate device extensions!");
 		if (extensionCount == 0)
 		{
 			continue;
@@ -236,7 +254,7 @@ bool PickPhysicalDevice()
 			{
 				if (!QuerySwapChainSupport(pDevice))
 				{
-					VulkanLogError("Failed to query Vulkan swap chain support!");
+					VulkanLogError("Failed to query swap chain support!\n");
 					return false;
 				}
 				if (swapChainSupport.formatCount == 0 && swapChainSupport.presentModeCount == 0)
@@ -270,7 +288,7 @@ bool PickPhysicalDevice()
 
 	if (!match)
 	{
-		VulkanLogError("Failed to find a suitable GPU for Vulkan!");
+		VulkanLogError("Failed to find a suitable GPU for Vulkan!\n");
 	}
 
 	return match;
@@ -283,12 +301,23 @@ bool CreateLogicalDevice()
 	VkDeviceQueueCreateInfo queueCreateInfos[queueFamilyIndices.familyCount];
 	switch (queueFamilyIndices.familyCount)
 	{
+		case 3:
+			queueCreateInfos[2] = (VkDeviceQueueCreateInfo){
+				.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+				.pNext = NULL,
+				.flags = 0,
+				.queueFamilyIndex = queueFamilyIndices.presentFamily,
+				.queueCount = 1,
+				.pQueuePriorities = &queuePriority,
+			};
 		case 2:
 			queueCreateInfos[1] = (VkDeviceQueueCreateInfo){
 				.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
 				.pNext = NULL,
 				.flags = 0,
-				.queueFamilyIndex = queueFamilyIndices.presentFamily,
+				.queueFamilyIndex = queueFamilyIndices.families & QUEUE_FAMILY_TRANSFER
+											? queueFamilyIndices.transferFamily
+											: queueFamilyIndices.presentFamily,
 				.queueCount = 1,
 				.pQueuePriorities = &queuePriority,
 			};
@@ -303,7 +332,7 @@ bool CreateLogicalDevice()
 			};
 			break;
 		default:
-			VulkanLogError("Failed to create VkDeviceQueueCreateInfo due to invalid queueFamilyIndices!");
+			VulkanLogError("Failed to create VkDeviceQueueCreateInfo due to invalid queueFamilyIndices!\n");
 			return false;
 	}
 
@@ -339,6 +368,7 @@ bool CreateLogicalDevice()
 	VulkanTest(vkCreateDevice(physicalDevice.device, &createInfo, NULL, &device), "Failed to create Vulkan device!");
 
 	vkGetDeviceQueue(device, queueFamilyIndices.graphicsFamily, 0, &graphicsQueue);
+	vkGetDeviceQueue(device, queueFamilyIndices.transferFamily, 0, &transferQueue);
 	vkGetDeviceQueue(device, queueFamilyIndices.presentFamily, 0, &presentQueue);
 
 	return true;
@@ -353,7 +383,7 @@ bool CreateSwapChain()
 
 	if (!QuerySwapChainSupport(physicalDevice.device))
 	{
-		VulkanLogError("Failed to query Vulkan swap chain support!");
+		VulkanLogError("Failed to query Vulkan swap chain support!\n");
 		return false;
 	}
 
@@ -383,7 +413,7 @@ bool CreateSwapChain()
 	}
 	if (surfaceFormat.format == VK_FORMAT_MAX_ENUM || surfaceFormat.colorSpace == VK_COLOR_SPACE_MAX_ENUM_KHR)
 	{
-		VulkanLogError("Unable to find suitable Vulkan swap chain color format!");
+		VulkanLogError("Unable to find suitable Vulkan swap chain color format!\n");
 		return false;
 	}
 
@@ -409,15 +439,22 @@ bool CreateSwapChain()
 	uint32_t pQueueFamilyIndices[queueFamilyIndices.familyCount];
 	switch (queueFamilyIndices.familyCount)
 	{
-		case 2:
-			pQueueFamilyIndices[0] = queueFamilyIndices.graphicsFamily;
-			pQueueFamilyIndices[1] = queueFamilyIndices.presentFamily;
-			break;
 		case 1:
 			pQueueFamilyIndices[0] = queueFamilyIndices.graphicsFamily;
 			break;
+		case 2:
+			pQueueFamilyIndices[0] = queueFamilyIndices.graphicsFamily;
+			pQueueFamilyIndices[1] = queueFamilyIndices.families & QUEUE_FAMILY_TRANSFER
+											 ? queueFamilyIndices.transferFamily
+											 : queueFamilyIndices.presentFamily;
+			break;
+		case 3:
+			pQueueFamilyIndices[0] = queueFamilyIndices.graphicsFamily;
+			pQueueFamilyIndices[1] = queueFamilyIndices.presentFamily;
+			pQueueFamilyIndices[2] = queueFamilyIndices.transferFamily;
+			break;
 		default:
-			VulkanLogError("Failed to create VkSwapchainCreateInfoKHR due to invalid queueFamilyIndices!");
+			VulkanLogError("Failed to create VkSwapchainCreateInfoKHR due to invalid queueFamilyIndices!\n");
 			return false;
 	}
 
@@ -454,8 +491,8 @@ bool CreateSwapChain()
 		.imageExtent = extent,
 		.imageArrayLayers = 1,
 		.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-		.imageSharingMode = queueFamilyIndices.familyCount == 1 ? VK_SHARING_MODE_EXCLUSIVE
-																: VK_SHARING_MODE_CONCURRENT,
+		.imageSharingMode = queueFamilyIndices.families & QUEUE_FAMILY_PRESENTATION ? VK_SHARING_MODE_CONCURRENT
+																					: VK_SHARING_MODE_EXCLUSIVE,
 		.queueFamilyIndexCount = queueFamilyIndices.familyCount,
 		.pQueueFamilyIndices = pQueueFamilyIndices,
 		.preTransform = swapChainSupport.capabilities.currentTransform,
@@ -513,7 +550,7 @@ bool CreateRenderPass()
 			depthImageFormat = VK_FORMAT_D32_SFLOAT_S8_UINT;
 		} else
 		{
-			VulkanLogError("Unable to find suitable format for Vulkan depth image!");
+			VulkanLogError("Unable to find suitable format for Vulkan depth image!\n");
 			return false;
 		}
 	}
@@ -894,7 +931,7 @@ bool CreateGraphicsPipelines()
 																   AssetGetSize(gzfrag_Vulkan_wall));
 	if (!wallVertShaderModule || !wallFragShaderModule)
 	{
-		VulkanLogError("Failed to load wall shaders!");
+		VulkanLogError("Failed to load wall shaders!\n");
 		return false;
 	}
 
@@ -994,7 +1031,7 @@ bool CreateGraphicsPipelines()
 																 AssetGetSize(gzfrag_Vulkan_ui));
 	if (!uiVertShaderModule || !uiFragShaderModule)
 	{
-		VulkanLogError("Failed to load colored quad shaders!");
+		VulkanLogError("Failed to load colored quad shaders!\n");
 		return false;
 	}
 
@@ -1118,7 +1155,17 @@ bool CreateCommandPools()
 	};
 
 	VulkanTest(vkCreateCommandPool(device, &graphicsPoolInfo, NULL, &graphicsCommandPool),
-			   "Failed to create Vulkan graphics command pool!");
+			   "Failed to create graphics command pool!");
+
+	const VkCommandPoolCreateInfo transferPoolInfo = {
+		.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+		.pNext = NULL,
+		.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
+		.queueFamilyIndex = queueFamilyIndices.transferFamily,
+	};
+
+	VulkanTest(vkCreateCommandPool(device, &transferPoolInfo, NULL, &transferCommandPool),
+			   "Failed to create transfer command pool!");
 
 	return true;
 }
@@ -1258,7 +1305,7 @@ bool LoadTextures()
 		vkGetPhysicalDeviceFormatProperties(physicalDevice.device, format, &formatProperties);
 		if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
 		{
-			VulkanLogError("Vulkan texture image format does not support linear blitting!");
+			VulkanLogError("Vulkan texture image format does not support linear blitting!\n");
 			return false;
 		}
 
@@ -1315,20 +1362,18 @@ bool LoadTextures()
 		}
 	}
 
-	VkBuffer stagingBuffer;
 	MemoryInfo memoryInfo = {
-		.size = 0,
-		.mappedMemory = NULL,
-		.memory = VK_NULL_HANDLE,
-		.memoryTypeBits = 0,
 		.type = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 	};
 	MemoryAllocationInfo allocationInfo = {
-		.offset = 0,
 		.memoryInfo = &memoryInfo,
-		.memoryRequirements = {0},
+		.usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 	};
-	if (!CreateBuffer(&stagingBuffer, memorySize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, true, &allocationInfo))
+	Buffer stagingBuffer = {
+		.size = memorySize,
+		.memoryAllocationInfo = allocationInfo,
+	};
+	if (!CreateBuffer(&stagingBuffer, true))
 	{
 		return false;
 	}
@@ -1425,7 +1470,7 @@ bool LoadTextures()
 		};
 
 		vkCmdCopyBufferToImage(commandBuffer,
-							   stagingBuffer,
+							   stagingBuffer.buffer,
 							   textures[textureIndex].image,
 							   VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 							   1,
@@ -1593,10 +1638,7 @@ bool LoadTextures()
 		}
 	}
 
-	vkDestroyBuffer(device, stagingBuffer, NULL);
-	vkFreeMemory(device, memoryInfo.memory, NULL);
-
-	return true;
+	return DestroyBuffer(&stagingBuffer);
 }
 
 bool CreateTexturesImageView()
@@ -1715,17 +1757,23 @@ bool CreateTextureSampler()
 bool CreateBuffers()
 {
 	buffers.walls.maxWallCount = MAX_WALLS_INIT;
-	CreateLocalBuffer();
+	buffers.ui.maxQuads = MAX_UI_QUADS_INIT;
+	if (!CreateLocalBuffer())
+	{
+		return false;
+	}
 	SetLocalBufferAliasingInfo();
 
-	buffers.ui.maxQuads = MAX_UI_QUADS_INIT;
-	CreateSharedBuffer();
+	if (!CreateSharedBuffer())
+	{
+		return false;
+	}
 	SetSharedBufferAliasingInfo();
 
 	return true;
 }
 
-bool AllocateMemory()
+bool AllocateMemoryPools()
 {
 	if (!CreateLocalMemory())
 	{
@@ -1836,23 +1884,4 @@ bool CreateSyncObjects()
 	}
 
 	return true;
-}
-
-bool RecreateSwapChain()
-{
-	VulkanTest(vkDeviceWaitIdle(device), "Failed to wait for Vulkan device to become idle!");
-
-	CleanupSwapChain();
-	CleanupColorImage();
-	CleanupDepthImage();
-	CleanupPipeline();
-	CleanupSyncObjects();
-
-	return CreateSwapChain() &&
-		   CreateImageViews() &&
-		   CreateGraphicsPipelines() &&
-		   CreateColorImage() &&
-		   CreateDepthImage() &&
-		   CreateFramebuffers() &&
-		   CreateSyncObjects();
 }

@@ -6,13 +6,15 @@
 #define VULKANMEMORY_H
 
 #include <stdbool.h>
+#include "VulkanHelpers.h"
 
-bool AllocateLocalMemory();
-bool BindLocalMemory();
+/// memoryTypeBits is a bitmask where bit n is set if the nth memory type of the
+/// @c VkPhysicalDeviceMemoryProperties struct for the physical device is a supported memory type for the resource.
+bool AllocateMemory(MemoryInfo *memoryInfo, uint32_t memoryTypeBits);
+bool BindMemory(const Buffer *buffer);
+
 bool CreateLocalMemory();
 
-bool AllocateSharedMemory();
-bool BindSharedMemory();
 bool MapSharedMemory();
 bool CreateSharedMemory();
 

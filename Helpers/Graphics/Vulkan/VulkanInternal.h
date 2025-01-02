@@ -8,7 +8,6 @@
 
 #include <cglm/cglm.h>
 
-#pragma region internalFunctions
 /**
  * This function will create the Vulkan instance, set up for SDL.
  * @see instance
@@ -58,7 +57,7 @@ bool CreateTextureSampler();
 
 bool CreateBuffers();
 
-bool AllocateMemory();
+bool AllocateMemoryPools();
 
 bool CreateDescriptorPool();
 
@@ -67,8 +66,5 @@ bool CreateDescriptorSets();
 bool CreateCommandBuffers();
 
 bool CreateSyncObjects();
-#pragma endregion internalFunctions
-
-bool RecreateSwapChain();
 
 #endif //VULKANINTERNAL_H

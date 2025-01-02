@@ -152,8 +152,11 @@ Level *NodesToLevel()
 	return l;
 }
 
-void CreateButton(char *text, const Vector2 position, const Vector2 size,
-				  const ButtonCallback callback, bool /*enabled*/)
+void CreateButton(char *text,
+				  const Vector2 position,
+				  const Vector2 size,
+				  const ButtonCallback callback,
+				  bool /*enabled*/)
 {
 	Control *button = CreateButtonControl(position, size, text, callback, TOP_LEFT);
 	UiStackPush(editorUiStack, button);

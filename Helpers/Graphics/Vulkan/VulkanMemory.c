@@ -3,87 +3,52 @@
 //
 
 #include "VulkanMemory.h"
-#include "VulkanHelpers.h"
-
-bool AllocateLocalMemory()
+bool AllocateMemory(MemoryInfo *memoryInfo, const uint32_t memoryTypeBits)
 {
 	for (uint32_t i = 0; i < physicalDevice.memoryProperties.memoryTypeCount; i++)
 	{
-		if (memoryPools.localMemory.memoryTypeBits & 1 << i &&
-			(physicalDevice.memoryProperties.memoryTypes[i].propertyFlags & memoryPools.localMemory.type) ==
-					memoryPools.localMemory.type)
+		if (memoryTypeBits & 1 << i &&
+			(physicalDevice.memoryProperties.memoryTypes[i].propertyFlags & memoryInfo->type) == memoryInfo->type)
 		{
 			const VkMemoryAllocateInfo allocInfo = {
 				.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
 				.pNext = NULL,
-				.allocationSize = memoryPools.localMemory.size,
+				.allocationSize = memoryInfo->size,
 				.memoryTypeIndex = i,
 			};
-			VulkanTest(vkAllocateMemory(device, &allocInfo, NULL, &memoryPools.localMemory.memory),
-					   "Failed to allocate device local buffer memory!");
+			VulkanTest(vkAllocateMemory(device, &allocInfo, NULL, &memoryInfo->memory),
+					   "Failed to allocate buffer memory!");
 
 			return true;
 		}
 	}
 
-	VulkanLogError("Failed to allocate device local buffer memory!");
+	VulkanLogError("Failed to allocate buffer memory!\n");
 
-	return false;
+	return true;
 }
 
-inline bool BindLocalMemory()
+bool BindMemory(const Buffer *buffer)
 {
 	VulkanTest(vkBindBufferMemory(device,
-								  buffers.local.buffer,
-								  memoryPools.localMemory.memory,
-								  buffers.local.memoryAllocationInfo.offset),
-			   "Failed to bind local buffer memory!");
+								  buffer->buffer,
+								  buffer->memoryAllocationInfo.memoryInfo->memory,
+								  buffer->memoryAllocationInfo.offset),
+			   "Failed to bind buffer memory!");
 
 	return true;
 }
 
 inline bool CreateLocalMemory()
 {
-	AllocateLocalMemory();
-	BindLocalMemory();
-
-	return true;
-}
-
-bool AllocateSharedMemory()
-{
-	for (uint32_t i = 0; i < physicalDevice.memoryProperties.memoryTypeCount; i++)
+	if (!AllocateMemory(&memoryPools.localMemory, buffers.local.memoryAllocationInfo.memoryRequirements.memoryTypeBits))
 	{
-		if (memoryPools.sharedMemory.memoryTypeBits & 1 << i &&
-			(physicalDevice.memoryProperties.memoryTypes[i].propertyFlags & memoryPools.sharedMemory.type) ==
-					memoryPools.sharedMemory.type)
-		{
-			const VkMemoryAllocateInfo allocInfo = {
-				.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-				.pNext = NULL,
-				.allocationSize = memoryPools.sharedMemory.size,
-				.memoryTypeIndex = i,
-			};
-
-			VulkanTest(vkAllocateMemory(device, &allocInfo, NULL, &memoryPools.sharedMemory.memory),
-					   "Failed to allocate device shared buffer memory!");
-
-			return true;
-		}
+		return false;
 	}
-
-	VulkanLogError("Failed to allocate device shared buffer memory!");
-
-	return false;
-}
-
-inline bool BindSharedMemory()
-{
-	VulkanTest(vkBindBufferMemory(device,
-								  buffers.shared.buffer,
-								  memoryPools.sharedMemory.memory,
-								  buffers.shared.memoryAllocationInfo.offset),
-			   "Failed to bind shared buffer memory!");
+	if (!BindMemory(&buffers.local))
+	{
+		return false;
+	}
 
 	return true;
 }
@@ -98,12 +63,12 @@ bool MapSharedMemory()
 						   &memoryPools.sharedMemory.mappedMemory),
 			   "Failed to map shared buffer memory!");
 
-	buffers.ui.vertices = memoryPools.sharedMemory.mappedMemory +
-						  buffers.shared.memoryAllocationInfo.offset +
-						  buffers.ui.verticesOffset;
-	buffers.ui.indices = memoryPools.sharedMemory.mappedMemory +
-						 buffers.shared.memoryAllocationInfo.offset +
-						 buffers.ui.indicesOffset;
+	buffers.ui.vertexStaging = memoryPools.sharedMemory.mappedMemory +
+							   buffers.shared.memoryAllocationInfo.offset +
+							   buffers.ui.verticesStagingOffset;
+	buffers.ui.indexStaging = memoryPools.sharedMemory.mappedMemory +
+							  buffers.shared.memoryAllocationInfo.offset +
+							  buffers.ui.indicesStagingOffset;
 	for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 	{
 		buffers.translation[i].data = memoryPools.sharedMemory.mappedMemory +
@@ -116,9 +81,19 @@ bool MapSharedMemory()
 
 inline bool CreateSharedMemory()
 {
-	AllocateSharedMemory();
-	BindSharedMemory();
-	MapSharedMemory();
+	if (!AllocateMemory(&memoryPools.sharedMemory,
+						buffers.shared.memoryAllocationInfo.memoryRequirements.memoryTypeBits))
+	{
+		return false;
+	}
+	if (!BindMemory(&buffers.shared))
+	{
+		return false;
+	}
+	if (!MapSharedMemory())
+	{
+		return false;
+	}
 
 	return true;
 }

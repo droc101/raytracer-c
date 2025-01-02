@@ -100,3 +100,5 @@ readability-*,
 -readability-avoid-unconditional-preprocessor-if,
 -readability-identifier-naming,
 -readability-reference-to-constructed-temporary'
+CheckOptions:
+  bugprone-unused-return-value.CheckedFunctions: '[A-Z].+'

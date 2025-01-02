@@ -18,7 +18,7 @@
 #pragma region macros
 #define VULKAN_VERSION VK_MAKE_VERSION(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH)
 #define MAX_FRAMES_IN_FLIGHT 2
-#define MAX_UI_QUADS_INIT 8192
+#define MAX_UI_QUADS_INIT 1
 #define MAX_WALLS_INIT 1024
 
 #define VulkanLogError(...) LogInternal("VULKAN", 31, true, __VA_ARGS__)
@@ -52,7 +52,23 @@
 
 #pragma region typedefs
 /**
- * A struct to hold the indicies of the queue families for graphics and presentation.
+ * A function used to map the device memory to a host pointer
+ * @returns @c true if the memory was successfully mapped, and @c false otherwise
+ */
+typedef bool (*MemoryMappingFunction)();
+
+/**
+ * Bit flags representing unique families that are stored in @c QueueFamilyIndices
+ */
+typedef enum QueueFamily
+{
+	QUEUE_FAMILY_GRAPHICS = 1,
+	QUEUE_FAMILY_PRESENTATION = 2,
+	QUEUE_FAMILY_TRANSFER = 4,
+} QueueFamily;
+
+/**
+ * A struct to hold the indicies of the queue families for graphics, presentation, and transfer.
  * This is used to find and store the indices, which allows for picking between unique and non-unique indices.
  */
 typedef struct QueueFamilyIndices
@@ -65,9 +81,11 @@ typedef struct QueueFamilyIndices
 	uint32_t presentFamily;
 	/// If the graphics family does not support presentation this will contain the same value as @c QueueFamilyIndices::presentFamily
 	uint32_t uniquePresentFamily;
+	/// The index of the family on the GPU that will be used for transfer operations
+	uint32_t transferFamily;
+	/// A bitmask of @c QueueFamily values representing which queue families are unique.
+	uint8_t families;
 	/// The total count of unique families
-	/// @note If this is 1, then @code QueueFamilyIndices::presentFamily == QueueFamilyIndices::graphicsFamily@endcode and @code QueueFamilyIndices::uniquePresentFamily == UINT32_MAX@endcode
-	/// @note If this is 2, then @code QueueFamilyIndices::presentFamily != QueueFamilyIndices::graphicsFamily@endcode and @code QueueFamilyIndices::uniquePresentFamily == QueueFamilyIndices::presentFamily@endcode
 	uint8_t familyCount;
 } QueueFamilyIndices;
 
@@ -99,9 +117,6 @@ typedef struct MemoryInfo
 	/// The actual Vulkan memory handle.
 	/// @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkDeviceMemory.html
 	VkDeviceMemory memory;
-	/// A bitmask where bit n is set if the nth memory type of the @c VkPhysicalDeviceMemoryProperties struct for the
-	/// physical device is a supported memory type for the resource.
-	uint32_t memoryTypeBits;
 	/// A bitmask of VkMemoryPropertyFlagBits that describes the memory type.
 	/// @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkMemoryPropertyFlags.html
 	/// @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkMemoryPropertyFlagBits.html
@@ -124,6 +139,9 @@ typedef struct MemoryAllocationInfo
 	/// Information about the allocation requirements such as size, alignment, and memory type.
 	/// @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkMemoryRequirements.html
 	VkMemoryRequirements memoryRequirements;
+	/// A bitmask of usage flags that describes what the buffer is allowed to be used for.
+	/// @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkBufferUsageFlags.html
+	VkBufferUsageFlags usageFlags;
 } MemoryAllocationInfo;
 
 typedef struct MemoryPools
@@ -172,6 +190,8 @@ typedef struct Buffer
 	/// The actual Vulkan buffer handle
 	/// @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkBuffer.html
 	VkBuffer buffer;
+	/// The size of the buffer allocation.
+	VkDeviceSize size;
 	/// Stores information about what memory contains the buffer as well as where the buffer is in the memory.
 	MemoryAllocationInfo memoryAllocationInfo;
 } Buffer;
@@ -206,34 +226,50 @@ typedef struct TranslationUniformBuffer
  */
 typedef struct UiVertexBuffer
 {
+	/// A fallback pointer that can be used if it is necessary to write more than @code maxQuads * 4@endcode vertices to the buffer.
+	/// @note This pointer takes the form of @code UiVertex[fallbackMaxQuads * 4]@endcode.
+	/// @note This pointer is host only, meaning that there is no Vulkan memory backing it. This means that for the GPU to be able to access it the data must first be copied to a buffer.
+	UiVertex *vertices;
+	/// A fallback pointer that can be used if it is necessary to write more than @code maxQuads * 6@endcode indices to the buffer.
+	/// @note This pointer takes the form of @code uint32_t[fallbackMaxVertices * 6]@endcode.
+	/// @note This pointer is host only, meaning that there is no Vulkan memory backing it. This means that for the GPU to be able to access it the data must first be copied to a buffer.
+	uint32_t *indices;
+	/// The current number of vertices that are stored in the buffer.
+	uint32_t quadCount;
+	/// The maximum number of vertices that can be stored in the fallback buffer with the currently allocated memory.
+	uint32_t maxQuads;
+
 	/// The larger buffer within which this vertex buffer resides.
 	Buffer *bufferInfo;
 	/// The offset into the larger buffer at which this vertex buffer can be found.
 	VkDeviceSize verticesOffset;
 	/// The offset into the larger buffer at which the UI index buffer can be found.
 	VkDeviceSize indicesOffset;
+	/// The allocated size of the vertex buffer
+	VkDeviceSize vertexSize;
+	/// The allocated size of the index buffer
+	VkDeviceSize indexSize;
+
+	/// The larger buffer within which this vertex buffer resides.
+	Buffer *stagingBufferInfo;
+	/// The offset into the larger buffer at which this vertex buffer can be found.
+	VkDeviceSize verticesStagingOffset;
+	/// The offset into the larger buffer at which the UI index buffer can be found.
+	VkDeviceSize indicesStagingOffset;
+	/// The allocated size of the staging vertex buffer
+	VkDeviceSize vertexStagingSize;
+	/// The allocated size of the staging index buffer
+	VkDeviceSize indexStagingSize;
 	/// This pointer will be mapped directly to an offset into some larger block of memory.
 	/// It is able to be used to directly write up to @code maxQuads * 4@endcode elements of type @c UiVertex to the vertex buffer.
 	/// @note This pointer takes the form of @code UiVertex[maxQuads * 4]@endcode.
-	UiVertex *vertices;
+	UiVertex *vertexStaging;
 	/// This pointer will be mapped directly to an offset into some larger block of memory.
 	/// It is able to be used to directly write up to @code maxQuads * 4@endcode elements of type @c uint32_t to the index buffer.
 	/// @note This pointer takes the form of @code uint32_t[maxQuads * 6]@endcode.
-	uint32_t *indices;
-	/// A fallback pointer that can be used if it is necessary to write more than @code maxQuads * 4@endcode vertices to the buffer.
-	/// @note This pointer takes the form of @code UiVertex[fallbackMaxQuads * 4]@endcode.
-	/// @note This pointer is host only, meaning that there is no Vulkan memory backing it. This means that for the GPU to be able to access it the data must first be copied to a buffer.
-	UiVertex *fallbackVertices;
-	/// A fallback pointer that can be used if it is necessary to write more than @code maxQuads * 6@endcode indices to the buffer.
-	/// @note This pointer takes the form of @code uint32_t[fallbackMaxVertices * 6]@endcode.
-	/// @note This pointer is host only, meaning that there is no Vulkan memory backing it. This means that for the GPU to be able to access it the data must first be copied to a buffer.
-	uint32_t *fallbackIndices;
-	/// The current number of vertices that are stored in the buffer.
-	uint32_t quadCount;
-	/// The maximum number of vertices that can be stored in the buffer with the currently allocated memory.
-	uint32_t maxQuads;
-	/// The maximum number of vertices that can be stored in the fallback buffer with the currently allocated memory.
-	uint32_t fallbackMaxQuads;
+	uint32_t *indexStaging;
+
+	bool shouldResize;
 } UiVertexBuffer;
 
 /**
@@ -250,6 +286,10 @@ typedef struct WallVertexBuffer
 	VkDeviceSize verticesOffset;
 	/// The offset of the index buffer for the wall vertex buffer into the larger buffer allocation.
 	VkDeviceSize indicesOffset;
+	/// The allocated size of the vertex buffer
+	VkDeviceSize vertexSize;
+	/// The allocated size of the index buffer
+	VkDeviceSize indexSize;
 	/// The number of walls that are currently stored in the buffer.
 	uint32_t wallCount;
 	/// The maximum number of walls that can currently be stored in the buffer.
@@ -313,14 +353,18 @@ extern SwapChainSupportDetails swapChainSupport;
 /// @see https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#devsandqueues-devices
 /// @see https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkDevice.html
 extern VkDevice device;
-/// The graphics queue is the queue used for executing graphics command buffers and sparse bindings on the device.
+/// The graphics queue is the queue used for executing graphics command buffers on the device.
 /// @see https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#devsandqueues-queues
 /// @see https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkQueue.html
 extern VkQueue graphicsQueue;
-/// The present queue is the queue used for executing present command buffers and sparse bindings on the device.
+/// The present queue is the queue used for executing present command buffers on the device.
 /// @see https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#devsandqueues-queues
 /// @see https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkQueue.html
 extern VkQueue presentQueue;
+/// The transfer queue is the queue used for executing transfer command buffers on the device.
+/// @see https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#devsandqueues-queues
+/// @see https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkQueue.html
+extern VkQueue transferQueue;
 /// Allows Vulkan to give a surface the rendered image.
 extern VkSwapchainKHR swapChain;
 extern VkImage *swapChainImages;
@@ -335,6 +379,7 @@ extern VkPipelineCache pipelineCache;
 extern Pipelines pipelines;
 extern VkFramebuffer *swapChainFramebuffers;
 extern VkCommandPool graphicsCommandPool;
+extern VkCommandPool transferCommandPool;
 extern VkCommandBuffer commandBuffers[MAX_FRAMES_IN_FLIGHT];
 extern VkSemaphore imageAvailableSemaphores[MAX_FRAMES_IN_FLIGHT];
 extern VkSemaphore renderFinishedSemaphores[MAX_FRAMES_IN_FLIGHT];
@@ -392,13 +437,9 @@ bool BeginCommandBuffer(const VkCommandBuffer *commandBuffer, VkCommandPool comm
 
 bool EndCommandBuffer(VkCommandBuffer commandBuffer, VkCommandPool commandPool, VkQueue queue);
 
-bool CreateBuffer(VkBuffer *buffer,
-				  VkDeviceSize size,
-				  VkBufferUsageFlags usageFlags,
-				  bool newAllocation,
-				  MemoryAllocationInfo *allocationInfo);
+bool CreateBuffer(Buffer *buffer, bool newAllocation);
 
-bool CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+bool CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, uint32_t regionCount, const VkBufferCopy *regions);
 
 void CleanupSwapChain();
 
@@ -409,6 +450,10 @@ void CleanupDepthImage();
 void CleanupPipeline();
 
 void CleanupSyncObjects();
+
+bool RecreateSwapChain();
+
+bool DestroyBuffer(Buffer *buffer);
 #pragma endregion helperFunctions
 
 #pragma region drawingHelpers

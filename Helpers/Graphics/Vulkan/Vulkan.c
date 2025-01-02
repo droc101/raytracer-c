@@ -19,15 +19,14 @@ bool VK_Init(SDL_Window *window)
 		CreateImageViews() && CreateRenderPass() && CreateDescriptorSetLayouts() && CreateGraphicsPipelineCache() &&
 		CreateGraphicsPipelines() && CreateCommandPools() && CreateColorImage() && CreateDepthImage() &&
 		CreateFramebuffers() && LoadTextures() && CreateTexturesImageView() && CreateTextureSampler() &&
-		CreateBuffers() && AllocateMemory() && CreateDescriptorPool() && CreateDescriptorSets() &&
+		CreateBuffers() && AllocateMemoryPools() && CreateDescriptorPool() && CreateDescriptorSets() &&
 		CreateCommandBuffers() && CreateSyncObjects())
 	{
 		return true;
 	}
 	// clang-format on
-	VK_Cleanup();
 
-	return false;
+	return VK_Cleanup();
 }
 
 VkResult VK_FrameStart()
@@ -68,7 +67,7 @@ VkResult VK_FrameStart()
 
 VkResult VK_FrameEnd()
 {
-	if (buffers.ui.fallbackMaxQuads > 0)
+	if (buffers.ui.shouldResize)
 	{
 		if (currentFrame == 0)
 		{
@@ -84,28 +83,136 @@ VkResult VK_FrameEnd()
 								   "Failed to wait for Vulkan fences!");
 		}
 
-		mat4 *translationMatrix = malloc(sizeof(mat4));
-		memcpy(translationMatrix, buffers.translation[currentFrame].data, sizeof(mat4));
+		if (buffers.ui.verticesStagingOffset <= buffers.ui.indicesStagingOffset &&
+			buffers.ui.indicesStagingOffset == buffers.ui.verticesStagingOffset + buffers.ui.vertexStagingSize)
+		{
+			if (!ResizeBufferRegion(&buffers.shared,
+									buffers.ui.verticesStagingOffset,
+									buffers.ui.vertexStagingSize + buffers.ui.indexStagingSize,
+									sizeof(UiVertex) * buffers.ui.maxQuads * 4 +
+											sizeof(uint32_t) * buffers.ui.maxQuads * 6,
+									true,
+									MapSharedMemory))
+			{
+				return VK_ERROR_UNKNOWN;
+			}
+		} else if (buffers.ui.indicesStagingOffset < buffers.ui.verticesStagingOffset &&
+				   buffers.ui.verticesStagingOffset == buffers.ui.indicesStagingOffset + buffers.ui.indexStagingSize)
+		{
+			if (!ResizeBufferRegion(&buffers.shared,
+									buffers.ui.indicesStagingOffset,
+									buffers.ui.indexStagingSize + buffers.ui.vertexStagingSize,
+									sizeof(UiVertex) * buffers.ui.maxQuads * 4 +
+											sizeof(uint32_t) * buffers.ui.maxQuads * 6,
+									true,
+									MapSharedMemory))
+			{
+				return VK_ERROR_UNKNOWN;
+			}
+		} else
+		{
+			if (!ResizeBufferRegion(&buffers.shared,
+									buffers.ui.verticesStagingOffset,
+									buffers.ui.vertexStagingSize,
+									sizeof(UiVertex) * buffers.ui.maxQuads * 4,
+									true,
+									MapSharedMemory))
+			{
+				return VK_ERROR_UNKNOWN;
+			}
+			if (!ResizeBufferRegion(&buffers.shared,
+									buffers.ui.indicesStagingOffset,
+									buffers.ui.indexStagingSize,
+									sizeof(uint32_t) * buffers.ui.maxQuads * 6,
+									true,
+									MapSharedMemory))
+			{
+				return VK_ERROR_UNKNOWN;
+			}
+		}
 
-		vkDestroyBuffer(device, buffers.ui.bufferInfo->buffer, NULL);
-		vkFreeMemory(device, memoryPools.sharedMemory.memory, NULL);
 
-		buffers.ui.maxQuads = buffers.ui.fallbackMaxQuads;
-		buffers.ui.fallbackMaxQuads = 0;
-
-		CreateSharedBuffer();
-		SetSharedBufferAliasingInfo();
-
-		CreateSharedMemory();
-
-		memcpy(buffers.ui.vertices, buffers.ui.fallbackVertices, sizeof(UiVertex) * buffers.ui.maxQuads * 4);
-		memcpy(buffers.ui.indices, buffers.ui.fallbackIndices, sizeof(uint32_t) * buffers.ui.maxQuads * 6);
-		memcpy(buffers.translation[currentFrame].data, translationMatrix, sizeof(mat4));
+		if (buffers.ui.verticesOffset <= buffers.ui.indicesOffset &&
+			buffers.ui.indicesOffset == buffers.ui.verticesOffset + buffers.ui.vertexSize)
+		{
+			if (!ResizeBufferRegion(&buffers.local,
+									buffers.ui.verticesOffset,
+									buffers.ui.vertexSize + buffers.ui.indexSize,
+									sizeof(UiVertex) * buffers.ui.maxQuads * 4 +
+											sizeof(uint32_t) * buffers.ui.maxQuads * 6,
+									true,
+									NULL))
+			{
+				return VK_ERROR_UNKNOWN;
+			}
+		} else if (buffers.ui.indicesOffset < buffers.ui.verticesOffset &&
+				   buffers.ui.verticesOffset == buffers.ui.indicesOffset + buffers.ui.indexSize)
+		{
+			if (!ResizeBufferRegion(&buffers.local,
+									buffers.ui.indicesOffset,
+									buffers.ui.indexSize + buffers.ui.vertexSize,
+									sizeof(UiVertex) * buffers.ui.maxQuads * 4 +
+											sizeof(uint32_t) * buffers.ui.maxQuads * 6,
+									true,
+									NULL))
+			{
+				return VK_ERROR_UNKNOWN;
+			}
+		} else
+		{
+			if (!ResizeBufferRegion(&buffers.local,
+									buffers.ui.verticesOffset,
+									buffers.ui.vertexSize,
+									sizeof(UiVertex) * buffers.ui.maxQuads * 4,
+									true,
+									NULL))
+			{
+				return VK_ERROR_UNKNOWN;
+			}
+			if (!ResizeBufferRegion(&buffers.local,
+									buffers.ui.indicesOffset,
+									buffers.ui.indexSize,
+									sizeof(uint32_t) * buffers.ui.maxQuads * 6,
+									true,
+									NULL))
+			{
+				return VK_ERROR_UNKNOWN;
+			}
+		}
 
 		UpdateDescriptorSets();
 
-		free(buffers.ui.fallbackVertices);
-		free(translationMatrix);
+		buffers.ui.shouldResize = false;
+	}
+	memcpy(buffers.ui.vertexStaging, buffers.ui.vertices, sizeof(UiVertex) * buffers.ui.quadCount * 4);
+	memcpy(buffers.ui.indexStaging, buffers.ui.indices, sizeof(uint32_t) * buffers.ui.quadCount * 6);
+
+	const VkCommandBuffer commandBuffer;
+	if (!BeginCommandBuffer(&commandBuffer, transferCommandPool))
+	{
+		return false;
+	}
+
+	vkCmdCopyBuffer(commandBuffer,
+					buffers.ui.stagingBufferInfo->buffer,
+					buffers.ui.bufferInfo->buffer,
+					2,
+					(VkBufferCopy[]){
+						{
+							.srcOffset = buffers.ui.verticesStagingOffset,
+							.dstOffset = buffers.ui.verticesOffset,
+							.size = sizeof(UiVertex) * buffers.ui.quadCount * 4,
+						},
+						{
+							.srcOffset = buffers.ui.indicesStagingOffset,
+							.dstOffset = buffers.ui.indicesOffset,
+							.size = sizeof(uint32_t) * buffers.ui.quadCount * 6,
+						},
+					});
+
+	if (!EndCommandBuffer(commandBuffer, transferCommandPool, transferQueue))
+	{
+		return false;
 	}
 
 	VulkanTestReturnResult(BeginRenderPass(commandBuffers[currentFrame], swapchainImageIndex),
@@ -214,7 +321,10 @@ VkResult VK_RenderLevel(const Level *level, const Camera *camera)
 {
 	if (loadedLevel != level)
 	{
-		VK_LoadLevelWalls(level);
+		if (!VK_LoadLevelWalls(level))
+		{
+			return VK_ERROR_UNKNOWN;
+		}
 	}
 	UpdateUniformBuffer(camera, currentFrame);
 	return VK_SUCCESS;
@@ -224,7 +334,7 @@ bool VK_Cleanup()
 {
 	if (device)
 	{
-		VulkanTest(vkDeviceWaitIdle(device), "Failed to wait for Vulkan device to become idle!");
+		VulkanTest(vkDeviceWaitIdle(device), "Failed to wait for device to become idle!");
 
 		CleanupSwapChain();
 
@@ -250,15 +360,19 @@ bool VK_Cleanup()
 		vkDestroyDescriptorPool(device, descriptorPool, NULL);
 		vkDestroyDescriptorSetLayout(device, descriptorSetLayout, NULL);
 
-		vkDestroyBuffer(device, buffers.local.buffer, NULL);
-		vkDestroyBuffer(device, buffers.shared.buffer, NULL);
-
-		vkFreeMemory(device, memoryPools.localMemory.memory, NULL);
-		vkFreeMemory(device, memoryPools.sharedMemory.memory, NULL);
+		if (!DestroyBuffer(&buffers.local))
+		{
+			return false;
+		}
+		if (!DestroyBuffer(&buffers.shared))
+		{
+			return false;
+		}
 
 		CleanupSyncObjects();
 
 		vkDestroyCommandPool(device, graphicsCommandPool, NULL);
+		vkDestroyCommandPool(device, transferCommandPool, NULL);
 	}
 
 	vkDestroyDevice(device, NULL);
@@ -292,21 +406,60 @@ inline uint8_t VK_GetSampleCountFlags()
 
 bool VK_LoadLevelWalls(const Level *level)
 {
-	VkBuffer stagingBuffer;
 	void *data;
 
 	buffers.walls.wallCount = level->walls->size;
 	if (buffers.walls.wallCount > buffers.walls.maxWallCount)
 	{
-		vkDestroyBuffer(device, buffers.local.buffer, NULL);
-		vkFreeMemory(device, memoryPools.localMemory.memory, NULL);
-
 		buffers.walls.maxWallCount = buffers.walls.wallCount;
 
-		CreateLocalBuffer();
-		SetLocalBufferAliasingInfo();
-
-		CreateLocalMemory();
+		if (buffers.walls.verticesOffset <= buffers.walls.indicesOffset &&
+			buffers.walls.indicesOffset == buffers.walls.verticesOffset + buffers.walls.vertexSize)
+		{
+			if (!ResizeBufferRegion(&buffers.local,
+									buffers.walls.verticesOffset,
+									buffers.walls.vertexSize + buffers.walls.indexSize,
+									sizeof(UiVertex) * buffers.walls.maxWallCount * 4 +
+											sizeof(uint32_t) * buffers.walls.maxWallCount * 6,
+									true,
+									NULL))
+			{
+				return false;
+			}
+		} else if (buffers.walls.indicesOffset < buffers.walls.verticesOffset &&
+				   buffers.walls.verticesOffset == buffers.walls.indicesOffset + buffers.walls.indexSize)
+		{
+			if (!ResizeBufferRegion(&buffers.local,
+									buffers.walls.indicesOffset,
+									buffers.walls.indexSize + buffers.walls.vertexSize,
+									sizeof(UiVertex) * buffers.walls.maxWallCount * 4 +
+											sizeof(uint32_t) * buffers.walls.maxWallCount * 6,
+									true,
+									NULL))
+			{
+				return false;
+			}
+		} else
+		{
+			if (!ResizeBufferRegion(&buffers.local,
+									buffers.walls.verticesOffset,
+									buffers.walls.vertexSize,
+									sizeof(UiVertex) * buffers.walls.maxWallCount * 4,
+									true,
+									NULL))
+			{
+				return false;
+			}
+			if (!ResizeBufferRegion(&buffers.local,
+									buffers.walls.indicesOffset,
+									buffers.walls.indexSize,
+									sizeof(uint32_t) * buffers.walls.maxWallCount * 6,
+									true,
+									NULL))
+			{
+				return false;
+			}
+		}
 	}
 
 	WallVertex vertices[buffers.walls.wallCount * 4];
@@ -356,44 +509,49 @@ bool VK_LoadLevelWalls(const Level *level)
 		indices[6 * i + 5] = i * 4 + 3;
 	}
 
-	const VkDeviceSize bufferSize = buffers.walls.maxWallCount * (4 * sizeof(WallVertex) + 6 * sizeof(uint32_t));
-
 	MemoryInfo memoryInfo = {
-		.size = 0,
-		.mappedMemory = NULL,
-		.memory = 0,
-		.memoryTypeBits = 0,
 		.type = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 	};
-	MemoryAllocationInfo allocationInfo = {
-		.offset = 0,
+	const MemoryAllocationInfo allocationInfo = {
 		.memoryInfo = &memoryInfo,
-		.memoryRequirements = {0},
+		.usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 	};
-	if (!CreateBuffer(&stagingBuffer, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, true, &allocationInfo))
+	Buffer stagingBuffer = {
+		.memoryAllocationInfo = allocationInfo,
+		.size = buffers.walls.vertexSize + buffers.walls.indexSize,
+	};
+	if (!CreateBuffer(&stagingBuffer, true))
 	{
 		return false;
 	}
 
-	VulkanTest(vkMapMemory(device, memoryInfo.memory, 0, bufferSize, 0, &data),
-			   "Failed to map Vulkan vertex staging buffer memory!");
+	VulkanTest(vkMapMemory(device, memoryInfo.memory, 0, stagingBuffer.size, 0, &data),
+			   "Failed to map wall staging buffer memory!");
 
-	memcpy(data, vertices, 4 * buffers.walls.wallCount * sizeof(WallVertex));
-	memcpy(data + buffers.walls.indicesOffset, indices, 6 * buffers.walls.wallCount * sizeof(uint32_t));
+	memcpy(data, vertices, sizeof(WallVertex) * buffers.walls.wallCount * 4);
+	memcpy(data + buffers.walls.vertexSize, indices, sizeof(uint32_t) * buffers.walls.wallCount * 6);
 	vkUnmapMemory(device, memoryInfo.memory);
 
-
-	if (!CopyBuffer(stagingBuffer, buffers.walls.bufferInfo->buffer, bufferSize))
+	const VkBufferCopy regions[] = {
+		{
+			.srcOffset = 0,
+			.dstOffset = buffers.walls.verticesOffset,
+			.size = buffers.walls.vertexSize,
+		},
+		{
+			.srcOffset = buffers.walls.vertexSize,
+			.dstOffset = buffers.walls.indicesOffset,
+			.size = buffers.walls.indexSize,
+		},
+	};
+	if (!CopyBuffer(stagingBuffer.buffer, buffers.walls.bufferInfo->buffer, 2, regions))
 	{
 		return false;
 	}
-
-	vkDestroyBuffer(device, stagingBuffer, NULL);
-	vkFreeMemory(device, memoryInfo.memory, NULL);
 
 	loadedLevel = level;
 
-	return true;
+	return DestroyBuffer(&stagingBuffer);
 }
 
 bool VK_DrawColoredQuad(const int32_t x, const int32_t y, const int32_t w, const int32_t h, const uint32_t color)
@@ -650,10 +808,22 @@ bool VK_DrawRectOutline(const int32_t x,
 						const float thickness,
 						const uint32_t color)
 {
-	VK_DrawLine(x, y, x + w, y, thickness, color);
-	VK_DrawLine(x + w, y, x + w, y + h, thickness, color);
-	VK_DrawLine(x + w, y + h, x, y + h, thickness, color);
-	VK_DrawLine(x, y + h, x, y, thickness, color);
+	if (!VK_DrawLine(x, y, x + w, y, thickness, color))
+	{
+		return false;
+	}
+	if (!VK_DrawLine(x + w, y, x + w, y + h, thickness, color))
+	{
+		return false;
+	}
+	if (!VK_DrawLine(x + w, y + h, x, y + h, thickness, color))
+	{
+		return false;
+	}
+	if (!VK_DrawLine(x, y + h, x, y, thickness, color))
+	{
+		return false;
+	}
 
 	return true;
 }

@@ -50,7 +50,7 @@
 // Show error trace in release builds (function, source, and line #)
 #define ERROR_TRACE_IN_RELEASE
 
-#ifndef NDEBUG
+#ifdef BUILDSTYLE_DEBUG
 /**
  * Additional validation for Vulkan code
  * This will only work if the Vulkan SDK is installed on the device running the program.
@@ -61,7 +61,7 @@
 #define VK_ENABLE_VALIDATION_LAYER
 #endif
 
-#if defined(__LINUX__) && !defined(NDEBUG)
+#if defined(__LINUX__) && defined(BUILDSTYLE_DEBUG)
 /// Adds an overlay with FPS information provided by the Mesa Vulkan driver in Linux
 #define VK_ENABLE_MESA_FPS_OVERLAY
 #endif

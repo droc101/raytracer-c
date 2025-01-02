@@ -382,7 +382,8 @@ void DrawNinePatchTexture(const Vector2 pos,
 					  v2(size.x - texture_margins_px * 2, size.y - texture_margins_px * 2),
 					  imageData,
 					  v2(texture_margins_px, texture_margins_px),
-					  v2(textureSize.x - texture_margins_px * 2, textureSize.y - texture_margins_px * 2)); // middle middle
+					  v2(textureSize.x - texture_margins_px * 2,
+						 textureSize.y - texture_margins_px * 2)); // middle middle
 	DrawTextureRegion(v2(pos.x + output_margins_px, pos.y + (size.y - output_margins_px)),
 					  v2(size.x - texture_margins_px * 2, output_margins_px),
 					  imageData,
