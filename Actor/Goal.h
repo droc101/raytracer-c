@@ -9,7 +9,7 @@
 
 void GoalInit(Actor *this);
 
-void GoalUpdate(Actor *this);
+void GoalUpdate(Actor *this, double /*delta*/);
 
 void GoalDestroy(Actor *this);
 

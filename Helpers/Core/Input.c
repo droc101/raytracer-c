@@ -3,8 +3,10 @@
 //
 
 #include "Input.h"
+
 #include "../../Structs/GlobalState.h"
 #include "../../Structs/Vector2.h"
+#include "Logging.h"
 
 // every key is tracked, even if it's not used
 // this *could* be optimized, but it's not necessary
@@ -25,17 +27,42 @@ Vector2 rightStick;
 Vector2 triggers;
 
 SDL_GameController *controller;
+SDL_Joystick *stick;
+SDL_Haptic *haptic;
 
-SDL_GameController *FindGameController()
+bool FindGameController()
 {
 	for (int i = 0; i < SDL_NumJoysticks(); i++)
 	{
 		if (SDL_IsGameController(i))
 		{
-			return SDL_GameControllerOpen(i);
+			controller = SDL_GameControllerOpen(i);
+			stick = SDL_GameControllerGetJoystick(controller);
+			if (SDL_JoystickIsHaptic(stick))
+			{
+				haptic = SDL_HapticOpenFromJoystick(stick);
+				if (SDL_HapticRumbleInit(haptic) < 0)
+				{
+					LogError("Failed to initialize rumble: %s\n", SDL_GetError());
+					haptic = NULL;
+				}
+			} else
+			{
+				haptic = NULL;
+			}
+			LogInfo("Using controller \"%s\"\n", SDL_GameControllerName(controller));
+			return true;
 		}
 	}
-	return NULL;
+	return false;
+}
+
+void Rumble(const float strength, const uint time)
+{
+	if (UseController() && haptic != NULL)
+	{
+		SDL_HapticRumblePlay(haptic, strength * GetState()->options.rumbleStrength, time);
+	}
 }
 
 void HandleControllerDisconnect(const Sint32 which)
@@ -49,7 +76,14 @@ void HandleControllerDisconnect(const Sint32 which)
 		return;
 	}
 	SDL_GameControllerClose(controller);
+	SDL_JoystickClose(stick);
+	if (haptic)
+	{
+		SDL_HapticClose(haptic);
+	}
 	controller = NULL;
+	stick = NULL;
+	haptic = NULL;
 	FindGameController(); // try to find another controller
 }
 
@@ -57,9 +91,10 @@ void HandleControllerConnect()
 {
 	if (controller)
 	{
-		return;
+		// disconnect the current controller to use the new one
+		HandleControllerDisconnect(SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(controller)));
 	}
-	controller = FindGameController();
+	FindGameController();
 }
 
 void HandleControllerButtonUp(const SDL_GameControllerButton button)
@@ -277,4 +312,13 @@ double GetAxis(const SDL_GameControllerAxis axis)
 bool UseController()
 {
 	return GetState()->options.controllerMode && controller != NULL;
+}
+
+const char *GetControllerName()
+{
+	if (!UseController())
+	{
+		return NULL;
+	}
+	return SDL_GameControllerName(controller);
 }

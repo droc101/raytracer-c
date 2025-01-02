@@ -5,7 +5,6 @@
 #include "GLHelper.h"
 
 #include <cglm/cglm.h>
-#include <complex.h>
 #include "../../../Assets/AssetReader.h"
 #include "../../../Assets/Assets.h"
 #include "../../../Structs/GlobalState.h"
@@ -28,11 +27,12 @@ GL_Shader *shadow;
 GL_Shader *sky;
 GL_Shader *modelUnshaded;
 GL_Shader *modelShaded;
+GL_Shader *fbBlur;
 
 GL_Buffer *glBuffer;
 
 GLuint GL_Textures[MAX_TEXTURES];
-int GL_NextFreeSlot = 0;
+int GL_NextFreeSlot = 1; // Slot 0 is reserved for the framebuffer copy
 int GL_AssetTextureMap[ASSET_COUNT];
 char GL_LastError[512];
 
@@ -111,6 +111,7 @@ bool GL_Init(SDL_Window *wnd)
 	sky = GL_ConstructShaderFromAssets(gzshd_GL_sky_f, gzshd_GL_sky_v);
 	modelShaded = GL_ConstructShaderFromAssets(gzshd_GL_model_shaded_f, gzshd_GL_model_shaded_v);
 	modelUnshaded = GL_ConstructShaderFromAssets(gzshd_GL_model_unshaded_f, gzshd_GL_model_unshaded_v);
+	fbBlur = GL_ConstructShaderFromAssets(gzshd_GL_fb_blur_f, gzshd_GL_fb_blur_v);
 
 	if (!uiTextured ||
 		!uiColored ||
@@ -119,7 +120,8 @@ bool GL_Init(SDL_Window *wnd)
 		!shadow ||
 		!sky ||
 		!modelShaded ||
-		!modelUnshaded)
+		!modelUnshaded ||
+		!fbBlur)
 	{
 		GL_Error("Failed to compile shaders");
 		return false;
@@ -131,6 +133,8 @@ bool GL_Init(SDL_Window *wnd)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_SCISSOR_TEST);
+	glPixelStorei(GL_PACK_ALIGNMENT, 1);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
 #ifdef BUILDSTYLE_DEBUG
 	glEnable(GL_DEBUG_OUTPUT);
@@ -150,7 +154,21 @@ bool GL_Init(SDL_Window *wnd)
 
 	GL_Disable3D();
 
+	GL_UpdateViewportSize();
+
 	return true;
+}
+
+void GL_UpdateFramebufferTexture()
+{
+	glBindTexture(GL_TEXTURE_2D, GL_Textures[0]);
+	int w;
+	int h;
+	SDL_GL_GetDrawableSize(GetGameWindow(), &w, &h);
+
+	glReadBuffer(GL_BACK);
+
+	glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, w, h, 0);
 }
 
 GL_Shader *GL_ConstructShaderFromAssets(const byte *fsh, const byte *vsh)
@@ -395,6 +413,7 @@ GLuint GL_LoadTextureFromAsset(const unsigned char *imageData)
 	{
 		if (glIsTexture(GL_Textures[GL_AssetTextureMap[id]]))
 		{
+			glBindTexture(GL_TEXTURE_2D, GL_Textures[GL_AssetTextureMap[id]]);
 			return GL_AssetTextureMap[id];
 		}
 	}
@@ -413,7 +432,7 @@ int GL_RegisterTexture(const unsigned char *pixelData, const int width, const in
 	const int slot = GL_NextFreeSlot;
 
 	glGenTextures(1, &GL_Textures[slot]);
-	glActiveTexture(GL_TEXTURE0 + slot);
+	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, GL_Textures[slot]);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixelData);
 
@@ -467,6 +486,44 @@ void GL_SetTexParams(const unsigned char *imageData, const bool linear, const bo
 	}
 }
 
+void GL_DrawBlur(const Vector2 pos,
+				 const Vector2 size,
+				 const int blurRadius)
+{
+	glUseProgram(fbBlur->program);
+
+	GL_UpdateFramebufferTexture();
+
+	glUniform1i(glGetUniformLocation(fbBlur->program, "blurRadius"), blurRadius);
+
+	const Vector2 ndcPos = v2(GL_X_TO_NDC(pos.x), GL_Y_TO_NDC(pos.y));
+	const Vector2 ndcPosEnd = v2(GL_X_TO_NDC(pos.x + size.x), GL_Y_TO_NDC(pos.y + size.y));
+
+
+	const float vertices[4][2] = {
+		{ndcPos.x, ndcPos.y},
+		{ndcPosEnd.x, ndcPos.y},
+		{ndcPosEnd.x, ndcPosEnd.y},
+		{ndcPos.x, ndcPosEnd.y},
+	};
+
+	const uint indices[] = {0, 1, 2, 0, 2, 3};
+
+	glBindVertexArray(glBuffer->vao);
+
+	glBindBuffer(GL_ARRAY_BUFFER, glBuffer->vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glBuffer->ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+	const GLint posAttrLoc = glGetAttribLocation(fbBlur->program, "VERTEX");
+	glVertexAttribPointer(posAttrLoc, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void *)0);
+	glEnableVertexAttribArray(posAttrLoc);
+
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
+}
+
 void GL_DrawTexture_Internal(const Vector2 pos,
 							 const Vector2 size,
 							 const unsigned char *imageData,
@@ -476,7 +533,8 @@ void GL_DrawTexture_Internal(const Vector2 pos,
 {
 	glUseProgram(uiTextured->program);
 
-	const GLuint tex = GL_LoadTextureFromAsset(imageData);
+	GL_LoadTextureFromAsset(imageData);
+
 
 	const float a = (color >> 24 & 0xFF) / 255.0f;
 	const float r = (color >> 16 & 0xFF) / 255.0f;
@@ -490,8 +548,6 @@ void GL_DrawTexture_Internal(const Vector2 pos,
 				region_start.y,
 				region_end.x,
 				region_end.y);
-
-	glUniform1i(glGetUniformLocation(uiTextured->program, "alb"), tex);
 
 	const Vector2 ndcPos = v2(GL_X_TO_NDC(pos.x), GL_Y_TO_NDC(pos.y));
 	const Vector2 ndcPosEnd = v2(GL_X_TO_NDC(pos.x + size.x), GL_Y_TO_NDC(pos.y + size.y));
@@ -647,9 +703,7 @@ void GL_DrawWall(const Wall *w, const mat4 *mdl, const Camera *cam, const Level 
 {
 	glUseProgram(wall->program);
 
-	const GLuint tex = GL_LoadTextureFromAsset(w->tex);
-
-	glUniform1i(glGetUniformLocation(wall->program, "alb"), tex);
+	GL_LoadTextureFromAsset(w->tex);
 
 	glUniformMatrix4fv(glGetUniformLocation(wall->program, "MODEL_WORLD_MATRIX"),
 					   1,
@@ -705,9 +759,7 @@ void GL_DrawFloor(const Vector2 vp1,
 {
 	glUseProgram(floorAndCeiling->program);
 
-	const GLuint tex = GL_LoadTextureFromAsset(texture);
-
-	glUniform1i(glGetUniformLocation(floorAndCeiling->program, "alb"), tex);
+	GL_LoadTextureFromAsset(texture);
 
 	glUniformMatrix4fv(glGetUniformLocation(floorAndCeiling->program, "WORLD_VIEW_MATRIX"),
 					   1,
@@ -756,9 +808,7 @@ void GL_DrawShadow(const Vector2 vp1, const Vector2 vp2, const mat4 *mvp, const 
 {
 	glUseProgram(shadow->program);
 
-	const GLuint tex = GL_LoadTextureFromAsset(gztex_vfx_shadow);
-
-	glUniform1i(glGetUniformLocation(shadow->program, "alb"), tex);
+	GL_LoadTextureFromAsset(gztex_vfx_shadow);
 
 	glUniformMatrix4fv(glGetUniformLocation(shadow->program, "WORLD_VIEW_MATRIX"),
 					   1,
@@ -820,8 +870,27 @@ inline void GL_Disable3D()
 
 inline void GL_UpdateViewportSize()
 {
-	const Vector2 actualWinSize = ActualWindowSize();
-	glViewport(0, 0, actualWinSize.x, actualWinSize.y);
+	int w, h;
+	SDL_GL_GetDrawableSize(GetGameWindow(), &w, &h);
+	glViewport(0, 0, w, h);
+
+	if (GL_Textures[0] != -1)
+	{
+		glDeleteTextures(1, &GL_Textures[0]);
+	}
+
+	GLuint fbtex;
+	glGenTextures(1, &fbtex);
+	glBindTexture(GL_TEXTURE_2D, fbtex);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+
+	GL_Textures[0] = fbtex;
 }
 
 void GL_DrawColoredArrays(const float *vertices, const uint *indices, const int quad_count, const uint color)
@@ -858,7 +927,7 @@ void GL_DrawTexturedArrays(const float *vertices,
 {
 	glUseProgram(uiTextured->program);
 
-	const GLuint tex = GL_LoadTextureFromAsset(imageData);
+	GL_LoadTextureFromAsset(imageData);
 
 	const float a = (color >> 24 & 0xFF) / 255.0f;
 	const float r = (color >> 16 & 0xFF) / 255.0f;
@@ -868,8 +937,6 @@ void GL_DrawTexturedArrays(const float *vertices,
 	glUniform4f(glGetUniformLocation(uiTextured->program, "col"), r, g, b, a);
 
 	glUniform4f(glGetUniformLocation(uiTextured->program, "region"), -1, 0, 0, 0);
-
-	glUniform1i(glGetUniformLocation(uiTextured->program, "alb"), tex);
 
 	glBindVertexArray(glBuffer->vao);
 
@@ -947,6 +1014,8 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
 
 	GL_RenderModel(skyModel, SKY_MODEL_WORLD, gztex_level_sky, SHADER_SKY);
 
+	GL_ClearDepthOnly(); // prevent sky from clipping into walls
+
 	GL_DrawFloor(floor_start, floor_end, WORLD_VIEW_MATRIX, l, wallTextures[l->floorTexture], -0.5, 1.0);
 	if (l->ceilingTexture != 0)
 	{
@@ -1017,9 +1086,7 @@ void GL_RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const byte *
 
 	glUseProgram(shd->program);
 
-	const GLuint tex = GL_LoadTextureFromAsset(texture);
-
-	glUniform1i(glGetUniformLocation(shd->program, "alb"), tex);
+	GL_LoadTextureFromAsset(texture);
 
 	glUniformMatrix4fv(glGetUniformLocation(shd->program, "MODEL_WORLD_MATRIX"),
 					   1,

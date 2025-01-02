@@ -133,6 +133,8 @@ add_executable(
         GameStates/Options/GInputOptionsState.h
         Helpers/Core/PhysicsThread.c
         Helpers/Core/PhysicsThread.h
+        Debug/FrameBenchmark.c
+        Debug/FrameBenchmark.h
         Helpers/Graphics/Vulkan/Vulkan.c
         Helpers/Graphics/Vulkan/Vulkan.h
         Helpers/Graphics/Vulkan/VulkanInternal.h

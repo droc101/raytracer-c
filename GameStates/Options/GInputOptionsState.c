@@ -8,6 +8,7 @@
 #include "../../Helpers/Graphics/Font.h"
 #include "../../Helpers/Graphics/RenderingHelpers.h"
 #include "../../Structs/GlobalState.h"
+#include "../../Structs/Level.h"
 #include "../../Structs/UI/Controls/Button.h"
 #include "../../Structs/UI/Controls/CheckBox.h"
 #include "../../Structs/UI/Controls/Slider.h"
@@ -18,12 +19,12 @@ UiStack *inputOptionsStack;
 
 void BtnInputOptionsBack()
 {
-	GOptionsStateSet();
+	GOptionsStateSet(optionsStateInGame);
 }
 
 void GInputOptionsStateUpdate(GlobalState * /*State*/)
 {
-	if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_B))
+	if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE) || IsButtonJustPressed(CONTROLLER_CANCEL))
 	{
 		BtnInputOptionsBack();
 	}
@@ -34,14 +35,36 @@ void SldOptionsMouseSensitivity(const double value)
 	GetState()->options.mouseSpeed = value;
 }
 
+void SldOptionsRumbleStrength(const double value)
+{
+	GetState()->options.rumbleStrength = value;
+	Rumble(1.0, 200);
+}
+
 void CbOptionsControllerMode(const bool value)
 {
 	GetState()->options.controllerMode = value;
 }
 
-void GInputOptionsStateRender(GlobalState * /*State*/)
+void CbOptionsInvertCamera(const bool value)
 {
-	RenderMenuBackground();
+	GetState()->options.cameraInvertX = value;
+}
+
+void CbOptionsSwapOkCancel(const bool value)
+{
+	GetState()->options.controllerSwapOkCancel = value;
+}
+
+void GInputOptionsStateRender(GlobalState *state)
+{
+	if (optionsStateInGame)
+	{
+		RenderInGameMenuBackground();
+	} else
+	{
+		RenderMenuBackground();
+	}
 
 	DrawTextAligned("Input Options",
 					32,
@@ -54,6 +77,19 @@ void GInputOptionsStateRender(GlobalState * /*State*/)
 
 	ProcessUiStack(inputOptionsStack);
 	DrawUiStack(inputOptionsStack);
+
+	DrawTextAligned("Controller Options", 16, -1, v2(0, 160), v2(WindowWidth(), 40), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
+
+	if (GetState()->options.controllerMode)
+	{
+		DrawTextAligned("Controller Name:", 12, -1, v2(0, 400), v2(WindowWidth(), 40), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
+		const char *controllerName = GetControllerName();
+		if (!controllerName)
+		{
+			controllerName = "No Controller Connected";
+		}
+		DrawTextAligned(controllerName, 12, -1, v2(0, 420), v2(WindowWidth(), 40), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
+	}
 }
 
 void GInputOptionsStateSet()
@@ -61,8 +97,8 @@ void GInputOptionsStateSet()
 	if (inputOptionsStack == NULL)
 	{
 		inputOptionsStack = CreateUiStack();
-		int opY = 40;
-		const int opSpacing = 25;
+		int opY = 80;
+		const int opSpacing = 45;
 
 		UiStackPush(inputOptionsStack,
 					CreateSliderControl(v2(0, opY),
@@ -76,7 +112,7 @@ void GInputOptionsStateSet()
 										0.01,
 										0.1,
 										SliderLabelPercent));
-		opY += opSpacing;
+		opY += opSpacing * 3;
 		UiStackPush(inputOptionsStack,
 					CreateCheckboxControl(v2(0, opY),
 										  v2(480, 40),
@@ -84,6 +120,35 @@ void GInputOptionsStateSet()
 										  CbOptionsControllerMode,
 										  TOP_CENTER,
 										  GetState()->options.controllerMode));
+		opY += opSpacing;
+		UiStackPush(inputOptionsStack,
+					CreateSliderControl(v2(0, opY),
+										v2(480, 40),
+										"Rumble Strength",
+										SldOptionsRumbleStrength,
+										TOP_CENTER,
+										0.0,
+										1.0,
+										GetState()->options.rumbleStrength,
+										0.25,
+										0.25,
+										SliderLabelPercent));
+		opY += opSpacing;
+		UiStackPush(inputOptionsStack,
+					CreateCheckboxControl(v2(0, opY),
+										  v2(480, 40),
+										  "Invert Camera",
+										  CbOptionsInvertCamera,
+										  TOP_CENTER,
+										  GetState()->options.cameraInvertX));
+		opY += opSpacing;
+		UiStackPush(inputOptionsStack,
+					CreateCheckboxControl(v2(0, opY),
+										  v2(480, 40),
+										  "Swap OK/Cancel buttons",
+										  CbOptionsSwapOkCancel,
+										  TOP_CENTER,
+										  GetState()->options.controllerSwapOkCancel));
 		opY += opSpacing;
 
 

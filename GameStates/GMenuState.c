@@ -33,7 +33,7 @@ void QuitGame()
 
 void OpenOptions()
 {
-	GOptionsStateSet();
+	GOptionsStateSet(false);
 }
 
 void GMenuStateUpdate(GlobalState * /*State*/) {}

@@ -166,7 +166,7 @@ void GL_DrawFloor(Vector2 vp1,
 void GL_DrawShadow(Vector2 vp1, Vector2 vp2, const mat4 *mvp, const mat4 *mdl, const Level *l);
 
 /**
- * Update the viewport size
+ * Update the viewport size and re-create the framebuffer texture
  */
 void GL_UpdateViewportSize();
 
@@ -231,5 +231,16 @@ void GL_RenderLevel(const Level *l, const Camera *cam);
  * @param shader The shader to use
  */
 void GL_RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const byte *texture, ModelShader shader);
+
+/**
+ * Render a blur-background rectangle
+ * @param pos The position of the rectangle in pixels
+ * @param size The size of the rectangle in pixels
+ * @param blurRadius The radius of the blur in pixels
+ * @note This is a very slow operation, use sparingly
+ */
+void GL_DrawBlur(Vector2 pos,
+				 Vector2 size,
+				 int blurRadius);
 
 #endif //GAME_GLHELPER_H

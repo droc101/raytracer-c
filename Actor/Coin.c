@@ -26,7 +26,7 @@ void CoinInit(Actor *this)
 	this->shadowSize = 0.1;
 }
 
-void CoinUpdate(Actor *this)
+void CoinUpdate(Actor *this, double /*delta*/)
 {
 	if (GetState()->physicsFrame % 8 == 0)
 	{

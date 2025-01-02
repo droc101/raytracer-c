@@ -9,7 +9,7 @@
 
 void CoinInit(Actor *this);
 
-void CoinUpdate(Actor *this);
+void CoinUpdate(Actor *this, double /*delta*/);
 
 void CoinDestroy(Actor *this);
 

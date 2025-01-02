@@ -10,6 +10,7 @@
 #include "../../Helpers/Graphics/Font.h"
 #include "../../Helpers/Graphics/RenderingHelpers.h"
 #include "../../Structs/GlobalState.h"
+#include "../../Structs/Level.h"
 #include "../../Structs/Options.h"
 #include "../../Structs/UI/Controls/Button.h"
 #include "../../Structs/UI/Controls/CheckBox.h"
@@ -31,7 +32,7 @@ void BtnVideoOptionsBack()
 					   "Yes",
 					   "No");
 	}
-	GOptionsStateSet();
+	GOptionsStateSet(optionsStateInGame);
 }
 
 char *SliderLabelMSAA(const Control *slider)
@@ -80,15 +81,21 @@ void SldOptionsMsaa(const double value)
 
 void GVideoOptionsStateUpdate(GlobalState * /*State*/)
 {
-	if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_B))
+	if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE) || IsButtonJustPressed(CONTROLLER_CANCEL))
 	{
 		BtnVideoOptionsBack();
 	}
 }
 
-void GVideoOptionsStateRender(GlobalState * /*State*/)
+void GVideoOptionsStateRender(GlobalState *state)
 {
-	RenderMenuBackground();
+	if (optionsStateInGame)
+	{
+		RenderInGameMenuBackground();
+	} else
+	{
+		RenderMenuBackground();
+	}
 
 	DrawTextAligned("Video Options",
 					32,
@@ -108,8 +115,8 @@ void GVideoOptionsStateSet()
 	if (videoOptionsStack == NULL)
 	{
 		videoOptionsStack = CreateUiStack();
-		int opY = 40;
-		const int opSpacing = 25;
+		int opY = 80;
+		const int opSpacing = 45;
 		UiStackPush(videoOptionsStack,
 					CreateCheckboxControl(v2(0, opY),
 										  v2(480, 40),

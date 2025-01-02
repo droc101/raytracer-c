@@ -13,9 +13,16 @@
 #define Error(error) _ErrorInternal(error, "none", 0, "none")
 #endif
 
+/**
+ * Check if a pointer is NULL and if it is, call the error handler
+ * @param ptr The pointer to check
+ */
 #define chk_malloc(ptr) \
 	if ((ptr) == NULL) _GameAllocFailure();
 
+/**
+ * Internal error handler for memory allocation failures
+ */
 _Noreturn void _GameAllocFailure();
 
 /**

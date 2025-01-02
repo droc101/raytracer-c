@@ -15,7 +15,7 @@
 // Empty template functions
 void ActorInit(Actor * /*this*/) {}
 
-void ActorUpdate(Actor * /*this*/) {}
+void ActorUpdate(Actor * /*this*/, double /*delta*/) {}
 
 void ActorDestroy(Actor * /*this*/) {}
 

@@ -8,31 +8,46 @@
 #include "../Helpers/Graphics/Font.h"
 #include "../Helpers/Graphics/RenderingHelpers.h"
 #include "../Structs/GlobalState.h"
+#include "../Structs/Level.h"
 #include "../Structs/UI/Controls/Button.h"
 #include "../Structs/UI/UiStack.h"
 #include "GMenuState.h"
+#include "GPauseState.h"
 #include "Options/GInputOptionsState.h"
 #include "Options/GSoundOptionsState.h"
 #include "Options/GVideoOptionsState.h"
 
 UiStack *optionsStack;
+bool optionsStateInGame = false;
 
 void BtnOptionsBack()
 {
-	GMenuStateSet();
+	if (optionsStateInGame)
+	{
+		GPauseStateSet();
+	} else
+	{
+		GMenuStateSet();
+	}
 }
 
 void GOptionsStateUpdate(GlobalState * /*State*/)
 {
-	if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_B))
+	if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE) || IsButtonJustPressed(CONTROLLER_CANCEL))
 	{
 		BtnOptionsBack();
 	}
 }
 
-void GOptionsStateRender(GlobalState * /*State*/)
+void GOptionsStateRender(GlobalState *state)
 {
-	RenderMenuBackground();
+	if (optionsStateInGame)
+	{
+		RenderInGameMenuBackground();
+	} else
+	{
+		RenderMenuBackground();
+	}
 
 	DrawTextAligned("Options",
 					32,
@@ -47,13 +62,14 @@ void GOptionsStateRender(GlobalState * /*State*/)
 	DrawUiStack(optionsStack);
 }
 
-void GOptionsStateSet()
+void GOptionsStateSet(bool inGame)
 {
+	optionsStateInGame = inGame;
 	if (optionsStack == NULL)
 	{
 		optionsStack = CreateUiStack();
-		int opY = 40;
-		const int opSpacing = 25;
+		int opY = 80;
+		const int opSpacing = 45;
 
 		UiStackPush(optionsStack,
 					CreateButtonControl(v2(0, opY), v2(480, 40), "Video Options", GVideoOptionsStateSet, TOP_CENTER));

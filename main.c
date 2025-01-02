@@ -7,6 +7,7 @@
 #include "Assets/Assets.h"
 #include "config.h"
 #include "Debug/DPrint.h"
+#include "Debug/FrameBenchmark.h"
 #include "Debug/FrameGrapher.h"
 #include "defines.h"
 #include "GameStates/GLogoSplashState.h"
@@ -20,6 +21,7 @@
 #include "Helpers/Graphics/RenderingHelpers.h"
 #include "Helpers/PlatformHelpers.h"
 #include "Structs/GlobalState.h"
+#include "Structs/Vector2.h"
 
 SDL_Surface *windowIcon;
 
@@ -53,8 +55,11 @@ void ExecPathInit(const int argc, char *argv[])
 void InitSDL()
 {
 	SDL_SetHint(SDL_HINT_APP_NAME, GAME_TITLE);
+#ifdef __LINUX__
+	SDL_SetHint(SDL_HINT_VIDEODRIVER, "wayland,x11"); // required to fix an nvidia bug with glCopyTexImage2D
+#endif
 
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMECONTROLLER) != 0)
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMECONTROLLER | SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC) != 0)
 	{
 		LogError("SDL_Init Error: %s\n", SDL_GetError());
 		Error("Failed to initialize SDL");
@@ -226,6 +231,9 @@ int main(const int argc, char *argv[])
             SDL_Delay(100);
         }
 		const ulong frameStart = GetTimeNs();
+#ifdef BENCHMARK_SYSTEM_ENABLE
+		BenchFrameStart();
+#endif
 
 		while (SDL_PollEvent(&event) != 0)
 		{
@@ -263,6 +271,13 @@ int main(const int argc, char *argv[])
 			state->UpdateGame(state);
 		}
 
+#ifdef BENCHMARK_SYSTEM_ENABLE
+		if (IsKeyJustPressed(SDL_SCANCODE_F8))
+		{
+			BenchToggle();
+		}
+#endif
+
 		state->cam->x = (float)state->level->player.pos.x;
 		state->cam->y = (float)state->cameraY;
 		state->cam->z = (float)state->level->player.pos.y;
@@ -281,6 +296,10 @@ int main(const int argc, char *argv[])
 			shouldQuit = true;
 		}
 
+#ifdef BENCHMARK_SYSTEM_ENABLE
+		BenchFrameEnd();
+#endif
+
 		if (IsLowFPSModeEnabled()) SDL_Delay(33);
 		FrameGraphUpdate(GetTimeNs() - frameStart);
 	}
@@ -294,7 +313,7 @@ int main(const int argc, char *argv[])
 	RenderDestroy();
 	Mix_CloseAudio();
 	Mix_Quit();
-	SDL_QuitSubSystem(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER);
+	SDL_QuitSubSystem(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER | SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC);
 	SDL_Quit();
 	LogDestroy();
 	return 0;

@@ -9,6 +9,7 @@
 #include "../../Helpers/Core/Input.h"
 #include "../../Helpers/Graphics/Drawing.h"
 #include "../Vector2.h"
+#include "../GlobalState.h"
 
 #include "Controls/Button.h"
 #include "Controls/CheckBox.h"
@@ -101,7 +102,7 @@ bool ProcessUiStack(UiStack *stack)
 		c->anchoredPosition = CalculateControlPosition(c);
 	}
 
-	if (IsMouseButtonPressed(SDL_BUTTON_LEFT) || IsButtonPressed(SDL_CONTROLLER_BUTTON_A))
+	if (IsMouseButtonPressed(SDL_BUTTON_LEFT) || IsButtonPressed(CONTROLLER_OK))
 	{
 		stack->focusedControl = stack->ActiveControl;
 		stack->ActiveControlState = ACTIVE;
@@ -115,7 +116,7 @@ bool ProcessUiStack(UiStack *stack)
 	{
 		stack->ActiveControl = stack->focusedControl;
 		stack->ActiveControlState = HOVER;
-		if (IsButtonPressed(SDL_CONTROLLER_BUTTON_A))
+		if (IsButtonPressed(CONTROLLER_OK))
 		{
 			stack->ActiveControlState = ACTIVE;
 		}
@@ -135,7 +136,7 @@ bool ProcessUiStack(UiStack *stack)
 				stack->ActiveControl = i;
 				if (IsMouseButtonPressed(SDL_BUTTON_LEFT) ||
 					IsKeyJustPressed(SDL_SCANCODE_SPACE) ||
-					IsButtonJustPressed(SDL_CONTROLLER_BUTTON_A))
+					IsButtonJustPressed(CONTROLLER_OK))
 				{
 					stack->ActiveControlState = ACTIVE;
 					// make this control the focused control
@@ -216,12 +217,15 @@ Vector2 CalculateControlPosition(const Control *control)
 			break;
 		case TOP_CENTER:
 			pos.x = (WindowWidth() - control->size.x) / 2;
+			pos.y = 0;
 			break;
 		case TOP_RIGHT:
 			pos.x = WindowWidth() - control->size.x;
+			pos.y = 0;
 			break;
 		case MIDDLE_LEFT:
 			pos.y = (WindowHeight() - control->size.y) / 2;
+			pos.x = 0;
 			break;
 		case MIDDLE_CENTER:
 			pos = v2((WindowWidth() - control->size.x) / 2, (WindowHeight() - control->size.y) / 2);
@@ -231,6 +235,7 @@ Vector2 CalculateControlPosition(const Control *control)
 			break;
 		case BOTTOM_LEFT:
 			pos.y = WindowHeight() - control->size.y;
+			pos.x = 0;
 			break;
 		case BOTTOM_CENTER:
 			pos = v2((WindowWidth() - control->size.x) / 2, WindowHeight() - control->size.y);
@@ -280,7 +285,7 @@ bool HasKeyboardActivation(UiStack * /*stack*/, Control * /*Control*/)
 {
 	return IsKeyJustPressed(SDL_SCANCODE_RETURN) ||
 		   IsKeyJustPressed(SDL_SCANCODE_SPACE) ||
-		   IsButtonJustReleased(SDL_CONTROLLER_BUTTON_A);
+		   IsButtonJustReleased(CONTROLLER_OK);
 }
 
 bool HasActivation(UiStack *stack, Control *Control)

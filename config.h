@@ -50,6 +50,12 @@
 // Show error trace in release builds (function, source, and line #)
 #define ERROR_TRACE_IN_RELEASE
 
+// Enable or disable the frame benchmark system
+#define BENCHMARK_SYSTEM_ENABLE
+
+// Enable or disable recording highest and lowest frame times (has a performance impact)
+//#define BENCHMARK_RECORD_HIGH_LOW_TIMES
+
 #ifdef BUILDSTYLE_DEBUG
 /**
  * Additional validation for Vulkan code
@@ -69,7 +75,7 @@
 #pragma endregion
 
 // Program information
-#define COPYRIGHT "2024 Droc101 Development"
+#define COPYRIGHT "2025 Droc101 Development"
 #define GAME_TITLE "Game." // Used for window title
 
 #define VERSION_MAJOR 0

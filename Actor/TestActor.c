@@ -24,11 +24,11 @@ void TestActorInit(Actor *this)
 	this->actorWall = CreateWall(v2(-0.5, 0), v2(0.5, 0), actorTextures[0], 1.0, 0.0);
 }
 
-void TestActorUpdate(Actor *this)
+void TestActorUpdate(Actor *this, double delta)
 {
 	this->rotation += 0.01;
 
-	Vector2 MoveDir = v2(0, 0.05);
+	Vector2 MoveDir = v2(0, 0.05 * delta);
 	MoveDir = Vector2Rotate(MoveDir, this->rotation);
 
 	MoveDir = Move(this->position, MoveDir, this);

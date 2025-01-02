@@ -57,7 +57,7 @@ void DoorInit(Actor *this)
 }
 
 // ReSharper disable once CppParameterMayBeConstPtrOrRef
-void DoorUpdate(Actor *this)
+void DoorUpdate(Actor *this, double /*delta*/)
 {
 	DoorData *data = this->extra_data;
 	double wallPos;

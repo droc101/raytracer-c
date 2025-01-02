@@ -10,7 +10,7 @@
 #include "../Structs/Vector2.h"
 #include "GMenuState.h"
 
-void GLogoSplashStateFixedUpdate(GlobalState *State)
+void GLogoSplashStateFixedUpdate(GlobalState *State, double /*delta*/)
 {
 #ifdef DEBUG_NOSPLASH
 	if (State->physicsFrame == 1)

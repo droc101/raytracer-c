@@ -20,6 +20,9 @@ void DefaultOptions(Options *options)
 	options->controllerMode = false;
 	options->msaa = MSAA_4X;
 	options->mipmaps = true;
+	options->rumbleStrength = 1.0f;
+	options->cameraInvertX = true;
+	options->controllerSwapOkCancel = false;
 }
 
 bool ValidateOptions(const Options *options)

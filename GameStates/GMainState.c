@@ -24,6 +24,7 @@ void GMainStateUpdate(GlobalState *State)
 {
 	if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_START))
 	{
+		PlaySoundEffect(gzwav_sfx_popup);
 		GPauseStateSet();
 		return;
 	}
@@ -37,7 +38,7 @@ void GMainStateUpdate(GlobalState *State)
 
 	if (State->textBoxActive)
 	{
-		if (IsKeyJustPressed(SDL_SCANCODE_SPACE) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_A))
+		if (IsKeyJustPressed(SDL_SCANCODE_SPACE) || IsButtonJustPressed(CONTROLLER_OK))
 		{
 			State->textBoxPage++;
 			if (State->textBoxPage >= StringLineCount(State->textBox.text) / State->textBox.rows)
@@ -69,14 +70,14 @@ void GMainStateUpdate(GlobalState *State)
 	State->level->player.angle += GetMouseRel().x * (State->options.mouseSpeed / 120.0);
 }
 
-void GMainStateFixedUpdate(GlobalState *State)
+void GMainStateFixedUpdate(GlobalState *state, double delta)
 {
-	if (State->textBoxActive)
+	if (state->textBoxActive)
 	{
 		return;
 	}
 
-	Level *l = State->level;
+	Level *l = state->level;
 	Vector2 moveVec = v2(0, 0);
 	if (UseController())
 	{
@@ -118,11 +119,14 @@ void GMainStateFixedUpdate(GlobalState *State)
 		moveVec = Vector2Normalize(moveVec);
 	}
 
+
 	double speed = MOVE_SPEED;
 	if (IsKeyPressed(SDL_SCANCODE_LSHIFT) || GetAxis(SDL_CONTROLLER_AXIS_TRIGGERLEFT) > 0.5)
 	{
 		speed = SLOW_MOVE_SPEED;
 	}
+
+	speed *= delta;
 
 	moveVec = Vector2Scale(moveVec, speed);
 	moveVec = Vector2Rotate(moveVec, l->player.angle);
@@ -131,10 +135,14 @@ void GMainStateFixedUpdate(GlobalState *State)
 
 	if (UseController())
 	{
-		const double cx = GetAxis(SDL_CONTROLLER_AXIS_RIGHTX);
+		double cx = GetAxis(SDL_CONTROLLER_AXIS_RIGHTX);
+		if (state->options.cameraInvertX)
+		{
+			cx *= -1;
+		}
 		if (fabs(cx) > 0.1)
 		{
-			l->player.angle += cx * (State->options.mouseSpeed / 11.25);
+			l->player.angle += cx * (state->options.mouseSpeed / 11.25);
 		}
 	}
 
@@ -143,19 +151,19 @@ void GMainStateFixedUpdate(GlobalState *State)
 	{
 		if (isMoving)
 		{
-			State->cameraY = sin(State->physicsFrame / 7.0) * 0.005 - 0.1;
+			state->cameraY = sin(state->physicsFrame / 7.0) * 0.005 - 0.1;
 		} else
 		{
-			State->cameraY = lerp(State->cameraY, -0.1, 0.1);
+			state->cameraY = lerp(state->cameraY, -0.1, 0.1);
 		}
 	} else
 	{
 		if (isMoving)
 		{
-			State->cameraY = sin(State->physicsFrame / 7.0) * 0.04;
+			state->cameraY = sin(state->physicsFrame / 7.0) * 0.04;
 		} else
 		{
-			State->cameraY = lerp(State->cameraY, 0, 0.1);
+			state->cameraY = lerp(state->cameraY, 0, 0.1);
 		}
 	}
 
@@ -164,10 +172,10 @@ void GMainStateFixedUpdate(GlobalState *State)
 	for (int i = 0; i < l->actors->size; i++)
 	{
 		Actor *a = ListGet(l->actors, i);
-		a->Update(a);
+		a->Update(a, delta);
 	}
 
-	State->physicsFrame++;
+	state->physicsFrame++;
 }
 
 // ReSharper disable once CppParameterMayBeConstPtrOrRef

@@ -12,14 +12,34 @@
 #define INP_PRESSED 2
 #define INP_JUST_RELEASED 3
 
+/**
+ * Handles controller disconnect event
+ * @param which The controller that was disconnected
+ */
 void HandleControllerDisconnect(Sint32 which);
 
+/**
+ * Handles controller connect event
+ */
 void HandleControllerConnect();
 
+/**
+ * Handles controller button up event
+ * @param button The button code
+ */
 void HandleControllerButtonUp(SDL_GameControllerButton button);
 
+/**
+ * Handles controller button down event
+ * @param button The button code
+ */
 void HandleControllerButtonDown(SDL_GameControllerButton button);
 
+/**
+ * Handles controller axis event
+ * @param axis The axis code
+ * @param value The value of the axis
+ */
 void HandleControllerAxis(SDL_GameControllerAxis axis, Sint16 value);
 
 /**
@@ -178,5 +198,18 @@ double GetAxis(SDL_GameControllerAxis axis);
  * @return whether a controller is being used
  */
 bool UseController();
+
+/**
+ * Rumble the controller (if available)
+ * @param strength The base strength of the rumble (0.0 - 1.0)
+ * @param time The time to rumble in milliseconds
+ */
+void Rumble(const float strength, const uint time);
+
+/**
+ * Get the name of the connected controller
+ * @return The name of the connected controller, or NULL if no controller is connected
+ */
+const char *GetControllerName();
 
 #endif //GAME_INPUT_H

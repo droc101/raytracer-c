@@ -18,7 +18,7 @@ void GoalInit(Actor *this)
 	this->actorWall = CreateWall(v2(0, -0.5), v2(0, 0.5), actorTextures[9], 1, 0.0);
 }
 
-void GoalUpdate(Actor *this)
+void GoalUpdate(Actor *this, double /*delta*/)
 {
 	const Vector2 dir = Vector2Sub(GetState()->level->player.pos, this->position);
 	this->rotation = atan2(dir.y, dir.x);

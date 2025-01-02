@@ -8,6 +8,7 @@
 #include "../../Helpers/Graphics/Font.h"
 #include "../../Helpers/Graphics/RenderingHelpers.h"
 #include "../../Structs/GlobalState.h"
+#include "../../Structs/Level.h"
 #include "../../Structs/UI/Controls/Button.h"
 #include "../../Structs/UI/Controls/Slider.h"
 #include "../../Structs/UI/UiStack.h"
@@ -17,7 +18,7 @@ UiStack *soundOptionsStack;
 
 void BtnSoundOptionsBack()
 {
-	GOptionsStateSet();
+	GOptionsStateSet(optionsStateInGame);
 }
 
 void SldOptionsMasterVolume(const double value)
@@ -40,15 +41,21 @@ void SldOptionsSfxVolume(const double value)
 
 void GSoundOptionsStateUpdate(GlobalState * /*State*/)
 {
-	if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_B))
+	if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE) || IsButtonJustPressed(CONTROLLER_CANCEL))
 	{
 		BtnSoundOptionsBack();
 	}
 }
 
-void GSoundOptionsStateRender(GlobalState * /*State*/)
+void GSoundOptionsStateRender(GlobalState *state)
 {
-	RenderMenuBackground();
+	if (optionsStateInGame)
+	{
+		RenderInGameMenuBackground();
+	} else
+	{
+		RenderMenuBackground();
+	}
 
 	DrawTextAligned("Sound Options",
 					32,
@@ -68,8 +75,8 @@ void GSoundOptionsStateSet()
 	if (soundOptionsStack == NULL)
 	{
 		soundOptionsStack = CreateUiStack();
-		int opY = 40;
-		const int opSpacing = 25;
+		int opY = 80;
+		const int opSpacing = 45;
 		UiStackPush(soundOptionsStack,
 					CreateSliderControl(v2(0, opY),
 										v2(480, 40),
