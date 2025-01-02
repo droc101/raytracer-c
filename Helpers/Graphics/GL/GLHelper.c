@@ -498,13 +498,13 @@ void GL_SetTexParams(const unsigned char *imageData, const bool linear, const bo
 
 void GL_DrawBlur(const Vector2 pos,
 				 const Vector2 size,
-				 const float blurRadius)
+				 const int blurRadius)
 {
 	glUseProgram(fbBlur->program);
 
 	GL_UpdateFramebufferTexture();
 
-	glUniform1f(glGetUniformLocation(fbBlur->program, "blurRadius"), blurRadius);
+	glUniform1i(glGetUniformLocation(fbBlur->program, "blurRadius"), blurRadius);
 
 	const Vector2 ndcPos = v2(GL_X_TO_NDC(pos.x), GL_Y_TO_NDC(pos.y));
 	const Vector2 ndcPosEnd = v2(GL_X_TO_NDC(pos.x + size.x), GL_Y_TO_NDC(pos.y + size.y));

@@ -225,9 +225,7 @@ void RenderInGameMenuBackground()
 	DrawRect(0, 0, WindowWidth(), WindowHeight());
 }
 
-void DrawBlur(const Vector2 pos,
-				 const Vector2 size,
-				 const float blurRadius)
+void DrawBlur(const Vector2 pos, const Vector2 size, int blurRadius)
 {
 	switch (currentRenderer)
 	{

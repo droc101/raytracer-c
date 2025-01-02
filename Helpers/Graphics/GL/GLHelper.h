@@ -234,6 +234,6 @@ void GL_RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const byte *
  */
 void GL_DrawBlur(Vector2 pos,
 				 Vector2 size,
-				 float blurRadius);
+				 int blurRadius);
 
 #endif //GAME_GLHELPER_H

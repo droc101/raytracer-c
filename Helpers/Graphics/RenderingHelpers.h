@@ -119,8 +119,6 @@ void RenderInGameMenuBackground();
  * @param blurRadius The radius of the blur in pixels
  * @note This is a very slow operation, use sparingly
  */
-void DrawBlur(Vector2 pos,
-				 Vector2 size,
-				 float blurRadius);
+void DrawBlur(Vector2 pos, Vector2 size, int blurRadius);
 
 #endif //GAME_RENDERINGHELPERS_H
