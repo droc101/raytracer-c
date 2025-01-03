@@ -225,9 +225,7 @@ void RenderInGameMenuBackground()
 	DrawRect(0, 0, WindowWidth(), WindowHeight());
 }
 
-void DrawBlur(const Vector2 pos,
-				 const Vector2 size,
-				 const float blurRadius)
+void DrawBlur(const Vector2 pos, const Vector2 size, int blurRadius)
 {
 	switch (currentRenderer)
 	{
@@ -236,6 +234,34 @@ void DrawBlur(const Vector2 pos,
 			break;
 		case RENDERER_OPENGL:
 			GL_DrawBlur(pos, size, blurRadius);
+		default:
+			break;
+	}
+}
+
+bool FrameStart() // note when merging into vulkan branch: don't leak vulkan types into global scope!
+{
+	switch (currentRenderer)
+	{
+		case RENDERER_VULKAN:
+			return false;
+		case RENDERER_OPENGL:
+			return GL_FrameStart();
+		default:
+			return false;
+	}
+}
+
+void FrameEnd()
+{
+	switch (currentRenderer)
+	{
+		case RENDERER_VULKAN:
+
+			break;
+		case RENDERER_OPENGL:
+			GL_Swap();
+		break;
 		default:
 			break;
 	}

@@ -234,6 +234,12 @@ void GL_RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const byte *
  */
 void GL_DrawBlur(Vector2 pos,
 				 Vector2 size,
-				 float blurRadius);
+				 int blurRadius);
+
+/**
+ * Run at the start of a frame
+ * @return true
+ */
+bool GL_FrameStart();
 
 #endif //GAME_GLHELPER_H

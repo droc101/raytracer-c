@@ -109,12 +109,13 @@ void WindowAndRenderInit()
 	DwmDarkMode(window);
 	SDL_SetWindowFullscreen(window, GetState()->options.fullscreen ? SDL_WINDOW_FULLSCREEN : 0);
 	SetGameWindow(window);
-	UpdateViewportSize();
 
 	if (!RenderInit())
 	{
 		RenderInitError();
 	}
+
+	UpdateViewportSize();
 
 	SDL_SetWindowMinimumSize(window, MIN_WIDTH, MIN_HEIGHT);
 	SDL_SetWindowMaximumSize(window, MAX_WIDTH, MAX_HEIGHT);
@@ -255,11 +256,13 @@ int main(const int argc, char *argv[])
 		state->cam->z = (float)state->level->player.pos.y;
 		state->cam->yaw = (float)state->level->player.angle;
 
+		FrameStart();
+
 		state->RenderGame(state);
 
 		FrameGraphDraw();
 
-		Swap();
+		FrameEnd();
 
 		UpdateInputStates();
 
