@@ -101,7 +101,7 @@ bool GL_Init(SDL_Window *wnd)
 	if (err != GLEW_OK)
 	{
 		SDL_GL_DeleteContext(ctx);
-		GL_Error("Failed to start OpenGL. Your GPU or drivers may not support OpenGL 4.6.");
+		GL_Error("Failed to start OpenGL. Your GPU or drivers may not support OpenGL 3.3.");
 		return false;
 	}
 
