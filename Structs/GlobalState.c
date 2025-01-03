@@ -31,6 +31,11 @@ void ChannelFinished(const int channel)
 	state.channels[channel] = NULL;
 }
 
+void InitOptions()
+{
+	LoadOptions(&state.options);
+}
+
 void InitState()
 {
 	state.hp = 100;
@@ -50,7 +55,6 @@ void InitState()
 	state.cameraY = 0;
 	state.textBoxActive = false;
 	state.cam = CreateCamera();
-	LoadOptions(&state.options);
 
 	UpdateVolume();
 

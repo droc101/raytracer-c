@@ -14,7 +14,6 @@
 
 typedef struct GL_Shader GL_Shader;
 typedef struct GL_Buffer GL_Buffer;
-typedef struct GL_Framebuffer GL_Framebuffer;
 
 struct GL_Shader
 {
@@ -30,14 +29,6 @@ struct GL_Buffer
 	GLuint ebo;
 };
 
-struct GL_Framebuffer
-{
-	GLuint frameBufferObjet;
-	GLuint colorTexture;
-	GLuint depthTexture;
-	GLuint renderBufferObject;
-};
-
 /**
  * The maximum number of textures that can be loaded into OpenGL
  */
@@ -45,28 +36,6 @@ struct GL_Framebuffer
 #if MAX_TEXTURES < ASSET_COUNT
 #error MAX_TEXTURES must be greater than or equal to ASSET_COUNT
 #endif
-
-/**
- * Create a framebuffer
- * @param w The width of the framebuffer
- * @param h The height of the framebuffer
- * @return The new framebuffer
- * @note Caller is required to call @c DestroyFrameBuffer when done
- */
-GL_Framebuffer *CreateFramebuffer(int w, int h);
-
-/**
- * Resize a framebuffer
- * @param old The old framebuffer (to be destroyed, can be NULL)
- * @return The new framebuffer
- */
-GL_Framebuffer *ResizeFrameBuffer(GL_Framebuffer *old);
-
-/**
- * Destroy a framebuffer
- * @param framebuffer The framebuffer to destroy
- */
-void DestroyFrameBuffer(GL_Framebuffer *framebuffer);
 
 /**
  * Log an OpenGL error

@@ -32,8 +32,6 @@ GL_Shader *fbBlur;
 
 GL_Buffer *glBuffer;
 
-GL_Framebuffer *glFramebuffer = NULL;
-
 GLuint GL_Textures[MAX_TEXTURES];
 int GL_NextFreeSlot = 1; // Slot 0 is reserved for the framebuffer copy
 int GL_AssetTextureMap[ASSET_COUNT];
@@ -102,9 +100,16 @@ bool GL_Init(SDL_Window *wnd)
 	if (err != GLEW_OK)
 	{
 		SDL_GL_DestroyContext(ctx);
-		GL_Error("Failed to start OpenGL. Your GPU or drivers may not support OpenGL 4.6.");
+		GL_Error("Failed to start OpenGL. Your GPU or drivers may not support OpenGL 3.3.");
 		return false;
 	}
+
+
+#ifdef BUILDSTYLE_DEBUG
+	glEnable(GL_DEBUG_OUTPUT);
+	glDebugMessageCallback(GL_DebugMessageCallback, NULL);
+	LogWarning("GL: ARB_debug_output not supported, debugger cannot start\n");
+#endif
 
 	uiTextured = GL_ConstructShaderFromAssets(gzshd_GL_hud_textured_f, gzshd_GL_hud_textured_v);
 	uiColored = GL_ConstructShaderFromAssets(gzshd_GL_hud_color_f, gzshd_GL_hud_color_v);
@@ -136,13 +141,6 @@ bool GL_Init(SDL_Window *wnd)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_SCISSOR_TEST);
-	glPixelStorei(GL_PACK_ALIGNMENT, 1);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-#ifdef BUILDSTYLE_DEBUG
-	glEnable(GL_DEBUG_OUTPUT);
-	glDebugMessageCallback(GL_DebugMessageCallback, NULL);
-#endif
 
 	char *vendor = (char *)glGetString(GL_VENDOR);
 	char *renderer = (char *)glGetString(GL_RENDERER);
@@ -155,12 +153,6 @@ bool GL_Init(SDL_Window *wnd)
 	LogInfo("OpenGL Version: %s\n", version);
 	LogInfo("GLSL: %s\n", shadingLanguage);
 
-	if (!GLEW_ARB_framebuffer_object)
-	{
-		GL_Error("ARB_framebuffer_object not supported");
-		return false;
-	}
-
 	fflush(stdout);
 
 	GL_Disable3D();
@@ -168,69 +160,16 @@ bool GL_Init(SDL_Window *wnd)
 	return true;
 }
 
-GL_Framebuffer *CreateFramebuffer(const int w, const int h)
+void GL_UpdateFramebufferTexture()
 {
-	GL_Framebuffer *fb = malloc(sizeof(GL_Framebuffer));
-	chk_malloc(fb);
-	memset(fb, 0, sizeof(GL_Framebuffer));
-
-	glGenFramebuffers(1, &fb->frameBufferObjet);
-	glBindFramebuffer(GL_FRAMEBUFFER, fb->frameBufferObjet);
-
-	glGenTextures(1, &fb->colorTexture);
-	glBindTexture(GL_TEXTURE_2D, fb->colorTexture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fb->colorTexture, 0);
-
-	glGenTextures(1, &fb->depthTexture);
-	glBindTexture(GL_TEXTURE_2D, fb->depthTexture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, w, h, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, fb->depthTexture, 0);
-
-	glGenRenderbuffers(1, &fb->renderBufferObject);
-	glBindRenderbuffer(GL_RENDERBUFFER, fb->renderBufferObject);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, w, h);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, fb->renderBufferObject);
-
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-	{
-		GL_Error("Framebuffer is not complete");
-		free(fb);
-		return NULL;
-	}
-
-	return fb;
-}
-
-void DestroyFrameBuffer(GL_Framebuffer *framebuffer)
-{
-	glDeleteFramebuffers(1, &framebuffer->frameBufferObjet);
-	glDeleteTextures(1, &framebuffer->colorTexture);
-	glDeleteTextures(1, &framebuffer->depthTexture);
-	glDeleteRenderbuffers(1, &framebuffer->renderBufferObject);
-	free(framebuffer);
-}
-
-GL_Framebuffer* ResizeFrameBuffer(GL_Framebuffer *old)
-{
-	if (old != NULL)
-	{
-		DestroyFrameBuffer(old);
-	}
-
+	glBindTexture(GL_TEXTURE_2D, GL_Textures[0]);
 	int w;
 	int h;
 	SDL_GetWindowSizeInPixels(GetGameWindow(), &w, &h);
 
-	return CreateFramebuffer(w, h);
+	glReadBuffer(GL_BACK);
+
+	glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, w, h, 0);
 }
 
 GL_Shader *GL_ConstructShaderFromAssets(const byte *fsh, const byte *vsh)
@@ -318,7 +257,6 @@ void GL_DestroyBuffer(GL_Buffer *buf)
 	glDeleteBuffers(1, &buf->vbo);
 	glDeleteBuffers(1, &buf->ebo);
 	free(buf);
-	buf = NULL;
 }
 
 inline void GL_ClearScreen()
@@ -345,13 +283,6 @@ inline void GL_ClearDepthOnly()
 
 inline void GL_Swap()
 {
-	int w;
-	int h;
-	SDL_GetWindowSizeInPixels(GetGameWindow(), &w, &h);
-
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, glFramebuffer->frameBufferObjet);
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-	glBlitFramebuffer(0, 0, w, h, 0, 0, w, h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 	SDL_GL_SwapWindow(GetGameWindow());
 }
 
@@ -369,7 +300,6 @@ void GL_DestroyGL()
 	glDisableVertexAttribArray(0);
 	GL_DestroyBuffer(glBuffer);
 	SDL_GL_DestroyContext(ctx);
-	DestroyFrameBuffer(glFramebuffer);
 }
 
 inline float GL_X_TO_NDC(const float x)
@@ -573,7 +503,7 @@ void GL_DrawBlur(const Vector2 pos,
 {
 	glUseProgram(fbBlur->program);
 
-	glBindTexture(GL_TEXTURE_2D, glFramebuffer->colorTexture);
+	GL_UpdateFramebufferTexture();
 
 	glUniform1i(glGetUniformLocation(fbBlur->program, "blurRadius"), blurRadius);
 
@@ -955,7 +885,23 @@ inline void GL_UpdateViewportSize()
 	SDL_GetWindowSizeInPixels(GetGameWindow(), &w, &h);
 	glViewport(0, 0, w, h);
 
-	glFramebuffer = ResizeFrameBuffer(glFramebuffer);
+	if (GL_Textures[0] != -1)
+	{
+		glDeleteTextures(1, &GL_Textures[0]);
+	}
+
+	GLuint fbtex;
+	glGenTextures(1, &fbtex);
+	glBindTexture(GL_TEXTURE_2D, fbtex);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+
+	GL_Textures[0] = fbtex;
 }
 
 void GL_DrawColoredArrays(const float *vertices, const uint *indices, const int quad_count, const uint color)
@@ -1148,11 +1094,4 @@ void GL_RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const byte *
 	}
 
 	glDrawElements(GL_TRIANGLES, m->packedIndicesCount, GL_UNSIGNED_INT, NULL);
-}
-
-
-bool GL_FrameStart()
-{
-	glBindFramebuffer(GL_FRAMEBUFFER, glFramebuffer->frameBufferObjet);
-	return true;
 }

@@ -275,6 +275,21 @@ inline void ClearDepthOnly()
 	}
 }
 
+inline void Swap()
+{
+	switch (currentRenderer)
+	{
+		case RENDERER_VULKAN:
+
+			break;
+		case RENDERER_OPENGL:
+			GL_Swap();
+			break;
+		default:
+			break;
+	}
+}
+
 inline void DrawRect(const int x, const int y, const int w, const int h)
 {
 	switch (currentRenderer)

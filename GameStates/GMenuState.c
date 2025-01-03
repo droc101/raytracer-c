@@ -41,7 +41,6 @@ void GMenuStateUpdate(GlobalState * /*State*/) {}
 void GMenuStateRender(GlobalState * /*State*/)
 {
 	RenderMenuBackground();
-	RenderInGameMenuBackground();
 
 	// draw the logo
 	SDL_Rect logoRect;

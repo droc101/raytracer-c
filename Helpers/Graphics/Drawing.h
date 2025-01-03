@@ -163,6 +163,10 @@ void ClearScreen();
  */
 void ClearDepthOnly();
 
+/**
+ * Swap the buffers
+ */
+void Swap();
 
 /**
  * Get the size of a texture

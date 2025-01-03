@@ -58,7 +58,13 @@ void InitSDL()
 	SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_COPYRIGHT_STRING, COPYRIGHT);
 	SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_TYPE_STRING, "game");
 #ifdef SDL_PLATFORM_LINUX
-	SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "wayland,x11"); // required to fix an nvidia bug with glCopyTexImage2D
+	if (GetState()->options.renderer == RENDERER_OPENGL)
+	{
+		SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "wayland,x11"); // required to fix an nvidia bug with glCopyTexImage2D
+	} else
+	{
+		SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "x11"); // faster
+	}
 #endif
 
 	if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMEPAD | SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC))
@@ -184,6 +190,8 @@ int main(const int argc, char *argv[])
 
 	ExecPathInit(argc, argv);
 
+	InitOptions();
+
 	InitSDL();
 
 	PhysicsThreadInit();
@@ -256,13 +264,11 @@ int main(const int argc, char *argv[])
 		state->cam->z = (float)state->level->player.pos.y;
 		state->cam->yaw = (float)state->level->player.angle;
 
-		FrameStart();
-
 		state->RenderGame(state);
 
 		FrameGraphDraw();
 
-		FrameEnd();
+		Swap();
 
 		UpdateInputStates();
 

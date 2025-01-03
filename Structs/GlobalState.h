@@ -11,6 +11,12 @@
 extern const byte *music[MUSIC_COUNT];
 
 /**
+ * Load options
+ * @warning This function should only be called once
+ */
+void InitOptions();
+
+/**
  * Initialize the global state
  * @warning This function should only be called once
  */
