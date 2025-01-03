@@ -347,7 +347,7 @@ inline void GL_Swap()
 {
 	int w;
 	int h;
-	SDL_GL_GetDrawableSize(GetGameWindow(), &w, &h);
+	SDL_GetWindowSizeInPixels(GetGameWindow(), &w, &h);
 
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, glFramebuffer->frameBufferObjet);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
