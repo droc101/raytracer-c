@@ -55,7 +55,13 @@ void InitSDL()
 {
 	SDL_SetHint(SDL_HINT_APP_NAME, GAME_TITLE);
 #ifdef __LINUX__
-	SDL_SetHint(SDL_HINT_VIDEODRIVER, "wayland,x11"); // required to fix an nvidia bug with glCopyTexImage2D
+	if (GetState()->options.renderer == RENDERER_OPENGL)
+	{
+		SDL_SetHint(SDL_HINT_VIDEODRIVER, "wayland,x11"); // required to fix an nvidia bug with glCopyTexImage2D
+	} else
+	{
+		SDL_SetHint(SDL_HINT_VIDEODRIVER, "x11"); // faster
+	}
 #endif
 
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMECONTROLLER | SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC) != 0)
@@ -103,12 +109,13 @@ void WindowAndRenderInit()
 	DwmDarkMode(window);
 	SDL_SetWindowFullscreen(window, GetState()->options.fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
 	SetGameWindow(window);
-	UpdateViewportSize();
 
 	if (!RenderInit())
 	{
 		RenderInitError();
 	}
+
+	UpdateViewportSize();
 
 	SDL_SetWindowMinimumSize(window, MIN_WIDTH, MIN_HEIGHT);
 	SDL_SetWindowMaximumSize(window, MAX_WIDTH, MAX_HEIGHT);
@@ -179,6 +186,8 @@ int main(const int argc, char *argv[])
 	LogInfo("Initializing Engine\n");
 
 	ExecPathInit(argc, argv);
+
+	InitOptions();
 
 	InitSDL();
 
