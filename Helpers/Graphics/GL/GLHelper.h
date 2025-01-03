@@ -236,4 +236,10 @@ void GL_DrawBlur(Vector2 pos,
 				 Vector2 size,
 				 int blurRadius);
 
+/**
+ * Run at the start of a frame
+ * @return true
+ */
+bool GL_FrameStart();
+
 #endif //GAME_GLHELPER_H

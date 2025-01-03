@@ -121,4 +121,8 @@ void RenderInGameMenuBackground();
  */
 void DrawBlur(Vector2 pos, Vector2 size, int blurRadius);
 
+bool FrameStart();
+
+void FrameEnd();
+
 #endif //GAME_RENDERINGHELPERS_H

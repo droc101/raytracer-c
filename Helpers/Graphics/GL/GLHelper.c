@@ -31,6 +31,8 @@ GL_Shader *fbBlur;
 
 GL_Buffer *glBuffer;
 
+GL_Framebuffer *glFramebuffer = NULL;
+
 GLuint GL_Textures[MAX_TEXTURES];
 int GL_NextFreeSlot = 1; // Slot 0 is reserved for the framebuffer copy
 int GL_AssetTextureMap[ASSET_COUNT];
@@ -66,8 +68,8 @@ bool GL_PreInit()
 		}
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, mssaValue);
 	}
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
@@ -152,23 +154,82 @@ bool GL_Init(SDL_Window *wnd)
 	LogInfo("OpenGL Version: %s\n", version);
 	LogInfo("GLSL: %s\n", shadingLanguage);
 
-	GL_Disable3D();
+	if (!GLEW_ARB_framebuffer_object)
+	{
+		GL_Error("ARB_framebuffer_object not supported");
+		return false;
+	}
 
-	GL_UpdateViewportSize();
+	fflush(stdout);
+
+	GL_Disable3D();
 
 	return true;
 }
 
-void GL_UpdateFramebufferTexture()
+GL_Framebuffer *CreateFramebuffer(const int w, const int h)
 {
-	glBindTexture(GL_TEXTURE_2D, GL_Textures[0]);
+	GL_Framebuffer *fb = malloc(sizeof(GL_Framebuffer));
+	chk_malloc(fb);
+	memset(fb, 0, sizeof(GL_Framebuffer));
+
+	glGenFramebuffers(1, &fb->frameBufferObjet);
+	glBindFramebuffer(GL_FRAMEBUFFER, fb->frameBufferObjet);
+
+	glGenTextures(1, &fb->colorTexture);
+	glBindTexture(GL_TEXTURE_2D, fb->colorTexture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fb->colorTexture, 0);
+
+	glGenTextures(1, &fb->depthTexture);
+	glBindTexture(GL_TEXTURE_2D, fb->depthTexture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, w, h, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, fb->depthTexture, 0);
+
+	glGenRenderbuffers(1, &fb->renderBufferObject);
+	glBindRenderbuffer(GL_RENDERBUFFER, fb->renderBufferObject);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, w, h);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, fb->renderBufferObject);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		GL_Error("Framebuffer is not complete");
+		free(fb);
+		return NULL;
+	}
+
+	return fb;
+}
+
+void DestroyFrameBuffer(GL_Framebuffer *framebuffer)
+{
+	glDeleteFramebuffers(1, &framebuffer->frameBufferObjet);
+	glDeleteTextures(1, &framebuffer->colorTexture);
+	glDeleteTextures(1, &framebuffer->depthTexture);
+	glDeleteRenderbuffers(1, &framebuffer->renderBufferObject);
+	free(framebuffer);
+}
+
+GL_Framebuffer* ResizeFrameBuffer(GL_Framebuffer *old)
+{
+	if (old != NULL)
+	{
+		DestroyFrameBuffer(old);
+	}
+
 	int w;
 	int h;
 	SDL_GL_GetDrawableSize(GetGameWindow(), &w, &h);
 
-	glReadBuffer(GL_BACK);
-
-	glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, w, h, 0);
+	return CreateFramebuffer(w, h);
 }
 
 GL_Shader *GL_ConstructShaderFromAssets(const byte *fsh, const byte *vsh)
@@ -256,6 +317,7 @@ void GL_DestroyBuffer(GL_Buffer *buf)
 	glDeleteBuffers(1, &buf->vbo);
 	glDeleteBuffers(1, &buf->ebo);
 	free(buf);
+	buf = NULL;
 }
 
 inline void GL_ClearScreen()
@@ -282,6 +344,13 @@ inline void GL_ClearDepthOnly()
 
 inline void GL_Swap()
 {
+	int w;
+	int h;
+	SDL_GL_GetDrawableSize(GetGameWindow(), &w, &h);
+
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, glFramebuffer->frameBufferObjet);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	glBlitFramebuffer(0, 0, w, h, 0, 0, w, h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 	SDL_GL_SwapWindow(GetGameWindow());
 }
 
@@ -298,6 +367,7 @@ void GL_DestroyGL()
 	glUseProgram(0);
 	glDisableVertexAttribArray(0);
 	GL_DestroyBuffer(glBuffer);
+	DestroyFrameBuffer(glFramebuffer);
 	SDL_GL_DeleteContext(ctx);
 }
 
@@ -502,7 +572,7 @@ void GL_DrawBlur(const Vector2 pos,
 {
 	glUseProgram(fbBlur->program);
 
-	GL_UpdateFramebufferTexture();
+	glBindTexture(GL_TEXTURE_2D, glFramebuffer->colorTexture);
 
 	glUniform1i(glGetUniformLocation(fbBlur->program, "blurRadius"), blurRadius);
 
@@ -880,27 +950,12 @@ inline void GL_Disable3D()
 
 inline void GL_UpdateViewportSize()
 {
-	int w, h;
+	int w;
+	int h;
 	SDL_GL_GetDrawableSize(GetGameWindow(), &w, &h);
 	glViewport(0, 0, w, h);
 
-	if (GL_Textures[0] != -1)
-	{
-		glDeleteTextures(1, &GL_Textures[0]);
-	}
-
-	GLuint fbtex;
-	glGenTextures(1, &fbtex);
-	glBindTexture(GL_TEXTURE_2D, fbtex);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-
-	GL_Textures[0] = fbtex;
+	glFramebuffer = ResizeFrameBuffer(glFramebuffer);
 }
 
 void GL_DrawColoredArrays(const float *vertices, const uint *indices, const int quad_count, const uint color)
@@ -1093,4 +1148,11 @@ void GL_RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const byte *
 	}
 
 	glDrawElements(GL_TRIANGLES, m->packedIndicesCount, GL_UNSIGNED_INT, NULL);
+}
+
+
+bool GL_FrameStart()
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, glFramebuffer->frameBufferObjet);
+	return true;
 }

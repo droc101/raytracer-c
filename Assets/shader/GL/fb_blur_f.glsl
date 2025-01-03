@@ -14,6 +14,8 @@ uniform int blurRadius; // Radius of the blur
 
 void main() {
     vec2 uv = gl_FragCoord.xy / textureSize(alb, 0);
+    //COLOR = textureLod(alb, uv, 4.0);
+    //return;
 
     // Box blur
     vec3 color = vec3(0.0);

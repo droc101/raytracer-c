@@ -238,3 +238,31 @@ void DrawBlur(const Vector2 pos, const Vector2 size, int blurRadius)
 			break;
 	}
 }
+
+bool FrameStart() // note when merging into vulkan branch: don't leak vulkan types into global scope!
+{
+	switch (currentRenderer)
+	{
+		case RENDERER_VULKAN:
+			return false;
+		case RENDERER_OPENGL:
+			return GL_FrameStart();
+		default:
+			return false;
+	}
+}
+
+void FrameEnd()
+{
+	switch (currentRenderer)
+	{
+		case RENDERER_VULKAN:
+
+			break;
+		case RENDERER_OPENGL:
+			GL_Swap();
+		break;
+		default:
+			break;
+	}
+}
