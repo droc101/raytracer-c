@@ -105,6 +105,18 @@ bool GL_Init(SDL_Window *wnd)
 		return false;
 	}
 
+	if (!GLEW_ARB_framebuffer_object)
+	{
+		GL_Error("ARB_framebuffer_object not supported");
+		return false;
+	}
+
+#ifdef BUILDSTYLE_DEBUG
+	glEnable(GL_DEBUG_OUTPUT);
+	glDebugMessageCallback(GL_DebugMessageCallback, NULL);
+	LogWarning("GL: ARB_debug_output not supported, debugger cannot start\n");
+#endif
+
 	uiTextured = GL_ConstructShaderFromAssets(gzshd_GL_hud_textured_f, gzshd_GL_hud_textured_v);
 	uiColored = GL_ConstructShaderFromAssets(gzshd_GL_hud_color_f, gzshd_GL_hud_color_v);
 	wall = GL_ConstructShaderFromAssets(gzshd_GL_wall_f, gzshd_GL_wall_v);
@@ -135,13 +147,6 @@ bool GL_Init(SDL_Window *wnd)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_SCISSOR_TEST);
-	glPixelStorei(GL_PACK_ALIGNMENT, 1);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-#ifdef BUILDSTYLE_DEBUG
-	glEnable(GL_DEBUG_OUTPUT);
-	glDebugMessageCallback(GL_DebugMessageCallback, NULL);
-#endif
 
 	char *vendor = (char *)glGetString(GL_VENDOR);
 	char *renderer = (char *)glGetString(GL_RENDERER);
@@ -153,12 +158,6 @@ bool GL_Init(SDL_Window *wnd)
 	LogInfo("OpenGL Renderer: %s\n", renderer);
 	LogInfo("OpenGL Version: %s\n", version);
 	LogInfo("GLSL: %s\n", shadingLanguage);
-
-	if (!GLEW_ARB_framebuffer_object)
-	{
-		GL_Error("ARB_framebuffer_object not supported");
-		return false;
-	}
 
 	fflush(stdout);
 
@@ -350,7 +349,7 @@ inline void GL_Swap()
 
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, glFramebuffer->frameBufferObjet);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-	glBlitFramebuffer(0, 0, w, h, 0, 0, w, h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+	glBlitFramebuffer(0, 0, w, h, 0, 0, w, h, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 	SDL_GL_SwapWindow(GetGameWindow());
 }
 
@@ -570,6 +569,7 @@ void GL_DrawBlur(const Vector2 pos,
 				 const Vector2 size,
 				 const int blurRadius)
 {
+
 	glUseProgram(fbBlur->program);
 
 	glBindTexture(GL_TEXTURE_2D, glFramebuffer->colorTexture);
