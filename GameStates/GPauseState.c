@@ -4,7 +4,8 @@
 
 #include "GPauseState.h"
 #include <stdio.h>
-#include "../Assets/Assets.h"
+// #include "../Assets/Assets.h"
+#include "../Assets/AssetReader.h"
 #include "../Helpers/Core/Input.h"
 #include "../Helpers/Graphics/Drawing.h"
 #include "../Helpers/Graphics/Font.h"
@@ -26,7 +27,7 @@ void GPauseStateUpdate(GlobalState * /*State*/)
 		IsButtonJustPressed(CONTROLLER_CANCEL) ||
 		IsButtonJustPressed(SDL_CONTROLLER_BUTTON_START))
 	{
-		PlaySoundEffect(gzwav_sfx_popdown);
+		PlaySoundEffect(SOUND("sfx_popdown"));
 		GMainStateSet();
 	}
 }

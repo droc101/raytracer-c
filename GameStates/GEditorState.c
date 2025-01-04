@@ -1090,7 +1090,7 @@ void GEditorStateRender(GlobalState * /*State*/)
 		const EditorNode *node = ListGet(editorNodes, editorSelectedNode);
 		if (node->type == NODE_WALL_A)
 		{
-			const byte *tex = wallTextures[node->extra];
+			const char *tex = wallTextures[node->extra];
 			if (tex != NULL)
 			{
 				const SDL_Rect dst = {10, 310, 64, 64};
@@ -1102,7 +1102,7 @@ void GEditorStateRender(GlobalState * /*State*/)
 		const Control *texSld = ListGet(editorUiStack->Controls, 1 + editorBaseControlCount);
 		const SliderData *sliderData = (SliderData *)texSld->ControlData;
 
-		const byte *tex = wallTextures[(int)sliderData->value];
+		const char *tex = wallTextures[(int)sliderData->value];
 		if (tex != NULL)
 		{
 			const SDL_Rect dst = {10, 360, 64, 64};

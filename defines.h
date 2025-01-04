@@ -170,7 +170,7 @@ struct Wall
 {
 	Vector2 a; // The first point of the wall
 	Vector2 b; // The second point of the wall
-	const byte *tex; // The raw asset data for the texture
+	const char *tex; // The raw asset data for the texture
 	int texId; // The texture ID
 	double length; // The length of the wall (Call WallBake to update)
 	double angle; // The angle of the wall (Call WallBake to update)
@@ -291,6 +291,7 @@ struct GlobalState
 	Options options; // Game options
 
 	char executablePath[261]; // The path to the executable
+	char executableFolder[261];
 
 	double uiScale; // The scale of the UI.
 	bool freezeEvents; // Whether to freeze the event loop. This should only be used for debugging.
@@ -318,7 +319,7 @@ struct Actor
 	bool showShadow; // should the actor cast a shadow?
 	float shadowSize; // size of the shadow
 	Model *actorModel; // Optional model for the actor, if not NULL, will be rendered instead of the wall
-	byte *actorModelTexture; // Texture for the model
+	char *actorModelTexture; // Texture for the model
 };
 
 #pragma endregion

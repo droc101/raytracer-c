@@ -49,7 +49,7 @@ void GL_Error(const char *error);
  * @param vsh The vertex shader asset
  * @return The constructed shader or NULLPTR on error
  */
-GL_Shader *GL_ConstructShaderFromAssets(const byte *fsh, const byte *vsh);
+GL_Shader *GL_ConstructShaderFromAssets(const char *fsh, const char *vsh);
 
 /**
  * Create a shader program
@@ -90,7 +90,7 @@ void GL_DebugMessageCallback(GLenum source,
  * @param imageData The asset data (not decompressed)
  * @return The slot the texture was registered in
  */
-GLuint GL_LoadTextureFromAsset(const unsigned char *imageData);
+GLuint GL_LoadTextureFromAsset(const char *imageData);
 
 
 /**

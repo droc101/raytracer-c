@@ -8,7 +8,7 @@
 #include "../Helpers/CommonAssets.h"
 #include "../Helpers/Core/Error.h"
 
-Wall *CreateWall(const Vector2 a, const Vector2 b, const byte *tex, const float uvScale, const float uvOffset)
+Wall *CreateWall(const Vector2 a, const Vector2 b, const char *tex, const float uvScale, const float uvOffset)
 {
 	Wall *w = malloc(sizeof(Wall));
 	chk_malloc(w);

@@ -32,7 +32,7 @@ const byte *LoadWallTexture(int index);
  * @param uvOffset Wall texture offset
  * @return Wall pointer
  */
-Wall *CreateWall(Vector2 a, Vector2 b, const byte *tex, float uvScale, float uvOffset);
+Wall *CreateWall(Vector2 a, Vector2 b, const char *tex, float uvScale, float uvOffset);
 
 /**
  * Free the memory used by a wall

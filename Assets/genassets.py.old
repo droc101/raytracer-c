@@ -1,15 +1,13 @@
 import os
 import sys
-import subprocess
 from PIL import Image
 import gzip
+import subprocess
 import tempfile
 import struct
-import shutil
 
 aid = 0
 
-#region Helpers
 
 def int_to_bytes(i):  # Convert an integer to bytes big endian, 4 bytes
 	return [(i >> 24) & 0xFF, (i >> 16) & 0xFF, (i >> 8) & 0xFF, i & 0xFF]
@@ -17,13 +15,10 @@ def int_to_bytes(i):  # Convert an integer to bytes big endian, 4 bytes
 def int_to_bytes_le(i):  # Convert an integer to bytes little endian, 4 bytes
 	return [i & 0xFF, (i >> 8) & 0xFF, (i >> 16) & 0xFF, (i >> 24) & 0xFF]
 
-#endregion
-
-#region Conversion Functions
-
+# Convert a PNG file to bytes
 def png_to_bytes(path):
 	global aid
-	# global texture_asset_total_size
+	global texture_asset_total_size
 	img = Image.open(path)
 	img = img.convert("RGBA")
 	img_dta = img.getdata()
@@ -64,7 +59,7 @@ def png_to_bytes(path):
 	header[21] = 3
 	header[22] = 4
 	
-	# texture_asset_total_size += img.width * img.height * 4
+	texture_asset_total_size += img.width * img.height * 4
 
 	aid += 1
 
@@ -387,99 +382,139 @@ def obj_to_bytes(path):
 
 	return header
 
-#endregion
+# Generate the header for the array (the actual array is in the .c file)
+def c_header_array(name, size):
+	return "extern const unsigned char " + name + "[];\n"
 
-if (len(sys.argv) != 3):
-	print("Usage: python genassets.py <input_path> <output_path>")
-	sys.exit(1)
 
-input_path = sys.argv[1]
-output_path = sys.argv[2]
+path = sys.argv[1]
+
+assets_c = ""
+assets_h = ""
 
 count = 0
 texture_asset_names = []
+texture_asset_total_size = 0
 
-def setup_dirs(out_path):
-	# Delete the old assets folder
-	if os.path.exists(out_path):
-		shutil.rmtree(out_path)
-	
-    # Create the new assets folder
-	os.makedirs(out_path)
-	
-    # Create the subfolders
-	os.makedirs(out_path + "texture/")
-	os.makedirs(out_path + "audio/")
-	os.makedirs(out_path + "level/")
-	os.makedirs(out_path + "glshader/")
-	os.makedirs(out_path + "vkshader/")
-	os.makedirs(out_path + "model/")
 
-def write(out_path, subfolder, name, data):
-    with open(out_path + subfolder + name, "wb") as f:
-        f.write(data)
-
-def recursive_search(in_path, out_path):
+def recursive_search(path):
 	global count
+	global assets_c
+	global assets_h
 	global texture_asset_names
+	assets_c += "\n"
+	assets_h += "\n"
 
-	foldername = in_path.split("/")[-2]
-	files = os.listdir(in_path)
+	foldername = path.split("/")[-2]
+	files = os.listdir(path)
 	
 	# Sort the files so that the order is deterministic
 	files.sort()
 	
 	for file in files:
-		if os.path.isdir(in_path + file):
-			recursive_search(in_path + file + "/", out_path)
+		if os.path.isdir(path + file):
+			recursive_search(path + file + "/")
 		else:
-			path_from_assets = in_path.split("Assets/")[1]
+			path_from_assets = path.split("Assets/")[1]
 			if file.endswith(".c") or file.endswith(".h") or file.endswith(".py"):
 				pass
 			elif file.endswith(".png"):
 				count += 1
 				print("Converting " + path_from_assets + file)
-				data = png_to_bytes(in_path + file)
-				name = foldername + "_" + file.split(".")[0] + ".gtex"
+				data = png_to_bytes(path + file)
+				name = "gztex_" + foldername + "_" + file.split(".")[0]
+				assets_c += bytes_to_c_array(data, name)
+				assets_h += c_header_array(name, len(data))
 				texture_asset_names.append(name)
-				write(out_path, "texture/", name, data)
 			elif file.endswith(".mp3"):
 				count += 1
 				print("Converting " + path_from_assets + file)
-				data = mp3_to_bytes(in_path + file)
-				write(out_path, "audio/", foldername + "_" + file.split(".")[0] + ".gmus", data)
+				data = mp3_to_bytes(path + file)
+				name = "gzmpg_" + foldername + "_" + file.split(".")[0]
+				assets_c += bytes_to_c_array(data, name)
+				assets_h += c_header_array(name, len(data))
 			elif file.endswith(".wav"):
 				count += 1
 				print("Converting " + path_from_assets + file)
-				data = wav_to_bytes(in_path + file)
-				write(out_path, "audio/", foldername + "_" + file.split(".")[0] + ".gsnd", data)
+				data = wav_to_bytes(path + file)
+				name = "gzwav_" + foldername + "_" + file.split(".")[0]
+				assets_c += bytes_to_c_array(data, name)
+				assets_h += c_header_array(name, len(data))
 			elif file.endswith(".bin"):
 				count += 1
 				print("Converting " + path_from_assets + file)
-				data = file_to_bytes(in_path + file, 4)
-				write(out_path, "level/", foldername + "_" + file.split(".")[0] + ".gmap", data)
-			elif file.endswith(".frag"):
-				count += 1
-				print("Converting " + path_from_assets + file)
-				data = frag_to_bytes(in_path + file)
-				write(out_path, "vkshader/", foldername + "_" + file.split(".")[0] + ".gfrg", data)
-			elif file.endswith(".vert"):
-				count += 1
-				print("Converting " + path_from_assets + file)
-				data = vert_to_bytes(in_path + file)
-				write(out_path, "vkshader/", foldername + "_" + file.split(".")[0] + ".gvrt", data)
-			elif file.endswith(".obj"):
-				count += 1
-				print("Converting " + path_from_assets + file)
-				data = obj_to_bytes(in_path + file)
-				write(out_path, "model/", foldername + "_" + file.split(".")[0] + ".gmdl", data)
+				data = file_to_bytes(path + file, 3)
+				name = "gzbin_" + foldername + "_" + file.split(".")[0]
+				assets_c += bytes_to_c_array(data, name)
+				assets_h += c_header_array(name, len(data))
 			elif file.endswith(".glsl"):
 				count += 1
 				print("Converting " + path_from_assets + file)
-				data = file_to_bytes(in_path + file, 4)
-				write(out_path, "glshader/", foldername + "_" + file.split(".")[0] + ".gshd", data)
+				data = file_to_bytes(path + file, 4)
+				name = "gzshd_" + foldername + "_" + file.split(".")[0]
+				assets_c += bytes_to_c_array(data, name)
+				assets_h += c_header_array(name, len(data))
+			elif file.endswith(".frag"):
+				count += 1
+				print("Converting " + path_from_assets + file)
+				data = frag_to_bytes(path + file)
+				name = "gzfrag_" + foldername + "_" + file.split(".")[0]
+				assets_c += bytes_to_c_array(data, name)
+				assets_h += c_header_array(name, len(data))
+			elif file.endswith(".vert"):
+				count += 1
+				print("Converting " + path_from_assets + file)
+				data = vert_to_bytes(path + file)
+				name = "gzvert_" + foldername + "_" + file.split(".")[0]
+				assets_c += bytes_to_c_array(data, name)
+				assets_h += c_header_array(name, len(data))
+			elif file.endswith(".obj"):
+				count += 1
+				print("Converting " + path_from_assets + file)
+				data = obj_to_bytes(path + file)
+				name = "gzobj_" + foldername + "_" + file.split(".")[0]
+				assets_c += bytes_to_c_array(data, name)
+				assets_h += c_header_array(name, len(data))
 			else:
 				print("Unrecognized file type: " + file)
 
-setup_dirs(output_path)
-recursive_search(input_path, output_path)
+
+recursive_search(path)
+
+print("Converted " + str(count) + " files")
+
+texture_asset_array = "\n\nconst unsigned char *texture_assets[TEXTURE_ASSET_COUNT] = {\n    "
+texture_asset_array += ", \n    ".join(texture_asset_names)
+texture_asset_array += "\n};\n\n"
+
+texture_asset_array_header = "\n\nextern const unsigned char *texture_assets[];\n\n#define TEXTURE_ASSET_COUNT " + str(len(texture_asset_names)) + "\n\n#define TEXTURE_ASSET_TOTAL_SIZE " + str(texture_asset_total_size) + "\n\n"
+
+assets_c_header = '#include "Assets.h"'
+assets_h_header = "#ifndef ASSETS_H\n#define ASSETS_H"
+assets_c_footer = "// Automatically generated by genassets.py\n"
+assets_h_footer = (
+	"\n\n#define ASSET_COUNT "
+	+ str(aid)
+	+ "\n\n#endif\n// Automatically generated by genassets.py\n"
+)
+
+final_assets_c = assets_c_header + assets_c + texture_asset_array + assets_c_footer
+final_assets_h = assets_h_header + assets_h + texture_asset_array_header + assets_h_footer
+
+if os.path.isfile(path + "Assets.c") and os.path.isfile(path + "Assets.h"):
+	# Compare the generated files with the existing files
+	with open(path + "Assets.c", "r") as f:
+		existing_assets_c = f.read()
+
+	with open(path + "Assets.h", "r") as f:
+		existing_assets_h = f.read()
+		
+	if existing_assets_c == final_assets_c and existing_assets_h == final_assets_h:
+		print("No changes detected")
+		sys.exit(0)
+
+with open(path + "Assets.c", "w") as f:
+	f.write(final_assets_c)
+
+with open(path + "Assets.h", "w") as f:
+	f.write(final_assets_h)

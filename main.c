@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "Assets/AssetReader.h"
-#include "Assets/Assets.h"
+// #include "Assets/Assets.h"
 #include "config.h"
 #include "Debug/DPrint.h"
 #include "Debug/FrameBenchmark.h"
@@ -46,6 +46,20 @@ void ExecPathInit(const int argc, char *argv[])
 	memset(GetState()->executablePath, 0, 261); // we do not mess around with user data in c.
 	strncpy(GetState()->executablePath, argv[0], 260);
 	LogInfo("Executable path: %s\n", GetState()->executablePath);
+
+	char *folder = SDL_GetBasePath();
+	if (folder == NULL)
+	{
+		Error("Failed to get base path");
+	}
+	if (strlen(folder) > 260)
+	{
+		Error("Base path too long. Please rethink your file structure.");
+	}
+
+	strncpy(GetState()->executableFolder, folder, 260);
+	SDL_free(folder);
+	LogInfo("Executable folder: %s\n", GetState()->executableFolder);
 }
 
 /**
@@ -120,7 +134,7 @@ void WindowAndRenderInit()
 	SDL_SetWindowMinimumSize(window, MIN_WIDTH, MIN_HEIGHT);
 	SDL_SetWindowMaximumSize(window, MAX_WIDTH, MAX_HEIGHT);
 
-	windowIcon = ToSDLSurface(gztex_interface_icon, "1");
+	windowIcon = ToSDLSurface(TEXTURE("interface_icon"), "1");
 	SDL_SetWindowIcon(window, windowIcon);
 }
 
@@ -188,6 +202,8 @@ int main(const int argc, char *argv[])
 	ExecPathInit(argc, argv);
 
 	InitOptions();
+
+	AssetCacheInit();
 
 	InitSDL();
 

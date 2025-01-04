@@ -9,51 +9,120 @@
 #include "../Helpers/Core/DataReader.h"
 #include "../Helpers/Core/Error.h"
 #include "../Helpers/Core/Logging.h"
-#include "Assets.h"
+// #include "Assets.h"
+#include <errno.h>
 
-uint AssetGetSize(const byte *asset)
+
+#include "../Structs/GlobalState.h"
+
+FILE *openAssetFile(const char *relPath)
 {
-	return ReadUintA(asset, 4);
+	char path[260] = {0};
+
+	const size_t pathLen = strlen(GetState()->executableFolder) + strlen(relPath) + strlen("assets/") + 1;
+	if (pathLen >= 260)
+	{
+		LogError("Path is too long: %s\n", relPath);
+		Error("Game path too long. Please rethink your file structure.");
+	}
+	sprintf(path, "%sassets/%s", GetState()->executableFolder, relPath);
+
+	FILE *file = fopen(path, "rb");
+	if (file == NULL)
+	{
+		LogError("Failed to open asset file: %s with errno %s\n", path, strerror(errno));
+		Error("Failed to open asset file. The game installation may be damaged.");
+	}
+
+	return file;
 }
 
-uint AssetGetType(const byte *asset)
+uint AssetGetSize(const char *relPath)
 {
-	return ReadUintA(asset, 12);
+	FILE *file = openAssetFile(relPath);
+
+	fseek(file, 0, SEEK_END);
+	const size_t fileSize = ftell(file);
+	if (fileSize < 16)
+	{
+		LogError("Failed to get asset size, file was too small!");
+		fclose(file);
+		Error("Failed to read asset file. The game installation may be damaged.");
+	}
+	fseek(file, 0, SEEK_SET);
+
+	byte header[16];
+	fread(header, 1, 16, file);
+	fclose(file);
+	uint size = ReadUintA(header, 4);
+	return size;
 }
 
-byte *AssetCache[ASSET_COUNT];
+uint AssetGetType(const char *relPath)
+{
+	FILE *file = openAssetFile(relPath);
+
+	fseek(file, 0, SEEK_END);
+	const size_t fileSize = ftell(file);
+	if (fileSize < 16)
+	{
+		LogError("Failed to get asset type, file was too small!");
+		fclose(file);
+		Error("Failed to read asset file. The game installation may be damaged.");
+	}
+	fseek(file, 0, SEEK_SET);
+
+	byte header[16];
+	fread(header, 1, 16, file);
+	fclose(file);
+	uint size = ReadUintA(header, 12);
+	return size;
+}
+
+List *AssetCacheNames;
+List *AssetCacheData;
+
+void AssetCacheInit()
+{
+	AssetCacheNames = CreateList();
+	AssetCacheData = CreateList();
+}
 
 void InvalidateAssetCache()
 {
-	for (int i = 0; i < ASSET_COUNT; i++)
-	{
-		if (AssetCache[i] != NULL)
-		{
-			free(AssetCache[i]);
-			AssetCache[i] = NULL;
-		}
-	}
+	ListFreeWithData(AssetCacheData);
+	ListFree(AssetCacheNames);
+
+	AssetCacheInit();
 }
 
-byte *DecompressAsset(const byte *asset)
+byte *DecompressAsset(const char *relPath)
 {
+	// see if relPath is already in the cache
+	for (int i = 0; i < AssetCacheNames->size; i++)
+	{
+		if (strcmp(ListGet(AssetCacheNames, i), relPath) == 0)
+		{
+			return ListGet(AssetCacheData, i);
+		}
+	}
+
+	FILE *file = openAssetFile(relPath);
+
+	fseek(file, 0, SEEK_END);
+	const size_t fileSize = ftell(file);
+
+	const byte *asset = malloc(fileSize);
+	chk_malloc(asset);
+	fseek(file, 0, SEEK_SET);
+	fread((void *)asset, 1, fileSize, file);
+
+	fclose(file);
+
 	int offset = 0;
 	// Read the first 4 bytes of the asset to get the size of the compressed data
 	const uint compressedSize = ReadUint(asset, &offset);
 	const uint decompressedSize = ReadUint(asset, &offset);
-	// Read the decompressed size (4 bytes after the compressed size
-	const uint assetId = ReadUint(asset, &offset); // Read the asset ID (4 bytes after the decompressed size)
-
-	if (assetId >= ASSET_COUNT)
-	{
-		LogError("Asset ID %d is out of range\n", assetId);
-		Error("Asset ID out of range");
-	}
-
-	if (AssetCache[assetId] != NULL)
-	{
-		return AssetCache[assetId];
-	}
 
 	asset += 16; // skip header
 
@@ -95,12 +164,14 @@ byte *DecompressAsset(const byte *asset)
 	// Clean up the zlib stream
 	inflateEnd(&stream);
 
-	AssetCache[assetId] = decompressedData;
+	// Add the asset to the cache
+	ListAdd(AssetCacheNames, strdup(relPath));
+	ListAdd(AssetCacheData, decompressedData);
 
 	return decompressedData;
 }
 
-Model *LoadModel(const byte *asset)
+Model *LoadModel(const char *asset)
 {
 	const size_t size = AssetGetSize(asset);
 	if (size < sizeof(ModelHeader))

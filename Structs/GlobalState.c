@@ -5,7 +5,7 @@
 #include "GlobalState.h"
 #include <stdio.h>
 #include "../Assets/AssetReader.h"
-#include "../Assets/Assets.h"
+// #include "../Assets/Assets.h"
 #include "../Helpers/Core/Error.h"
 #include "../Helpers/Core/Logging.h"
 #include "../Helpers/Core/PhysicsThread.h"
@@ -18,8 +18,8 @@
 
 GlobalState state;
 
-const byte *music[MUSIC_COUNT] = {
-	gzmpg_audio_field,
+const char *music[MUSIC_COUNT] = {
+	MUSIC("audio_field"),
 };
 
 /**
@@ -150,7 +150,7 @@ void ChangeLevel(Level *l)
 	}
 }
 
-void ChangeMusic(const byte *asset)
+void ChangeMusic(const char *asset)
 {
 	if (!state.isAudioStarted) return;
 	if (AssetGetType(asset) != ASSET_TYPE_MP3)
@@ -184,7 +184,7 @@ void StopMusic()
 	}
 }
 
-void PlaySoundEffect(const byte *asset)
+void PlaySoundEffect(const char *asset)
 {
 	if (!state.isAudioStarted) return;
 	if (AssetGetType(asset) != ASSET_TYPE_WAV)

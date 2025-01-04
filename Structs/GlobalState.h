@@ -8,7 +8,7 @@
 #include "../defines.h"
 
 #define MUSIC_COUNT 1
-extern const byte *music[MUSIC_COUNT];
+extern const char *music[MUSIC_COUNT];
 
 /**
  * Load options
@@ -86,7 +86,7 @@ void ChangeLevel(Level *l);
  * Change the bgm
  * @param asset Asset to change to
  */
-void ChangeMusic(const byte *asset);
+void ChangeMusic(const char *asset);
 
 /**
  * Stop the bgm
@@ -98,7 +98,7 @@ void StopMusic();
  * @param asset Sound effect to play
  * @warning If there are no free channels, the sound effect will not play, and you will not be notified
  */
-void PlaySoundEffect(const byte *asset);
+void PlaySoundEffect(const char *asset);
 
 /**
  * Destroy the global state

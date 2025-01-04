@@ -35,8 +35,6 @@ add_executable(
         defines.h
         Helpers/Graphics/Drawing.h
         Helpers/Graphics/Drawing.c
-        Assets/Assets.h
-        Assets/Assets.c
         Structs/Vector2.h
         Structs/Vector2.c
         Helpers/Core/MathEx.h
@@ -176,10 +174,9 @@ endif ()
 
 add_custom_target( # Python script for generating assets code
         genassets ALL
-        COMMAND "python" ${CMAKE_CURRENT_SOURCE_DIR}/Assets/genassets.py ${CMAKE_CURRENT_SOURCE_DIR}/Assets/
+        COMMAND "python" ${CMAKE_CURRENT_SOURCE_DIR}/Assets/genassets.py ${CMAKE_CURRENT_SOURCE_DIR}/Assets/ ${CMAKE_CURRENT_BINARY_DIR}/assets/
         COMMENT "Generating assets"
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Assets/
-        BYPRODUCTS ${CMAKE_CURRENT_SOURCE_DIR}/Assets/Assets.h ${CMAKE_CURRENT_SOURCE_DIR}/Assets/Assets.c
 )
 
 add_dependencies(game genassets)

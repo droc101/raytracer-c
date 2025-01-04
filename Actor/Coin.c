@@ -4,7 +4,8 @@
 
 #include "Coin.h"
 #include <math.h>
-#include "../Assets/Assets.h"
+// #include "../Assets/Assets.h"
+#include "../Assets/AssetReader.h"
 #include "../Helpers/Collision.h"
 #include "../Helpers/CommonAssets.h"
 #include "../Structs/GlobalState.h"
@@ -51,7 +52,7 @@ void CoinUpdate(Actor *this, double /*delta*/)
 			GetState()->blueCoins++;
 			GetState()->coins += 5;
 		}
-		PlaySoundEffect(gzwav_sfx_coincling);
+		PlaySoundEffect(SOUND("sfx_coincling"));
 		RemoveActor(this);
 	}
 }

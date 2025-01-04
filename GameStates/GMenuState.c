@@ -4,7 +4,8 @@
 
 #include "GMenuState.h"
 #include <stdio.h>
-#include "../Assets/Assets.h"
+// #include "../Assets/Assets.h"
+#include "../Assets/AssetReader.h"
 #include "../Helpers/Core/Input.h"
 #include "../Helpers/Graphics/Drawing.h"
 #include "../Helpers/Graphics/Font.h"
@@ -48,7 +49,7 @@ void GMenuStateRender(GlobalState * /*State*/)
 	logoRect.y = 32;
 	logoRect.w = 480;
 	logoRect.h = 320;
-	DrawTexture(v2(logoRect.x, logoRect.y), v2(logoRect.w, logoRect.h), gztex_interface_menu_logo);
+	DrawTexture(v2(logoRect.x, logoRect.y), v2(logoRect.w, logoRect.h), TEXTURE("interface_menu_logo"));
 
 #ifdef BUILDSTYLE_DEBUG
 	FontDrawString(v2(20, 200), "DEBUG BUILD", 16, 0xFF00FF00, true);

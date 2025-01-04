@@ -3,7 +3,8 @@
 //
 
 #include "GLogoSplashState.h"
-#include "../Assets/Assets.h"
+// #include "../Assets/Assets.h"
+#include "../Assets/AssetReader.h"
 #include "../Helpers/Core/Input.h"
 #include "../Helpers/Graphics/Drawing.h"
 #include "../Structs/GlobalState.h"
@@ -26,7 +27,7 @@ void GLogoSplashStateFixedUpdate(GlobalState *State, double /*delta*/)
 
 	if (State->physicsFrame == 20)
 	{
-		PlaySoundEffect(gzwav_sfx_coincling);
+		PlaySoundEffect(SOUND("sfx_coincling"));
 	}
 
 	if (State->physicsFrame == 120)
@@ -48,7 +49,7 @@ void GLogoSplashStateRender(GlobalState *State)
 	}
 
 	const SDL_Rect destRect = {WindowWidth() / 2 - 150, WindowHeight() / 2 - 150, 300, 300};
-	DrawTexture(v2(destRect.x, destRect.y), v2(destRect.w, destRect.h), gztex_interface_studio);
+	DrawTexture(v2(destRect.x, destRect.y), v2(destRect.w, destRect.h), TEXTURE("interface_studio"));
 }
 
 void GLogoSplashStateSet()

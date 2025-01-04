@@ -4,7 +4,7 @@
 
 #include "TestActor.h"
 #include "../Assets/AssetReader.h"
-#include "../Assets/Assets.h"
+// #include "../Assets/Assets.h"
 #include "../Helpers/Collision.h"
 #include "../Helpers/CommonAssets.h"
 #include "../Structs/Vector2.h"
@@ -16,11 +16,11 @@ void TestActorInit(Actor *this)
 {
 	if (leafyModel == NULL)
 	{
-		leafyModel = LoadModel(gzobj_model_leafy);
+		leafyModel = LoadModel(MODEL("model_leafy"));
 	}
 	this->solid = true;
 	this->actorModel = leafyModel;
-	this->actorModelTexture = gztex_actor_BLOB2;
+	this->actorModelTexture = TEXTURE("actor_BLOB2");
 	this->actorWall = CreateWall(v2(-0.5, 0), v2(0.5, 0), actorTextures[0], 1.0, 0.0);
 }
 

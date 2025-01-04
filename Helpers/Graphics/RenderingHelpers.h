@@ -70,7 +70,7 @@ void UpdateViewportSize();
  * @param imageData The texture to use
  * @param color The color to use
  */
-void DrawBatchedQuadsTextured(const BatchedQuadArray *batch, const unsigned char *imageData, uint color);
+void DrawBatchedQuadsTextured(const BatchedQuadArray *batch, const char *imageData, uint color);
 
 /**
  * Draw a `BatchedQuadArray` to the screen using the solid color shader. This is faster than multiple draw calls, but harder to use.
@@ -100,7 +100,7 @@ float Y_TO_NDC(float y);
  * @param texture The texture to use
  * @param shd The shader to use
  */
-void RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const byte *texture, ModelShader shd);
+void RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const char *texture, ModelShader shd);
 
 /**
  * Render the background of the menu screen (main menu, options, level select, etc.)

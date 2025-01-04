@@ -9,19 +9,24 @@
 
 /**
  * Get the DECOMPRESSED size of the asset
- * @param asset The compressed asset to get the size of
+ * @param relPath The compressed asset to get the size of
  * @return The decompressed size of the asset, header included
  * @note Subtract 16 bytes if you don't want the header
  */
-uint AssetGetSize(const byte *asset);
+uint AssetGetSize(const char *relPath);
 
 /**
  * Get the type of the asset
- * @param asset The asset to check the type of
+ * @param relPath The asset to check the type of
  * @return The asset's type
  * @see ASSET_TYPE_* defines
  */
-uint AssetGetType(const byte *asset);
+uint AssetGetType(const char *relPath);
+
+/**
+ * Initialize the asset cache
+ */
+void AssetCacheInit();
 
 /**
  * Invalidate the asset cache
@@ -31,24 +36,33 @@ void InvalidateAssetCache();
 
 /**
  * Decompress an asset and cache it
- * @param asset The asset to decompress
+ * @param path The asset to decompress
  * @return Decompressed asset, including header
  * @note The asset is cached
  */
-byte *DecompressAsset(const byte *asset);
+byte *DecompressAsset(const char *path);
 
 /**
  * Load a model from an asset
  * @param asset The asset to load the model from
  * @return The loaded model, or NULL if it failed
  */
-Model *LoadModel(const byte *asset);
+Model *LoadModel(const char *asset);
 
 /**
  * Free a model
  * @param model The model to free
  */
 void FreeModel(Model *model);
+
+#define TEXTURE(x) ("texture/" x ".gtex")
+#define MUSIC(x) ("audio/" x ".gmus")
+#define SOUND(x) ("audio/" x ".gsnd")
+#define LEVEL(x) ("level/" x ".gmap")
+#define OGL_SHADER(x) ("glshader/" x ".gshd")
+#define VK_FRAG(x) ("vkshader/" x ".gfrg")
+#define VK_VERT(x) ("vkshader/" x ".gvert")
+#define MODEL(x) ("model/" x ".gmdl")
 
 #define ASSET_TYPE_TEXTURE 0
 #define ASSET_TYPE_MP3 1

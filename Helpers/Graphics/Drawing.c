@@ -72,13 +72,8 @@ byte *GetColorUint(const uint color)
 	return colorBuf;
 }
 
-SDL_Surface *ToSDLSurface(const unsigned char *imageData, const char *filterMode)
+SDL_Surface *ToSDLSurface(const char *imageData, const char *filterMode)
 {
-	if (AssetGetType(imageData) != ASSET_TYPE_TEXTURE)
-	{
-		Error("ToSDLSurface: Asset is not a texture");
-	}
-
 	const byte *decompressedImage = DecompressAsset(imageData);
 
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, filterMode);
@@ -125,7 +120,7 @@ uint MixColors(const uint color_a, const uint color_b)
 
 // Rendering subsystem abstractions
 
-void SetTexParams(const unsigned char *imageData, const bool linear, const bool repeat)
+void SetTexParams(const char *imageData, const bool linear, const bool repeat)
 {
 	switch (currentRenderer)
 	{
@@ -170,7 +165,7 @@ inline void DrawOutlineRect(const Vector2 pos, const Vector2 size, const float t
 	}
 }
 
-inline void DrawTexture(const Vector2 pos, const Vector2 size, const unsigned char *imageData)
+inline void DrawTexture(const Vector2 pos, const Vector2 size, const char *imageData)
 {
 	switch (currentRenderer)
 	{
@@ -185,7 +180,7 @@ inline void DrawTexture(const Vector2 pos, const Vector2 size, const unsigned ch
 	}
 }
 
-inline void DrawTextureMod(const Vector2 pos, const Vector2 size, const unsigned char *imageData, const uint color)
+inline void DrawTextureMod(const Vector2 pos, const Vector2 size, const char *imageData, const uint color)
 {
 	switch (currentRenderer)
 	{
@@ -202,7 +197,7 @@ inline void DrawTextureMod(const Vector2 pos, const Vector2 size, const unsigned
 
 inline void DrawTextureRegion(const Vector2 pos,
 							  const Vector2 size,
-							  const unsigned char *imageData,
+							  const char *imageData,
 							  const Vector2 region_start,
 							  const Vector2 region_end)
 {
@@ -221,7 +216,7 @@ inline void DrawTextureRegion(const Vector2 pos,
 
 inline void DrawTextureRegionMod(const Vector2 pos,
 								 const Vector2 size,
-								 const unsigned char *imageData,
+								 const char *imageData,
 								 const Vector2 region_start,
 								 const Vector2 region_end,
 								 const uint color)
@@ -314,7 +309,7 @@ inline void DrawRect(const int x, const int y, const int w, const int h)
 	}
 }
 
-Vector2 GetTextureSize(const unsigned char *imageData)
+Vector2 GetTextureSize(const char *imageData)
 {
 	const byte *decompressedImage = DecompressAsset(imageData);
 
@@ -328,7 +323,7 @@ void DrawNinePatchTexture(const Vector2 pos,
 						  const Vector2 size,
 						  const int output_margins_px,
 						  const int texture_margins_px,
-						  const byte *imageData)
+						  const char *imageData)
 {
 	const Vector2 textureSize = GetTextureSize(imageData);
 
@@ -353,7 +348,8 @@ void DrawNinePatchTexture(const Vector2 pos,
 					  v2(size.x - texture_margins_px * 2, size.y - texture_margins_px * 2),
 					  imageData,
 					  v2(texture_margins_px, texture_margins_px),
-					  v2(textureSize.x - texture_margins_px * 2, textureSize.y - texture_margins_px * 2)); // middle middle
+					  v2(textureSize.x - texture_margins_px * 2,
+						 textureSize.y - texture_margins_px * 2)); // middle middle
 	DrawTextureRegion(v2(pos.x + output_margins_px, pos.y + (size.y - output_margins_px)),
 					  v2(size.x - texture_margins_px * 2, output_margins_px),
 					  imageData,

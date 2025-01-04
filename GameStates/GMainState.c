@@ -5,7 +5,8 @@
 #include "GMainState.h"
 #include <math.h>
 #include <stdio.h>
-#include "../Assets/Assets.h"
+// #include "../Assets/Assets.h"
+#include "../Assets/AssetReader.h"
 #include "../Debug/DPrint.h"
 #include "../Helpers/Collision.h"
 #include "../Helpers/Core/Error.h"
@@ -24,7 +25,7 @@ void GMainStateUpdate(GlobalState *State)
 {
 	if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_START))
 	{
-		PlaySoundEffect(gzwav_sfx_popup);
+		PlaySoundEffect(SOUND("sfx_popup"));
 		GPauseStateSet();
 		return;
 	}
@@ -186,7 +187,7 @@ void GMainStateRender(GlobalState *State)
 	RenderLevel(State);
 
 	SDL_Rect coinIconRect = {WindowWidth() - 260, 16, 40, 40};
-	DrawTexture(v2(WindowWidth() - 260, 16), v2(40, 40), gztex_interface_hud_ycoin);
+	DrawTexture(v2(WindowWidth() - 260, 16), v2(40, 40), TEXTURE("interface_hud_ycoin"));
 
 	char coinStr[16];
 	sprintf(coinStr, "%d", State->coins);
@@ -197,7 +198,7 @@ void GMainStateRender(GlobalState *State)
 	for (int bc = 0; bc < State->blueCoins; bc++)
 	{
 		coinIconRect.x = WindowWidth() - 260 + bc * 48;
-		DrawTexture(v2(coinIconRect.x, coinIconRect.y), v2(40, 40), gztex_interface_hud_bcoin);
+		DrawTexture(v2(coinIconRect.x, coinIconRect.y), v2(40, 40), TEXTURE("interface_hud_bcoin"));
 	}
 
 	if (State->textBoxActive)
