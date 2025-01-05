@@ -18,6 +18,7 @@
 List *assetCacheNames;
 List *assetCacheData;
 TextureSizeTable *tsb;
+LevelDataTable *ldt;
 
 FILE *OpenAssetFile(const char *relPath)
 {
@@ -39,6 +40,37 @@ FILE *OpenAssetFile(const char *relPath)
 	}
 
 	return file;
+}
+
+void LoadLevelEntryTable()
+{
+	FILE *f = OpenAssetFile("ldatatable.gldt");
+	fseek(f, 0, SEEK_END);
+	const size_t fileSize = ftell(f);
+	fseek(f, 0, SEEK_SET);
+	if (fileSize < sizeof(uint))
+	{
+		LogError("Failed to read level entry table, file was too small [a]! (%d bytes)", fileSize);
+		Error("Failed to read level entry table, file was too small!");
+	}
+
+	ldt = malloc(sizeof(LevelDataTable));
+	chk_malloc(ldt);
+
+	fread(&ldt->levelCount, sizeof(uint), 1, f);
+
+	if (fileSize < sizeof(uint) + (ldt->levelCount * sizeof(LevelEntry)))
+	{
+		LogError("Failed to read level entry table, file was too small [b]! (%d bytes)", fileSize);
+		Error("Failed to read level entry table, file was too small!");
+	}
+
+	ldt->levelEntries = malloc(ldt->levelCount * sizeof(LevelEntry));
+	chk_malloc(ldt->levelEntries);
+
+	fread(ldt->levelEntries, sizeof(LevelEntry) * ldt->levelCount, ldt->levelCount, f);
+
+	fclose(f);
 }
 
 void LoadTextureSizeTable()
@@ -79,11 +111,17 @@ const TextureSizeTable *GetTextureSizeTable()
 	return tsb;
 }
 
+const LevelDataTable *GetLevelDataTable()
+{
+	return ldt;
+}
+
 void AssetCacheInit()
 {
 	assetCacheNames = CreateList();
 	assetCacheData = CreateList();
 	LoadTextureSizeTable();
+	LoadLevelEntryTable();
 }
 
 void InvalidateAssetCache()
@@ -98,6 +136,9 @@ void InvalidateAssetCache()
 	ListFreeWithData(assetCacheNames);
 	free(tsb->textureNames);
 	free(tsb);
+
+	free(ldt->levelEntries);
+	free(ldt);
 
 	AssetCacheInit();
 }

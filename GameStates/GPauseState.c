@@ -10,7 +10,6 @@
 #include "../Helpers/Graphics/Drawing.h"
 #include "../Helpers/Graphics/Font.h"
 #include "../Helpers/Graphics/RenderingHelpers.h"
-#include "../Helpers/LevelEntries.h"
 #include "../Structs/GlobalState.h"
 #include "../Structs/Level.h"
 #include "../Structs/UI/Controls/Button.h"
@@ -46,8 +45,8 @@ void GPauseStateRender(GlobalState *State)
 					FONT_VALIGN_MIDDLE,
 					false);
 
-	const char *levelID = gLevelEntries[State->levelID].displayName;
-	const int cNum = gLevelEntries[State->levelID].courseNum;
+	const char *levelID = GetLevelDataTable()->levelEntries[State->levelID].displayName;
+	const int cNum = GetLevelDataTable()->levelEntries[State->levelID].courseNum;
 
 	if (cNum != -1)
 	{

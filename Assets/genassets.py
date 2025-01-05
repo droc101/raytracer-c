@@ -6,12 +6,14 @@ import gzip
 import tempfile
 import struct
 import shutil
+import json
 
 if (len(sys.argv) != 3):
 	print("Usage: python genassets.py <input_path> <output_path>")
 	sys.exit(1)
 
 TSIZETABLE_NAME_LENGTH = 32
+LDATATABLE_STR_LENGTH = 32
 
 input_path = sys.argv[1]
 output_path = sys.argv[2]
@@ -414,6 +416,11 @@ def setup_dirs(out_path):
 	os.makedirs(out_path + "vkshader/")
 	os.makedirs(out_path + "model/")
 
+def cstr(s, maxlen):
+	if (len(s) > maxlen - 1):
+		raise ValueError("String is too long")
+	return s.ljust(maxlen, '\0')
+
 def build_tsizetable():
 	global texture_asset_names
 	global texture_asset_count
@@ -426,13 +433,43 @@ def build_tsizetable():
 	tsizetable.extend(struct.pack('I', count))
 
 	for name in texture_asset_names:
-		if len(name) > TSIZETABLE_NAME_LENGTH - 1:
+		try:
+			name = cstr(name, TSIZETABLE_NAME_LENGTH)
+		except ValueError:
 			print("Error: Texture asset name is too long: " + name)
 			sys.exit(1)
-		name = name.ljust(TSIZETABLE_NAME_LENGTH, '\0') # pad with null bytes
 		tsizetable.extend(name.encode('utf-8'))
 	
 	write(output_path, "", "tsizetable.gtsb", tsizetable)
+
+def build_ldatatable(in_path, out_path):
+	# Open in_path/ldatatable.json
+	file = open(in_path + "ldatatable.json", "r")
+	ldatatable = file.read()
+	file.close()
+	src = json.loads(ldatatable)
+
+	out = bytearray()
+	out.extend(struct.pack('I', len(src)))
+
+	for entry in src:
+		try:
+			intName = cstr(entry["internalName"], LDATATABLE_STR_LENGTH)
+			levelData = cstr(entry["levelData"], LDATATABLE_STR_LENGTH)
+			displayName = cstr(entry["displayName"], LDATATABLE_STR_LENGTH)
+		except ValueError:
+			print("Error: LDATATABLE string is too long")
+			sys.exit(1)
+		out.extend(intName.encode('utf-8'))
+		out.extend(levelData.encode('utf-8'))
+		out.extend(displayName.encode('utf-8'))
+		out.extend([entry["canPauseExit"] * 1])
+		cnum = entry["courseNumber"]
+		if cnum < 0:
+			cnum = 4294967295
+		out.extend(struct.pack('I', cnum))
+	
+	write(out_path, "", "ldatatable.gldt", out)
 
 
 def recursive_search(in_path, out_path):
@@ -502,3 +539,4 @@ def recursive_search(in_path, out_path):
 setup_dirs(output_path)
 recursive_search(input_path, output_path)
 build_tsizetable()
+build_ldatatable(input_path, output_path)

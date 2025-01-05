@@ -9,7 +9,6 @@
 #include "../Helpers/Core/Error.h"
 #include "../Helpers/Core/Logging.h"
 #include "../Helpers/Core/PhysicsThread.h"
-#include "../Helpers/LevelEntries.h"
 #include "../Helpers/LevelLoader.h"
 #include "../Structs/Level.h"
 #include "../Structs/Wall.h"
@@ -243,7 +242,9 @@ void ChangeLevelByID(const int id)
 {
 	GetState()->levelID = id;
 	GetState()->blueCoins = 0;
-	const Asset *levelData = DecompressAsset(gLevelEntries[id].levelData);
+	char lPath[48]; // dw 48 is guaranteed to be enough (more than 32 + 12) (12 is "level/" + ".gmap")
+	sprintf(lPath, "level/%s.gmap", GetLevelDataTable()->levelEntries[id].levelData);
+	const Asset *levelData = DecompressAsset(lPath);
 	Level *l = LoadLevel(levelData->data);
 	ChangeLevel(l);
 }

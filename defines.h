@@ -43,6 +43,8 @@ typedef struct ModelHeader ModelHeader;
 typedef struct Options Options;
 typedef struct Asset Asset;
 typedef struct TextureSizeTable TextureSizeTable;
+typedef struct LevelDataTable LevelDataTable;
+typedef struct LevelEntry LevelEntry;
 
 // Function signatures
 typedef void (*FixedUpdateFunction)(GlobalState *state, double delta);
@@ -363,6 +365,21 @@ struct TextureSizeTable
 	* The names of the textures in the table. You can load them with @code DecompressAsset(TEXTURE(assetName)) @endcode
 	*/
 	char (*textureNames)[32];
+} __attribute__((packed));
+
+struct LevelDataTable
+{
+	uint levelCount;
+	LevelEntry *levelEntries;
+};
+
+struct LevelEntry
+{
+	char internalName[32];
+	char levelData[32];
+	char displayName[32];
+	bool canPauseExit;
+	uint courseNum;
 } __attribute__((packed));
 
 #pragma endregion

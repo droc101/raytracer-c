@@ -82,8 +82,6 @@ add_executable(
         config.h
         GameStates/GLevelSelectState.c
         GameStates/GLevelSelectState.h
-        Helpers/LevelEntries.c
-        Helpers/LevelEntries.h
         Helpers/CommonAssets.c
         Helpers/CommonAssets.h
         Actor/Coin.c
