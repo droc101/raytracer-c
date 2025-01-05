@@ -153,16 +153,18 @@ void ChangeLevel(Level *l)
 void ChangeMusic(const char *asset)
 {
 	if (!state.isAudioStarted) return;
-	if (AssetGetType(asset) != ASSET_TYPE_MP3)
-	{
-		LogWarning("ChangeMusic Error: Asset is not a music file.\n");
-		return;
-	}
 
 	StopMusic(); // stop the current music and free its data
-	const byte *mp3 = DecompressAsset(asset);
-	const uint mp3Size = AssetGetSize(asset);
-	Mix_Music *mus = Mix_LoadMUS_RW(SDL_RWFromConstMem(mp3, mp3Size), 1);
+	const Asset *mp3 = DecompressAsset(asset);
+
+	if (mp3->type != ASSET_TYPE_MP3)
+    {
+        LogWarning("ChangeMusic Error: Asset is not a music file.\n");
+        return;
+    }
+
+	const uint mp3Size = mp3->size;
+	Mix_Music *mus = Mix_LoadMUS_RW(SDL_RWFromConstMem(mp3->data, mp3Size), 1);
 	if (mus == NULL)
 	{
 		printf("Mix_LoadMUS_RW Error: %s\n", Mix_GetError());
@@ -187,15 +189,15 @@ void StopMusic()
 void PlaySoundEffect(const char *asset)
 {
 	if (!state.isAudioStarted) return;
-	if (AssetGetType(asset) != ASSET_TYPE_WAV)
+
+	const Asset *wav = DecompressAsset(asset);
+	if (wav->type != ASSET_TYPE_WAV)
 	{
 		LogError("PlaySoundEffect Error: Asset is not a sound effect file.\n");
 		return;
 	}
-
-	const byte *wav = DecompressAsset(asset);
-	const uint wavSize = AssetGetSize(asset);
-	Mix_Chunk *chunk = Mix_LoadWAV_RW(SDL_RWFromConstMem(wav, wavSize), 1);
+	const uint wavSize = wav->size;
+	Mix_Chunk *chunk = Mix_LoadWAV_RW(SDL_RWFromConstMem(wav->data, wavSize), 1);
 	if (chunk == NULL)
 	{
 		LogError("Mix_LoadWAV_RW Error: %s\n", Mix_GetError());
@@ -241,7 +243,7 @@ void ChangeLevelByID(const int id)
 {
 	GetState()->levelID = id;
 	GetState()->blueCoins = 0;
-	const void *levelData = DecompressAsset(gLevelEntries[id].levelData);
-	Level *l = LoadLevel(levelData);
+	const Asset *levelData = DecompressAsset(gLevelEntries[id].levelData);
+	Level *l = LoadLevel(levelData->data);
 	ChangeLevel(l);
 }

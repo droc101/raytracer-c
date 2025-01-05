@@ -15,6 +15,9 @@
 
 #include "../Structs/GlobalState.h"
 
+List *assetCacheNames;
+List *assetCacheData;
+
 FILE *openAssetFile(const char *relPath)
 {
 	char path[260] = {0};
@@ -37,73 +40,34 @@ FILE *openAssetFile(const char *relPath)
 	return file;
 }
 
-uint AssetGetSize(const char *relPath)
-{
-	FILE *file = openAssetFile(relPath);
-
-	fseek(file, 0, SEEK_END);
-	const size_t fileSize = ftell(file);
-	if (fileSize < 16)
-	{
-		LogError("Failed to get asset size, file was too small!");
-		fclose(file);
-		Error("Failed to read asset file. The game installation may be damaged.");
-	}
-	fseek(file, 0, SEEK_SET);
-
-	byte header[16];
-	fread(header, 1, 16, file);
-	fclose(file);
-	uint size = ReadUintA(header, 4);
-	return size;
-}
-
-uint AssetGetType(const char *relPath)
-{
-	FILE *file = openAssetFile(relPath);
-
-	fseek(file, 0, SEEK_END);
-	const size_t fileSize = ftell(file);
-	if (fileSize < 16)
-	{
-		LogError("Failed to get asset type, file was too small!");
-		fclose(file);
-		Error("Failed to read asset file. The game installation may be damaged.");
-	}
-	fseek(file, 0, SEEK_SET);
-
-	byte header[16];
-	fread(header, 1, 16, file);
-	fclose(file);
-	uint size = ReadUintA(header, 12);
-	return size;
-}
-
-List *AssetCacheNames;
-List *AssetCacheData;
-
 void AssetCacheInit()
 {
-	AssetCacheNames = CreateList();
-	AssetCacheData = CreateList();
+	assetCacheNames = CreateList();
+	assetCacheData = CreateList();
 }
 
 void InvalidateAssetCache()
 {
-	ListFreeWithData(AssetCacheData);
-	ListFree(AssetCacheNames);
+	for (int i = 0; i < assetCacheData->size; i++)
+    {
+        Asset *asset = ListGet(assetCacheData, i);
+        free(asset->data);
+        free(asset);
+    }
+	ListFree(assetCacheData);
+	ListFreeWithData(assetCacheNames);
 
 	AssetCacheInit();
 }
 
-byte *DecompressAsset(const char *relPath)
+Asset *DecompressAsset(const char *relPath)
 {
 	// see if relPath is already in the cache
-	for (int i = 0; i < AssetCacheNames->size; i++)
+	for (int i = 0; i < assetCacheNames->size; i++)
 	{
-		if (strcmp(ListGet(AssetCacheNames, i), relPath) == 0)
+		if (strcmp(ListGet(assetCacheNames, i), relPath) == 0)
 		{
-			return ListGet(AssetCacheData, i);
+			return ListGet(assetCacheData, i);
 		}
 	}
 
@@ -119,10 +83,19 @@ byte *DecompressAsset(const char *relPath)
 
 	fclose(file);
 
+	Asset *assetStruct = malloc(sizeof(Asset));
+
 	int offset = 0;
 	// Read the first 4 bytes of the asset to get the size of the compressed data
 	const uint compressedSize = ReadUint(asset, &offset);
 	const uint decompressedSize = ReadUint(asset, &offset);
+	const uint assetId = ReadUint(asset, &offset);
+	const uint assetType = ReadUint(asset, &offset);
+
+	assetStruct->compressedSize = compressedSize;
+	assetStruct->size = decompressedSize;
+	assetStruct->assetId = assetId;
+	assetStruct->type = assetType;
 
 	asset += 16; // skip header
 
@@ -164,16 +137,19 @@ byte *DecompressAsset(const char *relPath)
 	// Clean up the zlib stream
 	inflateEnd(&stream);
 
-	// Add the asset to the cache
-	ListAdd(AssetCacheNames, strdup(relPath));
-	ListAdd(AssetCacheData, decompressedData);
+	assetStruct->data = decompressedData;
 
-	return decompressedData;
+	// Add the asset to the cache
+	ListAdd(assetCacheNames, strdup(relPath));
+	ListAdd(assetCacheData, assetStruct);
+
+	return assetStruct;
 }
 
 Model *LoadModel(const char *asset)
 {
-	const size_t size = AssetGetSize(asset);
+	const Asset *assetData = DecompressAsset(asset);
+	const size_t size = assetData->size;
 	if (size < sizeof(ModelHeader))
 	{
 		LogError("Failed to load model from asset, size was too small!");
@@ -181,8 +157,7 @@ Model *LoadModel(const char *asset)
 	}
 	Model *model = malloc(sizeof(Model));
 	chk_malloc(model);
-	const byte *assetData = DecompressAsset(asset);
-	memcpy(&model->header, assetData, sizeof(ModelHeader));
+	memcpy(&model->header, assetData->data, sizeof(ModelHeader));
 
 	if (strcmp(model->header.sig, "MSH") != 0)
 	{
@@ -209,7 +184,7 @@ Model *LoadModel(const char *asset)
 	model->packedIndices = malloc(indexSizeBytes);
 	chk_malloc(model->packedIndices);
 
-	memcpy(model->packedVertsUvs, (byte *)assetData + sizeof(ModelHeader), vertsSizeBytes);
+	memcpy(model->packedVertsUvs, (byte *)assetData->data + sizeof(ModelHeader), vertsSizeBytes);
 
 	for (int i = 0; i < model->header.indexCount; i++)
 	{

@@ -40,6 +40,7 @@ typedef struct Model Model;
 typedef struct Actor Actor;
 typedef struct ModelHeader ModelHeader;
 typedef struct Options Options;
+typedef struct Asset Asset;
 
 // Function signatures
 typedef void (*FixedUpdateFunction)(GlobalState *state, double delta);
@@ -320,6 +321,15 @@ struct Actor
 	float shadowSize; // size of the shadow
 	Model *actorModel; // Optional model for the actor, if not NULL, will be rendered instead of the wall
 	char *actorModelTexture; // Texture for the model
+};
+
+struct Asset
+{
+	uint compressedSize;
+	uint size;
+	uint assetId;
+	uint type;
+	byte* data;
 };
 
 #pragma endregion

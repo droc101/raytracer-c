@@ -173,9 +173,9 @@ void GL_UpdateFramebufferTexture()
 
 GL_Shader *GL_ConstructShaderFromAssets(const char *fsh, const char *vsh)
 {
-	const char *fragmentSource = (char *)DecompressAsset(fsh);
-	const char *vertexSource = (char *)DecompressAsset(vsh);
-	return GL_ConstructShader(fragmentSource, vertexSource);
+	const Asset *fragmentSource = DecompressAsset(fsh);
+	const Asset *vertexSource = DecompressAsset(vsh);
+	return GL_ConstructShader((char*)fragmentSource->data, (char*)vertexSource->data);
 }
 
 GL_Shader *GL_ConstructShader(const char *fsh, const char *vsh)
@@ -401,17 +401,16 @@ void GL_DrawRectOutline(const Vector2 pos, const Vector2 size, const uint color,
 
 GLuint GL_LoadTextureFromAsset(const char *imageData)
 {
-	if (AssetGetType(imageData) != ASSET_TYPE_TEXTURE)
-	{
-		Error("Asset is not a texture");
-	}
-
-	const byte *decompressedImage = DecompressAsset(imageData);
+	const Asset *decompressedImage = DecompressAsset(imageData);
+	if (decompressedImage->type != ASSET_TYPE_TEXTURE)
+    {
+        Error("Asset is not a texture");
+    }
 
 	//uint size = ReadUintA(Decompressed, 0);
-	const uint width = ReadUintA(decompressedImage, IMAGE_WIDTH_OFFSET);
-	const uint height = ReadUintA(decompressedImage, IMAGE_HEIGHT_OFFSET);
-	const uint id = ReadUintA(decompressedImage, IMAGE_ID_OFFSET);
+	const uint width = ReadUintA(decompressedImage->data, IMAGE_WIDTH_OFFSET);
+	const uint height = ReadUintA(decompressedImage->data, IMAGE_HEIGHT_OFFSET);
+	const uint id = ReadUintA(decompressedImage->data, IMAGE_ID_OFFSET);
 
 	if (id >= 128) // TODO
 	{
@@ -428,7 +427,7 @@ GLuint GL_LoadTextureFromAsset(const char *imageData)
 		}
 	}
 
-	const byte *pixelData = decompressedImage + sizeof(uint) * 4;
+	const byte *pixelData = decompressedImage->data + sizeof(uint) * 4;
 
 	const int slot = GL_RegisterTexture(pixelData, width, height);
 
@@ -473,9 +472,9 @@ void GL_SetTexParams(const char *imageData, const bool linear, const bool repeat
 {
 	GL_LoadTextureFromAsset(imageData); // make sure the texture is loaded
 
-	const byte *decompressedImage = DecompressAsset(imageData);
+	const Asset *decompressedImage = DecompressAsset(imageData);
 
-	const uint id = ReadUintA(decompressedImage, IMAGE_ID_OFFSET);
+	const uint id = ReadUintA(decompressedImage->data, IMAGE_ID_OFFSET);
 
 	const GLuint tex = GL_Textures[GL_AssetTextureMap[id]];
 

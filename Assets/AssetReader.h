@@ -8,22 +8,6 @@
 #include "../defines.h"
 
 /**
- * Get the DECOMPRESSED size of the asset
- * @param relPath The compressed asset to get the size of
- * @return The decompressed size of the asset, header included
- * @note Subtract 16 bytes if you don't want the header
- */
-uint AssetGetSize(const char *relPath);
-
-/**
- * Get the type of the asset
- * @param relPath The asset to check the type of
- * @return The asset's type
- * @see ASSET_TYPE_* defines
- */
-uint AssetGetType(const char *relPath);
-
-/**
  * Initialize the asset cache
  */
 void AssetCacheInit();
@@ -36,11 +20,11 @@ void InvalidateAssetCache();
 
 /**
  * Decompress an asset and cache it
- * @param path The asset to decompress
+ * @param relPath The asset to decompress
  * @return Decompressed asset, including header
  * @note The asset is cached
  */
-byte *DecompressAsset(const char *path);
+Asset *DecompressAsset(const char *relPath);
 
 /**
  * Load a model from an asset
