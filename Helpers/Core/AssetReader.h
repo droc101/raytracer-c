@@ -5,7 +5,7 @@
 #ifndef GAME_ASSETREADER_H
 #define GAME_ASSETREADER_H
 
-#include "../defines.h"
+#include "../../defines.h"
 
 /**
  * Get the texture size table

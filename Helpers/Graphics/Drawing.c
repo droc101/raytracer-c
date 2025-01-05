@@ -4,10 +4,10 @@
 
 #include "Drawing.h"
 #include <stdio.h>
-#include "../../Assets/AssetReader.h"
 #include "../../defines.h"
 #include "../../Structs/GlobalState.h"
 #include "../../Structs/Vector2.h"
+#include "../Core/AssetReader.h"
 #include "../Core/DataReader.h"
 #include "../Core/Error.h"
 #include "../Core/Logging.h"

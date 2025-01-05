@@ -5,9 +5,9 @@
 #include "Coin.h"
 #include <math.h>
 // #include "../Assets/Assets.h"
-#include "../Assets/AssetReader.h"
 #include "../Helpers/Collision.h"
 #include "../Helpers/CommonAssets.h"
+#include "../Helpers/Core/AssetReader.h"
 #include "../Structs/GlobalState.h"
 #include "../Structs/Level.h"
 #include "../Structs/Vector2.h"

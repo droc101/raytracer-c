@@ -4,7 +4,7 @@
 
 #include "GlobalState.h"
 #include <stdio.h>
-#include "../Assets/AssetReader.h"
+#include "../Helpers/Core/AssetReader.h"
 // #include "../Assets/Assets.h"
 #include "../Helpers/Core/Error.h"
 #include "../Helpers/Core/Logging.h"

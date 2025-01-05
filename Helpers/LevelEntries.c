@@ -3,7 +3,7 @@
 //
 
 #include "LevelEntries.h"
-#include "../Assets/AssetReader.h"
+#include "Core/AssetReader.h"
 // #include "../Assets/Assets.h"
 
 LevelEntry gLevelEntries[LEVEL_COUNT] = {

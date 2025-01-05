@@ -4,7 +4,7 @@
 
 #include "CommonAssets.h"
 
-#include "../Assets/AssetReader.h"
+#include "Core/AssetReader.h"
 // #include "../Assets/Assets.h"
 #include "Graphics/Drawing.h"
 

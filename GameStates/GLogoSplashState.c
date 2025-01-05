@@ -4,7 +4,7 @@
 
 #include "GLogoSplashState.h"
 // #include "../Assets/Assets.h"
-#include "../Assets/AssetReader.h"
+#include "../Helpers/Core/AssetReader.h"
 #include "../Helpers/Core/Input.h"
 #include "../Helpers/Graphics/Drawing.h"
 #include "../Structs/GlobalState.h"

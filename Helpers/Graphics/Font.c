@@ -6,8 +6,8 @@
 #include <ctype.h>
 #include <string.h>
 // #include "../../Assets/Assets.h"
-#include "../../Assets/AssetReader.h"
 #include "../../Structs/Vector2.h"
+#include "../Core/AssetReader.h"
 #include "../Core/Error.h"
 #include "../Core/MathEx.h"
 #include "RenderingHelpers.h"

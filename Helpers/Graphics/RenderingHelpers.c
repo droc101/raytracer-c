@@ -8,9 +8,9 @@
 #include "../Core/MathEx.h"
 #include "GL/GLHelper.h"
 // #include "../../Assets/Assets.h"
-#include "../../Assets/AssetReader.h"
 #include "../../Structs/Level.h"
 #include "../../Structs/Vector2.h"
+#include "../Core/AssetReader.h"
 
 Renderer currentRenderer;
 

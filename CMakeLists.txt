@@ -71,8 +71,8 @@ add_executable(
         Debug/DPrint.h
         Helpers/Core/Timing.c
         Helpers/Core/Timing.h
-        Assets/AssetReader.c
-        Assets/AssetReader.h
+        Helpers/Core/AssetReader.c
+        Helpers/Core/AssetReader.h
         Helpers/Core/DataReader.c
         Helpers/Core/DataReader.h
         Helpers/Collision.c

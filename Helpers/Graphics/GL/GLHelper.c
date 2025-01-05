@@ -5,7 +5,7 @@
 #include "GLHelper.h"
 
 #include <cglm/cglm.h>
-#include "../../../Assets/AssetReader.h"
+#include "../../Core/AssetReader.h"
 // #include "../../../Assets/Assets.h"
 #include "../../../Structs/GlobalState.h"
 #include "../../../Structs/Vector2.h"
