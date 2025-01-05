@@ -26,6 +26,7 @@ typedef enum Renderer Renderer;
 typedef enum OptionsMsaa OptionsMsaa;
 typedef enum ModelShader ModelShader;
 typedef enum ImageDataOffsets ImageDataOffsets;
+typedef enum AssetType AssetType;
 
 // Struct forward declarations
 typedef struct GlobalState GlobalState;
@@ -75,6 +76,17 @@ typedef void (*ActorDestroyFunction)(Actor *self);
 #pragma endregion
 
 #pragma region Enum definitions
+
+enum AssetType
+{
+    ASSET_TYPE_TEXTURE = 0,
+    ASSET_TYPE_MP3 = 1,
+    ASSET_TYPE_WAV = 2,
+    ASSET_TYPE_LEVEL = 3,
+    ASSET_TYPE_GLSL = 4,
+	// ... vulkan branch stuff 5 - 6
+	ASSET_TYPE_MODEL = 7,
+};
 
 /**
  * Use to get data from a decompressed image asset using @c ReadUintA
@@ -328,7 +340,7 @@ struct Asset
 	uint compressedSize;
 	uint size;
 	uint assetId;
-	uint type;
+	AssetType type;
 	byte* data;
 };
 

@@ -48,12 +48,4 @@ void FreeModel(Model *model);
 #define VK_VERT(x) ("vkshader/" x ".gvert")
 #define MODEL(x) ("model/" x ".gmdl")
 
-#define ASSET_TYPE_TEXTURE 0
-#define ASSET_TYPE_MP3 1
-#define ASSET_TYPE_WAV 2
-#define ASSET_TYPE_LEVEL 3
-#define ASSET_TYPE_GLSL 4
-// ... vulkan branch stuff 5 - 6
-#define ASSET_TYPE_MODEL 7
-
 #endif //GAME_ASSETREADER_H
