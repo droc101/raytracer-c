@@ -8,6 +8,11 @@
 #include "../defines.h"
 
 /**
+ * Get the texture size table
+ */
+const TextureSizeTable *GetTextureSizeTable();
+
+/**
  * Initialize the asset cache
  */
 void AssetCacheInit();

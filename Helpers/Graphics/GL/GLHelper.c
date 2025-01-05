@@ -33,7 +33,7 @@ GL_Buffer *glBuffer;
 
 GLuint GL_Textures[MAX_TEXTURES];
 int GL_NextFreeSlot = 1; // Slot 0 is reserved for the framebuffer copy
-int GL_AssetTextureMap[128]; // TODO
+int *GL_AssetTextureMap;
 char GL_LastError[512];
 
 void GL_Error(const char *error)
@@ -72,8 +72,13 @@ bool GL_PreInit()
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-	memset(GL_AssetTextureMap, -1, sizeof(GL_AssetTextureMap));
+	const size_t atm_size = GetTextureSizeTable()->textureCount * sizeof(int);
+	GL_AssetTextureMap = malloc(atm_size);
+
+	memset(GL_AssetTextureMap, -1, atm_size);
 	memset(GL_Textures, 0, sizeof(GL_Textures));
+
+
 
 	return true;
 }
@@ -411,11 +416,6 @@ GLuint GL_LoadTextureFromAsset(const char *imageData)
 	const uint width = ReadUintA(decompressedImage->data, IMAGE_WIDTH_OFFSET);
 	const uint height = ReadUintA(decompressedImage->data, IMAGE_HEIGHT_OFFSET);
 	const uint id = ReadUintA(decompressedImage->data, IMAGE_ID_OFFSET);
-
-	if (id >= 128) // TODO
-	{
-		Error("Texture ID is out of bounds");
-	}
 
 	// if the texture is already loaded, don't load it again
 	if (GL_AssetTextureMap[id] != -1)

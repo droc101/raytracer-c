@@ -17,8 +17,9 @@
 
 List *assetCacheNames;
 List *assetCacheData;
+TextureSizeTable *tsb;
 
-FILE *openAssetFile(const char *relPath)
+FILE *OpenAssetFile(const char *relPath)
 {
 	char path[260] = {0};
 
@@ -40,10 +41,48 @@ FILE *openAssetFile(const char *relPath)
 	return file;
 }
 
+void LoadTextureSizeTable()
+{
+	FILE *f = OpenAssetFile("tsizetable.gtsb");
+	fseek(f, 0, SEEK_END);
+	const size_t fileSize = ftell(f);
+	fseek(f, 0, SEEK_SET);
+
+	if (fileSize < sizeof(uint) * 2)
+	{
+		LogError("Failed to read texture size table, file was too small [a]! (%d bytes)", fileSize);
+		Error("Failed to read texture size table, file was too small!");
+	}
+
+	tsb = malloc(sizeof(TextureSizeTable));
+
+	fread(&tsb->textureCount, sizeof(uint), 1, f);
+	fread(&tsb->combinedSize, sizeof(uint), 1, f);
+
+	if (fileSize < (sizeof(uint) * 2) + (tsb->textureCount * (sizeof(char) * 32)))
+	{
+		LogError("Failed to read texture size table, file was too small [b]! (%d bytes)", fileSize);
+		Error("Failed to read texture size table, file was too small!");
+	}
+
+	tsb->textureNames = malloc(tsb->textureCount * (sizeof(char *) * 32));
+	chk_malloc(tsb->textureNames);
+
+	fread(tsb->textureNames, sizeof(char) * 32, tsb->textureCount, f);
+
+	fclose(f);
+}
+
+const TextureSizeTable *GetTextureSizeTable()
+{
+	return tsb;
+}
+
 void AssetCacheInit()
 {
 	assetCacheNames = CreateList();
 	assetCacheData = CreateList();
+	LoadTextureSizeTable();
 }
 
 void InvalidateAssetCache()
@@ -56,6 +95,8 @@ void InvalidateAssetCache()
     }
 	ListFree(assetCacheData);
 	ListFreeWithData(assetCacheNames);
+	free(tsb->textureNames);
+	free(tsb);
 
 	AssetCacheInit();
 }
@@ -71,7 +112,7 @@ Asset *DecompressAsset(const char *relPath)
 		}
 	}
 
-	FILE *file = openAssetFile(relPath);
+	FILE *file = OpenAssetFile(relPath);
 
 	fseek(file, 0, SEEK_END);
 	const size_t fileSize = ftell(file);

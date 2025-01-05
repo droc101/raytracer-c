@@ -7,7 +7,21 @@ import tempfile
 import struct
 import shutil
 
+if (len(sys.argv) != 3):
+	print("Usage: python genassets.py <input_path> <output_path>")
+	sys.exit(1)
+
+TSIZETABLE_NAME_LENGTH = 32
+
+input_path = sys.argv[1]
+output_path = sys.argv[2]
+
 aid = 0
+count = 0
+
+texture_asset_count = 0
+texture_asset_total_size = 0
+texture_asset_names = []
 
 #region Helpers
 
@@ -17,13 +31,17 @@ def int_to_bytes(i):  # Convert an integer to bytes big endian, 4 bytes
 def int_to_bytes_le(i):  # Convert an integer to bytes little endian, 4 bytes
 	return [i & 0xFF, (i >> 8) & 0xFF, (i >> 16) & 0xFF, (i >> 24) & 0xFF]
 
+def write(out_path, subfolder, name, data):
+    with open(out_path + subfolder + name, "wb") as f:
+        f.write(data)
+
 #endregion
 
 #region Conversion Functions
 
 def png_to_bytes(path):
 	global aid
-	# global texture_asset_total_size
+	global texture_asset_total_size
 	img = Image.open(path)
 	img = img.convert("RGBA")
 	img_dta = img.getdata()
@@ -64,7 +82,7 @@ def png_to_bytes(path):
 	header[21] = 3
 	header[22] = 4
 	
-	# texture_asset_total_size += img.width * img.height * 4
+	texture_asset_total_size += img.width * img.height * 4
 
 	aid += 1
 
@@ -271,16 +289,6 @@ def vert_to_bytes(path):
 
 	return header
 
-# Convert the bytes to a C array (for the .c file)
-def bytes_to_c_array(data, name):
-	output = "const unsigned char " + name + "[] = {\n"
-	for i in range(0, len(data)):
-		output += "0x{:02x}".format(data[i]) + ", "
-		if i % 16 == 15:
-			output += "\n"
-	output += "};\n"
-	return output
-
 def parse_obj_file(file_path):
 	verts = []
 	uvs = []
@@ -389,15 +397,6 @@ def obj_to_bytes(path):
 
 #endregion
 
-if (len(sys.argv) != 3):
-	print("Usage: python genassets.py <input_path> <output_path>")
-	sys.exit(1)
-
-input_path = sys.argv[1]
-output_path = sys.argv[2]
-
-count = 0
-texture_asset_names = []
 
 def setup_dirs(out_path):
 	# Delete the old assets folder
@@ -415,13 +414,29 @@ def setup_dirs(out_path):
 	os.makedirs(out_path + "vkshader/")
 	os.makedirs(out_path + "model/")
 
-def write(out_path, subfolder, name, data):
-    with open(out_path + subfolder + name, "wb") as f:
-        f.write(data)
+def build_tsizetable():
+	global texture_asset_names
+	global texture_asset_count
+	global texture_asset_total_size
+
+	tsizetable = bytearray()
+	tsizetable.extend(struct.pack('I', texture_asset_count))
+	tsizetable.extend(struct.pack('I', texture_asset_total_size))
+
+	for name in texture_asset_names:
+		if len(name) > TSIZETABLE_NAME_LENGTH - 1:
+			print("Error: Texture asset name is too long: " + name)
+			sys.exit(1)
+		name = name.ljust(TSIZETABLE_NAME_LENGTH, '\0') # pad with null bytes
+		tsizetable.extend(name.encode('utf-8'))
+	
+	write(output_path, "", "tsizetable.gtsb", tsizetable)
+
 
 def recursive_search(in_path, out_path):
 	global count
 	global texture_asset_names
+	global texture_asset_count
 
 	foldername = in_path.split("/")[-2]
 	files = os.listdir(in_path)
@@ -441,7 +456,8 @@ def recursive_search(in_path, out_path):
 				print("Converting " + path_from_assets + file)
 				data = png_to_bytes(in_path + file)
 				name = foldername + "_" + file.split(".")[0] + ".gtex"
-				texture_asset_names.append(name)
+				texture_asset_names.append(foldername + "_" + file.split(".")[0]) # name without extension
+				texture_asset_count += 1
 				write(out_path, "texture/", name, data)
 			elif file.endswith(".mp3"):
 				count += 1
@@ -483,3 +499,4 @@ def recursive_search(in_path, out_path):
 
 setup_dirs(output_path)
 recursive_search(input_path, output_path)
+build_tsizetable()
