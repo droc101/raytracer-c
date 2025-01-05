@@ -112,7 +112,6 @@ bool GL_Init(SDL_Window *wnd)
 #ifdef BUILDSTYLE_DEBUG
 	glEnable(GL_DEBUG_OUTPUT);
 	glDebugMessageCallback(GL_DebugMessageCallback, NULL);
-	LogWarning("GL: ARB_debug_output not supported, debugger cannot start\n");
 #endif
 
 	uiTextured = GL_ConstructShaderFromAssets(OGL_SHADER("GL_hud_textured_f"), OGL_SHADER("GL_hud_textured_v"));
@@ -304,6 +303,7 @@ void GL_DestroyGL()
 	glDisableVertexAttribArray(0);
 	GL_DestroyBuffer(glBuffer);
 	SDL_GL_DeleteContext(ctx);
+	free(GL_AssetTextureMap);
 }
 
 inline float GL_X_TO_NDC(const float x)
