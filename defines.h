@@ -42,7 +42,7 @@ typedef struct Actor Actor;
 typedef struct ModelHeader ModelHeader;
 typedef struct Options Options;
 typedef struct Asset Asset;
-typedef struct AssetSizeTable TextureSizeTable;
+typedef struct TextureSizeTable TextureSizeTable;
 
 // Function signatures
 typedef void (*FixedUpdateFunction)(GlobalState *state, double delta);
@@ -345,7 +345,7 @@ struct Asset
 	byte* data;
 };
 
-struct AssetSizeTable
+struct TextureSizeTable
 {
 	/**
 	* The total number of textures in the table
@@ -355,6 +355,10 @@ struct AssetSizeTable
 	* The size of all combined texture pixel data (ignoring headers) in bytes
 	*/
 	uint combinedSize;
+	/**
+	 * The total number of assets in the game
+	 */
+	uint assetCount;
 	/**
 	* The names of the textures in the table. You can load them with @code DecompressAsset(TEXTURE(assetName)) @endcode
 	*/

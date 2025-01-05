@@ -58,8 +58,9 @@ void LoadTextureSizeTable()
 
 	fread(&tsb->textureCount, sizeof(uint), 1, f);
 	fread(&tsb->combinedSize, sizeof(uint), 1, f);
+	fread(&tsb->assetCount, sizeof(uint), 1, f);
 
-	if (fileSize < (sizeof(uint) * 2) + (tsb->textureCount * (sizeof(char) * 32)))
+	if (fileSize < (sizeof(uint) * 3) + (tsb->textureCount * (sizeof(char) * 32)))
 	{
 		LogError("Failed to read texture size table, file was too small [b]! (%d bytes)", fileSize);
 		Error("Failed to read texture size table, file was too small!");

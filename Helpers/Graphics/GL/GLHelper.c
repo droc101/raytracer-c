@@ -72,7 +72,7 @@ bool GL_PreInit()
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-	const size_t atm_size = GetTextureSizeTable()->textureCount * sizeof(int);
+	const size_t atm_size = GetTextureSizeTable()->assetCount * sizeof(int);
 	GL_AssetTextureMap = malloc(atm_size);
 
 	memset(GL_AssetTextureMap, -1, atm_size);

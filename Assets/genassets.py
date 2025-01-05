@@ -418,10 +418,12 @@ def build_tsizetable():
 	global texture_asset_names
 	global texture_asset_count
 	global texture_asset_total_size
+	global count
 
 	tsizetable = bytearray()
 	tsizetable.extend(struct.pack('I', texture_asset_count))
 	tsizetable.extend(struct.pack('I', texture_asset_total_size))
+	tsizetable.extend(struct.pack('I', count))
 
 	for name in texture_asset_names:
 		if len(name) > TSIZETABLE_NAME_LENGTH - 1:
