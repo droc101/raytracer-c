@@ -107,8 +107,8 @@ void DestroyGlobalState();
 
 /**
  * Change the level by ID
- * @param id Level ID to change to
+ * @param name Level ID to change to
  */
-void ChangeLevelByID(int id);
+void ChangeLevelByName(const char *name);
 
 #endif //GAME_GLOBALSTATE_H

@@ -238,8 +238,25 @@ void DestroyGlobalState()
 	}
 }
 
-void ChangeLevelByID(const int id)
+void ChangeLevelByName(const char *name)
 {
+	int id = -1;
+	for (int i = 0; i < GetLevelDataTable()->levelCount; i++)
+	{
+		if (strcmp(GetLevelDataTable()->levelEntries[i].internalName, name) == 0)
+		{
+			id = i;
+			break;
+		}
+	}
+	if (id == -1)
+	{
+		LogError("ChangeLevelByName Error: Level %s not found.\n", name);
+		Error("Failed to load level.");
+	}
+
+	LogInfo("Loading level \"%s\"\n", name);
+
 	GetState()->levelID = id;
 	GetState()->blueCoins = 0;
 	char lPath[48]; // dw 48 is guaranteed to be enough (more than 32 + 12) (12 is "level/" + ".gmap")

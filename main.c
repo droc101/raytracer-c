@@ -221,7 +221,7 @@ int main(const int argc, char *argv[])
 
 	InitCommonAssets();
 
-	ChangeLevelByID(STARTING_LEVEL);
+	ChangeLevelByName(STARTING_LEVEL);
 
 	GLogoSplashStateSet();
 

@@ -35,7 +35,7 @@ void GLevelSelectStateUpdate(GlobalState * /*State*/)
 	{
 		ConsumeKey(SDL_SCANCODE_SPACE);
 		ConsumeButton(CONTROLLER_OK);
-		ChangeLevelByID(GLevelSelectState_SelectedLevel);
+		ChangeLevelByName(GetLevelDataTable()->levelEntries[GLevelSelectState_SelectedLevel].internalName);
 		GMainStateSet();
 	}
 }

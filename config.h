@@ -72,10 +72,10 @@
 #define APPDATA_APP_NAME "Game"
 
 // The level ID to load when pause exiting
-#define PAUSE_EXIT_LEVEL 2
+#define PAUSE_EXIT_LEVEL "indoor"
 
 // The level to start on when the game loads
-#define STARTING_LEVEL 2
+#define STARTING_LEVEL "indoor"
 
 // Number of sound effect channels
 // (sound effects that can play at the same time)
