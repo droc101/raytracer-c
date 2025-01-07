@@ -172,7 +172,7 @@ endif ()
 
 add_custom_target( # Python script for generating assets code
         genassets ALL
-        COMMAND "python" ${CMAKE_CURRENT_SOURCE_DIR}/Assets/genassets.py ${CMAKE_CURRENT_SOURCE_DIR}/Assets/ ${CMAKE_CURRENT_BINARY_DIR}/assets/
+        COMMAND "python" ${CMAKE_CURRENT_SOURCE_DIR}/AssetGenerator/genassets.py ${CMAKE_CURRENT_SOURCE_DIR}/Assets/ ${CMAKE_CURRENT_BINARY_DIR}/assets/
         COMMENT "Generating assets"
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Assets/
 )
