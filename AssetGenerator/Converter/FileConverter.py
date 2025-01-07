@@ -1,14 +1,12 @@
 import util
 
 def ConvertFile(path, type, extension, subfolder):
-	global aid
-
 	file = open(path, "rb")
 	data = list(file.read())
 
-	data += util.IntToBytes(len(data))  # array size (excluding header)
-	data += util.IntToBytes(0)  # unused
-	data += util.IntToBytes(0)  # unused
-	data += util.IntToBytes(util.aid)  # Padding
+	data += util.IntToBytes(len(data))
+	data += util.IntToBytes(0)
+	data += util.IntToBytes(0)
+	data += util.IntToBytes(util.aid)
 
 	util.WriteAsset(path, extension, subfolder, util.EncloseData(data, type))

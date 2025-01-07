@@ -26,25 +26,21 @@ def glsl_to_spv(glsl_path):
 	return data
 
 def ConvertVulkanFrag(path):
-	global aid
-
 	data = list(glsl_to_spv(path))
 
-	data += util.IntToBytes(len(data))  # array size (excluding header)
-	data += util.IntToBytes(0)  # unused
-	data += util.IntToBytes(0)  # unused
-	data += util.IntToBytes(util.aid)  # Padding
+	data += util.IntToBytes(len(data))
+	data += util.IntToBytes(0)
+	data += util.IntToBytes(0)
+	data += util.IntToBytes(util.aid)
 
 	util.WriteAsset(path, "gfrg", "vkshader", util.EncloseData(data, 5))
 
 def ConvertVulkanVert(path):
-	global aid
-
 	data = list(glsl_to_spv(path))
 
-	data += util.IntToBytes(len(data))  # array size (excluding header)
-	data += util.IntToBytes(0)  # unused
-	data += util.IntToBytes(0)  # unused
-	data += util.IntToBytes(util.aid)  # Padding
+	data += util.IntToBytes(len(data))
+	data += util.IntToBytes(0)
+	data += util.IntToBytes(0)
+	data += util.IntToBytes(util.aid)
 	
 	util.WriteAsset(path, "gvrt", "vkshader", util.EncloseData(data, 6))

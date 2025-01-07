@@ -5,6 +5,7 @@ import shutil
 import json
 import util
 
+# Converters
 import Converter.TextureConverter
 import Converter.FileConverter
 import Converter.MP3Converter

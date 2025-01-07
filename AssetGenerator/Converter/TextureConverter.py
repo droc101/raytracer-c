@@ -15,10 +15,10 @@ def ConvertPNG(path):
     img_dta = img.getdata()
     data = []
 
-    data += util.IntToBytes(img.width * img.height)  # array size (excluding header)
+    data += util.IntToBytes(img.width * img.height)  # total pixels
     data += util.IntToBytes(img.width)  # width
     data += util.IntToBytes(img.height)  # height
-    data += util.IntToBytes(util.aid)  # Padding
+    data += util.IntToBytes(util.aid)
 
     for pixel in img_dta:
         data.append(pixel[0])

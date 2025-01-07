@@ -73,13 +73,11 @@ def ParseOBJ(file_path):
 	return bin_data
 
 def ConvertOBJ(path):
-	global aid
-
 	data = list(ParseOBJ(path))
 
-	data += util.IntToBytes(len(data))  # array size (excluding header)
-	data += util.IntToBytes(0)  # unused
-	data += util.IntToBytes(0)  # unused
-	data += util.IntToBytes(util.aid)  # Padding
+	data += util.IntToBytes(len(data))
+	data += util.IntToBytes(0)
+	data += util.IntToBytes(0)
+	data += util.IntToBytes(util.aid)
 
 	util.WriteAsset(path, "gmdl", "model", util.EncloseData(data, 7))
