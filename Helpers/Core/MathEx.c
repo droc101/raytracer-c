@@ -39,3 +39,8 @@ double clampf(const double x, const double min, const double max)
 {
 	return x < min ? min : x > max ? max : x;
 }
+
+int clampi(const int x, const int min, const int max)
+{
+	return x < min ? min : x > max ? max : x;
+}
