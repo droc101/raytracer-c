@@ -15,6 +15,7 @@
 #include "Controls/CheckBox.h"
 #include "Controls/RadioButton.h"
 #include "Controls/Slider.h"
+#include "Controls/TextBox.h"
 
 typedef void (*ControlDrawFunc)(const Control *, ControlState state, Vector2 position);
 typedef void (*ControlUpdateFunc)(UiStack *stack, Control *, Vector2 localMousePos, uint ctlIndex);
@@ -23,31 +24,34 @@ typedef void (*ControlDestroyFunc)(const Control *);
 /**
  * Destroy functions for each control type
  */
-const ControlDestroyFunc ControlDestroyFuncs[4] = {
+const ControlDestroyFunc ControlDestroyFuncs[CONTROL_TYPE_COUNT] = {
 	DestroyButton, // BUTTON
 	DestroySlider, // SLIDER
 	DestroyCheckbox, // CHECKBOX
 	DestroyRadioButton, // RADIO_BUTTON
+	DestroyTextBox, // TEXTBOX
 };
 
 /**
  * Draw functions for each control type
  */
-const ControlDrawFunc ControlDrawFuncs[4] = {
+const ControlDrawFunc ControlDrawFuncs[CONTROL_TYPE_COUNT] = {
 	DrawButton, // BUTTON
 	DrawSlider, // SLIDER
 	DrawCheckbox, // CHECKBOX
 	DrawRadioButton, // RADIO_BUTTON
+	DrawTextBox, // TEXTBOX
 };
 
 /**
  * Update functions for each control type
  */
-const ControlUpdateFunc ControlUpdateFuncs[4] = {
+const ControlUpdateFunc ControlUpdateFuncs[CONTROL_TYPE_COUNT] = {
 	UpdateButton, // BUTTON
 	UpdateSlider, // SLIDER
 	UpdateCheckbox, // CHECKBOX
 	UpdateRadioButton, // RADIO_BUTTON
+	UpdateTextBox, // TEXTBOX
 };
 
 UiStack *CreateUiStack()

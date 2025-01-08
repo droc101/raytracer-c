@@ -135,6 +135,8 @@ add_executable(
         Helpers/Core/PhysicsThread.h
         Debug/FrameBenchmark.c
         Debug/FrameBenchmark.h
+        Structs/UI/Controls/TextBox.c
+        Structs/UI/Controls/TextBox.h
 )
 
 set(SDL2_PATH "${CMAKE_SOURCE_DIR}/lib/SDL2/x86_64-w64-mingw32")
