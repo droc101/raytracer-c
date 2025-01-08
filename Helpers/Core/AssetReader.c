@@ -19,6 +19,8 @@ List *assetCacheNames;
 List *assetCacheData;
 TextureSizeTable *tsb;
 LevelDataTable *ldt;
+uint textureId;
+Image *images[MAX_TEXTURES];
 
 FILE *OpenAssetFile(const char *relPath)
 {
@@ -28,7 +30,7 @@ FILE *OpenAssetFile(const char *relPath)
 	if (pathLen >= 260)
 	{
 		LogError("Path is too long: %s\n", relPath);
-		Error("Game path too long. Please rethink your file structure.");
+		return NULL;
 	}
 	sprintf(path, "%sassets/%s", GetState()->executableFolder, relPath);
 
@@ -36,7 +38,7 @@ FILE *OpenAssetFile(const char *relPath)
 	if (file == NULL)
 	{
 		LogError("Failed to open asset file: %s with errno %s\n", path, strerror(errno));
-		Error("Failed to open asset file. The game installation may be damaged.");
+		return NULL;
 	}
 
 	return file;
@@ -89,10 +91,9 @@ void LoadTextureSizeTable()
 	tsb = malloc(sizeof(TextureSizeTable));
 
 	fread(&tsb->textureCount, sizeof(uint), 1, f);
-	fread(&tsb->combinedSize, sizeof(uint), 1, f);
 	fread(&tsb->assetCount, sizeof(uint), 1, f);
 
-	if (fileSize < (sizeof(uint) * 3) + (tsb->textureCount * (sizeof(char) * 32)))
+	if (fileSize < (sizeof(uint) * 2) + (tsb->textureCount * (sizeof(char) * 32)))
 	{
 		LogError("Failed to read texture size table, file was too small [b]! (%d bytes)", fileSize);
 		Error("Failed to read texture size table, file was too small!");
@@ -122,6 +123,7 @@ void AssetCacheInit()
 	assetCacheData = CreateList();
 	LoadTextureSizeTable();
 	LoadLevelEntryTable();
+	memset(images, 0, sizeof(Image *) * MAX_TEXTURES);
 }
 
 void InvalidateAssetCache()
@@ -132,6 +134,16 @@ void InvalidateAssetCache()
         free(asset->data);
         free(asset);
     }
+
+	for (int i = 0; i < MAX_TEXTURES; i++)
+	{
+		if (images[i] != NULL)
+		{
+			free(images[i]->name);
+			free(images[i]);
+		}
+	}
+
 	ListFree(assetCacheData);
 	ListFreeWithData(assetCacheNames);
 	free(tsb->textureNames);
@@ -155,6 +167,11 @@ Asset *DecompressAsset(const char *relPath)
 	}
 
 	FILE *file = OpenAssetFile(relPath);
+	if (file == NULL)
+	{
+		LogError("Failed to open asset file: %s\n", relPath);
+		return NULL;
+	}
 
 	fseek(file, 0, SEEK_END);
 	const size_t fileSize = ftell(file);
@@ -200,7 +217,7 @@ Asset *DecompressAsset(const char *relPath)
 		free(decompressedData);
 		decompressedData = NULL;
 		LogError("Failed to initialize zlib stream: %s\n", stream.msg);
-		Error("Failed to initialize zlib stream");
+		return NULL;
 	}
 
 	// Decompress the data
@@ -213,7 +230,7 @@ Asset *DecompressAsset(const char *relPath)
 			free(decompressedData);
 			decompressedData = NULL;
 			LogError("Failed to decompress zlib stream: %s\n", stream.msg);
-			Error("Failed to decompress zlib stream");
+			return NULL;
 		}
 	} while (ret != Z_STREAM_END);
 
@@ -227,6 +244,102 @@ Asset *DecompressAsset(const char *relPath)
 	ListAdd(assetCacheData, assetStruct);
 
 	return assetStruct;
+}
+
+Image *GenFallbackImage(Image *src)
+{
+	src->width = 64;
+	src->height = 64;
+	src->pixelDataSize = 64 * 64 * 4;
+	src->pixelData = malloc(src->pixelDataSize);
+	chk_malloc(src->pixelData);
+	// im sure theres a better way to do this
+	// HOWEVER
+	// eh it works
+	for (int x = 0; x < 64; x++)
+	{
+		for (int y = 0; y < 64; y++)
+		{
+			if (x < 32)
+			{
+				if (y < 32)
+				{
+					src->pixelData[(x + y * 64) * 4] = 255;
+					src->pixelData[(x + y * 64) * 4 + 1] = 0;
+					src->pixelData[(x + y * 64) * 4 + 2] = 255;
+					src->pixelData[(x + y * 64) * 4 + 3] = 255;
+				}
+				else
+				{
+					src->pixelData[(x + y * 64) * 4] = 0;
+					src->pixelData[(x + y * 64) * 4 + 1] = 0;
+					src->pixelData[(x + y * 64) * 4 + 2] = 0;
+					src->pixelData[(x + y * 64) * 4 + 3] = 255;
+				}
+			}
+			else
+			{
+				if (y < 32)
+				{
+					src->pixelData[(x + y * 64) * 4] = 0;
+					src->pixelData[(x + y * 64) * 4 + 1] = 0;
+					src->pixelData[(x + y * 64) * 4 + 2] = 0;
+					src->pixelData[(x + y * 64) * 4 + 3] = 255;
+				}
+				else
+				{
+					src->pixelData[(x + y * 64) * 4] = 255;
+					src->pixelData[(x + y * 64) * 4 + 1] = 0;
+					src->pixelData[(x + y * 64) * 4 + 2] = 255;
+					src->pixelData[(x + y * 64) * 4 + 3] = 255;
+				}
+			}
+		}
+	}
+	return src;
+}
+
+Image *LoadImage(const char *asset)
+{
+	for (int i = 0; i < MAX_TEXTURES; i++)
+	{
+		Image *img = images[i];
+		if (img == NULL)
+		{
+			break;
+		}
+		if (strcmp(asset, img->name) == 0)
+		{
+			return img;
+		}
+	}
+
+	Image *img = malloc(sizeof(Image));
+	chk_malloc(img);
+
+	const Asset *textureAsset = DecompressAsset(asset);
+	if (textureAsset == NULL)
+	{
+		GenFallbackImage(img);
+	} else if (textureAsset->type != ASSET_TYPE_TEXTURE)
+	{
+		GenFallbackImage(img);
+	} else
+	{
+		img->pixelDataSize = ReadUintA(textureAsset->data, IMAGE_SIZE_OFFSET);
+		img->width = ReadUintA(textureAsset->data, IMAGE_WIDTH_OFFSET);
+		img->height = ReadUintA(textureAsset->data, IMAGE_HEIGHT_OFFSET);
+		img->pixelData = textureAsset->data + sizeof(uint) * 4;
+	}
+
+	img->id = textureId;
+	img->name = strdup(asset);
+
+	images[textureId] = img;
+
+	textureId++;
+
+	return img;
 }
 
 Model *LoadModel(const char *asset)

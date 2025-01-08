@@ -31,9 +31,9 @@ GL_Shader *fbBlur;
 
 GL_Buffer *glBuffer;
 
-GLuint GL_Textures[MAX_TEXTURES];
+GLuint GL_Textures[GL_MAX_TEXTURE_SLOTS];
 int GL_NextFreeSlot = 1; // Slot 0 is reserved for the framebuffer copy
-int *GL_AssetTextureMap;
+int GL_AssetTextureMap[MAX_TEXTURES];
 char GL_LastError[512];
 
 void GL_Error(const char *error)
@@ -72,13 +72,8 @@ bool GL_PreInit()
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-	const size_t atm_size = GetTextureSizeTable()->assetCount * sizeof(int);
-	GL_AssetTextureMap = malloc(atm_size);
-
-	memset(GL_AssetTextureMap, -1, atm_size);
+	memset(GL_AssetTextureMap, -1, MAX_TEXTURES * sizeof(int));
 	memset(GL_Textures, 0, sizeof(GL_Textures));
-
-
 
 	return true;
 }
@@ -303,7 +298,6 @@ void GL_DestroyGL()
 	glDisableVertexAttribArray(0);
 	GL_DestroyBuffer(glBuffer);
 	SDL_GL_DeleteContext(ctx);
-	free(GL_AssetTextureMap);
 }
 
 inline float GL_X_TO_NDC(const float x)
@@ -406,32 +400,21 @@ void GL_DrawRectOutline(const Vector2 pos, const Vector2 size, const uint color,
 
 GLuint GL_LoadTextureFromAsset(const char *imageData)
 {
-	const Asset *decompressedImage = DecompressAsset(imageData);
-	if (decompressedImage->type != ASSET_TYPE_TEXTURE)
-    {
-        Error("Asset is not a texture");
-    }
-
-	//uint size = ReadUintA(Decompressed, 0);
-	const uint width = ReadUintA(decompressedImage->data, IMAGE_WIDTH_OFFSET);
-	const uint height = ReadUintA(decompressedImage->data, IMAGE_HEIGHT_OFFSET);
-	const uint id = ReadUintA(decompressedImage->data, IMAGE_ID_OFFSET);
+	Image *img = LoadImage(imageData);
 
 	// if the texture is already loaded, don't load it again
-	if (GL_AssetTextureMap[id] != -1)
+	if (GL_AssetTextureMap[img->id] != -1)
 	{
-		if (glIsTexture(GL_Textures[GL_AssetTextureMap[id]]))
+		if (glIsTexture(GL_Textures[GL_AssetTextureMap[img->id]]))
 		{
-			glBindTexture(GL_TEXTURE_2D, GL_Textures[GL_AssetTextureMap[id]]);
-			return GL_AssetTextureMap[id];
+			glBindTexture(GL_TEXTURE_2D, GL_Textures[GL_AssetTextureMap[img->id]]);
+			return GL_AssetTextureMap[img->id];
 		}
 	}
 
-	const byte *pixelData = decompressedImage->data + sizeof(uint) * 4;
+	const int slot = GL_RegisterTexture(img->pixelData, img->width, img->height);
 
-	const int slot = GL_RegisterTexture(pixelData, width, height);
-
-	GL_AssetTextureMap[id] = slot;
+	GL_AssetTextureMap[img->id] = slot;
 
 	return slot;
 }
@@ -472,11 +455,9 @@ void GL_SetTexParams(const char *imageData, const bool linear, const bool repeat
 {
 	GL_LoadTextureFromAsset(imageData); // make sure the texture is loaded
 
-	const Asset *decompressedImage = DecompressAsset(imageData);
+	const Image *img = LoadImage(imageData);
 
-	const uint id = ReadUintA(decompressedImage->data, IMAGE_ID_OFFSET);
-
-	const GLuint tex = GL_Textures[GL_AssetTextureMap[id]];
+	const GLuint tex = GL_Textures[GL_AssetTextureMap[img->id]];
 
 	glBindTexture(GL_TEXTURE_2D, tex);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, repeat ? GL_REPEAT : GL_CLAMP_TO_EDGE);

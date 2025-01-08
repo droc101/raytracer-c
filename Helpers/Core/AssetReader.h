@@ -7,6 +7,9 @@
 
 #include "../../defines.h"
 
+// The maximum number of textures that can be loaded in any one execution of the game
+#define MAX_TEXTURES 512
+
 /**
  * Get the texture size table
  */
@@ -35,6 +38,13 @@ void InvalidateAssetCache();
  * @note The asset is cached
  */
 Asset *DecompressAsset(const char *relPath);
+
+/**
+ * Load an image from disk, falling back to a cached version if possible
+ * @param asset The asset to load the image from
+ * @return The loaded image, or a 64x64 fallback image if it failed
+ */
+Image *LoadImage(const char *asset);
 
 /**
  * Load a model from an asset

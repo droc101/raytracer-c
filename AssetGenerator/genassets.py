@@ -41,7 +41,6 @@ def SetupDirs(out_path):
 def BuildTextureSizeTable():
 	tsizetable = bytearray()
 	tsizetable.extend(struct.pack('I', Converter.TextureConverter.texture_asset_count))
-	tsizetable.extend(struct.pack('I', Converter.TextureConverter.texture_asset_total_size))
 	tsizetable.extend(struct.pack('I', util.aid))
 
 	for name in Converter.TextureConverter.texture_asset_names:

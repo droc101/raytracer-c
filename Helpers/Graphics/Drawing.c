@@ -74,20 +74,15 @@ byte *GetColorUint(const uint color)
 
 SDL_Surface *ToSDLSurface(const char *imageData, const char *filterMode)
 {
-	const Asset *decompressedImage = DecompressAsset(imageData);
+	const Image *img = LoadImage(imageData);
 
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, filterMode);
 
-	const uint imageWidth = ReadUintA(decompressedImage->data, IMAGE_WIDTH_OFFSET);
-	const uint imageHeight = ReadUintA(decompressedImage->data, IMAGE_HEIGHT_OFFSET);
-
-	const byte *pixelData = decompressedImage->data + sizeof(uint) * 4; // Skip the first 4 bytes
-
-	SDL_Surface *surface = SDL_CreateRGBSurfaceFrom((void *)pixelData,
-													imageWidth,
-													imageHeight,
+	SDL_Surface *surface = SDL_CreateRGBSurfaceFrom((void *)img->pixelData,
+													img->width,
+													img->height,
 													32,
-													imageWidth * 4,
+													img->width * 4,
 													0x00ff0000,
 													0x0000ff00,
 													0x000000ff,
@@ -311,12 +306,9 @@ inline void DrawRect(const int x, const int y, const int w, const int h)
 
 Vector2 GetTextureSize(const char *imageData)
 {
-	const Asset *decompressedImage = DecompressAsset(imageData);
+	const Image *img = LoadImage(imageData);
 
-	const uint imageWidth = ReadUintA(decompressedImage->data, IMAGE_WIDTH_OFFSET);
-	const uint imageHeight = ReadUintA(decompressedImage->data, IMAGE_HEIGHT_OFFSET);
-
-	return v2(imageWidth, imageHeight);
+	return v2(img->width, img->height);
 }
 
 void DrawNinePatchTexture(const Vector2 pos,

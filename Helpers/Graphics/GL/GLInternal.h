@@ -32,9 +32,9 @@ struct GL_Buffer
 /**
  * The maximum number of textures that can be loaded into OpenGL
  */
-#define MAX_TEXTURES 128
-#if MAX_TEXTURES < ASSET_COUNT
-#error MAX_TEXTURES must be greater than or equal to ASSET_COUNT
+#define GL_MAX_TEXTURE_SLOTS 512
+#if GL_MAX_TEXTURE_SLOTS < MAX_TEXTURES
+#error "GL_MAX_TEXTURES must be at least as large as MAX_TEXTURES"
 #endif
 
 /**

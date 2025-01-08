@@ -45,6 +45,7 @@ typedef struct Asset Asset;
 typedef struct TextureSizeTable TextureSizeTable;
 typedef struct LevelDataTable LevelDataTable;
 typedef struct LevelEntry LevelEntry;
+typedef struct Image Image;
 
 // Function signatures
 typedef void (*FixedUpdateFunction)(GlobalState *state, double delta);
@@ -354,10 +355,6 @@ struct TextureSizeTable
 	*/
 	uint textureCount;
 	/**
-	* The size of all combined texture pixel data (ignoring headers) in bytes
-	*/
-	uint combinedSize;
-	/**
 	 * The total number of assets in the game
 	 */
 	uint assetCount;
@@ -381,6 +378,16 @@ struct LevelEntry
 	bool canPauseExit;
 	uint courseNum;
 } __attribute__((packed));
+
+struct Image
+{
+	uint pixelDataSize;
+	uint width;
+	uint height;
+	uint id;
+	char *name;
+	byte* pixelData;
+};
 
 #pragma endregion
 
