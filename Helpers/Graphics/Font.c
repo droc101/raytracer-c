@@ -47,11 +47,15 @@ Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, cons
 		{
 			i++;
 			x += sizeX;
-		} else if (str[i] == '\n')
+			continue;
+		}
+
+		if (str[i] == '\n')
 		{
 			i++;
 			x = pos.x;
 			y += size;
+			continue;
 		}
 
 		const float uvPerChar = 1.0f / strlen(fontChars);
