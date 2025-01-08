@@ -3,13 +3,13 @@
 //
 
 #include "TextBox.h"
-#include "../../../Assets/Assets.h"
 #include "../../../Helpers/Core/Error.h"
 #include "../../../Helpers/Core/Input.h"
 #include "../../../Helpers/Graphics/Drawing.h"
 #include "../../../Helpers/Graphics/Font.h"
 #include "../../Vector2.h"
 #include "../../../Helpers/Core/MathEx.h"
+#include "../../../Helpers/Core/AssetReader.h"
 
 // Use when a key is to be used with shift+another
 #define SC_IGNORE_NEEDS_SHIFT SDL_NUM_SCANCODES
@@ -114,7 +114,7 @@ Control *CreateTextBoxControl(const char *placeholder, const Vector2 position, c
 
 void DrawTextBox(const Control *c, ControlState state, Vector2 position)
 {
-	DrawNinePatchTexture(c->anchoredPosition, c->size, 8, 8, gztex_interface_slider);
+	DrawNinePatchTexture(c->anchoredPosition, c->size, 8, 8, TEXTURE("interface_slider"));
 
 	const TextBoxData *data = (TextBoxData *)c->ControlData;
 
