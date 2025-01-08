@@ -155,6 +155,11 @@ void ChangeMusic(const char *asset)
 
 	StopMusic(); // stop the current music and free its data
 	const Asset *mp3 = DecompressAsset(asset);
+	if (mp3 == NULL)
+	{
+		LogError("Failed to load music asset.\n");
+		return;
+	}
 
 	if (mp3->type != ASSET_TYPE_MP3)
     {
@@ -190,6 +195,11 @@ void PlaySoundEffect(const char *asset)
 	if (!state.isAudioStarted) return;
 
 	const Asset *wav = DecompressAsset(asset);
+	if (wav == NULL)
+	{
+		LogError("Failed to load sound effect asset.\n");
+		return;
+	}
 	if (wav->type != ASSET_TYPE_WAV)
 	{
 		LogError("PlaySoundEffect Error: Asset is not a sound effect file.\n");
@@ -262,6 +272,11 @@ void ChangeLevelByName(const char *name)
 	char lPath[48]; // dw 48 is guaranteed to be enough (more than 32 + 12) (12 is "level/" + ".gmap")
 	sprintf(lPath, "level/%s.gmap", GetLevelDataTable()->levelEntries[id].levelData);
 	const Asset *levelData = DecompressAsset(lPath);
+	if (levelData == NULL)
+	{
+		LogError("Failed to load level asset.\n");
+		Error("Failed to load level.");
+	}
 	Level *l = LoadLevel(levelData->data);
 	ChangeLevel(l);
 }

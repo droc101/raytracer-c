@@ -47,6 +47,11 @@ FILE *OpenAssetFile(const char *relPath)
 void LoadLevelEntryTable()
 {
 	FILE *f = OpenAssetFile("ldatatable.gldt");
+	if (f == NULL)
+	{
+		LogError("Failed to open level entry table file!");
+		Error("Failed to open level entry table file!");
+	}
 	fseek(f, 0, SEEK_END);
 	const size_t fileSize = ftell(f);
 	fseek(f, 0, SEEK_SET);
@@ -78,6 +83,11 @@ void LoadLevelEntryTable()
 void LoadTextureSizeTable()
 {
 	FILE *f = OpenAssetFile("tsizetable.gtsb");
+	if (f == NULL)
+	{
+		LogError("Failed to open texture size table file!");
+		Error("Failed to open texture size table file!");
+	}
 	fseek(f, 0, SEEK_END);
 	const size_t fileSize = ftell(f);
 	fseek(f, 0, SEEK_SET);
@@ -345,6 +355,11 @@ Image *LoadImage(const char *asset)
 Model *LoadModel(const char *asset)
 {
 	const Asset *assetData = DecompressAsset(asset);
+	if (assetData == NULL)
+	{
+		LogError("Failed to load model from asset, asset was NULL!");
+		Error("Failed to load model!");
+	}
 	const size_t size = assetData->size;
 	if (size < sizeof(ModelHeader))
 	{

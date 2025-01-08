@@ -174,6 +174,10 @@ GL_Shader *GL_ConstructShaderFromAssets(const char *fsh, const char *vsh)
 {
 	const Asset *fragmentSource = DecompressAsset(fsh);
 	const Asset *vertexSource = DecompressAsset(vsh);
+	if (fragmentSource == NULL || vertexSource == NULL)
+	{
+		Error("Failed to load shaders!");
+	}
 	return GL_ConstructShader((char*)fragmentSource->data, (char*)vertexSource->data);
 }
 
