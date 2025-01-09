@@ -24,6 +24,7 @@ struct LevelBytecode
 #define LEVEL_CMD_FOG 5 // Indicates that the next 20 bytes should be parsed as the fog color and distances
 #define LEVEL_CMD_FLOOR_CEIL 6 // Indicates that the next 8 bytes should be parsed as the floor and ceiling textures
 #define LEVEL_CMD_MUSIC 7 // Indicates that the next 4 bytes should be parsed as the music track ID
+#define LEVEL_CMD_METADATA 8 // Indicates that the next 36 bytes should be parsed as the name and course number
 
 /**
  * Load a level from level bytecode

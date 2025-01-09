@@ -53,35 +53,6 @@ def BuildTextureSizeTable():
 	
 	util.Write("", "tsizetable.gtsb", tsizetable)
 
-# Build the level data table from ldatabale.json
-def BuildLevelDataTable():
-	file = open(util.input_path + "ldatatable.json", "r")
-	ldatatable = file.read()
-	file.close()
-	src = json.loads(ldatatable)
-
-	out = bytearray()
-	out.extend(struct.pack('I', len(src)))
-
-	for entry in src:
-		try:
-			intName = util.CString(entry["internalName"], LDATATABLE_STR_LENGTH)
-			levelData = util.CString(entry["levelData"], LDATATABLE_STR_LENGTH)
-			displayName = util.CString(entry["displayName"], LDATATABLE_STR_LENGTH)
-		except ValueError:
-			print("Error: LDATATABLE string is too long")
-			sys.exit(1)
-		out.extend(intName.encode('utf-8'))
-		out.extend(levelData.encode('utf-8'))
-		out.extend(displayName.encode('utf-8'))
-		out.extend([entry["canPauseExit"] * 1])
-		cnum = entry["courseNumber"]
-		if cnum < 0:
-			cnum = 4294967295
-		out.extend(struct.pack('I', cnum))
-	
-	util.Write("", "ldatatable.gldt", out)
-
 # Recursively search for files in the input folder and convert them
 def RecursiveSearch(in_path, out_path):
 	files = os.listdir(in_path)
@@ -126,4 +97,3 @@ def RecursiveSearch(in_path, out_path):
 SetupDirs(util.output_path)
 RecursiveSearch(util.input_path, util.output_path)
 BuildTextureSizeTable()
-BuildLevelDataTable()

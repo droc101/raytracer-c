@@ -10,15 +10,18 @@
 
 typedef struct TextBoxData TextBoxData;
 
+typedef void (*TextBoxCallback)(const char *text);
+
 struct TextBoxData
 {
 	uint cursorPos;
 	uint maxLength;
 	char *text;
 	char placeholder[32];
+	TextBoxCallback callback;
 };
 
-Control *CreateTextBoxControl(const char *placeholder, const Vector2 position, const Vector2 size, const ControlAnchor anchor, const uint maxLength);
+Control *CreateTextBoxControl(const char *placeholder, const Vector2 position, const Vector2 size, const ControlAnchor anchor, const uint maxLength, TextBoxCallback callback);
 
 void DrawTextBox(const Control *c, ControlState state, Vector2 position);
 

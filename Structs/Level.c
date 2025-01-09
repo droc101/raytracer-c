@@ -25,6 +25,8 @@ Level *CreateLevel()
 	l->fogColor = 0xff000000;
 	l->fogStart = 10;
 	l->fogEnd = 30;
+	sprintf(l->name, "Unnamed Level");
+	l->courseNum = -1;
 	return l;
 }
 

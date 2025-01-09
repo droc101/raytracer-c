@@ -16,11 +16,6 @@
 const TextureSizeTable *GetTextureSizeTable();
 
 /**
- * Get the level data table
- */
-const LevelDataTable *GetLevelDataTable();
-
-/**
  * Initialize the asset cache
  */
 void AssetCacheInit();

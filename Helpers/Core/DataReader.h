@@ -35,6 +35,8 @@ double ReadDoubleA(const byte *data, int offset);
  */
 uint ReadUint(const byte *data, int *offset);
 
+int ReadInt(const byte *data, int *offset);
+
 /**
  * Reads a uint from the given data at the given offset, but doesn't increment the offset
  * @param data The data to read from
@@ -79,6 +81,8 @@ void WriteDouble(byte *data, int *offset, double d);
  * @note Increments the offset by 4
  */
 void WriteUint(byte *data, int *offset, uint i);
+
+void WriteInt(byte *data, int *offset, int i);
 
 /**
  * Writes a float to the given data at the given offset

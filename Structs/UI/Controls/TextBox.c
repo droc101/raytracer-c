@@ -90,7 +90,7 @@ const char shiftReplacements[][3] = {
 	"=+",
 };
 
-Control *CreateTextBoxControl(const char *placeholder, const Vector2 position, const Vector2 size, const ControlAnchor anchor, const uint maxLength)
+Control *CreateTextBoxControl(const char *placeholder, const Vector2 position, const Vector2 size, const ControlAnchor anchor, const uint maxLength, TextBoxCallback callback)
 {
 	Control *c = CreateEmptyControl();
 	c->type = TEXTBOX;
@@ -102,6 +102,7 @@ Control *CreateTextBoxControl(const char *placeholder, const Vector2 position, c
 	chk_malloc(data);
 	data->cursorPos = 0;
 	data->maxLength = maxLength;
+	data->callback = callback;
 	data->text = malloc(maxLength + 1);
 	chk_malloc(data->text);
 	memset(data->text, 0, maxLength + 1);
@@ -151,6 +152,7 @@ void UpdateTextBox(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlIn
 			ConsumeKey(SDL_SCANCODE_BACKSPACE);
 			memmove(data->text + data->cursorPos - 1, data->text + data->cursorPos, strlen(data->text) - data->cursorPos + 1);
 			data->cursorPos -= 1;
+			data->callback(data->text);
 		}
 	} else
 	{
@@ -177,6 +179,7 @@ void UpdateTextBox(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlIn
 					memmove(data->text + data->cursorPos + 1, data->text + data->cursorPos, strlen(data->text) - data->cursorPos + 1);
 					data->text[data->cursorPos] = chr;
 					data->cursorPos += 1;
+					data->callback(data->text);
 				}
 				break;
 			}

@@ -43,8 +43,6 @@ typedef struct ModelHeader ModelHeader;
 typedef struct Options Options;
 typedef struct Asset Asset;
 typedef struct TextureSizeTable TextureSizeTable;
-typedef struct LevelDataTable LevelDataTable;
-typedef struct LevelEntry LevelEntry;
 typedef struct Image Image;
 
 // Function signatures
@@ -201,6 +199,8 @@ struct Wall
 // Utility functions are in Structs/level.h
 struct Level
 {
+	char name[32];
+	short courseNum;
 	List *actors; // The list of actors in the level. You must bake this into staticActors before it is used.
 	List *walls; // The list of walls in the level. You must bake this into staticWalls before it is used.
 	uint skyColor; // The color of the sky
@@ -297,7 +297,6 @@ struct GlobalState
 	Mix_Music *music; // background music
 	Mix_Chunk *channels[SFX_CHANNEL_COUNT]; // sound effects
 	double cameraY; // The Y position of the camera
-	int levelID; // The current level ID
 
 	bool textBoxActive; // Whether the text box is active
 	TextBox textBox; // The text box
@@ -362,21 +361,6 @@ struct TextureSizeTable
 	* The names of the textures in the table. You can load them with @code DecompressAsset(TEXTURE(assetName)) @endcode
 	*/
 	char (*textureNames)[32];
-} __attribute__((packed));
-
-struct LevelDataTable
-{
-	uint levelCount;
-	LevelEntry *levelEntries;
-};
-
-struct LevelEntry
-{
-	char internalName[32];
-	char levelData[32];
-	char displayName[32];
-	bool canPauseExit;
-	uint courseNum;
 } __attribute__((packed));
 
 struct Image

@@ -20,6 +20,7 @@
 #include "../Structs/UI/Controls/CheckBox.h"
 #include "../Structs/UI/Controls/RadioButton.h"
 #include "../Structs/UI/Controls/Slider.h"
+#include "../Structs/UI/Controls/TextBox.h"
 #include "../Structs/UI/UiStack.h"
 #include "../Structs/Wall.h"
 #include "GMainState.h"
@@ -87,6 +88,9 @@ byte level_skyG;
 byte level_skyB;
 
 uint level_musicID;
+
+char levelName[32];
+short courseNumber;
 #pragma endregion
 
 #pragma region Helpers
@@ -113,6 +117,9 @@ Level *NodesToLevel()
 	l->skyColor = 0xFF << 24 | level_skyR << 16 | level_skyG << 8 | level_skyB;
 
 	l->musicID = level_musicID;
+
+	l->courseNum = courseNumber;
+	strcpy(l->name, levelName);
 
 	// reconstruct the level from the editor nodes
 	for (int i = 0; i < editorNodes->size; i++)
@@ -353,6 +360,16 @@ void DrawNodeTooltip(const EditorNode *node)
 #pragma endregion
 
 #pragma region Callbacks
+
+void SetCourseNumberSlider(const double value)
+{
+	courseNumber = (short)value;
+}
+
+void SetCourseNameTextBox(const char *text)
+{
+	strcpy(levelName, text);
+}
 
 void SetMusicSlider(const double value)
 {
@@ -607,6 +624,13 @@ void SetEditorMode(bool /*c*/, byte /*g*/, const byte id)
 					 v2(200, 24),
 					 SetMusicSlider,
 					 SliderLabelInteger);
+		sy += szy + sp;
+		CreateSlider("Course Number", -1, 32, courseNumber, 1, 1, v2(10, sy), v2(200, 24), SetCourseNumberSlider, SliderLabelInteger);
+		sy += szy + sp;
+		Control *c = CreateTextBoxControl("Level Name", v2(10,sy), v2(200, 24), TOP_LEFT, 30, SetCourseNameTextBox);
+		TextBoxData *data = (TextBoxData *)c->ControlData;
+		memcpy(data->text, levelName, 32);
+		UiStackPush(editorUiStack, c);
 	}
 }
 

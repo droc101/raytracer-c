@@ -45,8 +45,8 @@ void GPauseStateRender(GlobalState *State)
 					FONT_VALIGN_MIDDLE,
 					false);
 
-	const char *levelID = GetLevelDataTable()->levelEntries[State->levelID].displayName;
-	const int cNum = GetLevelDataTable()->levelEntries[State->levelID].courseNum;
+	const char *levelID = State->level->name;
+	const int cNum = State->level->courseNum;
 
 	if (cNum != -1)
 	{
