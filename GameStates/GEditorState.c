@@ -629,7 +629,7 @@ void SetEditorMode(bool /*c*/, byte /*g*/, const byte id)
 		sy += szy + sp;
 		Control *c = CreateTextBoxControl("Level Name", v2(10,sy), v2(200, 24), TOP_LEFT, 30, SetCourseNameTextBox);
 		TextBoxData *data = (TextBoxData *)c->ControlData;
-		memcpy(data->text, levelName, 32);
+		memcpy(data->text, levelName, 31);
 		UiStackPush(editorUiStack, c);
 	}
 }
