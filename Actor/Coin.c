@@ -4,7 +4,6 @@
 
 #include "Coin.h"
 #include <math.h>
-// #include "../Assets/Assets.h"
 #include "../Helpers/Collision.h"
 #include "../Helpers/CommonAssets.h"
 #include "../Helpers/Core/AssetReader.h"

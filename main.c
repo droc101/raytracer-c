@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <string.h>
 #include "Helpers/Core/AssetReader.h"
-// #include "Assets/Assets.h"
 #include "config.h"
 #include "Debug/DPrint.h"
 #include "Debug/FrameBenchmark.h"

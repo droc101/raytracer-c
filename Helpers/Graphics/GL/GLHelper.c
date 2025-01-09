@@ -6,7 +6,6 @@
 
 #include <cglm/cglm.h>
 #include "../../Core/AssetReader.h"
-// #include "../../../Assets/Assets.h"
 #include "../../../Structs/GlobalState.h"
 #include "../../../Structs/Vector2.h"
 #include "../../../Structs/Wall.h"

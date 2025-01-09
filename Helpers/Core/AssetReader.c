@@ -9,7 +9,6 @@
 #include "DataReader.h"
 #include "Error.h"
 #include "Logging.h"
-// #include "Assets.h"
 #include <errno.h>
 
 
@@ -23,7 +22,7 @@ Image *images[MAX_TEXTURES];
 
 FILE *OpenAssetFile(const char *relPath)
 {
-	char path[260] = {0};
+	char path[280] = {0};
 
 	const size_t pathLen = strlen(GetState()->executableFolder) + strlen(relPath) + strlen("assets/") + 1;
 	if (pathLen >= 260)

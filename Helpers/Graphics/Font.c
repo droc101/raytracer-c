@@ -5,7 +5,6 @@
 #include "Font.h"
 #include <ctype.h>
 #include <string.h>
-// #include "../../Assets/Assets.h"
 #include "../../Structs/Vector2.h"
 #include "../Core/AssetReader.h"
 #include "../Core/Error.h"

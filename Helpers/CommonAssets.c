@@ -3,9 +3,7 @@
 //
 
 #include "CommonAssets.h"
-
 #include "Core/AssetReader.h"
-// #include "../Assets/Assets.h"
 #include "Graphics/Drawing.h"
 
 const char *wallTextures[WALL_TEXTURE_COUNT] = {

@@ -5,7 +5,6 @@
 #include "GMainState.h"
 #include <math.h>
 #include <stdio.h>
-// #include "../Assets/Assets.h"
 #include "../Debug/DPrint.h"
 #include "../Helpers/Collision.h"
 #include "../Helpers/Core/AssetReader.h"

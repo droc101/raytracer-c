@@ -4,7 +4,6 @@
 
 #include "GMenuState.h"
 #include <stdio.h>
-// #include "../Assets/Assets.h"
 #include "../Helpers/Core/AssetReader.h"
 #include "../Helpers/Core/Input.h"
 #include "../Helpers/Graphics/Drawing.h"

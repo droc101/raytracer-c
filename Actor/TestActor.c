@@ -4,7 +4,6 @@
 
 #include "TestActor.h"
 #include "../Helpers/Core/AssetReader.h"
-// #include "../Assets/Assets.h"
 #include "../Helpers/Collision.h"
 #include "../Helpers/CommonAssets.h"
 #include "../Structs/Vector2.h"
