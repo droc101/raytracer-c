@@ -9,7 +9,7 @@ layout(location = 1) flat in uint inTextureIndex;
 layout(location = 0) out vec4 outColor;
 
 void main() {
-    outColor = texture(textureSampler[inTextureIndex], inUV);
+    outColor = texture(textureSampler[nonuniformEXT(inTextureIndex)], inUV);
     if (outColor.a < 0.5) discard;
     outColor.a = 1.0;
 }
