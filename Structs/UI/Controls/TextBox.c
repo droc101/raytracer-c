@@ -10,6 +10,7 @@
 #include "../../Vector2.h"
 #include "../../../Helpers/Core/MathEx.h"
 #include "../../../Helpers/Core/AssetReader.h"
+#include <string.h>
 
 // Use when a key is to be used with shift+another
 #define SC_IGNORE_NEEDS_SHIFT SDL_NUM_SCANCODES
