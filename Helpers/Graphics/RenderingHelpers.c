@@ -134,7 +134,7 @@ inline void UpdateViewportSize()
 	}
 }
 
-inline void DrawBatchedQuadsTextured(const BatchedQuadArray *batch, const char *imageData, const uint color)
+inline void DrawBatchedQuadsTextured(const BatchedQuadArray *batch, const char *texture, const uint color)
 {
 	switch (currentRenderer)
 	{
@@ -142,7 +142,7 @@ inline void DrawBatchedQuadsTextured(const BatchedQuadArray *batch, const char *
 
 			break;
 		case RENDERER_OPENGL:
-			GL_DrawTexturedArrays(batch->verts, batch->indices, batch->quad_count, imageData, color);
+			GL_DrawTexturedArrays(batch->verts, batch->indices, batch->quad_count, texture, color);
 			break;
 		default:
 			break;

@@ -7,11 +7,12 @@
 
 #include "../../defines.h"
 
-// The maximum number of textures that can be loaded in any one execution of the game
+/// The maximum number of textures that can be loaded in any one execution of the game
 #define MAX_TEXTURES 512
 
 /**
  * Get the texture size table
+ * @return A pointer to the texture size table
  */
 const TextureSizeTable *GetTextureSizeTable();
 
@@ -24,7 +25,7 @@ void AssetCacheInit();
  * Invalidate the asset cache
  * @warning If anything still has a pointer to an asset, it will become invalid!
  */
-void InvalidateAssetCache();
+void DestroyAssetCache();
 
 /**
  * Decompress an asset and cache it
@@ -54,13 +55,13 @@ Model *LoadModel(const char *asset);
  */
 void FreeModel(Model *model);
 
-#define TEXTURE(x) ("texture/" x ".gtex")
-#define MUSIC(x) ("audio/" x ".gmus")
-#define SOUND(x) ("audio/" x ".gsnd")
-#define LEVEL(x) ("level/" x ".gmap")
-#define OGL_SHADER(x) ("glshader/" x ".gshd")
-#define VK_FRAG(x) ("vkshader/" x ".gfrg")
-#define VK_VERT(x) ("vkshader/" x ".gvert")
-#define MODEL(x) ("model/" x ".gmdl")
+#define TEXTURE(assetName) ("texture/" assetName ".gtex")
+#define MUSIC(assetName) ("audio/" assetName ".gmus")
+#define SOUND(assetName) ("audio/" assetName ".gsnd")
+#define LEVEL(assetName) ("level/" assetName ".gmap")
+#define OGL_SHADER(assetName) ("glshader/" assetName ".gshd")
+#define VK_FRAG(assetName) ("vkshader/" assetName ".gfrg")
+#define VK_VERT(assetName) ("vkshader/" assetName ".gvert")
+#define MODEL(assetName) ("model/" assetName ".gmdl")
 
 #endif //GAME_ASSETREADER_H

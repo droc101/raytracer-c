@@ -627,8 +627,8 @@ void SetEditorMode(bool /*c*/, byte /*g*/, const byte id)
 		sy += szy + sp;
 		CreateSlider("Course Number", -1, 32, courseNumber, 1, 1, v2(10, sy), v2(200, 24), SetCourseNumberSlider, SliderLabelInteger);
 		sy += szy + sp;
-		Control *c = CreateTextBoxControl("Level Name", v2(10,sy), v2(200, 24), TOP_LEFT, 30, SetCourseNameTextBox);
-		TextBoxData *data = (TextBoxData *)c->ControlData;
+		Control *c = CreateTextBoxControl("Level Name", v2(10, sy), v2(200, 24), TOP_LEFT, 30, SetCourseNameTextBox);
+		const TextBoxData *data = c->ControlData;
 		memcpy(data->text, levelName, 31);
 		UiStackPush(editorUiStack, c);
 	}

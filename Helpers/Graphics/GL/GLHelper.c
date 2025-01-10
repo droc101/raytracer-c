@@ -10,7 +10,6 @@
 #include "../../../Structs/Vector2.h"
 #include "../../../Structs/Wall.h"
 #include "../../CommonAssets.h"
-#include "../../Core/DataReader.h"
 #include "../../Core/Error.h"
 #include "../../Core/Logging.h"
 #include "../RenderingHelpers.h"
@@ -401,9 +400,9 @@ void GL_DrawRectOutline(const Vector2 pos, const Vector2 size, const uint color,
 	glDrawElements(GL_LINE_LOOP, 4, GL_UNSIGNED_INT, NULL);
 }
 
-GLuint GL_LoadTextureFromAsset(const char *imageData)
+void GL_LoadTextureFromAsset(const char *texture)
 {
-	Image *img = LoadImage(imageData);
+	const Image *img = LoadImage(texture);
 
 	// if the texture is already loaded, don't load it again
 	if (GL_AssetTextureMap[img->id] != -1)
@@ -411,15 +410,13 @@ GLuint GL_LoadTextureFromAsset(const char *imageData)
 		if (glIsTexture(GL_Textures[GL_AssetTextureMap[img->id]]))
 		{
 			glBindTexture(GL_TEXTURE_2D, GL_Textures[GL_AssetTextureMap[img->id]]);
-			return GL_AssetTextureMap[img->id];
+			return;
 		}
 	}
 
 	const int slot = GL_RegisterTexture(img->pixelData, img->width, img->height);
 
 	GL_AssetTextureMap[img->id] = slot;
-
-	return slot;
 }
 
 int GL_RegisterTexture(const unsigned char *pixelData, const int width, const int height)
@@ -454,11 +451,11 @@ int GL_RegisterTexture(const unsigned char *pixelData, const int width, const in
 	return slot;
 }
 
-void GL_SetTexParams(const char *imageData, const bool linear, const bool repeat)
+void GL_SetTexParams(const char *texture, const bool linear, const bool repeat)
 {
-	GL_LoadTextureFromAsset(imageData); // make sure the texture is loaded
+	GL_LoadTextureFromAsset(texture); // make sure the texture is loaded
 
-	const Image *img = LoadImage(imageData);
+	const Image *img = LoadImage(texture);
 
 	const GLuint tex = GL_Textures[GL_AssetTextureMap[img->id]];
 
@@ -519,14 +516,14 @@ void GL_DrawBlur(const Vector2 pos,
 
 void GL_DrawTexture_Internal(const Vector2 pos,
 							 const Vector2 size,
-							 const char *imageData,
+							 const char *texture,
 							 const uint color,
 							 const Vector2 region_start,
 							 const Vector2 region_end)
 {
 	glUseProgram(uiTextured->program);
 
-	GL_LoadTextureFromAsset(imageData);
+	GL_LoadTextureFromAsset(texture);
 
 
 	const float a = (color >> 24 & 0xFF) / 255.0f;
@@ -574,33 +571,33 @@ void GL_DrawTexture_Internal(const Vector2 pos,
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 }
 
-inline void GL_DrawTexture(const Vector2 pos, const Vector2 size, const char *imageData)
+inline void GL_DrawTexture(const Vector2 pos, const Vector2 size, const char *texture)
 {
-	GL_DrawTexture_Internal(pos, size, imageData, 0xFFFFFFFF, v2(-1, 0), v2s(0));
+	GL_DrawTexture_Internal(pos, size, texture, 0xFFFFFFFF, v2(-1, 0), v2s(0));
 }
 
-inline void GL_DrawTextureMod(const Vector2 pos, const Vector2 size, const char *imageData, const uint color)
+inline void GL_DrawTextureMod(const Vector2 pos, const Vector2 size, const char *texture, const uint color)
 {
-	GL_DrawTexture_Internal(pos, size, imageData, color, v2(-1, 0), v2s(0));
+	GL_DrawTexture_Internal(pos, size, texture, color, v2(-1, 0), v2s(0));
 }
 
 inline void GL_DrawTextureRegion(const Vector2 pos,
 								 const Vector2 size,
-								 const char *imageData,
+								 const char *texture,
 								 const Vector2 region_start,
 								 const Vector2 region_end)
 {
-	GL_DrawTexture_Internal(pos, size, imageData, 0xFFFFFFFF, region_start, region_end);
+	GL_DrawTexture_Internal(pos, size, texture, 0xFFFFFFFF, region_start, region_end);
 }
 
 inline void GL_DrawTextureRegionMod(const Vector2 pos,
 									const Vector2 size,
-									const char *imageData,
+									const char *texture,
 									const Vector2 region_start,
 									const Vector2 region_end,
 									const uint color)
 {
-	GL_DrawTexture_Internal(pos, size, imageData, color, region_start, region_end);
+	GL_DrawTexture_Internal(pos, size, texture, color, region_start, region_end);
 }
 
 void GL_DrawLine(const Vector2 start, const Vector2 end, const uint color, const float thickness)
@@ -916,12 +913,12 @@ void GL_DrawColoredArrays(const float *vertices, const uint *indices, const int 
 void GL_DrawTexturedArrays(const float *vertices,
 						   const uint *indices,
 						   const int quad_count,
-						   const char *imageData,
+						   const char *texture,
 						   const uint color)
 {
 	glUseProgram(uiTextured->program);
 
-	GL_LoadTextureFromAsset(imageData);
+	GL_LoadTextureFromAsset(texture);
 
 	const float a = (color >> 24 & 0xFF) / 255.0f;
 	const float r = (color >> 16 & 0xFF) / 255.0f;

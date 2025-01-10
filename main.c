@@ -19,7 +19,6 @@
 #include "Helpers/Graphics/RenderingHelpers.h"
 #include "Helpers/PlatformHelpers.h"
 #include "Structs/GlobalState.h"
-#include "Structs/Vector2.h"
 
 SDL_Surface *windowIcon;
 
@@ -36,14 +35,11 @@ void ExecPathInit(const int argc, char *argv[])
 		Error("No executable path argument provided.");
 	}
 
-	const int argvZeroLen = strlen(argv[0]);
-
-	if (argvZeroLen > 260)
+	if (strlen(argv[0]) > 260)
 	{
 		Error("Executable path too long. Please rethink your file structure.");
 	}
-	memset(GetState()->executablePath, 0, 261); // we do not mess around with user data in c.
-	strncpy(GetState()->executablePath, argv[0], 260);
+	strncpy(GetState()->executablePath, argv[0], 260); // we do not mess around with user data in c.
 	LogInfo("Executable path: %s\n", GetState()->executablePath);
 
 	char *folder = SDL_GetBasePath();
@@ -301,7 +297,7 @@ int main(const int argc, char *argv[])
 	SDL_DestroyWindow(GetGameWindow());
 	SDL_FreeSurface(windowIcon);
 	DestroyCommonAssets();
-	InvalidateAssetCache(); // Free all assets
+	DestroyAssetCache(); // Free all assets
 	RenderDestroy();
 	Mix_CloseAudio();
 	Mix_Quit();

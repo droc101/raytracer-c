@@ -185,7 +185,7 @@ struct Wall
 {
 	Vector2 a; // The first point of the wall
 	Vector2 b; // The second point of the wall
-	const char *tex; // The raw asset data for the texture
+	const char *tex; // The texture name
 	int texId; // The texture ID
 	double length; // The length of the wall (Call WallBake to update)
 	double angle; // The angle of the wall (Call WallBake to update)

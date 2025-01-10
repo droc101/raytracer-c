@@ -10,8 +10,6 @@
 #include "Error.h"
 #include "Logging.h"
 #include <errno.h>
-
-
 #include "../../Structs/GlobalState.h"
 
 List *assetCacheNames;
@@ -22,37 +20,47 @@ Image *images[MAX_TEXTURES];
 
 FILE *OpenAssetFile(const char *relPath)
 {
-	char path[280] = {0};
+	const size_t maxPathLength = 300;
+	char *path = calloc(maxPathLength, sizeof(char));
+	chk_malloc(path);
 
-	const size_t pathLen = strlen(GetState()->executableFolder) + strlen(relPath) + strlen("assets/") + 1;
-	if (pathLen >= 260)
+	const size_t pathLen = strlen(GetState()->executableFolder) + strlen("assets/") + strlen(relPath) + 1;
+	if (pathLen >= maxPathLength)
 	{
 		LogError("Path is too long: %s\n", relPath);
+		free(path);
 		return NULL;
 	}
-	sprintf(path, "%sassets/%s", GetState()->executableFolder, relPath);
+	if (snprintf(path, maxPathLength, "%sassets/%s", GetState()->executableFolder, relPath) > 300)
+	{
+		LogError("Asset path too long!\n");
+		free(path);
+		return NULL;
+	}
 
 	FILE *file = fopen(path, "rb");
 	if (file == NULL)
 	{
 		LogError("Failed to open asset file: %s with errno %s\n", path, strerror(errno));
+		free(path);
 		return NULL;
 	}
+
+	free(path);
 
 	return file;
 }
 
 void LoadTextureSizeTable()
 {
-	FILE *f = OpenAssetFile("tsizetable.gtsb");
-	if (f == NULL)
+	FILE *file = OpenAssetFile("tsizetable.gtsb");
+	if (file == NULL)
 	{
-		LogError("Failed to open texture size table file!");
 		Error("Failed to open texture size table file!");
 	}
-	fseek(f, 0, SEEK_END);
-	const size_t fileSize = ftell(f);
-	fseek(f, 0, SEEK_SET);
+	fseek(file, 0, SEEK_END);
+	const size_t fileSize = ftell(file);
+	fseek(file, 0, SEEK_SET);
 
 	if (fileSize < sizeof(uint) * 2)
 	{
@@ -61,9 +69,10 @@ void LoadTextureSizeTable()
 	}
 
 	tsb = malloc(sizeof(TextureSizeTable));
+	chk_malloc(tsb);
 
-	fread(&tsb->textureCount, sizeof(uint), 1, f);
-	fread(&tsb->assetCount, sizeof(uint), 1, f);
+	fread(&tsb->textureCount, sizeof(uint), 1, file);
+	fread(&tsb->assetCount, sizeof(uint), 1, file);
 
 	if (fileSize < (sizeof(uint) * 2) + (tsb->textureCount * (sizeof(char) * 32)))
 	{
@@ -71,12 +80,12 @@ void LoadTextureSizeTable()
 		Error("Failed to read texture size table, file was too small!");
 	}
 
-	tsb->textureNames = malloc(tsb->textureCount * (sizeof(char *) * 32));
+	tsb->textureNames = calloc(tsb->textureCount, sizeof(char) * 32);
 	chk_malloc(tsb->textureNames);
 
-	fread(tsb->textureNames, sizeof(char) * 32, tsb->textureCount, f);
+	fread(tsb->textureNames, sizeof(char) * 32, tsb->textureCount, file);
 
-	fclose(f);
+	fclose(file);
 }
 
 const TextureSizeTable *GetTextureSizeTable()
@@ -89,17 +98,17 @@ void AssetCacheInit()
 	assetCacheNames = CreateList();
 	assetCacheData = CreateList();
 	LoadTextureSizeTable();
-	memset(images, 0, sizeof(Image *) * MAX_TEXTURES);
 }
 
-void InvalidateAssetCache()
+void DestroyAssetCache()
 {
 	for (int i = 0; i < assetCacheData->size; i++)
-    {
-        Asset *asset = ListGet(assetCacheData, i);
-        free(asset->data);
-        free(asset);
-    }
+	{
+		Asset *asset = ListGet(assetCacheData, i);
+		free(asset->data);
+		free(asset);
+	}
+	ListFree(assetCacheData);
 
 	for (int i = 0; i < MAX_TEXTURES; i++)
 	{
@@ -110,12 +119,9 @@ void InvalidateAssetCache()
 		}
 	}
 
-	ListFree(assetCacheData);
 	ListFreeWithData(assetCacheNames);
 	free(tsb->textureNames);
 	free(tsb);
-
-	AssetCacheInit();
 }
 
 Asset *DecompressAsset(const char *relPath)
@@ -139,14 +145,15 @@ Asset *DecompressAsset(const char *relPath)
 	fseek(file, 0, SEEK_END);
 	const size_t fileSize = ftell(file);
 
-	const byte *asset = malloc(fileSize);
+	byte *asset = malloc(fileSize);
 	chk_malloc(asset);
 	fseek(file, 0, SEEK_SET);
-	fread((void *)asset, 1, fileSize, file);
+	fread(asset, 1, fileSize, file);
 
 	fclose(file);
 
 	Asset *assetStruct = malloc(sizeof(Asset));
+	chk_malloc(assetStruct);
 
 	int offset = 0;
 	// Read the first 4 bytes of the asset to get the size of the compressed data
@@ -160,7 +167,7 @@ Asset *DecompressAsset(const char *relPath)
 	assetStruct->assetId = assetId;
 	assetStruct->type = assetType;
 
-	asset += 16; // skip header
+	asset += offset; // skip header
 
 	// Allocate memory for the decompressed data
 	byte *decompressedData = malloc(decompressedSize);
@@ -169,7 +176,7 @@ Asset *DecompressAsset(const char *relPath)
 	z_stream stream = {0};
 
 	// Initialize the zlib stream
-	stream.next_in = (Bytef *)asset;
+	stream.next_in = asset;
 	stream.avail_in = compressedSize;
 	stream.next_out = decompressedData;
 	stream.avail_out = decompressedSize;
@@ -178,88 +185,76 @@ Asset *DecompressAsset(const char *relPath)
 	if (inflateInit2(&stream, MAX_WBITS | 16) != Z_OK)
 	{
 		free(decompressedData);
-		decompressedData = NULL;
+		free(asset - 16);
+		free(assetStruct);
 		LogError("Failed to initialize zlib stream: %s\n", stream.msg);
 		return NULL;
 	}
 
 	// Decompress the data
-	int ret;
-	do
+	int inflateReturnValue = inflate(&stream, Z_NO_FLUSH);
+	while (inflateReturnValue != Z_STREAM_END)
 	{
-		ret = inflate(&stream, Z_NO_FLUSH);
-		if (ret != Z_OK && ret != Z_STREAM_END)
+		if (inflateReturnValue != Z_OK)
 		{
 			free(decompressedData);
-			decompressedData = NULL;
+			free(asset - 16);
+			free(assetStruct);
 			LogError("Failed to decompress zlib stream: %s\n", stream.msg);
 			return NULL;
 		}
-	} while (ret != Z_STREAM_END);
+		inflateReturnValue = inflate(&stream, Z_NO_FLUSH);
+	}
 
 	// Clean up the zlib stream
-	inflateEnd(&stream);
+	if (inflateEnd(&stream) != Z_OK)
+	{
+		free(decompressedData);
+		free(asset - 16);
+		free(assetStruct);
+		LogError("Failed to end zlib stream: %s\n", stream.msg);
+		return NULL;
+	}
 
 	assetStruct->data = decompressedData;
 
 	// Add the asset to the cache
-	ListAdd(assetCacheNames, strdup(relPath));
+	const size_t pathLength = strlen(relPath);
+	char *data = malloc(pathLength + 1);
+	strncpy(data, relPath, pathLength);
+	ListAdd(assetCacheNames, data);
 	ListAdd(assetCacheData, assetStruct);
 
 	return assetStruct;
 }
 
-Image *GenFallbackImage(Image *src)
+void GenFallbackImage(Image *src)
 {
 	src->width = 64;
 	src->height = 64;
 	src->pixelDataSize = 64 * 64 * 4;
 	src->pixelData = malloc(src->pixelDataSize);
 	chk_malloc(src->pixelData);
-	// im sure theres a better way to do this
-	// HOWEVER
-	// eh it works
+
 	for (int x = 0; x < 64; x++)
 	{
 		for (int y = 0; y < 64; y++)
 		{
-			if (x < 32)
+			if ((x < 32) ^ (y < 32))
 			{
-				if (y < 32)
-				{
-					src->pixelData[(x + y * 64) * 4] = 255;
-					src->pixelData[(x + y * 64) * 4 + 1] = 0;
-					src->pixelData[(x + y * 64) * 4 + 2] = 255;
-					src->pixelData[(x + y * 64) * 4 + 3] = 255;
-				}
-				else
-				{
-					src->pixelData[(x + y * 64) * 4] = 0;
-					src->pixelData[(x + y * 64) * 4 + 1] = 0;
-					src->pixelData[(x + y * 64) * 4 + 2] = 0;
-					src->pixelData[(x + y * 64) * 4 + 3] = 255;
-				}
-			}
-			else
+				src->pixelData[(x + y * 64) * 4] = 0;
+				src->pixelData[(x + y * 64) * 4 + 1] = 0;
+				src->pixelData[(x + y * 64) * 4 + 2] = 0;
+				src->pixelData[(x + y * 64) * 4 + 3] = 255;
+			} else
 			{
-				if (y < 32)
-				{
-					src->pixelData[(x + y * 64) * 4] = 0;
-					src->pixelData[(x + y * 64) * 4 + 1] = 0;
-					src->pixelData[(x + y * 64) * 4 + 2] = 0;
-					src->pixelData[(x + y * 64) * 4 + 3] = 255;
-				}
-				else
-				{
-					src->pixelData[(x + y * 64) * 4] = 255;
-					src->pixelData[(x + y * 64) * 4 + 1] = 0;
-					src->pixelData[(x + y * 64) * 4 + 2] = 255;
-					src->pixelData[(x + y * 64) * 4 + 3] = 255;
-				}
+				src->pixelData[(x + y * 64) * 4] = 255;
+				src->pixelData[(x + y * 64) * 4 + 1] = 0;
+				src->pixelData[(x + y * 64) * 4 + 2] = 255;
+				src->pixelData[(x + y * 64) * 4 + 3] = 255;
 			}
 		}
 	}
-	return src;
 }
 
 Image *LoadImage(const char *asset)
@@ -281,10 +276,7 @@ Image *LoadImage(const char *asset)
 	chk_malloc(img);
 
 	const Asset *textureAsset = DecompressAsset(asset);
-	if (textureAsset == NULL)
-	{
-		GenFallbackImage(img);
-	} else if (textureAsset->type != ASSET_TYPE_TEXTURE)
+	if (textureAsset == NULL || textureAsset->type != ASSET_TYPE_TEXTURE)
 	{
 		GenFallbackImage(img);
 	} else
@@ -296,7 +288,10 @@ Image *LoadImage(const char *asset)
 	}
 
 	img->id = textureId;
-	img->name = strdup(asset);
+
+	const size_t nameLength = strlen(asset);
+	img->name = malloc(nameLength + 1);
+	strncpy(img->name, asset, nameLength);
 
 	images[textureId] = img;
 
@@ -313,8 +308,7 @@ Model *LoadModel(const char *asset)
 		LogError("Failed to load model from asset, asset was NULL!");
 		Error("Failed to load model!");
 	}
-	const size_t size = assetData->size;
-	if (size < sizeof(ModelHeader))
+	if (assetData->size < sizeof(ModelHeader))
 	{
 		LogError("Failed to load model from asset, size was too small!");
 		return NULL;
@@ -368,4 +362,5 @@ void FreeModel(Model *model)
 	free(model->packedVertsUvs);
 	free(model->packedIndices);
 	free(model);
+	model = NULL;
 }

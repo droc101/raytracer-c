@@ -67,10 +67,10 @@ void UpdateViewportSize();
 /**
  * Draw a `BatchedQuadArray` to the screen using the textured shader. This is faster than multiple draw calls, but harder to use.
  * @param batch The batch to draw
- * @param imageData The texture to use
+ * @param texture The texture name
  * @param color The color to use
  */
-void DrawBatchedQuadsTextured(const BatchedQuadArray *batch, const char *imageData, uint color);
+void DrawBatchedQuadsTextured(const BatchedQuadArray *batch, const char *texture, uint color);
 
 /**
  * Draw a `BatchedQuadArray` to the screen using the solid color shader. This is faster than multiple draw calls, but harder to use.
@@ -97,7 +97,7 @@ float Y_TO_NDC(float y);
  * Render a 3D model
  * @param m The model to render
  * @param MODEL_WORLD_MATRIX The model -> world matrix
- * @param texture The texture to use
+ * @param texture The texture name
  * @param shd The shader to use
  */
 void RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const char *texture, ModelShader shd);

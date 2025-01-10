@@ -251,9 +251,16 @@ void ChangeLevelByName(const char *name)
 {
 	LogInfo("Loading level \"%s\"\n", name);
 
-	char lPath[48]; // dw 48 is guaranteed to be enough (more than 32 + 12) (12 is "level/" + ".gmap")
-	sprintf(lPath, "level/%s.gmap", name);
-	const Asset *levelData = DecompressAsset(lPath);
+	const size_t maxPathLength = 48;
+	char *levelPath = calloc(maxPathLength, sizeof(char));
+	chk_malloc(levelPath);
+
+	if (snprintf(levelPath, maxPathLength, "level/%s.gmap", name) > maxPathLength)
+	{
+		LogError("Failed to load level due to level name %s being too long\n", name);
+		Error("Failed to load level.");
+	}
+	const Asset *levelData = DecompressAsset(levelPath);
 	if (levelData == NULL)
 	{
 		LogError("Failed to load level asset.\n");

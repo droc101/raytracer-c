@@ -106,8 +106,8 @@ void PlaySoundEffect(const char *asset);
 void DestroyGlobalState();
 
 /**
- * Change the level by ID
- * @param name Level ID to change to
+ * Change the level by name
+ * @param name Level name to change to
  */
 void ChangeLevelByName(const char *name);
 

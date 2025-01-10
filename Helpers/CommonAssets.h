@@ -22,10 +22,10 @@ void InitCommonAssets();
 
 /**
  * Find the index of a wall texture
- * @param tex The texture to find
+ * @param texture The texture to find
  * @return The index of the texture
  */
-int FindWallTextureIndex(const char *tex);
+int FindWallTextureIndex(const char *texture);
 
 /**
  * Free any common assets that were allocated

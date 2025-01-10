@@ -27,12 +27,12 @@ const byte *LoadWallTexture(int index);
  * Create a wall
  * @param a Wall start point
  * @param b Wall end point
- * @param tex Wall texture
+ * @param texture Wall texture name
  * @param uvScale Wall texture scale
  * @param uvOffset Wall texture offset
  * @return Wall pointer
  */
-Wall *CreateWall(Vector2 a, Vector2 b, const char *tex, float uvScale, float uvOffset);
+Wall *CreateWall(Vector2 a, Vector2 b, const char *texture, float uvScale, float uvOffset);
 
 /**
  * Free the memory used by a wall
@@ -44,8 +44,7 @@ void FreeWall(Wall *w);
 /**
  * Bake a wall's information
  * @param w Wall to bake
- * @return Wall length...for some reason
  */
-double WallBake(Wall *w);
+void WallBake(Wall *w);
 
 #endif //GAME_WALL_H

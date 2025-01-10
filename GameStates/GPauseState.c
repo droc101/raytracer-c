@@ -10,7 +10,6 @@
 #include "../Helpers/Graphics/Font.h"
 #include "../Helpers/Graphics/RenderingHelpers.h"
 #include "../Structs/GlobalState.h"
-#include "../Structs/Level.h"
 #include "../Structs/UI/Controls/Button.h"
 #include "../Structs/UI/UiStack.h"
 #include "GLevelSelectState.h"
@@ -105,7 +104,7 @@ void BtnPauseExit()
 #ifdef USE_LEVEL_SELECT
 	GLevelSelectStateSet();
 #else
-	ChangeLevelByID(PAUSE_EXIT_LEVEL);
+	ChangeLevelByName(PAUSE_EXIT_LEVEL);
 #endif
 }
 

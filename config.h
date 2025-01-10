@@ -71,7 +71,7 @@
 #define APPDATA_ORG_NAME "Droc101 Development"
 #define APPDATA_APP_NAME "Game"
 
-// The level ID to load when pause exiting
+// The level to load when pause exiting
 #define PAUSE_EXIT_LEVEL "leveldata_hub"
 
 // The level to start on when the game loads

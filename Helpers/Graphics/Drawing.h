@@ -50,11 +50,11 @@ void DrawRect(int x, int y, int w, int h);
 
 /**
  * Convert a texture asset to an SDL_Surface
- * @param imageData Decompressed image data
+ * @param texture The texture name
  * @param filterMode Texture filtering mode
  * @return The @c SDL_Surface
  */
-SDL_Surface *ToSDLSurface(const char *imageData, const char *filterMode);
+SDL_Surface *ToSDLSurface(const char *texture, const char *filterMode);
 
 /**
  * Set the color to draw with
@@ -79,11 +79,11 @@ uint MixColors(uint color_a, uint color_b);
 
 /**
  * Set the texture parameters (linear, repeat)
- * @param imageData The texture data
+ * @param texture The texture name
  * @param linear Whether to use linear filtering (blurring)
  * @param repeat Whether to repeat the texture
  */
-void SetTexParams(const char *imageData, bool linear, bool repeat);
+void SetTexParams(const char *texture, bool linear, bool repeat);
 
 /**
  * Draw a line from start to end
@@ -105,41 +105,41 @@ void DrawOutlineRect(Vector2 pos, Vector2 size, float thickness);
  * Draw a texture on a rectangle
  * @param pos The position of the rectangle
  * @param size The size of the rectangle
- * @param imageData The texture data
+ * @param texture The texture name
  */
-void DrawTexture(Vector2 pos, Vector2 size, const char *imageData);
+void DrawTexture(Vector2 pos, Vector2 size, const char *texture);
 
 /**
  * Draw a texture on a rectangle with a color
  * @param pos The position of the rectangle
  * @param size The size of the rectangle
- * @param imageData The texture data
+ * @param texture The texture name
  * @param color The color to draw with
  */
-void DrawTextureMod(Vector2 pos, Vector2 size, const char *imageData, uint color);
+void DrawTextureMod(Vector2 pos, Vector2 size, const char *texture, uint color);
 
 /**
  * Draw a texture region on a rectangle
  * @param pos The position of the rectangle
  * @param size The size of the rectangle
- * @param imageData The texture data
+ * @param texture The texture name
  * @param region_start The start of the region (in pixels)
  * @param region_end The end of the region (in pixels)
  */
-void DrawTextureRegion(Vector2 pos, Vector2 size, const char *imageData, Vector2 region_start, Vector2 region_end);
+void DrawTextureRegion(Vector2 pos, Vector2 size, const char *texture, Vector2 region_start, Vector2 region_end);
 
 /**
  * Draw a texture region on a rectangle with a color
  * @param pos The position of the rectangle
  * @param size The size of the rectangle
- * @param imageData The texture data
+ * @param texture The texture name
  * @param region_start The start of the region (in pixels)
  * @param region_end The end of the region (in pixels)
  * @param color The color to draw with
  */
 void DrawTextureRegionMod(Vector2 pos,
 						  Vector2 size,
-						  const char *imageData,
+						  const char *texture,
 						  Vector2 region_start,
 						  Vector2 region_end,
 						  uint color);
@@ -167,10 +167,10 @@ void Swap();
 
 /**
  * Get the size of a texture
- * @param imageData The texture data
+ * @param texture The texture name
  * @return The size of the texture
  */
-Vector2 GetTextureSize(const char *imageData);
+Vector2 GetTextureSize(const char *texture);
 
 /**
  * Draw a nine patch image to the screen
@@ -178,13 +178,13 @@ Vector2 GetTextureSize(const char *imageData);
  * @param size The size of the output
  * @param output_margins_px The 9patch margins of the output
  * @param texture_margins_px The 9patch margins of the texture
- * @param imageData The texture data
+ * @param texture The texture name
  * @warning This is nine draw calls.
  */
 void DrawNinePatchTexture(Vector2 pos,
 						  Vector2 size,
 						  int output_margins_px,
 						  int texture_margins_px,
-						  const char *imageData);
+						  const char *texture);
 
 #endif //GAME_DRAWING_H

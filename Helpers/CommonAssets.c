@@ -51,11 +51,11 @@ void InitCommonAssets()
 	skyModel = LoadModel(MODEL("model_sky"));
 }
 
-int FindWallTextureIndex(const char *tex)
+int FindWallTextureIndex(const char *texture)
 {
 	for (int i = 0; i < WALL_TEXTURE_COUNT; i++)
 	{
-		if (strcmp(wallTextures[i], tex) == 0)
+		if (strcmp(wallTextures[i], texture) == 0)
 		{
 			return i;
 		}

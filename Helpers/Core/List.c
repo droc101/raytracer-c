@@ -106,6 +106,11 @@ void ListClear(List *list)
 
 void *GameReallocArray(void *ptr, const size_t arrayLength, const size_t elementSize)
 {
+	if (elementSize == 0)
+	{
+		LogWarning("GameReallocArray: elementSize is zero, returning NULL");
+		return NULL;
+	}
 	if (arrayLength > SIZE_MAX / elementSize)
 	{
 		LogWarning("GameReallocArray: arrayLength * elementSize exceeds SIZE_MAX, returning NULL");

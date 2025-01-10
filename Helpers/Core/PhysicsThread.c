@@ -65,7 +65,6 @@ int PhysicsThreadMain(void *)
 			SDL_Delay(delay_ms);
 		}
 		timeEnd = GetTimeNs();
-		GetTimeNs();
 		timeElapsed = timeEnd - timeStart;
 		lastFrameTime = timeElapsed;
 	}
