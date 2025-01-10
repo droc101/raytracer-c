@@ -3,9 +3,9 @@
 //
 
 #include "TestActor.h"
-#include "../Helpers/Core/AssetReader.h"
 #include "../Helpers/Collision.h"
 #include "../Helpers/CommonAssets.h"
+#include "../Helpers/Core/AssetReader.h"
 #include "../Structs/Vector2.h"
 #include "../Structs/Wall.h"
 

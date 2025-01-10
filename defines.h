@@ -73,7 +73,8 @@ typedef void (*ActorDestroyFunction)(Actor *self);
 #define PHYSICS_TARGET_NS_D (1000000000.0 / PHYSICS_TARGET_TPS)
 
 #define CONTROLLER_OK (GetState()->options.controllerSwapOkCancel ? SDL_CONTROLLER_BUTTON_B : SDL_CONTROLLER_BUTTON_A)
-#define CONTROLLER_CANCEL (GetState()->options.controllerSwapOkCancel ? SDL_CONTROLLER_BUTTON_A : SDL_CONTROLLER_BUTTON_B)
+#define CONTROLLER_CANCEL \
+	(GetState()->options.controllerSwapOkCancel ? SDL_CONTROLLER_BUTTON_A : SDL_CONTROLLER_BUTTON_B)
 
 #pragma endregion
 
@@ -81,11 +82,11 @@ typedef void (*ActorDestroyFunction)(Actor *self);
 
 enum AssetType
 {
-    ASSET_TYPE_TEXTURE = 0,
-    ASSET_TYPE_MP3 = 1,
-    ASSET_TYPE_WAV = 2,
-    ASSET_TYPE_LEVEL = 3,
-    ASSET_TYPE_GLSL = 4,
+	ASSET_TYPE_TEXTURE = 0,
+	ASSET_TYPE_MP3 = 1,
+	ASSET_TYPE_WAV = 2,
+	ASSET_TYPE_LEVEL = 3,
+	ASSET_TYPE_GLSL = 4,
 	// ... vulkan branch stuff 5 - 6
 	ASSET_TYPE_MODEL = 7,
 };
@@ -344,7 +345,7 @@ struct Asset
 	uint size;
 	uint assetId;
 	AssetType type;
-	byte* data;
+	byte *data;
 };
 
 struct TextureSizeTable
@@ -370,7 +371,7 @@ struct Image
 	uint height;
 	uint id;
 	char *name;
-	byte* pixelData;
+	byte *pixelData;
 };
 
 #pragma endregion

@@ -4,12 +4,12 @@
 
 #include "RenderingHelpers.h"
 #include "../../Structs/GlobalState.h"
-#include "../Core/Error.h"
-#include "../Core/MathEx.h"
-#include "GL/GLHelper.h"
 #include "../../Structs/Level.h"
 #include "../../Structs/Vector2.h"
 #include "../Core/AssetReader.h"
+#include "../Core/Error.h"
+#include "../Core/MathEx.h"
+#include "GL/GLHelper.h"
 
 Renderer currentRenderer;
 

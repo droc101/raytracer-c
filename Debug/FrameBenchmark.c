@@ -81,7 +81,6 @@ void BenchFinish()
 	LogDebug("Lowest frame time: %f ms\n", lowestFrameTime);
 	LogDebug("Highest frame time: %f ms\n", highestFrameTime);
 #endif
-
 }
 
 void BenchToggle()

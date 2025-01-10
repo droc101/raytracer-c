@@ -2,7 +2,6 @@
 #include <SDL_mixer.h>
 #include <stdio.h>
 #include <string.h>
-#include "Helpers/Core/AssetReader.h"
 #include "config.h"
 #include "Debug/DPrint.h"
 #include "Debug/FrameBenchmark.h"
@@ -10,6 +9,7 @@
 #include "defines.h"
 #include "GameStates/GLogoSplashState.h"
 #include "Helpers/CommonAssets.h"
+#include "Helpers/Core/AssetReader.h"
 #include "Helpers/Core/Error.h"
 #include "Helpers/Core/Input.h"
 #include "Helpers/Core/Logging.h"
@@ -90,8 +90,7 @@ void InitAudio()
 	if (Mix_OpenAudio(48000, AUDIO_S16, 2, 2048) == 0)
 	{
 		GetState()->isAudioStarted = true;
-	}
-	else
+	} else
 	{
 		GetState()->isAudioStarted = false;
 		LogError("Mix_OpenAudio Error: %s\n", Mix_GetError());
@@ -105,11 +104,11 @@ void WindowAndRenderInit()
 {
 	const Uint32 rendererFlags = currentRenderer == RENDERER_OPENGL ? SDL_WINDOW_OPENGL : SDL_WINDOW_VULKAN;
 	SDL_Window *window = SDL_CreateWindow(GAME_TITLE,
-									 SDL_WINDOWPOS_UNDEFINED,
-									 SDL_WINDOWPOS_UNDEFINED,
-									 DEF_WIDTH,
-									 DEF_HEIGHT,
-									 rendererFlags | SDL_WINDOW_RESIZABLE);
+										  SDL_WINDOWPOS_UNDEFINED,
+										  SDL_WINDOWPOS_UNDEFINED,
+										  DEF_WIDTH,
+										  DEF_HEIGHT,
+										  rendererFlags | SDL_WINDOW_RESIZABLE);
 	if (window == NULL)
 	{
 		LogError("SDL_CreateWindow Error: %s\n", SDL_GetError());
@@ -144,43 +143,43 @@ void HandleEvent(const SDL_Event event, bool *shouldQuit)
 	{
 		case SDL_QUIT:
 			*shouldQuit = true;
-		break;
+			break;
 		case SDL_KEYUP:
 			HandleKeyUp(event.key.keysym.scancode);
-		break;
+			break;
 		case SDL_KEYDOWN:
 			HandleKeyDown(event.key.keysym.scancode);
-		break;
+			break;
 		case SDL_MOUSEMOTION:
 			HandleMouseMotion(event.motion.x, event.motion.y, event.motion.xrel, event.motion.yrel);
-		break;
+			break;
 		case SDL_MOUSEBUTTONUP:
 			HandleMouseUp(event.button.button);
-		break;
+			break;
 		case SDL_MOUSEBUTTONDOWN:
 			HandleMouseDown(event.button.button);
-		break;
+			break;
 		case SDL_WINDOWEVENT:
 			if (event.window.event == SDL_WINDOWEVENT_RESIZED)
 			{
 				UpdateViewportSize();
 			}
-		break;
+			break;
 		case SDL_CONTROLLERDEVICEADDED:
 			HandleControllerConnect();
-		break;
+			break;
 		case SDL_CONTROLLERDEVICEREMOVED:
 			HandleControllerDisconnect(event.cdevice.which);
-		break;
+			break;
 		case SDL_CONTROLLERBUTTONDOWN:
 			HandleControllerButtonDown(event.cbutton.button);
-		break;
+			break;
 		case SDL_CONTROLLERBUTTONUP:
 			HandleControllerButtonUp(event.cbutton.button);
-		break;
+			break;
 		case SDL_CONTROLLERAXISMOTION:
 			HandleControllerAxis(event.caxis.axis, event.caxis.value);
-		break;
+			break;
 		default:
 			break;
 	}
@@ -229,9 +228,9 @@ int main(const int argc, char *argv[])
 	while (!shouldQuit)
 	{
 		while (GetState()->freezeEvents)
-        {
-            SDL_Delay(100);
-        }
+		{
+			SDL_Delay(100);
+		}
 		const ulong frameStart = GetTimeNs();
 #ifdef BENCHMARK_SYSTEM_ENABLE
 		BenchFrameStart();

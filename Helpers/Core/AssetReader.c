@@ -3,14 +3,14 @@
 //
 
 #include "AssetReader.h"
-#include <zlib.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <zlib.h>
+#include "../../Structs/GlobalState.h"
 #include "DataReader.h"
 #include "Error.h"
 #include "Logging.h"
-#include <errno.h>
-#include "../../Structs/GlobalState.h"
 
 List *assetCacheNames;
 List *assetCacheData;

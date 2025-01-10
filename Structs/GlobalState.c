@@ -150,7 +150,10 @@ void ChangeLevel(Level *l)
 
 void ChangeMusic(const char *asset)
 {
-	if (!state.isAudioStarted) return;
+	if (!state.isAudioStarted)
+	{
+		return;
+	}
 
 	StopMusic(); // stop the current music and free its data
 	const Asset *mp3 = DecompressAsset(asset);
@@ -161,10 +164,10 @@ void ChangeMusic(const char *asset)
 	}
 
 	if (mp3->type != ASSET_TYPE_MP3)
-    {
-        LogWarning("ChangeMusic Error: Asset is not a music file.\n");
-        return;
-    }
+	{
+		LogWarning("ChangeMusic Error: Asset is not a music file.\n");
+		return;
+	}
 
 	const uint mp3Size = mp3->size;
 	Mix_Music *mus = Mix_LoadMUS_RW(SDL_RWFromConstMem(mp3->data, mp3Size), 1);
@@ -179,7 +182,10 @@ void ChangeMusic(const char *asset)
 
 void StopMusic()
 {
-	if (!state.isAudioStarted) return;
+	if (!state.isAudioStarted)
+	{
+		return;
+	}
 	if (state.music != NULL)
 	{
 		// stop and free the current music
@@ -191,7 +197,10 @@ void StopMusic()
 
 void PlaySoundEffect(const char *asset)
 {
-	if (!state.isAudioStarted) return;
+	if (!state.isAudioStarted)
+	{
+		return;
+	}
 
 	const Asset *wav = DecompressAsset(asset);
 	if (wav == NULL)

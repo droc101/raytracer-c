@@ -3,10 +3,12 @@
 //
 
 #include "GLevelSelectState.h"
-#include <stdio.h>
 #include <dirent.h>
+#include <stdio.h>
 #include "../Helpers/Core/AssetReader.h"
+#include "../Helpers/Core/Error.h"
 #include "../Helpers/Core/Input.h"
+#include "../Helpers/Core/Logging.h"
 #include "../Helpers/Core/MathEx.h"
 #include "../Helpers/Graphics/Drawing.h"
 #include "../Helpers/Graphics/Font.h"
@@ -15,8 +17,6 @@
 #include "../Structs/Vector2.h"
 #include "GMainState.h"
 #include "GMenuState.h"
-#include "../Helpers/Core/Logging.h"
-#include "../Helpers/Core/Error.h"
 
 int GLevelSelectState_SelectedLevel = 0;
 List *levelList = NULL;
@@ -96,7 +96,6 @@ void GLevelSelectStateSet()
 				ListAdd(levelList, levelName);
 			}
 		}
-
 	}
 	StopMusic();
 	SetStateCallbacks(GLevelSelectStateUpdate,

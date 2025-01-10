@@ -5,11 +5,11 @@
 #include "GLHelper.h"
 
 #include <cglm/cglm.h>
-#include "../../Core/AssetReader.h"
 #include "../../../Structs/GlobalState.h"
 #include "../../../Structs/Vector2.h"
 #include "../../../Structs/Wall.h"
 #include "../../CommonAssets.h"
+#include "../../Core/AssetReader.h"
 #include "../../Core/Error.h"
 #include "../../Core/Logging.h"
 #include "../RenderingHelpers.h"
@@ -176,7 +176,7 @@ GL_Shader *GL_ConstructShaderFromAssets(const char *fsh, const char *vsh)
 	{
 		Error("Failed to load shaders!");
 	}
-	return GL_ConstructShader((char*)fragmentSource->data, (char*)vertexSource->data);
+	return GL_ConstructShader((char *)fragmentSource->data, (char *)vertexSource->data);
 }
 
 GL_Shader *GL_ConstructShader(const char *fsh, const char *vsh)
@@ -476,9 +476,7 @@ void GL_SetTexParams(const char *texture, const bool linear, const bool repeat)
 	}
 }
 
-void GL_DrawBlur(const Vector2 pos,
-				 const Vector2 size,
-				 const int blurRadius)
+void GL_DrawBlur(const Vector2 pos, const Vector2 size, const int blurRadius)
 {
 	glUseProgram(fbBlur->program);
 
