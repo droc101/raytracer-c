@@ -105,5 +105,4 @@ void DrawRadioButton(const Control *c, ControlState /*state*/, const Vector2 pos
 	DrawTexture(boxPos,
 				boxSize,
 				data->checked ? TEXTURE("interface_radio_checked") : TEXTURE("interface_radio_unchecked"));
-
 }

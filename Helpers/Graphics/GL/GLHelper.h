@@ -224,8 +224,6 @@ void GL_RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const char *
  * @param blurRadius The radius of the blur in pixels
  * @note This is a very slow operation, use sparingly
  */
-void GL_DrawBlur(Vector2 pos,
-				 Vector2 size,
-				 int blurRadius);
+void GL_DrawBlur(Vector2 pos, Vector2 size, int blurRadius);
 
 #endif //GAME_GLHELPER_H

@@ -159,8 +159,11 @@ Level *NodesToLevel()
 	return l;
 }
 
-void CreateButton(char *text, const Vector2 position, const Vector2 size,
-				  const ButtonCallback callback, bool /*enabled*/)
+void CreateButton(char *text,
+				  const Vector2 position,
+				  const Vector2 size,
+				  const ButtonCallback callback,
+				  bool /*enabled*/)
 {
 	Control *button = CreateButtonControl(position, size, text, callback, TOP_LEFT);
 	UiStackPush(editorUiStack, button);
@@ -625,7 +628,16 @@ void SetEditorMode(bool /*c*/, byte /*g*/, const byte id)
 					 SetMusicSlider,
 					 SliderLabelInteger);
 		sy += szy + sp;
-		CreateSlider("Course Number", -1, 32, courseNumber, 1, 1, v2(10, sy), v2(200, 24), SetCourseNumberSlider, SliderLabelInteger);
+		CreateSlider("Course Number",
+					 -1,
+					 32,
+					 courseNumber,
+					 1,
+					 1,
+					 v2(10, sy),
+					 v2(200, 24),
+					 SetCourseNumberSlider,
+					 SliderLabelInteger);
 		sy += szy + sp;
 		Control *c = CreateTextBoxControl("Level Name", v2(10, sy), v2(200, 24), TOP_LEFT, 30, SetCourseNameTextBox);
 		const TextBoxData *data = c->ControlData;

@@ -96,5 +96,8 @@ void GMenuStateSet()
 	UiStackResetFocus(menuStack);
 	StopMusic();
 
-	SetStateCallbacks(GMenuStateUpdate, NULL, MENU_STATE, GMenuStateRender); // Fixed update is not needed for this state
+	SetStateCallbacks(GMenuStateUpdate,
+					  NULL,
+					  MENU_STATE,
+					  GMenuStateRender); // Fixed update is not needed for this state
 }

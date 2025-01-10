@@ -115,9 +115,13 @@ void GPauseStateSet()
 		pauseStack = CreateUiStack();
 		UiStackPush(pauseStack, CreateButtonControl(v2(0, 20), v2(300, 40), "Resume", BtnPauseResume, MIDDLE_CENTER));
 		UiStackPush(pauseStack, CreateButtonControl(v2(0, 70), v2(300, 40), "Options", BtnOptions, MIDDLE_CENTER));
-		UiStackPush(pauseStack, CreateButtonControl(v2(0, 120), v2(300, 40), "Exit Level", BtnPauseExit, MIDDLE_CENTER));
+		UiStackPush(pauseStack,
+					CreateButtonControl(v2(0, 120), v2(300, 40), "Exit Level", BtnPauseExit, MIDDLE_CENTER));
 	}
 	UiStackResetFocus(pauseStack);
 
-	SetStateCallbacks(GPauseStateUpdate, NULL, PAUSE_STATE, GPauseStateRender); // Fixed update is not needed for this state
+	SetStateCallbacks(GPauseStateUpdate,
+					  NULL,
+					  PAUSE_STATE,
+					  GPauseStateRender); // Fixed update is not needed for this state
 }

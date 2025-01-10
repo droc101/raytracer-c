@@ -78,17 +78,38 @@ void GInputOptionsStateRender(GlobalState *state)
 	ProcessUiStack(inputOptionsStack);
 	DrawUiStack(inputOptionsStack);
 
-	DrawTextAligned("Controller Options", 16, -1, v2(0, 160), v2(WindowWidth(), 40), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
+	DrawTextAligned("Controller Options",
+					16,
+					-1,
+					v2(0, 160),
+					v2(WindowWidth(), 40),
+					FONT_HALIGN_CENTER,
+					FONT_VALIGN_MIDDLE,
+					true);
 
 	if (GetState()->options.controllerMode)
 	{
-		DrawTextAligned("Controller Name:", 12, -1, v2(0, 400), v2(WindowWidth(), 40), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
+		DrawTextAligned("Controller Name:",
+						12,
+						-1,
+						v2(0, 400),
+						v2(WindowWidth(), 40),
+						FONT_HALIGN_CENTER,
+						FONT_VALIGN_MIDDLE,
+						true);
 		const char *controllerName = GetControllerName();
 		if (!controllerName)
 		{
 			controllerName = "No Controller Connected";
 		}
-		DrawTextAligned(controllerName, 12, -1, v2(0, 420), v2(WindowWidth(), 40), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
+		DrawTextAligned(controllerName,
+						12,
+						-1,
+						v2(0, 420),
+						v2(WindowWidth(), 40),
+						FONT_HALIGN_CENTER,
+						FONT_VALIGN_MIDDLE,
+						true);
 	}
 }
 

@@ -85,5 +85,8 @@ void GOptionsStateSet(bool inGame)
 	}
 	UiStackResetFocus(optionsStack);
 
-	SetStateCallbacks(GOptionsStateUpdate, NULL, OPTIONS_STATE, GOptionsStateRender); // Fixed update is not needed for this state
+	SetStateCallbacks(GOptionsStateUpdate,
+					  NULL,
+					  OPTIONS_STATE,
+					  GOptionsStateRender); // Fixed update is not needed for this state
 }
