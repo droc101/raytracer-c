@@ -4,14 +4,12 @@
 
 #include "GPauseState.h"
 #include <stdio.h>
-#include "../Assets/Assets.h"
+#include "../Helpers/Core/AssetReader.h"
 #include "../Helpers/Core/Input.h"
 #include "../Helpers/Graphics/Drawing.h"
 #include "../Helpers/Graphics/Font.h"
 #include "../Helpers/Graphics/RenderingHelpers.h"
-#include "../Helpers/LevelEntries.h"
 #include "../Structs/GlobalState.h"
-#include "../Structs/Level.h"
 #include "../Structs/UI/Controls/Button.h"
 #include "../Structs/UI/UiStack.h"
 #include "GLevelSelectState.h"
@@ -26,7 +24,7 @@ void GPauseStateUpdate(GlobalState * /*State*/)
 		IsButtonJustPressed(CONTROLLER_CANCEL) ||
 		IsButtonJustPressed(SDL_CONTROLLER_BUTTON_START))
 	{
-		PlaySoundEffect(gzwav_sfx_popdown);
+		PlaySoundEffect(SOUND("sfx_popdown"));
 		GMainStateSet();
 	}
 }
@@ -45,8 +43,8 @@ void GPauseStateRender(GlobalState *State)
 					FONT_VALIGN_MIDDLE,
 					false);
 
-	const char *levelID = gLevelEntries[State->levelID].displayName;
-	const int cNum = gLevelEntries[State->levelID].courseNum;
+	const char *levelID = State->level->name;
+	const int cNum = State->level->courseNum;
 
 	if (cNum != -1)
 	{
@@ -106,7 +104,7 @@ void BtnPauseExit()
 #ifdef USE_LEVEL_SELECT
 	GLevelSelectStateSet();
 #else
-	ChangeLevelByID(PAUSE_EXIT_LEVEL);
+	ChangeLevelByName(PAUSE_EXIT_LEVEL);
 #endif
 }
 
@@ -117,9 +115,13 @@ void GPauseStateSet()
 		pauseStack = CreateUiStack();
 		UiStackPush(pauseStack, CreateButtonControl(v2(0, 20), v2(300, 40), "Resume", BtnPauseResume, MIDDLE_CENTER));
 		UiStackPush(pauseStack, CreateButtonControl(v2(0, 70), v2(300, 40), "Options", BtnOptions, MIDDLE_CENTER));
-		UiStackPush(pauseStack, CreateButtonControl(v2(0, 120), v2(300, 40), "Exit Level", BtnPauseExit, MIDDLE_CENTER));
+		UiStackPush(pauseStack,
+					CreateButtonControl(v2(0, 120), v2(300, 40), "Exit Level", BtnPauseExit, MIDDLE_CENTER));
 	}
 	UiStackResetFocus(pauseStack);
 
-	SetStateCallbacks(GPauseStateUpdate, NULL, PAUSE_STATE, GPauseStateRender); // Fixed update is not needed for this state
+	SetStateCallbacks(GPauseStateUpdate,
+					  NULL,
+					  PAUSE_STATE,
+					  GPauseStateRender); // Fixed update is not needed for this state
 }

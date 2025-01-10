@@ -3,13 +3,12 @@
 //
 
 #include "UiStack.h"
-
-#include "../../Assets/Assets.h"
+#include "../../Helpers/Core/AssetReader.h"
 #include "../../Helpers/Core/Error.h"
 #include "../../Helpers/Core/Input.h"
 #include "../../Helpers/Graphics/Drawing.h"
-#include "../Vector2.h"
 #include "../GlobalState.h"
+#include "../Vector2.h"
 
 #include "Controls/Button.h"
 #include "Controls/CheckBox.h"
@@ -204,7 +203,7 @@ void DrawUiStack(const UiStack *stack)
 								 v2(c->size.x + 8, c->size.y + 8),
 								 16,
 								 16,
-								 gztex_interface_focus_rect);
+								 TEXTURE("interface_focus_rect"));
 		}
 	}
 }

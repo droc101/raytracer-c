@@ -96,6 +96,14 @@ Level *LoadLevel(const byte *data)
 				l->musicID = musicID;
 				break;
 			}
+			case LEVEL_CMD_METADATA:
+			{
+				memcpy(l->name, data + dataOffset, sizeof(char) * 32);
+				dataOffset += sizeof(char) * 32;
+				int courseNumber = ReadInt(data, &dataOffset);
+				l->courseNum = courseNumber;
+				break;
+			}
 			default:
 				LogError("Unknown level opcode %u at offset %u", opcode, dataOffset);
 				Error("Unknown Level OpCode");
@@ -159,6 +167,11 @@ LevelBytecode *GenerateBytecode(const Level *l)
 	dataBuffer[dataBufferOffset] = LEVEL_CMD_MUSIC;
 	dataBufferOffset++;
 	WriteUint(dataBuffer, &dataBufferOffset, l->musicID);
+	dataBuffer[dataBufferOffset] = LEVEL_CMD_METADATA;
+	dataBufferOffset++;
+	memcpy(dataBuffer + dataBufferOffset, l->name, 32);
+	dataBufferOffset += 32;
+	WriteInt(dataBuffer, &dataBufferOffset, l->courseNum);
 	dataBuffer[dataBufferOffset] = LEVEL_CMD_FINISH;
 	dataBufferOffset++;
 

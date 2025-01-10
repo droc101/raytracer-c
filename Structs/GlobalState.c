@@ -4,12 +4,10 @@
 
 #include "GlobalState.h"
 #include <stdio.h>
-#include "../Assets/AssetReader.h"
-#include "../Assets/Assets.h"
+#include "../Helpers/Core/AssetReader.h"
 #include "../Helpers/Core/Error.h"
 #include "../Helpers/Core/Logging.h"
 #include "../Helpers/Core/PhysicsThread.h"
-#include "../Helpers/LevelEntries.h"
 #include "../Helpers/LevelLoader.h"
 #include "../Structs/Level.h"
 #include "../Structs/Wall.h"
@@ -18,8 +16,8 @@
 
 GlobalState state;
 
-const byte *music[MUSIC_COUNT] = {
-	gzmpg_audio_field,
+const char *music[MUSIC_COUNT] = {
+	MUSIC("audio_field"),
 };
 
 /**
@@ -150,19 +148,29 @@ void ChangeLevel(Level *l)
 	}
 }
 
-void ChangeMusic(const byte *asset)
+void ChangeMusic(const char *asset)
 {
-	if (!state.isAudioStarted) return;
-	if (AssetGetType(asset) != ASSET_TYPE_MP3)
+	if (!state.isAudioStarted)
+	{
+		return;
+	}
+
+	StopMusic(); // stop the current music and free its data
+	const Asset *mp3 = DecompressAsset(asset);
+	if (mp3 == NULL)
+	{
+		LogError("Failed to load music asset.\n");
+		return;
+	}
+
+	if (mp3->type != ASSET_TYPE_MP3)
 	{
 		LogWarning("ChangeMusic Error: Asset is not a music file.\n");
 		return;
 	}
 
-	StopMusic(); // stop the current music and free its data
-	const byte *mp3 = DecompressAsset(asset);
-	const uint mp3Size = AssetGetSize(asset);
-	Mix_Music *mus = Mix_LoadMUS_RW(SDL_RWFromConstMem(mp3, mp3Size), 1);
+	const uint mp3Size = mp3->size;
+	Mix_Music *mus = Mix_LoadMUS_RW(SDL_RWFromConstMem(mp3->data, mp3Size), 1);
 	if (mus == NULL)
 	{
 		printf("Mix_LoadMUS_RW Error: %s\n", Mix_GetError());
@@ -174,7 +182,10 @@ void ChangeMusic(const byte *asset)
 
 void StopMusic()
 {
-	if (!state.isAudioStarted) return;
+	if (!state.isAudioStarted)
+	{
+		return;
+	}
 	if (state.music != NULL)
 	{
 		// stop and free the current music
@@ -184,18 +195,26 @@ void StopMusic()
 	}
 }
 
-void PlaySoundEffect(const byte *asset)
+void PlaySoundEffect(const char *asset)
 {
-	if (!state.isAudioStarted) return;
-	if (AssetGetType(asset) != ASSET_TYPE_WAV)
+	if (!state.isAudioStarted)
+	{
+		return;
+	}
+
+	const Asset *wav = DecompressAsset(asset);
+	if (wav == NULL)
+	{
+		LogError("Failed to load sound effect asset.\n");
+		return;
+	}
+	if (wav->type != ASSET_TYPE_WAV)
 	{
 		LogError("PlaySoundEffect Error: Asset is not a sound effect file.\n");
 		return;
 	}
-
-	const byte *wav = DecompressAsset(asset);
-	const uint wavSize = AssetGetSize(asset);
-	Mix_Chunk *chunk = Mix_LoadWAV_RW(SDL_RWFromConstMem(wav, wavSize), 1);
+	const uint wavSize = wav->size;
+	Mix_Chunk *chunk = Mix_LoadWAV_RW(SDL_RWFromConstMem(wav->data, wavSize), 1);
 	if (chunk == NULL)
 	{
 		LogError("Mix_LoadWAV_RW Error: %s\n", Mix_GetError());
@@ -237,11 +256,26 @@ void DestroyGlobalState()
 	}
 }
 
-void ChangeLevelByID(const int id)
+void ChangeLevelByName(const char *name)
 {
-	GetState()->levelID = id;
+	LogInfo("Loading level \"%s\"\n", name);
+
+	const size_t maxPathLength = 48;
+	char *levelPath = calloc(maxPathLength, sizeof(char));
+	chk_malloc(levelPath);
+
+	if (snprintf(levelPath, maxPathLength, "level/%s.gmap", name) > maxPathLength)
+	{
+		LogError("Failed to load level due to level name %s being too long\n", name);
+		Error("Failed to load level.");
+	}
+	const Asset *levelData = DecompressAsset(levelPath);
+	if (levelData == NULL)
+	{
+		LogError("Failed to load level asset.\n");
+		Error("Failed to load level.");
+	}
 	GetState()->blueCoins = 0;
-	const void *levelData = DecompressAsset(gLevelEntries[id].levelData);
-	Level *l = LoadLevel(levelData);
+	Level *l = LoadLevel(levelData->data);
 	ChangeLevel(l);
 }

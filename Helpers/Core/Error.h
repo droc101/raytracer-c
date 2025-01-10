@@ -18,7 +18,7 @@
  * @param ptr The pointer to check
  */
 #define chk_malloc(ptr) \
-	if ((ptr) == NULL) _GameAllocFailure();
+	if ((ptr) == NULL) _GameAllocFailure()
 
 /**
  * Internal error handler for memory allocation failures

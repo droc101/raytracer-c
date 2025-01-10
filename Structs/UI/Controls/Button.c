@@ -3,7 +3,7 @@
 //
 
 #include "Button.h"
-#include "../../../Assets/Assets.h"
+#include "../../../Helpers/Core/AssetReader.h"
 #include "../../../Helpers/Core/Error.h"
 #include "../../../Helpers/Core/Input.h"
 #include "../../../Helpers/Graphics/Drawing.h"
@@ -43,7 +43,7 @@ void UpdateButton(UiStack *stack, Control *c, Vector2 /*localMousePos*/, uint /*
 	const ButtonData *data = (ButtonData *)c->ControlData;
 	if (data->enabled && HasActivation(stack, c))
 	{
-		PlaySoundEffect(gzwav_sfx_click);
+		PlaySoundEffect(SOUND("sfx_click"));
 		ConsumeMouseButton(SDL_BUTTON_LEFT);
 		ConsumeKey(SDL_SCANCODE_SPACE);
 		ConsumeButton(CONTROLLER_OK);
@@ -56,13 +56,13 @@ void DrawButton(const Control *c, const ControlState state, const Vector2 positi
 	switch (state)
 	{
 		case NORMAL:
-			DrawNinePatchTexture(c->anchoredPosition, c->size, 8, 8, gztex_interface_button);
+			DrawNinePatchTexture(c->anchoredPosition, c->size, 8, 8, TEXTURE("interface_button"));
 			break;
 		case HOVER:
-			DrawNinePatchTexture(c->anchoredPosition, c->size, 8, 8, gztex_interface_button_hover);
+			DrawNinePatchTexture(c->anchoredPosition, c->size, 8, 8, TEXTURE("interface_button_hover"));
 			break;
 		case ACTIVE:
-			DrawNinePatchTexture(c->anchoredPosition, c->size, 8, 8, gztex_interface_button_press);
+			DrawNinePatchTexture(c->anchoredPosition, c->size, 8, 8, TEXTURE("interface_button_press"));
 			break;
 	}
 

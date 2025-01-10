@@ -3,19 +3,23 @@
 //
 
 #include "GLevelSelectState.h"
+#include <dirent.h>
 #include <stdio.h>
+#include "../Helpers/Core/AssetReader.h"
+#include "../Helpers/Core/Error.h"
 #include "../Helpers/Core/Input.h"
+#include "../Helpers/Core/Logging.h"
 #include "../Helpers/Core/MathEx.h"
 #include "../Helpers/Graphics/Drawing.h"
 #include "../Helpers/Graphics/Font.h"
 #include "../Helpers/Graphics/RenderingHelpers.h"
-#include "../Helpers/LevelEntries.h"
 #include "../Structs/GlobalState.h"
 #include "../Structs/Vector2.h"
 #include "GMainState.h"
 #include "GMenuState.h"
 
 int GLevelSelectState_SelectedLevel = 0;
+List *levelList = NULL;
 
 void GLevelSelectStateUpdate(GlobalState * /*State*/)
 {
@@ -26,22 +30,16 @@ void GLevelSelectStateUpdate(GlobalState * /*State*/)
 	if (IsKeyJustPressed(SDL_SCANCODE_DOWN) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_DPAD_DOWN))
 	{
 		GLevelSelectState_SelectedLevel--;
-		GLevelSelectState_SelectedLevel = wrap(GLevelSelectState_SelectedLevel, 0, LEVEL_COUNT);
+		GLevelSelectState_SelectedLevel = wrap(GLevelSelectState_SelectedLevel, 0, levelList->size);
 	} else if (IsKeyJustPressed(SDL_SCANCODE_UP) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_DPAD_UP))
 	{
 		GLevelSelectState_SelectedLevel++;
-		GLevelSelectState_SelectedLevel = wrap(GLevelSelectState_SelectedLevel, 0, LEVEL_COUNT);
+		GLevelSelectState_SelectedLevel = wrap(GLevelSelectState_SelectedLevel, 0, levelList->size);
 	} else if (IsKeyJustReleased(SDL_SCANCODE_SPACE) || IsButtonJustReleased(CONTROLLER_OK))
 	{
 		ConsumeKey(SDL_SCANCODE_SPACE);
 		ConsumeButton(CONTROLLER_OK);
-		// check if the level is a stub
-		if (gLevelEntries[GLevelSelectState_SelectedLevel].levelData == NULL)
-		{
-			GMenuStateSet();
-			return;
-		}
-		ChangeLevelByID(GLevelSelectState_SelectedLevel);
+		ChangeLevelByName(ListGet(levelList, GLevelSelectState_SelectedLevel));
 		GMainStateSet();
 	}
 }
@@ -56,7 +54,7 @@ void GLevelSelectStateRender(GlobalState * /*State*/)
 	FontDrawString(v2(20, 20), GAME_TITLE, 128, 0xFFFFFFFF, false);
 	FontDrawString(v2(20, 150), "Press Space to start.", 32, 0xFFa0a0a0, false);
 
-	char *levelName = gLevelEntries[GLevelSelectState_SelectedLevel].internalName;
+	char *levelName = ListGet(levelList, GLevelSelectState_SelectedLevel);
 	char levelNameBuffer[64];
 	sprintf(levelNameBuffer, "%02d %s", GLevelSelectState_SelectedLevel + 1, levelName);
 	DrawTextAligned(levelNameBuffer,
@@ -71,6 +69,34 @@ void GLevelSelectStateRender(GlobalState * /*State*/)
 
 void GLevelSelectStateSet()
 {
+	if (levelList == NULL)
+	{
+		levelList = CreateList();
+		char levelDataPath[300];
+		sprintf(levelDataPath, "%sassets/level/", GetState()->executableFolder);
+
+		// Get the name of all gmap files in the level directory
+		DIR *dir = opendir(levelDataPath);
+		if (dir == NULL)
+		{
+			LogError("Failed to open level directory: %s\n", levelDataPath);
+			Error("Failed to open level directory.");
+		}
+
+		struct dirent *ent;
+		while ((ent = readdir(dir)) != NULL)
+		{
+			if (strstr(ent->d_name, ".gmap") != NULL)
+			{
+				char *levelName = malloc(strlen(ent->d_name) + 1);
+				chk_malloc(levelName);
+				strcpy(levelName, ent->d_name);
+				// Remove the .gmap extension
+				levelName[strlen(levelName) - 5] = '\0';
+				ListAdd(levelList, levelName);
+			}
+		}
+	}
 	StopMusic();
 	SetStateCallbacks(GLevelSelectStateUpdate,
 					  NULL,

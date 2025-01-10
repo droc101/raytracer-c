@@ -32,9 +32,9 @@ struct GL_Buffer
 /**
  * The maximum number of textures that can be loaded into OpenGL
  */
-#define MAX_TEXTURES 128
-#if MAX_TEXTURES < ASSET_COUNT
-#error MAX_TEXTURES must be greater than or equal to ASSET_COUNT
+#define GL_MAX_TEXTURE_SLOTS 512
+#if GL_MAX_TEXTURE_SLOTS < MAX_TEXTURES
+#error "GL_MAX_TEXTURES must be at least as large as MAX_TEXTURES"
 #endif
 
 /**
@@ -49,7 +49,7 @@ void GL_Error(const char *error);
  * @param vsh The vertex shader asset
  * @return The constructed shader or NULLPTR on error
  */
-GL_Shader *GL_ConstructShaderFromAssets(const byte *fsh, const byte *vsh);
+GL_Shader *GL_ConstructShaderFromAssets(const char *fsh, const char *vsh);
 
 /**
  * Create a shader program
@@ -87,10 +87,9 @@ void GL_DebugMessageCallback(GLenum source,
 
 /**
  * Load and register a texture from an asset
- * @param imageData The asset data (not decompressed)
- * @return The slot the texture was registered in
+ * @param texture The texture name
  */
-GLuint GL_LoadTextureFromAsset(const unsigned char *imageData);
+void GL_LoadTextureFromAsset(const char *texture);
 
 
 /**
@@ -101,6 +100,22 @@ GLuint GL_LoadTextureFromAsset(const unsigned char *imageData);
  * @return The slot the texture was registered in
  */
 int GL_RegisterTexture(const unsigned char *pixelData, int width, int height);
+
+/**
+ * Draw a textured rectangle to the screen
+ * @param pos The position in pixels
+ * @param size The size in pixels
+ * @param texture The texture name
+ * @param region_start The start of the region in pixels
+ * @param region_end The end of the region in pixels
+ * @param color The modulate color
+ */
+void GL_DrawTexture_Internal(Vector2 pos,
+							 Vector2 size,
+							 const char *texture,
+							 uint color,
+							 Vector2 region_start,
+							 Vector2 region_end);
 
 /**
  * Set the level parameters for rendering

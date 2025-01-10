@@ -28,7 +28,10 @@ List *CreateList()
 void ListAdd(List *list, void *data)
 {
 	list->size++;
-	void **temp = GameReallocArray(list->data, list->size, sizeof(void *)); // The size should never be 0 here, so we don't need to check for that
+	void **temp = GameReallocArray(
+			list->data,
+			list->size,
+			sizeof(void *)); // The size should never be 0 here, so we don't need to check for that
 	chk_malloc(temp);
 	list->data = temp;
 	list->data[list->size - 1] = data;
@@ -53,7 +56,10 @@ void ListRemoveAt(List *list, const int index)
 void ListInsertAfter(List *list, const int index, void *data)
 {
 	list->size++;
-	void **temp = GameReallocArray(list->data, list->size, sizeof(void *)); // The size should never be 0 here, so we don't need to check for that
+	void **temp = GameReallocArray(
+			list->data,
+			list->size,
+			sizeof(void *)); // The size should never be 0 here, so we don't need to check for that
 	chk_malloc(temp);
 
 	for (int i = list->size - 1; i > index; i--)
@@ -106,6 +112,11 @@ void ListClear(List *list)
 
 void *GameReallocArray(void *ptr, const size_t arrayLength, const size_t elementSize)
 {
+	if (elementSize == 0)
+	{
+		LogWarning("GameReallocArray: elementSize is zero, returning NULL");
+		return NULL;
+	}
 	if (arrayLength > SIZE_MAX / elementSize)
 	{
 		LogWarning("GameReallocArray: arrayLength * elementSize exceeds SIZE_MAX, returning NULL");

@@ -5,13 +5,11 @@
 #include "GLHelper.h"
 
 #include <cglm/cglm.h>
-#include "../../../Assets/AssetReader.h"
-#include "../../../Assets/Assets.h"
 #include "../../../Structs/GlobalState.h"
 #include "../../../Structs/Vector2.h"
 #include "../../../Structs/Wall.h"
 #include "../../CommonAssets.h"
-#include "../../Core/DataReader.h"
+#include "../../Core/AssetReader.h"
 #include "../../Core/Error.h"
 #include "../../Core/Logging.h"
 #include "../RenderingHelpers.h"
@@ -31,9 +29,9 @@ GL_Shader *fbBlur;
 
 GL_Buffer *glBuffer;
 
-GLuint GL_Textures[MAX_TEXTURES];
+GLuint GL_Textures[GL_MAX_TEXTURE_SLOTS];
 int GL_NextFreeSlot = 1; // Slot 0 is reserved for the framebuffer copy
-int GL_AssetTextureMap[ASSET_COUNT];
+int GL_AssetTextureMap[MAX_TEXTURES];
 char GL_LastError[512];
 
 void GL_Error(const char *error)
@@ -72,7 +70,7 @@ bool GL_PreInit()
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-	memset(GL_AssetTextureMap, -1, sizeof(GL_AssetTextureMap));
+	memset(GL_AssetTextureMap, -1, MAX_TEXTURES * sizeof(int));
 	memset(GL_Textures, 0, sizeof(GL_Textures));
 
 	return true;
@@ -107,18 +105,17 @@ bool GL_Init(SDL_Window *wnd)
 #ifdef BUILDSTYLE_DEBUG
 	glEnable(GL_DEBUG_OUTPUT);
 	glDebugMessageCallback(GL_DebugMessageCallback, NULL);
-	LogWarning("GL: ARB_debug_output not supported, debugger cannot start\n");
 #endif
 
-	uiTextured = GL_ConstructShaderFromAssets(gzshd_GL_hud_textured_f, gzshd_GL_hud_textured_v);
-	uiColored = GL_ConstructShaderFromAssets(gzshd_GL_hud_color_f, gzshd_GL_hud_color_v);
-	wall = GL_ConstructShaderFromAssets(gzshd_GL_wall_f, gzshd_GL_wall_v);
-	floorAndCeiling = GL_ConstructShaderFromAssets(gzshd_GL_floor_f, gzshd_GL_floor_v);
-	shadow = GL_ConstructShaderFromAssets(gzshd_GL_shadow_f, gzshd_GL_shadow_v);
-	sky = GL_ConstructShaderFromAssets(gzshd_GL_sky_f, gzshd_GL_sky_v);
-	modelShaded = GL_ConstructShaderFromAssets(gzshd_GL_model_shaded_f, gzshd_GL_model_shaded_v);
-	modelUnshaded = GL_ConstructShaderFromAssets(gzshd_GL_model_unshaded_f, gzshd_GL_model_unshaded_v);
-	fbBlur = GL_ConstructShaderFromAssets(gzshd_GL_fb_blur_f, gzshd_GL_fb_blur_v);
+	uiTextured = GL_ConstructShaderFromAssets(OGL_SHADER("GL_hud_textured_f"), OGL_SHADER("GL_hud_textured_v"));
+	uiColored = GL_ConstructShaderFromAssets(OGL_SHADER("GL_hud_color_f"), OGL_SHADER("GL_hud_color_v"));
+	wall = GL_ConstructShaderFromAssets(OGL_SHADER("GL_wall_f"), OGL_SHADER("GL_wall_v"));
+	floorAndCeiling = GL_ConstructShaderFromAssets(OGL_SHADER("GL_floor_f"), OGL_SHADER("GL_floor_v"));
+	shadow = GL_ConstructShaderFromAssets(OGL_SHADER("GL_shadow_f"), OGL_SHADER("GL_shadow_v"));
+	sky = GL_ConstructShaderFromAssets(OGL_SHADER("GL_sky_f"), OGL_SHADER("GL_sky_v"));
+	modelShaded = GL_ConstructShaderFromAssets(OGL_SHADER("GL_model_shaded_f"), OGL_SHADER("GL_model_shaded_v"));
+	modelUnshaded = GL_ConstructShaderFromAssets(OGL_SHADER("GL_model_unshaded_f"), OGL_SHADER("GL_model_unshaded_v"));
+	fbBlur = GL_ConstructShaderFromAssets(OGL_SHADER("GL_fb_blur_f"), OGL_SHADER("GL_fb_blur_v"));
 
 	if (!uiTextured ||
 		!uiColored ||
@@ -171,11 +168,15 @@ void GL_UpdateFramebufferTexture()
 	glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, w, h, 0);
 }
 
-GL_Shader *GL_ConstructShaderFromAssets(const byte *fsh, const byte *vsh)
+GL_Shader *GL_ConstructShaderFromAssets(const char *fsh, const char *vsh)
 {
-	const char *fragmentSource = (char *)DecompressAsset(fsh);
-	const char *vertexSource = (char *)DecompressAsset(vsh);
-	return GL_ConstructShader(fragmentSource, vertexSource);
+	const Asset *fragmentSource = DecompressAsset(fsh);
+	const Asset *vertexSource = DecompressAsset(vsh);
+	if (fragmentSource == NULL || vertexSource == NULL)
+	{
+		Error("Failed to load shaders!");
+	}
+	return GL_ConstructShader((char *)fragmentSource->data, (char *)vertexSource->data);
 }
 
 GL_Shader *GL_ConstructShader(const char *fsh, const char *vsh)
@@ -399,42 +400,23 @@ void GL_DrawRectOutline(const Vector2 pos, const Vector2 size, const uint color,
 	glDrawElements(GL_LINE_LOOP, 4, GL_UNSIGNED_INT, NULL);
 }
 
-GLuint GL_LoadTextureFromAsset(const unsigned char *imageData)
+void GL_LoadTextureFromAsset(const char *texture)
 {
-	if (AssetGetType(imageData) != ASSET_TYPE_TEXTURE)
-	{
-		Error("Asset is not a texture");
-	}
-
-	const byte *decompressedImage = DecompressAsset(imageData);
-
-	//uint size = ReadUintA(Decompressed, 0);
-	const uint width = ReadUintA(decompressedImage, IMAGE_WIDTH_OFFSET);
-	const uint height = ReadUintA(decompressedImage, IMAGE_HEIGHT_OFFSET);
-	const uint id = ReadUintA(decompressedImage, IMAGE_ID_OFFSET);
-
-	if (id >= ASSET_COUNT)
-	{
-		Error("Texture ID is out of bounds");
-	}
+	const Image *img = LoadImage(texture);
 
 	// if the texture is already loaded, don't load it again
-	if (GL_AssetTextureMap[id] != -1)
+	if (GL_AssetTextureMap[img->id] != -1)
 	{
-		if (glIsTexture(GL_Textures[GL_AssetTextureMap[id]]))
+		if (glIsTexture(GL_Textures[GL_AssetTextureMap[img->id]]))
 		{
-			glBindTexture(GL_TEXTURE_2D, GL_Textures[GL_AssetTextureMap[id]]);
-			return GL_AssetTextureMap[id];
+			glBindTexture(GL_TEXTURE_2D, GL_Textures[GL_AssetTextureMap[img->id]]);
+			return;
 		}
 	}
 
-	const byte *pixelData = decompressedImage + sizeof(uint) * 4;
+	const int slot = GL_RegisterTexture(img->pixelData, img->width, img->height);
 
-	const int slot = GL_RegisterTexture(pixelData, width, height);
-
-	GL_AssetTextureMap[id] = slot;
-
-	return slot;
+	GL_AssetTextureMap[img->id] = slot;
 }
 
 int GL_RegisterTexture(const unsigned char *pixelData, const int width, const int height)
@@ -469,15 +451,13 @@ int GL_RegisterTexture(const unsigned char *pixelData, const int width, const in
 	return slot;
 }
 
-void GL_SetTexParams(const unsigned char *imageData, const bool linear, const bool repeat)
+void GL_SetTexParams(const char *texture, const bool linear, const bool repeat)
 {
-	GL_LoadTextureFromAsset(imageData); // make sure the texture is loaded
+	GL_LoadTextureFromAsset(texture); // make sure the texture is loaded
 
-	const byte *decompressedImage = DecompressAsset(imageData);
+	const Image *img = LoadImage(texture);
 
-	const uint id = ReadUintA(decompressedImage, IMAGE_ID_OFFSET);
-
-	const GLuint tex = GL_Textures[GL_AssetTextureMap[id]];
+	const GLuint tex = GL_Textures[GL_AssetTextureMap[img->id]];
 
 	glBindTexture(GL_TEXTURE_2D, tex);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, repeat ? GL_REPEAT : GL_CLAMP_TO_EDGE);
@@ -496,9 +476,7 @@ void GL_SetTexParams(const unsigned char *imageData, const bool linear, const bo
 	}
 }
 
-void GL_DrawBlur(const Vector2 pos,
-				 const Vector2 size,
-				 const int blurRadius)
+void GL_DrawBlur(const Vector2 pos, const Vector2 size, const int blurRadius)
 {
 	glUseProgram(fbBlur->program);
 
@@ -536,14 +514,14 @@ void GL_DrawBlur(const Vector2 pos,
 
 void GL_DrawTexture_Internal(const Vector2 pos,
 							 const Vector2 size,
-							 const unsigned char *imageData,
+							 const char *texture,
 							 const uint color,
 							 const Vector2 region_start,
 							 const Vector2 region_end)
 {
 	glUseProgram(uiTextured->program);
 
-	GL_LoadTextureFromAsset(imageData);
+	GL_LoadTextureFromAsset(texture);
 
 
 	const float a = (color >> 24 & 0xFF) / 255.0f;
@@ -591,33 +569,33 @@ void GL_DrawTexture_Internal(const Vector2 pos,
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 }
 
-inline void GL_DrawTexture(const Vector2 pos, const Vector2 size, const unsigned char *imageData)
+inline void GL_DrawTexture(const Vector2 pos, const Vector2 size, const char *texture)
 {
-	GL_DrawTexture_Internal(pos, size, imageData, 0xFFFFFFFF, v2(-1, 0), v2s(0));
+	GL_DrawTexture_Internal(pos, size, texture, 0xFFFFFFFF, v2(-1, 0), v2s(0));
 }
 
-inline void GL_DrawTextureMod(const Vector2 pos, const Vector2 size, const unsigned char *imageData, const uint color)
+inline void GL_DrawTextureMod(const Vector2 pos, const Vector2 size, const char *texture, const uint color)
 {
-	GL_DrawTexture_Internal(pos, size, imageData, color, v2(-1, 0), v2s(0));
+	GL_DrawTexture_Internal(pos, size, texture, color, v2(-1, 0), v2s(0));
 }
 
 inline void GL_DrawTextureRegion(const Vector2 pos,
 								 const Vector2 size,
-								 const unsigned char *imageData,
+								 const char *texture,
 								 const Vector2 region_start,
 								 const Vector2 region_end)
 {
-	GL_DrawTexture_Internal(pos, size, imageData, 0xFFFFFFFF, region_start, region_end);
+	GL_DrawTexture_Internal(pos, size, texture, 0xFFFFFFFF, region_start, region_end);
 }
 
 inline void GL_DrawTextureRegionMod(const Vector2 pos,
 									const Vector2 size,
-									const unsigned char *imageData,
+									const char *texture,
 									const Vector2 region_start,
 									const Vector2 region_end,
 									const uint color)
 {
-	GL_DrawTexture_Internal(pos, size, imageData, color, region_start, region_end);
+	GL_DrawTexture_Internal(pos, size, texture, color, region_start, region_end);
 }
 
 void GL_DrawLine(const Vector2 start, const Vector2 end, const uint color, const float thickness)
@@ -763,7 +741,7 @@ void GL_DrawFloor(const Vector2 vp1,
 				  const Vector2 vp2,
 				  const mat4 *mvp,
 				  const Level *l,
-				  const unsigned char *texture,
+				  const char *texture,
 				  const float height,
 				  const float shade)
 {
@@ -818,7 +796,7 @@ void GL_DrawShadow(const Vector2 vp1, const Vector2 vp2, const mat4 *mvp, const 
 {
 	glUseProgram(shadow->program);
 
-	GL_LoadTextureFromAsset(gztex_vfx_shadow);
+	GL_LoadTextureFromAsset(TEXTURE("vfx_shadow"));
 
 	glUniformMatrix4fv(glGetUniformLocation(shadow->program, "WORLD_VIEW_MATRIX"),
 					   1,
@@ -933,12 +911,12 @@ void GL_DrawColoredArrays(const float *vertices, const uint *indices, const int 
 void GL_DrawTexturedArrays(const float *vertices,
 						   const uint *indices,
 						   const int quad_count,
-						   const unsigned char *imageData,
+						   const char *texture,
 						   const uint color)
 {
 	glUseProgram(uiTextured->program);
 
-	GL_LoadTextureFromAsset(imageData);
+	GL_LoadTextureFromAsset(texture);
 
 	const float a = (color >> 24 & 0xFF) / 255.0f;
 	const float r = (color >> 16 & 0xFF) / 255.0f;
@@ -989,7 +967,7 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
 
 	GL_SetLevelParams(WORLD_VIEW_MATRIX, l);
 
-	GL_RenderModel(skyModel, SKY_MODEL_WORLD, gztex_level_sky, SHADER_SKY);
+	GL_RenderModel(skyModel, SKY_MODEL_WORLD, TEXTURE("level_sky"), SHADER_SKY);
 
 	GL_ClearDepthOnly(); // prevent sky from clipping into walls
 
@@ -1043,7 +1021,7 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
 	GL_Disable3D();
 }
 
-void GL_RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const byte *texture, const ModelShader shader)
+void GL_RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const char *texture, const ModelShader shader)
 {
 	GL_Shader *shd;
 	switch (shader)

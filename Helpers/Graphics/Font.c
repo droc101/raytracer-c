@@ -5,8 +5,8 @@
 #include "Font.h"
 #include <ctype.h>
 #include <string.h>
-#include "../../Assets/Assets.h"
 #include "../../Structs/Vector2.h"
+#include "../Core/AssetReader.h"
 #include "../Core/Error.h"
 #include "../Core/MathEx.h"
 #include "RenderingHelpers.h"
@@ -95,7 +95,7 @@ Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, cons
 	quads.verts = verts;
 	quads.indices = indices;
 	quads.quad_count = stringLength;
-	DrawBatchedQuadsTextured(&quads, small ? gztex_interface_small_fonts : gztex_interface_font, color);
+	DrawBatchedQuadsTextured(&quads, small ? TEXTURE("interface_small_fonts") : TEXTURE("interface_font"), color);
 
 	free(verts);
 	free(indices);

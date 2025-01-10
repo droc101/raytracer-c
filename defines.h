@@ -26,6 +26,7 @@ typedef enum Renderer Renderer;
 typedef enum OptionsMsaa OptionsMsaa;
 typedef enum ModelShader ModelShader;
 typedef enum ImageDataOffsets ImageDataOffsets;
+typedef enum AssetType AssetType;
 
 // Struct forward declarations
 typedef struct GlobalState GlobalState;
@@ -40,6 +41,9 @@ typedef struct Model Model;
 typedef struct Actor Actor;
 typedef struct ModelHeader ModelHeader;
 typedef struct Options Options;
+typedef struct Asset Asset;
+typedef struct TextureSizeTable TextureSizeTable;
+typedef struct Image Image;
 
 // Function signatures
 typedef void (*FixedUpdateFunction)(GlobalState *state, double delta);
@@ -69,11 +73,23 @@ typedef void (*ActorDestroyFunction)(Actor *self);
 #define PHYSICS_TARGET_NS_D (1000000000.0 / PHYSICS_TARGET_TPS)
 
 #define CONTROLLER_OK (GetState()->options.controllerSwapOkCancel ? SDL_CONTROLLER_BUTTON_B : SDL_CONTROLLER_BUTTON_A)
-#define CONTROLLER_CANCEL (GetState()->options.controllerSwapOkCancel ? SDL_CONTROLLER_BUTTON_A : SDL_CONTROLLER_BUTTON_B)
+#define CONTROLLER_CANCEL \
+	(GetState()->options.controllerSwapOkCancel ? SDL_CONTROLLER_BUTTON_A : SDL_CONTROLLER_BUTTON_B)
 
 #pragma endregion
 
 #pragma region Enum definitions
+
+enum AssetType
+{
+	ASSET_TYPE_TEXTURE = 0,
+	ASSET_TYPE_MP3 = 1,
+	ASSET_TYPE_WAV = 2,
+	ASSET_TYPE_LEVEL = 3,
+	ASSET_TYPE_GLSL = 4,
+	// ... vulkan branch stuff 5 - 6
+	ASSET_TYPE_MODEL = 7,
+};
 
 /**
  * Use to get data from a decompressed image asset using @c ReadUintA
@@ -170,7 +186,7 @@ struct Wall
 {
 	Vector2 a; // The first point of the wall
 	Vector2 b; // The second point of the wall
-	const byte *tex; // The raw asset data for the texture
+	const char *tex; // The texture name
 	int texId; // The texture ID
 	double length; // The length of the wall (Call WallBake to update)
 	double angle; // The angle of the wall (Call WallBake to update)
@@ -184,6 +200,8 @@ struct Wall
 // Utility functions are in Structs/level.h
 struct Level
 {
+	char name[32];
+	short courseNum;
 	List *actors; // The list of actors in the level. You must bake this into staticActors before it is used.
 	List *walls; // The list of walls in the level. You must bake this into staticWalls before it is used.
 	uint skyColor; // The color of the sky
@@ -280,7 +298,6 @@ struct GlobalState
 	Mix_Music *music; // background music
 	Mix_Chunk *channels[SFX_CHANNEL_COUNT]; // sound effects
 	double cameraY; // The Y position of the camera
-	int levelID; // The current level ID
 
 	bool textBoxActive; // Whether the text box is active
 	TextBox textBox; // The text box
@@ -291,6 +308,7 @@ struct GlobalState
 	Options options; // Game options
 
 	char executablePath[261]; // The path to the executable
+	char executableFolder[261];
 
 	double uiScale; // The scale of the UI.
 	bool freezeEvents; // Whether to freeze the event loop. This should only be used for debugging.
@@ -318,7 +336,42 @@ struct Actor
 	bool showShadow; // should the actor cast a shadow?
 	float shadowSize; // size of the shadow
 	Model *actorModel; // Optional model for the actor, if not NULL, will be rendered instead of the wall
-	byte *actorModelTexture; // Texture for the model
+	char *actorModelTexture; // Texture for the model
+};
+
+struct Asset
+{
+	uint compressedSize;
+	uint size;
+	uint assetId;
+	AssetType type;
+	byte *data;
+};
+
+struct TextureSizeTable
+{
+	/**
+	* The total number of textures in the table
+	*/
+	uint textureCount;
+	/**
+	 * The total number of assets in the game
+	 */
+	uint assetCount;
+	/**
+	* The names of the textures in the table. You can load them with @code DecompressAsset(TEXTURE(assetName)) @endcode
+	*/
+	char (*textureNames)[32];
+} __attribute__((packed));
+
+struct Image
+{
+	uint pixelDataSize;
+	uint width;
+	uint height;
+	uint id;
+	char *name;
+	byte *pixelData;
 };
 
 #pragma endregion

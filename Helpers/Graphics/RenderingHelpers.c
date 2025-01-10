@@ -4,12 +4,12 @@
 
 #include "RenderingHelpers.h"
 #include "../../Structs/GlobalState.h"
+#include "../../Structs/Level.h"
+#include "../../Structs/Vector2.h"
+#include "../Core/AssetReader.h"
 #include "../Core/Error.h"
 #include "../Core/MathEx.h"
 #include "GL/GLHelper.h"
-#include "../../Assets/Assets.h"
-#include "../../Structs/Vector2.h"
-#include "../../Structs/Level.h"
 
 Renderer currentRenderer;
 
@@ -134,7 +134,7 @@ inline void UpdateViewportSize()
 	}
 }
 
-inline void DrawBatchedQuadsTextured(const BatchedQuadArray *batch, const unsigned char *imageData, const uint color)
+inline void DrawBatchedQuadsTextured(const BatchedQuadArray *batch, const char *texture, const uint color)
 {
 	switch (currentRenderer)
 	{
@@ -142,7 +142,7 @@ inline void DrawBatchedQuadsTextured(const BatchedQuadArray *batch, const unsign
 
 			break;
 		case RENDERER_OPENGL:
-			GL_DrawTexturedArrays(batch->verts, batch->indices, batch->quad_count, imageData, color);
+			GL_DrawTexturedArrays(batch->verts, batch->indices, batch->quad_count, texture, color);
 			break;
 		default:
 			break;
@@ -190,7 +190,7 @@ inline float Y_TO_NDC(const float y)
 	}
 }
 
-void RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const byte *texture, const ModelShader shd)
+void RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const char *texture, const ModelShader shd)
 {
 	switch (currentRenderer)
 	{
@@ -208,11 +208,15 @@ void RenderMenuBackground()
 {
 	// sorry for the confusing variable names
 	const Vector2 bgTileSize = v2(320, 240); // size on screen
-	const Vector2 bgTexSize = GetTextureSize(gztex_interface_menu_bg_tile); // actual size of the texture
+	const Vector2 bgTexSize = GetTextureSize(TEXTURE("interface_menu_bg_tile")); // actual size of the texture
 
 	const Vector2 tilesOnScreen = v2(WindowWidth() / bgTileSize.x, WindowHeight() / bgTileSize.y);
 	const Vector2 tileRegion = v2(tilesOnScreen.x * bgTexSize.x, tilesOnScreen.y * bgTexSize.y);
-	DrawTextureRegion(v2(0, 0), v2(WindowWidth(), WindowHeight()), gztex_interface_menu_bg_tile, v2(0, 0), tileRegion);
+	DrawTextureRegion(v2(0, 0),
+					  v2(WindowWidth(), WindowHeight()),
+					  TEXTURE("interface_menu_bg_tile"),
+					  v2(0, 0),
+					  tileRegion);
 }
 
 void RenderInGameMenuBackground()
@@ -225,7 +229,7 @@ void RenderInGameMenuBackground()
 	DrawRect(0, 0, WindowWidth(), WindowHeight());
 }
 
-void DrawBlur(const Vector2 pos, const Vector2 size, int blurRadius)
+void DrawBlur(const Vector2 pos, const Vector2 size, const int blurRadius)
 {
 	switch (currentRenderer)
 	{
