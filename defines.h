@@ -185,15 +185,25 @@ struct Wall
 // Utility functions are in Structs/level.h
 struct Level
 {
-	List *actors; // The list of actors in the level. You must bake this into staticActors before it is used.
-	List *walls; // The list of walls in the level. You must bake this into staticWalls before it is used.
-	uint skyColor; // The color of the sky
-	uint floorTexture; // The texture index of the floor
-	uint ceilingTexture; // The texture index + 1 of the ceiling. 0 is no ceiling
-	uint musicID; // The music ID
-	uint fogColor; // The color of the fog
-	double fogStart; // The start of the fog
-	double fogEnd; // The end of the fog
+	/// The list of actors in the level.
+	List *actors;
+	/// The list of walls in the level.
+	List *walls;
+	/// The color of the sky.
+	uint skyColor;
+	/// The texture index of the floor.
+	uint floorTextureIndex;
+	/// The texture index of the ceiling, where -1 means that the level has no ceiling.
+	uint ceilingTextureIndex;
+	/// The index of the music used in the level.
+	uint musicIndex;
+	/// The color of the fog in the level.
+	uint fogColor;
+	/// The distance from the player at which the fog begins.
+	double fogStart;
+	/// The distance from the player at which the fog ends.
+	double fogEnd;
+	/// The player object.
 	Player player;
 };
 

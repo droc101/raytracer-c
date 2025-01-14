@@ -98,7 +98,10 @@ _Noreturn void _ErrorInternal(char *error, const char *file, const int line, con
 	mb.flags = SDL_MESSAGEBOX_ERROR;
 
 	int pressedButtonID;
-	SDL_ShowMessageBox(&mb, &pressedButtonID);
+	if (SDL_ShowMessageBox(&mb, &pressedButtonID) < 0)
+	{
+		printf("%s", SDL_GetError());
+	};
 
 	switch (pressedButtonID)
 	{

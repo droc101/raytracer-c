@@ -86,14 +86,14 @@ Level *LoadLevel(const byte *data)
 			{
 				const uint floorTextureID = ReadUint(data, &dataOffset);
 				const uint ceilingTextureID = ReadUint(data, &dataOffset);
-				l->floorTexture = floorTextureID;
-				l->ceilingTexture = ceilingTextureID;
+				l->floorTextureIndex = floorTextureID;
+				l->ceilingTextureIndex = ceilingTextureID;
 				break;
 			}
 			case LEVEL_CMD_MUSIC:
 			{
 				const uint musicID = ReadUint(data, &dataOffset);
-				l->musicID = musicID;
+				l->musicIndex = musicID;
 				break;
 			}
 			default:
@@ -154,11 +154,11 @@ LevelBytecode *GenerateBytecode(const Level *l)
 	WriteDouble(dataBuffer, &dataBufferOffset, l->fogEnd);
 	dataBuffer[dataBufferOffset] = LEVEL_CMD_FLOOR_CEIL;
 	dataBufferOffset++;
-	WriteUint(dataBuffer, &dataBufferOffset, l->floorTexture);
-	WriteUint(dataBuffer, &dataBufferOffset, l->ceilingTexture);
+	WriteUint(dataBuffer, &dataBufferOffset, l->floorTextureIndex);
+	WriteUint(dataBuffer, &dataBufferOffset, l->ceilingTextureIndex);
 	dataBuffer[dataBufferOffset] = LEVEL_CMD_MUSIC;
 	dataBufferOffset++;
-	WriteUint(dataBuffer, &dataBufferOffset, l->musicID);
+	WriteUint(dataBuffer, &dataBufferOffset, l->musicIndex);
 	dataBuffer[dataBufferOffset] = LEVEL_CMD_FINISH;
 	dataBufferOffset++;
 

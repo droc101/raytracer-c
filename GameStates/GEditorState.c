@@ -80,7 +80,7 @@ double level_fogStart;
 double level_fogEnd;
 
 uint level_floorTex;
-byte level_ceilTex;
+uint level_ceilTex;
 
 byte level_skyR;
 byte level_skyG;
@@ -108,11 +108,11 @@ Level *NodesToLevel()
 	l->fogStart = level_fogStart;
 	l->fogEnd = level_fogEnd;
 
-	l->floorTexture = level_floorTex;
-	l->ceilingTexture = level_ceilTex;
+	l->floorTextureIndex = level_floorTex;
+	l->ceilingTextureIndex = level_ceilTex;
 	l->skyColor = 0xFF << 24 | level_skyR << 16 | level_skyG << 8 | level_skyB;
 
-	l->musicID = level_musicID;
+	l->musicIndex = level_musicID;
 
 	// reconstruct the level from the editor nodes
 	for (int i = 0; i < editorNodes->size; i++)
@@ -406,7 +406,7 @@ void SetFloorTexSlider(const double value)
 
 void SetCeilTexSlider(const double value)
 {
-	level_ceilTex = (byte)value;
+	level_ceilTex = (uint)value;
 }
 
 void SetSkyRSlider(const double value)
@@ -481,7 +481,10 @@ void BtnCopyBytecode()
 	}
 	buf[bc->size * 2] = '\0';
 
-	SDL_SetClipboardText(buf);
+	if (SDL_SetClipboardText(buf) < 0)
+	{
+		printf("%s", SDL_GetError());
+	}
 	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,
 							 "Bytecode copied",
 							 "The level bytecode has been copied to the clipboard.",
@@ -584,8 +587,8 @@ void SetEditorMode(bool /*c*/, byte /*g*/, const byte id)
 					 SliderLabelInteger);
 		sy += szy + sp;
 		CreateSlider("Ceil Tex",
-					 0,
-					 WALL_TEXTURE_COUNT,
+					 -1,
+					 WALL_TEXTURE_COUNT - 1,
 					 level_ceilTex,
 					 1,
 					 16,
@@ -627,12 +630,12 @@ void BtnLoad()
 	level_fogB = l->fogColor;
 	level_fogStart = l->fogStart;
 	level_fogEnd = l->fogEnd;
-	level_ceilTex = l->ceilingTexture;
-	level_floorTex = l->floorTexture;
+	level_ceilTex = l->ceilingTextureIndex;
+	level_floorTex = l->floorTextureIndex;
 	level_skyR = l->skyColor >> 16;
 	level_skyG = l->skyColor >> 8;
 	level_skyB = l->skyColor;
-	level_musicID = l->musicID;
+	level_musicID = l->musicIndex;
 
 	// add a node for the player
 	EditorNode *playerNode = malloc(sizeof(EditorNode));
@@ -1171,6 +1174,8 @@ void GEditorStateSet()
 		SetEditorMode(false, 0, 0);
 
 		editorInitComplete = true;
+
+		BtnLoad();
 	}
 
 	SetStateCallbacks(GEditorStateUpdate, NULL, EDITOR_STATE, GEditorStateRender);

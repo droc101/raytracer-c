@@ -55,9 +55,6 @@ void ExecPathInit(const int argc, char *argv[])
 void InitSDL()
 {
 	SDL_SetHint(SDL_HINT_APP_NAME, GAME_TITLE);
-#ifdef __LINUX__
-	SDL_SetHint(SDL_HINT_VIDEODRIVER, "wayland,x11"); // required to fix an nvidia bug with glCopyTexImage2D
-#endif
 
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMECONTROLLER | SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC) != 0)
 	{
@@ -98,8 +95,10 @@ void WindowAndRenderInit()
 									 rendererFlags | SDL_WINDOW_RESIZABLE);
 	if (window == NULL)
 	{
-		LogError("SDL_CreateWindow Error: %s\n", SDL_GetError());
-		Error("Failed to create window.");
+		char buf[1000];
+		sprintf(buf, "SDL_CreateWindow Error: %s\n", SDL_GetError());
+		// LogError();
+		Error(buf);
 	}
 	DwmDarkMode(window);
 	SDL_SetWindowFullscreen(window, GetState()->options.fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);

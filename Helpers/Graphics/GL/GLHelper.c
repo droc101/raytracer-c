@@ -1016,10 +1016,10 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
 
 	GL_ClearDepthOnly(); // prevent sky from clipping into walls
 
-	GL_DrawFloor(floor_start, floor_end, WORLD_VIEW_MATRIX, l, wallTextures[l->floorTexture], -0.5, 1.0);
-	if (l->ceilingTexture != 0)
+	GL_DrawFloor(floor_start, floor_end, WORLD_VIEW_MATRIX, l, wallTextures[l->floorTextureIndex], -0.5, 1.0);
+	if (l->ceilingTextureIndex != -1)
 	{
-		GL_DrawFloor(floor_start, floor_end, WORLD_VIEW_MATRIX, l, wallTextures[l->ceilingTexture - 1], 0.5, 0.8);
+		GL_DrawFloor(floor_start, floor_end, WORLD_VIEW_MATRIX, l, wallTextures[l->ceilingTextureIndex], 0.5, 0.8);
 	}
 
 	for (int i = 0; i < l->walls->size; i++)

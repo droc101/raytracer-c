@@ -4,6 +4,7 @@
 
 #include "Vulkan.h"
 #include "../../../Structs/GlobalState.h"
+#include "../../CommonAssets.h"
 #include "VulkanHelpers.h"
 #include "VulkanInternal.h"
 #include "VulkanMemory.h"
@@ -218,6 +219,13 @@ VkResult VK_FrameEnd()
 	VulkanTestReturnResult(BeginRenderPass(commandBuffers[currentFrame], swapchainImageIndex),
 						   "Failed to begin render pass!");
 
+	vkCmdPushConstants(commandBuffers[currentFrame],
+					   pipelineLayout,
+					   VK_SHADER_STAGE_VERTEX_BIT,
+					   0,
+					   8,
+					   (vec2){(float)loadedLevel->player.pos.x, (float)loadedLevel->player.pos.y});
+
 	const GlobalState *g = GetState();
 	if (g->currentState == MAIN_STATE || g->currentState == PAUSE_STATE)
 	{
@@ -408,7 +416,7 @@ bool VK_LoadLevelWalls(const Level *level)
 {
 	void *data;
 
-	buffers.walls.wallCount = level->walls->size;
+	buffers.walls.wallCount = level->walls->size + 2;
 	if (buffers.walls.wallCount > buffers.walls.maxWallCount)
 	{
 		buffers.walls.maxWallCount = buffers.walls.wallCount;
@@ -464,9 +472,86 @@ bool VK_LoadLevelWalls(const Level *level)
 
 	WallVertex vertices[buffers.walls.wallCount * 4];
 	uint32_t indices[buffers.walls.wallCount * 6];
-	for (uint32_t i = 0; i < buffers.walls.wallCount; i++)
+
+	vertices[0].x = -100;
+	vertices[0].y = -0.5f;
+	vertices[0].z = -100;
+	vertices[0].u = -100;
+	vertices[0].v = -100;
+	vertices[0].textureIndex = TextureIndex(wallTextures[level->floorTextureIndex]);
+
+	vertices[1].x = 100;
+	vertices[1].y = -0.5f;
+	vertices[1].z = -100;
+	vertices[1].u = 100;
+	vertices[1].v = -100;
+	vertices[1].textureIndex = TextureIndex(wallTextures[level->floorTextureIndex]);
+
+	vertices[2].x = 100;
+	vertices[2].y = -0.5f;
+	vertices[2].z = 100;
+	vertices[2].u = 100;
+	vertices[2].v = 100;
+	vertices[2].textureIndex = TextureIndex(wallTextures[level->floorTextureIndex]);
+
+	vertices[3].x = -100;
+	vertices[3].y = -0.5f;
+	vertices[3].z = 100;
+	vertices[3].u = -100;
+	vertices[3].v = 100;
+	vertices[3].textureIndex = TextureIndex(wallTextures[level->floorTextureIndex]);
+
+	indices[0] = 0;
+	indices[1] = 1;
+	indices[2] = 2;
+	indices[3] = 0;
+	indices[4] = 2;
+	indices[5] = 3;
+
+	if (level->ceilingTextureIndex == (uint32_t)-1)
 	{
-		const Wall *wall = ListGet(level->walls, i);
+		memset(&vertices[4], 0, sizeof(*vertices) * 4);
+	} else
+	{
+		vertices[4].x = -100;
+		vertices[4].y = 0.5f;
+		vertices[4].z = -100;
+		vertices[4].u = -100;
+		vertices[4].v = -100;
+		vertices[4].textureIndex = TextureIndex(wallTextures[level->ceilingTextureIndex]);
+
+		vertices[5].x = 100;
+		vertices[5].y = 0.5f;
+		vertices[5].z = -100;
+		vertices[5].u = 100;
+		vertices[5].v = -100;
+		vertices[5].textureIndex = TextureIndex(wallTextures[level->ceilingTextureIndex]);
+
+		vertices[6].x = 100;
+		vertices[6].y = 0.5f;
+		vertices[6].z = 100;
+		vertices[6].u = 100;
+		vertices[6].v = 100;
+		vertices[6].textureIndex = TextureIndex(wallTextures[level->ceilingTextureIndex]);
+
+		vertices[7].x = -100;
+		vertices[7].y = 0.5f;
+		vertices[7].z = 100;
+		vertices[7].u = -100;
+		vertices[7].v = 100;
+		vertices[7].textureIndex = TextureIndex(wallTextures[level->ceilingTextureIndex]);
+	}
+
+	indices[6] = 4;
+	indices[7] = 5;
+	indices[8] = 6;
+	indices[9] = 4;
+	indices[10] = 6;
+	indices[11] = 7;
+
+	for (uint32_t i = 2; i < buffers.walls.wallCount; i++)
+	{
+		const Wall *wall = ListGet(level->walls, i - 2);
 		const float halfHeight = wall->height / 2.0f;
 		const vec2 startVertex = {(float)wall->a.x, (float)wall->a.y};
 		const vec2 endVertex = {(float)wall->b.x, (float)wall->b.y};
