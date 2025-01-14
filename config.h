@@ -87,11 +87,11 @@
 #define APPDATA_ORG_NAME "Droc101 Development"
 #define APPDATA_APP_NAME "Game"
 
-// The level ID to load when pause exiting
-#define PAUSE_EXIT_LEVEL 2
+// The level to load when pause exiting
+#define PAUSE_EXIT_LEVEL "leveldata_hub"
 
 // The level to start on when the game loads
-#define STARTING_LEVEL 2
+#define STARTING_LEVEL "leveldata_hub"
 
 // Number of sound effect channels
 // (sound effects that can play at the same time)

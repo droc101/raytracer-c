@@ -41,11 +41,11 @@ void GL_DestroyGL();
 
 /**
  * Set the filter/repeat parameters for a texture
- * @param imageData The texture data
+ * @param texture The texture name
  * @param linear Whether to use linear filtering
  * @param repeat Whether to repeat the texture
  */
-void GL_SetTexParams(const unsigned char *imageData, bool linear, bool repeat);
+void GL_SetTexParams(const char *texture, bool linear, bool repeat);
 
 /**
  * Draw a rectangle
@@ -77,45 +77,41 @@ void GL_DrawLine(Vector2 start, Vector2 end, uint color, float thickness);
  * Draw a texture in 2D
  * @param pos The position in pixels
  * @param size The size in pixels
- * @param imageData The texture data
+ * @param texture The texture name
  */
-void GL_DrawTexture(Vector2 pos, Vector2 size, const unsigned char *imageData);
+void GL_DrawTexture(Vector2 pos, Vector2 size, const char *texture);
 
 /**
  * Draw a texture in 2D with a color mod
  * @param pos The position in pixels
  * @param size The size in pixels
- * @param imageData The texture data
+ * @param texture The texture name
  * @param color The modulate color
  */
-void GL_DrawTextureMod(Vector2 pos, Vector2 size, const unsigned char *imageData, uint color);
+void GL_DrawTextureMod(Vector2 pos, Vector2 size, const char *texture, uint color);
 
 /**
  * Draw a texture region in 2D
  * @param pos The position in pixels
  * @param size The size in pixels
- * @param imageData The texture data
+ * @param texture The texture name
  * @param region_start The start of the region in pixels
  * @param region_end The end of the region in pixels
  */
-void GL_DrawTextureRegion(Vector2 pos,
-						  Vector2 size,
-						  const unsigned char *imageData,
-						  Vector2 region_start,
-						  Vector2 region_end);
+void GL_DrawTextureRegion(Vector2 pos, Vector2 size, const char *texture, Vector2 region_start, Vector2 region_end);
 
 /**
  * Draw a texture region in 2D with a color mod
  * @param pos The position in pixels
  * @param size The size in pixels
- * @param imageData The texture data
+ * @param texture The texture name
  * @param region_start The start of the region in pixels
  * @param region_end The end of the region in pixels
  * @param color The modulate color
  */
 void GL_DrawTextureRegionMod(Vector2 pos,
 							 Vector2 size,
-							 const unsigned char *imageData,
+							 const char *texture,
 							 Vector2 region_start,
 							 Vector2 region_end,
 							 uint color);
@@ -143,7 +139,7 @@ void GL_DrawWall(const Wall *w, const mat4 *mdl, const Camera *cam, const Level 
  * @param vp2 The end of the floor
  * @param mvp The world -> screen matrix
  * @param l The level
- * @param texture The texture to use
+ * @param texture The texture name
  * @param height The height of the floor
  * @param shade The shade of the floor
  */
@@ -151,7 +147,7 @@ void GL_DrawFloor(Vector2 vp1,
 				  Vector2 vp2,
 				  const mat4 *mvp,
 				  const Level *l,
-				  const unsigned char *texture,
+				  const char *texture,
 				  float height,
 				  float shade);
 
@@ -175,14 +171,10 @@ void GL_UpdateViewportSize();
  * @param vertices Vertex data [x, y, u, v] with UVs in NDC
  * @param indices Index data
  * @param quad_count The number of quads to draw
- * @param imageData The texture to use
+ * @param texture The texture name
  * @param color The modulate color
  */
-void GL_DrawTexturedArrays(const float *vertices,
-						   const uint *indices,
-						   int quad_count,
-						   const unsigned char *imageData,
-						   uint color);
+void GL_DrawTexturedArrays(const float *vertices, const uint *indices, int quad_count, const char *texture, uint color);
 
 /**
  * Draw arrays using the ui_colored shader
@@ -227,10 +219,10 @@ void GL_RenderLevel(const Level *l, const Camera *cam);
  * Render a 3D model
  * @param m The model to render
  * @param MODEL_WORLD_MATRIX The model -> world matrix
- * @param texture The texture to use
+ * @param texture The texture name
  * @param shader The shader to use
  */
-void GL_RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const byte *texture, ModelShader shader);
+void GL_RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const char *texture, ModelShader shader);
 
 /**
  * Render a blur-background rectangle
@@ -239,8 +231,6 @@ void GL_RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const byte *
  * @param blurRadius The radius of the blur in pixels
  * @note This is a very slow operation, use sparingly
  */
-void GL_DrawBlur(Vector2 pos,
-				 Vector2 size,
-				 int blurRadius);
+void GL_DrawBlur(Vector2 pos, Vector2 size, int blurRadius);
 
 #endif //GAME_GLHELPER_H

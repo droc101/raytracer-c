@@ -1,0 +1,67 @@
+//
+// Created by droc101 on 4/26/2024.
+//
+
+#ifndef GAME_ASSETREADER_H
+#define GAME_ASSETREADER_H
+
+#include "../../defines.h"
+
+/// The maximum number of textures that can be loaded in any one execution of the game
+#define MAX_TEXTURES 512
+
+/**
+ * Get the texture size table
+ * @return A pointer to the texture size table
+ */
+const TextureSizeTable *GetTextureSizeTable();
+
+/**
+ * Initialize the asset cache
+ */
+void AssetCacheInit();
+
+/**
+ * Invalidate the asset cache
+ * @warning If anything still has a pointer to an asset, it will become invalid!
+ */
+void DestroyAssetCache();
+
+/**
+ * Decompress an asset and cache it
+ * @param relPath The asset to decompress
+ * @return Decompressed asset, including header
+ * @note The asset is cached
+ */
+Asset *DecompressAsset(const char *relPath);
+
+/**
+ * Load an image from disk, falling back to a cached version if possible
+ * @param asset The asset to load the image from
+ * @return The loaded image, or a 64x64 fallback image if it failed
+ */
+Image *LoadImage(const char *asset);
+
+/**
+ * Load a model from an asset
+ * @param asset The asset to load the model from
+ * @return The loaded model, or NULL if it failed
+ */
+Model *LoadModel(const char *asset);
+
+/**
+ * Free a model
+ * @param model The model to free
+ */
+void FreeModel(Model *model);
+
+#define TEXTURE(assetName) ("texture/" assetName ".gtex")
+#define MUSIC(assetName) ("audio/" assetName ".gmus")
+#define SOUND(assetName) ("audio/" assetName ".gsnd")
+#define LEVEL(assetName) ("level/" assetName ".gmap")
+#define OGL_SHADER(assetName) ("glshader/" assetName ".gshd")
+#define VK_FRAG(assetName) ("vkshader/" assetName ".gfrg")
+#define VK_VERT(assetName) ("vkshader/" assetName ".gvert")
+#define MODEL(assetName) ("model/" assetName ".gmdl")
+
+#endif //GAME_ASSETREADER_H

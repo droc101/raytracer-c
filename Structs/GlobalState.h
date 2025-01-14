@@ -8,7 +8,13 @@
 #include "../defines.h"
 
 #define MUSIC_COUNT 1
-extern const byte *music[MUSIC_COUNT];
+extern const char *music[MUSIC_COUNT];
+
+/**
+ * Load options
+ * @warning This function should only be called once
+ */
+void InitOptions();
 
 /**
  * Initialize the global state
@@ -80,7 +86,7 @@ void ChangeLevel(Level *l);
  * Change the bgm
  * @param asset Asset to change to
  */
-void ChangeMusic(const byte *asset);
+void ChangeMusic(const char *asset);
 
 /**
  * Stop the bgm
@@ -92,7 +98,7 @@ void StopMusic();
  * @param asset Sound effect to play
  * @warning If there are no free channels, the sound effect will not play, and you will not be notified
  */
-void PlaySoundEffect(const byte *asset);
+void PlaySoundEffect(const char *asset);
 
 /**
  * Destroy the global state
@@ -100,9 +106,9 @@ void PlaySoundEffect(const byte *asset);
 void DestroyGlobalState();
 
 /**
- * Change the level by ID
- * @param id Level ID to change to
+ * Change the level by name
+ * @param name Level name to change to
  */
-void ChangeLevelByID(int id);
+void ChangeLevelByName(const char *name);
 
 #endif //GAME_GLOBALSTATE_H

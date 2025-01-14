@@ -3,62 +3,61 @@
 //
 
 #include "CommonAssets.h"
-#include "../Assets/AssetReader.h"
-#include "../Assets/Assets.h"
+#include "Core/AssetReader.h"
 #include "Graphics/Drawing.h"
 
-const byte *wallTextures[WALL_TEXTURE_COUNT] = {
-	gztex_level_bricks,
-	gztex_level_cross,
-	gztex_level_wall2,
-	gztex_level_uvtest,
-	gztex_level_floor,
+const char *wallTextures[WALL_TEXTURE_COUNT] = {
+	TEXTURE("level_bricks"),
+	TEXTURE("level_cross"),
+	TEXTURE("level_wall2"),
+	TEXTURE("level_uvtest"),
+	TEXTURE("level_floor"),
 };
 
-const byte *actorTextures[ACTOR_TEXTURE_COUNT] = {
-	gztex_actor_iq,
-	gztex_actor_BLOB2,
-	gztex_actor_demon,
-	gztex_actor_monster1,
-	gztex_actor_monster2,
-	gztex_actor_monster3,
-	gztex_actor_key,
-	gztex_actor_coin,
-	gztex_actor_bluecoin,
-	gztex_actor_goal0,
-	gztex_actor_goal1,
-	gztex_actor_door,
+const char *actorTextures[ACTOR_TEXTURE_COUNT] = {
+	TEXTURE("actor_iq"),
+	TEXTURE("actor_BLOB2"),
+	TEXTURE("actor_demon"),
+	TEXTURE("actor_monster1"),
+	TEXTURE("actor_monster2"),
+	TEXTURE("actor_monster3"),
+	TEXTURE("actor_key"),
+	TEXTURE("actor_coin"),
+	TEXTURE("actor_bluecoin"),
+	TEXTURE("actor_goal0"),
+	TEXTURE("actor_goal1"),
+	TEXTURE("actor_door"),
 };
 
 Model *skyModel;
 
 void InitCommonAssets()
 {
-	SetTexParams(gztex_interface_menu_bg_tile, true, true);
-	SetTexParams(gztex_interface_menu_bg_tile_red, true, true);
-	SetTexParams(gztex_interface_font, false, false);
-	SetTexParams(gztex_interface_small_fonts, false, false);
-	SetTexParams(gztex_interface_button, true, false);
-	SetTexParams(gztex_interface_button_hover, true, false);
-	SetTexParams(gztex_interface_button_press, true, false);
-	SetTexParams(gztex_interface_slider, true, false);
-	SetTexParams(gztex_interface_slider_thumb, true, false);
-	SetTexParams(gztex_interface_checkbox_checked, true, false);
-	SetTexParams(gztex_interface_checkbox_unchecked, true, false);
-	SetTexParams(gztex_interface_radio_checked, true, false);
-	SetTexParams(gztex_interface_radio_unchecked, true, false);
-	SetTexParams(gztex_interface_focus_rect, true, false);
-	SetTexParams(gztex_level_sky, true, true);
-	SetTexParams(gztex_vfx_shadow, false, false);
+	SetTexParams(TEXTURE("interface_menu_bg_tile"), true, true);
+	SetTexParams(TEXTURE("interface_menu_bg_tile_red"), true, true);
+	SetTexParams(TEXTURE("interface_font"), false, false);
+	SetTexParams(TEXTURE("interface_samll_fonts"), false, false);
+	SetTexParams(TEXTURE("interface_button"), true, false);
+	SetTexParams(TEXTURE("interface_button_hover"), true, false);
+	SetTexParams(TEXTURE("interface_button_press"), true, false);
+	SetTexParams(TEXTURE("interface_slider"), true, false);
+	SetTexParams(TEXTURE("interface_slider_thumb"), true, false);
+	SetTexParams(TEXTURE("interface_checkbox_checked"), true, false);
+	SetTexParams(TEXTURE("interface_checkbox_unchecked"), true, false);
+	SetTexParams(TEXTURE("interface_radio_checked"), true, false);
+	SetTexParams(TEXTURE("interface_radio_unchecked"), true, false);
+	SetTexParams(TEXTURE("interface_focus_rect"), true, false);
+	SetTexParams(TEXTURE("level_sky"), true, true);
+	SetTexParams(TEXTURE("vfx_shadow"), false, false);
 
-	skyModel = LoadModel(gzobj_model_sky);
+	skyModel = LoadModel(MODEL("model_sky"));
 }
 
-int FindWallTextureIndex(const byte *tex)
+int FindWallTextureIndex(const char *texture)
 {
 	for (int i = 0; i < WALL_TEXTURE_COUNT; i++)
 	{
-		if (wallTextures[i] == tex)
+		if (strcmp(wallTextures[i], texture) == 0)
 		{
 			return i;
 		}

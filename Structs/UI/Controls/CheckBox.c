@@ -3,7 +3,7 @@
 //
 
 #include "CheckBox.h"
-#include "../../../Assets/Assets.h"
+#include "../../../Helpers/Core/AssetReader.h"
 #include "../../../Helpers/Core/Error.h"
 #include "../../../Helpers/Core/Input.h"
 #include "../../../Helpers/Graphics/Drawing.h"
@@ -45,7 +45,7 @@ void UpdateCheckbox(UiStack *stack, Control *c, Vector2 /*localMousePos*/, uint 
 
 	if (HasActivation(stack, c))
 	{
-		PlaySoundEffect(gzwav_sfx_click);
+		PlaySoundEffect(SOUND("sfx_click"));
 		data->checked = !data->checked;
 
 		ConsumeMouseButton(SDL_BUTTON_LEFT);
@@ -75,5 +75,7 @@ void DrawCheckbox(const Control *c, ControlState /*state*/, const Vector2 positi
 
 	const Vector2 boxSize = v2s(32);
 	const Vector2 boxPos = v2(position.x + 2, position.y + c->size.y / 2 - boxSize.y / 2);
-	DrawTexture(boxPos, boxSize, data->checked ? gztex_interface_checkbox_checked : gztex_interface_checkbox_unchecked);
+	DrawTexture(boxPos,
+				boxSize,
+				data->checked ? TEXTURE("interface_checkbox_checked") : TEXTURE("interface_checkbox_unchecked"));
 }

@@ -177,7 +177,7 @@ _Noreturn void RenderInitError()
 	if (GetState()->options.renderer == RENDERER_OPENGL)
 	{
 		mb.message = "Failed to start the OpenGL renderer.\n"
-					 "Please make sure your graphics card and drivers support OpenGL 4.6.";
+					 "Please make sure your graphics card and drivers support OpenGL 3.3.";
 	} else if (GetState()->options.renderer == RENDERER_VULKAN)
 	{
 		mb.message = "Failed to start the Vulkan renderer.\n"

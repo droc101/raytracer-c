@@ -20,6 +20,7 @@
 #include "../Structs/UI/Controls/CheckBox.h"
 #include "../Structs/UI/Controls/RadioButton.h"
 #include "../Structs/UI/Controls/Slider.h"
+#include "../Structs/UI/Controls/TextBox.h"
 #include "../Structs/UI/UiStack.h"
 #include "../Structs/Wall.h"
 #include "GMainState.h"
@@ -87,6 +88,9 @@ byte level_skyG;
 byte level_skyB;
 
 uint level_musicID;
+
+char levelName[32];
+short courseNumber;
 #pragma endregion
 
 #pragma region Helpers
@@ -113,6 +117,9 @@ Level *NodesToLevel()
 	l->skyColor = 0xFF << 24 | level_skyR << 16 | level_skyG << 8 | level_skyB;
 
 	l->musicIndex = level_musicID;
+
+	l->courseNum = courseNumber;
+	strcpy(l->name, levelName);
 
 	// reconstruct the level from the editor nodes
 	for (int i = 0; i < editorNodes->size; i++)
@@ -356,6 +363,16 @@ void DrawNodeTooltip(const EditorNode *node)
 #pragma endregion
 
 #pragma region Callbacks
+
+void SetCourseNumberSlider(const double value)
+{
+	courseNumber = (short)value;
+}
+
+void SetCourseNameTextBox(const char *text)
+{
+	strcpy(levelName, text);
+}
 
 void SetMusicSlider(const double value)
 {
@@ -613,6 +630,22 @@ void SetEditorMode(bool /*c*/, byte /*g*/, const byte id)
 					 v2(200, 24),
 					 SetMusicSlider,
 					 SliderLabelInteger);
+		sy += szy + sp;
+		CreateSlider("Course Number",
+					 -1,
+					 32,
+					 courseNumber,
+					 1,
+					 1,
+					 v2(10, sy),
+					 v2(200, 24),
+					 SetCourseNumberSlider,
+					 SliderLabelInteger);
+		sy += szy + sp;
+		Control *c = CreateTextBoxControl("Level Name", v2(10, sy), v2(200, 24), TOP_LEFT, 30, SetCourseNameTextBox);
+		const TextBoxData *data = c->ControlData;
+		memcpy(data->text, levelName, 31);
+		UiStackPush(editorUiStack, c);
 	}
 }
 
@@ -1096,7 +1129,7 @@ void GEditorStateRender(GlobalState * /*State*/)
 		const EditorNode *node = ListGet(editorNodes, editorSelectedNode);
 		if (node->type == NODE_WALL_A)
 		{
-			const byte *tex = wallTextures[node->extra];
+			const char *tex = wallTextures[node->extra];
 			if (tex != NULL)
 			{
 				const SDL_Rect dst = {10, 310, 64, 64};
@@ -1108,7 +1141,7 @@ void GEditorStateRender(GlobalState * /*State*/)
 		const Control *texSld = ListGet(editorUiStack->Controls, 1 + editorBaseControlCount);
 		const SliderData *sliderData = (SliderData *)texSld->ControlData;
 
-		const byte *tex = wallTextures[(int)sliderData->value];
+		const char *tex = wallTextures[(int)sliderData->value];
 		if (tex != NULL)
 		{
 			const SDL_Rect dst = {10, 360, 64, 64};

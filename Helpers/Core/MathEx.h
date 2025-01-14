@@ -60,6 +60,15 @@ float lerp(float a, float b, float f);
 #define clamp(val, min, max) (val < min ? min : val > max ? max : val)
 
 /**
+ * Clamp a number between a minimum and maximum value
+ * @param x Number to clamp
+ * @param min Minimum value
+ * @param max Maximum value
+ * @return Clamped number
+ */
+int clampi(const int x, const int min, const int max);
+
+/**
  * Convert degrees to radians
  * @param d Degrees
  */

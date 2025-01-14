@@ -3,7 +3,7 @@
 //
 
 #include "RadioButton.h"
-#include "../../../Assets/Assets.h"
+#include "../../../Helpers/Core/AssetReader.h"
 #include "../../../Helpers/Core/Error.h"
 #include "../../../Helpers/Core/Input.h"
 #include "../../../Helpers/Graphics/Drawing.h"
@@ -55,7 +55,7 @@ void UpdateRadioButton(UiStack *stack, Control *c, Vector2 /*localMousePos*/, ui
 		}
 
 
-		PlaySoundEffect(gzwav_sfx_click);
+		PlaySoundEffect(SOUND("sfx_click"));
 		data->checked = true;
 
 		// Find all radio buttons with the same group id and uncheck them
@@ -102,5 +102,7 @@ void DrawRadioButton(const Control *c, ControlState /*state*/, const Vector2 pos
 
 	const Vector2 boxSize = v2s(32);
 	const Vector2 boxPos = v2(position.x + 2, position.y + c->size.y / 2 - boxSize.y / 2);
-	DrawTexture(boxPos, boxSize, data->checked ? gztex_interface_radio_checked : gztex_interface_radio_unchecked);
+	DrawTexture(boxPos,
+				boxSize,
+				data->checked ? TEXTURE("interface_radio_checked") : TEXTURE("interface_radio_unchecked"));
 }

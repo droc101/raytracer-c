@@ -35,8 +35,6 @@ add_executable(
         defines.h
         Helpers/Graphics/Drawing.h
         Helpers/Graphics/Drawing.c
-        Assets/Assets.h
-        Assets/Assets.c
         Structs/Vector2.h
         Structs/Vector2.c
         Helpers/Core/MathEx.h
@@ -73,8 +71,8 @@ add_executable(
         Debug/DPrint.h
         Helpers/Core/Timing.c
         Helpers/Core/Timing.h
-        Assets/AssetReader.c
-        Assets/AssetReader.h
+        Helpers/Core/AssetReader.c
+        Helpers/Core/AssetReader.h
         Helpers/Core/DataReader.c
         Helpers/Core/DataReader.h
         Helpers/Collision.c
@@ -84,8 +82,6 @@ add_executable(
         config.h
         GameStates/GLevelSelectState.c
         GameStates/GLevelSelectState.h
-        Helpers/LevelEntries.c
-        Helpers/LevelEntries.h
         Helpers/CommonAssets.c
         Helpers/CommonAssets.h
         Actor/Coin.c
@@ -135,6 +131,8 @@ add_executable(
         Helpers/Core/PhysicsThread.h
         Debug/FrameBenchmark.c
         Debug/FrameBenchmark.h
+        Structs/UI/Controls/TextBox.c
+        Structs/UI/Controls/TextBox.h
         Helpers/Graphics/Vulkan/Vulkan.c
         Helpers/Graphics/Vulkan/Vulkan.h
         Helpers/Graphics/Vulkan/VulkanInternal.h
@@ -189,10 +187,9 @@ endif ()
 
 add_custom_target( # Python script for generating assets code
         genassets ALL
-        COMMAND "python" ${CMAKE_CURRENT_SOURCE_DIR}/Assets/genassets.py ${CMAKE_CURRENT_SOURCE_DIR}/Assets/
+        COMMAND "python" ${CMAKE_CURRENT_SOURCE_DIR}/AssetGenerator/genassets.py ${CMAKE_CURRENT_SOURCE_DIR}/Assets/ ${CMAKE_CURRENT_BINARY_DIR}/assets/
         COMMENT "Generating assets"
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Assets/
-        BYPRODUCTS ${CMAKE_CURRENT_SOURCE_DIR}/Assets/Assets.h ${CMAKE_CURRENT_SOURCE_DIR}/Assets/Assets.c
 )
 
 add_dependencies(game genassets)

@@ -20,6 +20,8 @@ enum ControlType
 	SLIDER,
 	CHECKBOX,
 	RADIO_BUTTON,
+	TEXTBOX,
+	CONTROL_TYPE_COUNT
 };
 
 enum ControlState

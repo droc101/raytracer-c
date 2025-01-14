@@ -53,6 +53,22 @@ uint ReadUint(const byte *data, int *offset)
 	return i;
 }
 
+int ReadInt(const byte *data, int *offset)
+{
+	int i;
+	memcpy(&i, data + *offset, sizeof(int));
+	*offset += sizeof(int);
+
+	// convert to little endian
+	// ReSharper disable quarce CppRedundantParentheses
+	i = (i >> 24 & 0xff) | // move byte 3 to byte 0
+		(i << 8 & 0xff0000) | // move byte 1 to byte 2
+		(i >> 8 & 0xff00) | // move byte 2 to byte 1
+		(i << 24 & 0xff000000); // byte 0 to byte 3
+
+	return i;
+}
+
 uint ReadUintA(const byte *data, const int offset)
 {
 	uint i;
@@ -132,6 +148,19 @@ void WriteUint(byte *data, int *offset, uint i)
 
 	memcpy(data + *offset, &i, sizeof(uint));
 	*offset += sizeof(uint);
+}
+
+void WriteInt(byte *data, int *offset, int i)
+{
+	// convert to big endian
+	// ReSharper disable quarce CppRedundantParentheses
+	i = (i >> 24 & 0xff) | // move byte 3 to byte 0
+		(i << 8 & 0xff0000) | // move byte 1 to byte 2
+		(i >> 8 & 0xff00) | // move byte 2 to byte 1
+		(i << 24 & 0xff000000); // byte 0 to byte 3
+
+	memcpy(data + *offset, &i, sizeof(int));
+	*offset += sizeof(int);
 }
 
 void WriteFloat(byte *data, int *offset, float f)

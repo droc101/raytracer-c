@@ -3,8 +3,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <vulkan/vulkan_core.h>
-#include "Assets/AssetReader.h"
-#include "Assets/Assets.h"
 #include "config.h"
 #include "Debug/DPrint.h"
 #include "Debug/FrameBenchmark.h"
@@ -12,6 +10,7 @@
 #include "defines.h"
 #include "GameStates/GLogoSplashState.h"
 #include "Helpers/CommonAssets.h"
+#include "Helpers/Core/AssetReader.h"
 #include "Helpers/Core/Error.h"
 #include "Helpers/Core/Input.h"
 #include "Helpers/Core/Logging.h"
@@ -21,7 +20,6 @@
 #include "Helpers/Graphics/RenderingHelpers.h"
 #include "Helpers/PlatformHelpers.h"
 #include "Structs/GlobalState.h"
-#include "Structs/Vector2.h"
 
 SDL_Surface *windowIcon;
 
@@ -38,15 +36,26 @@ void ExecPathInit(const int argc, char *argv[])
 		Error("No executable path argument provided.");
 	}
 
-	const int argvZeroLen = strlen(argv[0]);
-
-	if (argvZeroLen > 260)
+	if (strlen(argv[0]) > 260)
 	{
 		Error("Executable path too long. Please rethink your file structure.");
 	}
-	memset(GetState()->executablePath, 0, 261); // we do not mess around with user data in c.
-	strncpy(GetState()->executablePath, argv[0], 260);
+	strncpy(GetState()->executablePath, argv[0], 260); // we do not mess around with user data in c.
 	LogInfo("Executable path: %s\n", GetState()->executablePath);
+
+	char *folder = SDL_GetBasePath();
+	if (folder == NULL)
+	{
+		Error("Failed to get base path");
+	}
+	if (strlen(folder) > 260)
+	{
+		Error("Base path too long. Please rethink your file structure.");
+	}
+
+	strncpy(GetState()->executableFolder, folder, 260);
+	SDL_free(folder);
+	LogInfo("Executable folder: %s\n", GetState()->executableFolder);
 }
 
 /**
@@ -55,6 +64,16 @@ void ExecPathInit(const int argc, char *argv[])
 void InitSDL()
 {
 	SDL_SetHint(SDL_HINT_APP_NAME, GAME_TITLE);
+#ifdef __LINUX__
+	if (GetState()->options.renderer == RENDERER_OPENGL)
+	{
+		SDL_SetHint(SDL_HINT_VIDEODRIVER, "wayland,x11"); // required to fix an nvidia bug with glCopyTexImage2D
+	} else
+	{
+		// TODO: Message boxes are a "it works on my machine"
+		SDL_SetHint(SDL_HINT_VIDEODRIVER, "x11"); // faster
+	}
+#endif
 
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMECONTROLLER | SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC) != 0)
 	{
@@ -73,8 +92,7 @@ void InitAudio()
 	if (Mix_OpenAudio(48000, AUDIO_S16, 2, 2048) == 0)
 	{
 		GetState()->isAudioStarted = true;
-	}
-	else
+	} else
 	{
 		GetState()->isAudioStarted = false;
 		LogError("Mix_OpenAudio Error: %s\n", Mix_GetError());
@@ -88,32 +106,31 @@ void WindowAndRenderInit()
 {
 	const Uint32 rendererFlags = currentRenderer == RENDERER_OPENGL ? SDL_WINDOW_OPENGL : SDL_WINDOW_VULKAN;
 	SDL_Window *window = SDL_CreateWindow(GAME_TITLE,
-									 SDL_WINDOWPOS_UNDEFINED,
-									 SDL_WINDOWPOS_UNDEFINED,
-									 DEF_WIDTH,
-									 DEF_HEIGHT,
-									 rendererFlags | SDL_WINDOW_RESIZABLE);
+										  SDL_WINDOWPOS_UNDEFINED,
+										  SDL_WINDOWPOS_UNDEFINED,
+										  DEF_WIDTH,
+										  DEF_HEIGHT,
+										  rendererFlags | SDL_WINDOW_RESIZABLE);
 	if (window == NULL)
 	{
-		char buf[1000];
-		sprintf(buf, "SDL_CreateWindow Error: %s\n", SDL_GetError());
-		// LogError();
-		Error(buf);
+		LogError("SDL_CreateWindow Error: %s\n", SDL_GetError());
+		Error("Failed to create window.");
 	}
 	DwmDarkMode(window);
 	SDL_SetWindowFullscreen(window, GetState()->options.fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
 	SetGameWindow(window);
-	UpdateViewportSize();
 
 	if (!RenderInit())
 	{
 		RenderInitError();
 	}
 
+	UpdateViewportSize();
+
 	SDL_SetWindowMinimumSize(window, MIN_WIDTH, MIN_HEIGHT);
 	SDL_SetWindowMaximumSize(window, MAX_WIDTH, MAX_HEIGHT);
 
-	windowIcon = ToSDLSurface(gztex_interface_icon, "1");
+	windowIcon = ToSDLSurface(TEXTURE("interface_icon"), "1");
 	SDL_SetWindowIcon(window, windowIcon);
 }
 
@@ -128,22 +145,22 @@ void HandleEvent(const SDL_Event event, bool *shouldQuit)
 	{
 		case SDL_QUIT:
 			*shouldQuit = true;
-		break;
+			break;
 		case SDL_KEYUP:
 			HandleKeyUp(event.key.keysym.scancode);
-		break;
+			break;
 		case SDL_KEYDOWN:
 			HandleKeyDown(event.key.keysym.scancode);
-		break;
+			break;
 		case SDL_MOUSEMOTION:
 			HandleMouseMotion(event.motion.x, event.motion.y, event.motion.xrel, event.motion.yrel);
-		break;
+			break;
 		case SDL_MOUSEBUTTONUP:
 			HandleMouseUp(event.button.button);
-		break;
+			break;
 		case SDL_MOUSEBUTTONDOWN:
 			HandleMouseDown(event.button.button);
-		break;
+			break;
 		case SDL_WINDOWEVENT:
 			switch (event.window.event)
 			{
@@ -151,37 +168,37 @@ void HandleEvent(const SDL_Event event, bool *shouldQuit)
 				case SDL_WINDOWEVENT_SIZE_CHANGED:
 				case SDL_WINDOWEVENT_MAXIMIZED:
 					UpdateViewportSize();
-				break;
+					break;
 				case SDL_WINDOWEVENT_RESTORED:
 					WindowRestored();
-				break;
+					break;
 				case SDL_WINDOWEVENT_MINIMIZED:
 					WindowObscured();
-				break;
+					break;
 				case SDL_WINDOWEVENT_FOCUS_LOST:
 					SetLowFPS(true);
-				break;
+					break;
 				case SDL_WINDOWEVENT_FOCUS_GAINED:
 					SetLowFPS(false);
-				break;
+					break;
 				default: break;
 			}
-		break;
+			break;
 		case SDL_CONTROLLERDEVICEADDED:
 			HandleControllerConnect();
-		break;
+			break;
 		case SDL_CONTROLLERDEVICEREMOVED:
 			HandleControllerDisconnect(event.cdevice.which);
-		break;
+			break;
 		case SDL_CONTROLLERBUTTONDOWN:
 			HandleControllerButtonDown(event.cbutton.button);
-		break;
+			break;
 		case SDL_CONTROLLERBUTTONUP:
 			HandleControllerButtonUp(event.cbutton.button);
-		break;
+			break;
 		case SDL_CONTROLLERAXISMOTION:
 			HandleControllerAxis(event.caxis.axis, event.caxis.value);
-		break;
+			break;
 		default:
 			break;
 	}
@@ -196,6 +213,10 @@ int main(const int argc, char *argv[])
 	LogInfo("Initializing Engine\n");
 
 	ExecPathInit(argc, argv);
+
+	InitOptions();
+
+	AssetCacheInit();
 
 	InitSDL();
 
@@ -213,7 +234,7 @@ int main(const int argc, char *argv[])
 
 	InitCommonAssets();
 
-	ChangeLevelByID(STARTING_LEVEL);
+	ChangeLevelByName(STARTING_LEVEL);
 
 	GLogoSplashStateSet();
 
@@ -226,9 +247,9 @@ int main(const int argc, char *argv[])
 	while (!shouldQuit)
 	{
 		while (GetState()->freezeEvents)
-        {
-            SDL_Delay(100);
-        }
+		{
+			SDL_Delay(100);
+		}
 		const ulong frameStart = GetTimeNs();
 #ifdef BENCHMARK_SYSTEM_ENABLE
 		BenchFrameStart();
@@ -308,7 +329,7 @@ int main(const int argc, char *argv[])
 	SDL_DestroyWindow(GetGameWindow());
 	SDL_FreeSurface(windowIcon);
 	DestroyCommonAssets();
-	InvalidateAssetCache(); // Free all assets
+	DestroyAssetCache(); // Free all assets
 	RenderDestroy();
 	Mix_CloseAudio();
 	Mix_Quit();
