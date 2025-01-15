@@ -291,7 +291,7 @@ Image *LoadImage(const char *asset)
 
 	const size_t nameLength = strlen(asset);
 	img->name = malloc(nameLength + 1);
-	strncpy(img->name, asset, nameLength);
+	strncpy(img->name, asset, nameLength + 1);
 
 	images[textureId] = img;
 
