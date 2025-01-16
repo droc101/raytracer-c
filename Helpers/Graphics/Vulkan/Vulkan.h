@@ -84,6 +84,4 @@ void VK_ClearDepthOnly();
 
 void VK_SetTexParams(const char *texture, bool linear, bool repeat);
 
-void VK_LoadTexture(const char *texture);
-
 #endif //GAME_VULKAN_H

@@ -358,7 +358,7 @@ bool VK_Cleanup()
 		vkDestroySampler(device, textureSamplers.nearestNoRepeat, NULL);
 		for (size_t textureIndex = 0; textureIndex < textures.usedSlots; textureIndex++)
 		{
-			vkDestroyImageView(device, ListGet(texturesImageView, textureIndex), NULL);
+			vkDestroyImageView(device, *(VkImageView*)ListGet(texturesImageView, textureIndex), NULL);
 			vkDestroyImage(device, ((Texture *)ListGet(textures, textureIndex))->image, NULL);
 		}
 		vkFreeMemory(device, textureMemory.memory, NULL);
@@ -961,5 +961,3 @@ void VK_SetTexParams(const char *texture, const bool linear, const bool repeat)
 		vkUpdateDescriptorSets(device, 1, &writeDescriptor, 0, NULL);
 	}
 }
-
-void VK_LoadTexture(const char *texture) {}
