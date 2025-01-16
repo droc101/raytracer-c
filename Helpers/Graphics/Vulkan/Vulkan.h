@@ -45,9 +45,9 @@ bool VK_DrawColoredQuad(int x, int y, int w, int h, uint32_t color);
 
 bool VK_DrawColoredQuadsBatched(const float *vertices, int quadCount, uint32_t color);
 
-bool VK_DrawTexturedQuad(int x, int y, int w, int h, const uint8_t *texture);
+bool VK_DrawTexturedQuad(int x, int y, int w, int h, const char *texture);
 
-bool VK_DrawTexturedQuadMod(int x, int y, int w, int h, const uint8_t *texture, uint32_t color);
+bool VK_DrawTexturedQuadMod(int x, int y, int w, int h, const char *texture, uint32_t color);
 
 bool VK_DrawTexturedQuadRegion(int x,
 							   int y,
@@ -57,7 +57,7 @@ bool VK_DrawTexturedQuadRegion(int x,
 							   int regionY,
 							   int regionW,
 							   int regionH,
-							   const uint8_t *texture);
+							   const char *texture);
 
 bool VK_DrawTexturedQuadRegionMod(int x,
 								  int y,
@@ -67,10 +67,10 @@ bool VK_DrawTexturedQuadRegionMod(int x,
 								  int regionY,
 								  int regionW,
 								  int regionH,
-								  const uint8_t *texture,
+								  const char *texture,
 								  uint32_t color);
 
-bool VK_DrawTexturedQuadsBatched(const float *vertices, int quadCount, const uint8_t *texture, uint32_t color);
+bool VK_DrawTexturedQuadsBatched(const float *vertices, int quadCount, const char *texture, uint32_t color);
 
 bool VK_DrawLine(int startX, int startY, int endX, int endY, float thickness, uint32_t color);
 
@@ -82,6 +82,8 @@ void VK_ClearScreen();
 
 void VK_ClearDepthOnly();
 
-void VK_SetTexParams(const uint8_t *texture, bool linear, bool repeat);
+void VK_SetTexParams(const char *texture, bool linear, bool repeat);
+
+void VK_LoadTexture(const char *texture);
 
 #endif //GAME_VULKAN_H

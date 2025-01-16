@@ -34,7 +34,7 @@ Level *LoadLevel(const byte *data)
 				const Vector2 firstVertex = v2(firstVertX, firstVertY);
 				const Vector2 secondVertex = v2(secondVertX, secondVertY);
 				Wall *w = CreateWall(firstVertex, secondVertex, wallTextures[textureID], uvScale, 0.0);
-				ListAdd(l->walls, w);
+				ListAdd(&l->walls, w);
 				break;
 			}
 			case LEVEL_CMD_PLAYER:
@@ -64,7 +64,7 @@ Level *LoadLevel(const byte *data)
 				const byte paramC = ReadByte(data, &dataOffset);
 				const byte paramD = ReadByte(data, &dataOffset);
 				Actor *a = CreateActor(v2(actorX, actorY), actorRotation, actorType, paramA, paramB, paramC, paramD);
-				ListAdd(l->actors, a);
+				ListAdd(&l->actors, a);
 				break;
 			}
 			case LEVEL_CMD_FINISH:
@@ -117,7 +117,7 @@ LevelBytecode *GenerateBytecode(const Level *l)
 	byte *dataBuffer = malloc(1048576);
 	chk_malloc(dataBuffer);
 	int dataBufferOffset = 0;
-	for (int j = 0; j < l->walls->size; j++)
+	for (int j = 0; j < l->walls.usedSlots; j++)
 	{
 		const Wall *w = ListGet(l->walls, j);
 		dataBuffer[dataBufferOffset] = LEVEL_CMD_WALL;
@@ -132,7 +132,7 @@ LevelBytecode *GenerateBytecode(const Level *l)
 		WriteUint(dataBuffer, &dataBufferOffset, wall_texID);
 		WriteFloat(dataBuffer, &dataBufferOffset, w->uvScale);
 	}
-	for (int j = 0; j < l->actors->size; j++)
+	for (int j = 0; j < l->actors.usedSlots; j++)
 	{
 		const Actor *a = ListGet(l->actors, j);
 		dataBuffer[dataBufferOffset] = LEVEL_CMD_ACTOR;

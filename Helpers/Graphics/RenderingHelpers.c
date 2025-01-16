@@ -90,7 +90,7 @@ void FrameEnd()
 			break;
 		default:
 			break;
-    }
+	}
 }
 
 void LoadLevelWalls(const Level *l)
@@ -198,7 +198,7 @@ inline void DrawBatchedQuadsTextured(const BatchedQuadArray *batch, const char *
 	switch (currentRenderer)
 	{
 		case RENDERER_VULKAN:
-			VK_DrawTexturedQuadsBatched(batch->verts, batch->quad_count, imageData, color);
+			VK_DrawTexturedQuadsBatched(batch->verts, batch->quad_count, texture, color);
 			break;
 		case RENDERER_OPENGL:
 			GL_DrawTexturedArrays(batch->verts, batch->indices, batch->quad_count, texture, color);

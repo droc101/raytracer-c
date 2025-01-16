@@ -12,7 +12,7 @@ def ConvertPNG(path):
     img_dta = img.getdata()
     data = []
 
-    data += util.IntToBytes(img.width * img.height)  # total pixels
+    data += util.IntToBytes(img.width * img.height * 4)  # total bytes (total pixels * 4)
     data += util.IntToBytes(img.width)  # width
     data += util.IntToBytes(img.height)  # height
     data += util.IntToBytes(0) # NOTICE: This is NO LONGER the asset id!

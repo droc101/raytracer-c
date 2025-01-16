@@ -49,7 +49,7 @@ bool CreateDepthImage();
 
 bool CreateFramebuffers();
 
-bool LoadTextures();
+bool InitTextures();
 
 bool CreateTexturesImageView();
 

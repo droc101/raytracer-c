@@ -58,7 +58,7 @@ struct Control
 
 struct UiStack
 {
-	List *Controls;
+	List Controls;
 
 	int ActiveControl;
 	ControlState ActiveControlState;
@@ -111,14 +111,14 @@ Control *CreateEmptyControl();
  * @param stack The UiStack to add the control to
  * @param control The control to add
  */
-void UiStackPush(const UiStack *stack, Control *control);
+void UiStackPush(UiStack *stack, Control *control);
 
 /**
  * Remove a control from the UiStack
  * @param stack The UiStack to remove the control from
  * @param control The control to remove
  */
-void UiStackRemove(const UiStack *stack, const Control *control);
+void UiStackRemove(UiStack *stack, const Control *control);
 
 /**
  * Check if the mouse is in a rectangle

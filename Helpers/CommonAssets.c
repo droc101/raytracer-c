@@ -36,7 +36,7 @@ void InitCommonAssets()
 	SetTexParams(TEXTURE("interface_menu_bg_tile"), true, true);
 	SetTexParams(TEXTURE("interface_menu_bg_tile_red"), true, true);
 	SetTexParams(TEXTURE("interface_font"), false, false);
-	SetTexParams(TEXTURE("interface_samll_fonts"), false, false);
+	SetTexParams(TEXTURE("interface_small_fonts"), false, false);
 	SetTexParams(TEXTURE("interface_button"), true, false);
 	SetTexParams(TEXTURE("interface_button_hover"), true, false);
 	SetTexParams(TEXTURE("interface_button_press"), true, false);

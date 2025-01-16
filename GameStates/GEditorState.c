@@ -67,7 +67,7 @@ EditorMode currentEditorMode = EDITOR_MODE_MOVE;
 
 UiStack *editorUiStack;
 
-List *editorNodes;
+List editorNodes;
 
 bool isAddModeDragging = false;
 #pragma endregion
@@ -122,7 +122,7 @@ Level *NodesToLevel()
 	strcpy(l->name, levelName);
 
 	// reconstruct the level from the editor nodes
-	for (int i = 0; i < editorNodes->size; i++)
+	for (int i = 0; i < editorNodes.usedSlots; i++)
 	{
 		const EditorNode *node = ListGet(editorNodes, i);
 		switch (node->type)
@@ -138,18 +138,18 @@ Level *NodesToLevel()
 				const byte paramC = node->extra2 >> 8 & 0xFF;
 				const byte paramD = node->extra2 & 0xFF;
 				Actor *a = CreateActor(node->position, node->rotation, node->extra, paramA, paramB, paramC, paramD);
-				ListAdd(l->actors, a);
+				ListAdd(&l->actors, a);
 				break;
 			}
 			case NODE_WALL_A:
 			{
-				Wall *w = CreateWall(node->position, v2(0, 0), wallTextures[node->extra], node->extra2, 1.0);
-				ListAdd(l->walls, w);
+				Wall *w = CreateWall(node->position, v2(0, 0), wallTextures[node->extra], node->extra2, 1.0f);
+				ListAdd(&l->walls, w);
 				break;
 			}
 			case NODE_WALL_B:
 			{
-				Wall *w = ListGet(l->walls, ListGetSize(l->walls) - 1);
+				Wall *w = ListGet(l->walls, l->walls.usedSlots - 1);
 				w->b = node->position;
 				break;
 			}
@@ -524,7 +524,7 @@ void BtnPrevNode()
 		editorSelectedNode--;
 		if (editorSelectedNode < 0)
 		{
-			editorSelectedNode = editorNodes->size - 1;
+			editorSelectedNode = editorNodes.usedSlots - 1;
 		}
 	}
 }
@@ -534,7 +534,7 @@ void BtnNextNode()
 	if (currentEditorMode == EDITOR_MODE_PROPERTIES)
 	{
 		editorSelectedNode++;
-		if (editorSelectedNode >= editorNodes->size)
+		if (editorSelectedNode >= editorNodes.usedSlots)
 		{
 			editorSelectedNode = 0;
 		}
@@ -544,7 +544,7 @@ void BtnNextNode()
 void SetEditorMode(bool /*c*/, byte /*g*/, const byte id)
 {
 	// Remove all controls that were added for the previous mode
-	while (editorUiStack->Controls->size > editorBaseControlCount)
+	while (editorUiStack->Controls.usedSlots > editorBaseControlCount)
 	{
 		UiStackRemove(editorUiStack, ListGet(editorUiStack->Controls, editorBaseControlCount));
 	}
@@ -652,8 +652,8 @@ void SetEditorMode(bool /*c*/, byte /*g*/, const byte id)
 void BtnLoad()
 {
 	// clear all editor nodes
-	ListFreeWithData(editorNodes);
-	editorNodes = CreateList();
+	ListAndContentsFree(&editorNodes, false);
+	ListCreate(&editorNodes, 0);
 
 	const Level *l = GetState()->level;
 
@@ -676,10 +676,10 @@ void BtnLoad()
 	playerNode->type = NODE_PLAYER;
 	playerNode->position = l->player.pos;
 	playerNode->rotation = fmod(l->player.angle, 2 * PI);
-	ListAdd(editorNodes, playerNode);
+	ListAdd(&editorNodes, playerNode);
 
 	// add a node for each actor
-	for (int i = 0; i < ListGetSize(l->actors); i++)
+	for (int i = 0; i < l->actors.usedSlots; i++)
 	{
 		const Actor *a = ListGet(l->actors, i);
 		EditorNode *actorNode = malloc(sizeof(EditorNode));
@@ -695,11 +695,11 @@ void BtnLoad()
 		extra2 |= (a->paramC & 0xFF) << 8;
 		extra2 |= a->paramD & 0xFF;
 		actorNode->extra2 = extra2;
-		ListAdd(editorNodes, actorNode);
+		ListAdd(&editorNodes, actorNode);
 	}
 
 	// add a node for each wall
-	for (int i = 0; i < ListGetSize(l->walls); i++)
+	for (int i = 0; i < l->walls.usedSlots; i++)
 	{
 		const Wall *w = ListGet(l->walls, i);
 		EditorNode *wallNodeA = malloc(sizeof(EditorNode));
@@ -709,14 +709,14 @@ void BtnLoad()
 		wallNodeA->position = w->a;
 		wallNodeA->extra = w->texId;
 		wallNodeA->extra2 = w->uvScale;
-		ListAdd(editorNodes, wallNodeA);
+		ListAdd(&editorNodes, wallNodeA);
 
 		EditorNode *wallNodeB = malloc(sizeof(EditorNode));
 		chk_malloc(wallNodeB);
 		wallNodeB->type = NODE_WALL_B;
 		wallNodeB->index = i;
 		wallNodeB->position = w->b;
-		ListAdd(editorNodes, wallNodeB);
+		ListAdd(&editorNodes, wallNodeB);
 	}
 }
 
@@ -734,7 +734,7 @@ void BtnTest()
 void UpdateMoveMode()
 {
 	// check if we are hovering over a node
-	for (int i = 0; i < editorNodes->size; i++)
+	for (int i = 0; i < editorNodes.usedSlots; i++)
 	{
 		const EditorNode *node = ListGet(editorNodes, i);
 		const Vector2 screenPos = v2(node->position.x * editorZoom + editorPanX,
@@ -778,7 +778,7 @@ void UpdateMoveMode()
 
 void UpdateDeleteMode()
 {
-	for (int i = 0; i < editorNodes->size; i++)
+	for (int i = 0; i < editorNodes.usedSlots; i++)
 	{
 		const EditorNode *node = ListGet(editorNodes, i);
 		const Vector2 screenPos = v2(node->position.x * editorZoom + editorPanX,
@@ -798,14 +798,14 @@ void UpdateDeleteMode()
 		{
 			if (node->type != NODE_PLAYER)
 			{
-				ListRemoveAt(editorNodes, i);
+				ListRemoveAt(&editorNodes, i);
 				// if we are deleting a wall, we need to delete both nodes
 				if (node->type == NODE_WALL_A)
 				{
-					ListRemoveAt(editorNodes, i);
+					ListRemoveAt(&editorNodes, i);
 				} else if (node->type == NODE_WALL_B)
 				{
-					ListRemoveAt(editorNodes, i - 1);
+					ListRemoveAt(&editorNodes, i - 1);
 				}
 			}
 			break; // don't delete more than one node per click
@@ -837,15 +837,15 @@ void AddModeWall()
 		nodeA->type = NODE_WALL_A;
 		nodeA->position = worldPos;
 		nodeA->extra = tex;
-		const float uv = 1.0;
+		const float uv = 1.0f;
 		nodeA->extra2 = uv;
-		ListAdd(editorNodes, nodeA);
+		ListAdd(&editorNodes, nodeA);
 
 		EditorNode *nodeB = malloc(sizeof(EditorNode));
 		chk_malloc(nodeB);
 		nodeB->type = NODE_WALL_B;
 		nodeB->position = worldPos;
-		ListAdd(editorNodes, nodeB);
+		ListAdd(&editorNodes, nodeB);
 
 		isAddModeDragging = true;
 	} else if (IsMouseButtonJustReleased(SDL_BUTTON_LEFT))
@@ -856,8 +856,8 @@ void AddModeWall()
 		// delete the 2 nodes we just created if escape is pressed
 		if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE))
 		{
-			ListRemoveAt(editorNodes, editorNodes->size - 1);
-			ListRemoveAt(editorNodes, editorNodes->size - 1);
+			ListRemoveAt(&editorNodes, editorNodes.usedSlots - 1);
+			ListRemoveAt(&editorNodes, editorNodes.usedSlots - 1);
 			isAddModeDragging = false;
 			return;
 		}
@@ -871,7 +871,7 @@ void AddModeWall()
 			worldPos.y = round(worldPos.y);
 		}
 
-		EditorNode *nodeB = ListGet(editorNodes, editorNodes->size - 1);
+		EditorNode *nodeB = ListGet(editorNodes, editorNodes.usedSlots - 1);
 		nodeB->position = worldPos;
 	}
 }
@@ -896,7 +896,7 @@ void AddModeActor()
 		node->rotation = 0;
 		node->extra = 1;
 		node->extra2 = 0;
-		ListAdd(editorNodes, node);
+		ListAdd(&editorNodes, node);
 	}
 }
 
@@ -924,7 +924,7 @@ void UpdateAddMode()
 
 void UpdatePropertiesMode()
 {
-	for (int i = 0; i < editorNodes->size; i++)
+	for (int i = 0; i < editorNodes.usedSlots; i++)
 	{
 		const EditorNode *node = ListGet(editorNodes, i);
 		const Vector2 screenPos = v2(node->position.x * editorZoom + editorPanX,
@@ -946,7 +946,7 @@ void UpdatePropertiesMode()
 		}
 	}
 
-	while (editorUiStack->Controls->size > editorBaseControlCount)
+	while (editorUiStack->Controls.usedSlots > editorBaseControlCount)
 	{
 		UiStackRemove(editorUiStack, ListGet(editorUiStack->Controls, editorBaseControlCount));
 	}
@@ -1110,7 +1110,7 @@ void GEditorStateRender(GlobalState * /*State*/)
 	RenderGrid();
 
 	int hoveredNode = -1;
-	for (int i = 0; i < editorNodes->size; i++)
+	for (int i = 0; i < editorNodes.usedSlots; i++)
 	{
 		DrawNode(ListGet(editorNodes, i), &hoveredNode, i);
 	}
@@ -1161,7 +1161,7 @@ void GEditorStateSet()
 		editorPanY = WindowHeight() / 2.0;
 
 		editorUiStack = CreateUiStack();
-		editorNodes = CreateList();
+		ListCreate(&editorNodes, 0);
 		// will be freed immediately after this function, but we create it here to avoid nullptr free
 
 		int sx = 10;
@@ -1202,7 +1202,7 @@ void GEditorStateSet()
 		UiStackPush(editorUiStack, CreateButtonControl(v2(-60, 40), v2(120, 24), "Test", BtnTest, TOP_RIGHT));
 		UiStackPush(editorUiStack, CreateButtonControl(v2(-60, 70), v2(120, 24), "Save", BtnCopyBytecode, TOP_RIGHT));
 
-		editorBaseControlCount = ListGetSize(editorUiStack->Controls);
+		editorBaseControlCount = editorUiStack->Controls.usedSlots;
 
 		SetEditorMode(false, 0, 0);
 

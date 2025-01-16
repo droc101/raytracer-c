@@ -61,7 +61,7 @@ void FreeModel(Model *model);
 #define LEVEL(assetName) ("level/" assetName ".gmap")
 #define OGL_SHADER(assetName) ("glshader/" assetName ".gshd")
 #define VK_FRAG(assetName) ("vkshader/" assetName ".gfrg")
-#define VK_VERT(assetName) ("vkshader/" assetName ".gvert")
+#define VK_VERT(assetName) ("vkshader/" assetName ".gvrt")
 #define MODEL(assetName) ("model/" assetName ".gmdl")
 
 #endif //GAME_ASSETREADER_H

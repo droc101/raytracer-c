@@ -3,6 +3,8 @@
 //
 
 #include "VulkanInternal.h"
+
+#include <dirent.h>
 #include <SDL_vulkan.h>
 #include <string.h>
 #include "../../../Structs/GlobalState.h"
@@ -777,7 +779,7 @@ bool CreateDescriptorSetLayouts()
 		{
 			.binding = 1,
 			.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-			.descriptorCount = TEXTURE_ASSET_COUNT,
+			.descriptorCount = MAX_TEXTURES,
 			.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT,
 			.pImmutableSamplers = NULL,
 		},
@@ -929,10 +931,8 @@ bool CreateGraphicsPipelines()
 #pragma endregion shared
 
 #pragma region walls
-	const VkShaderModule wallVertShaderModule = CreateShaderModule((uint32_t *)DecompressAsset(gzvert_Vulkan_wall),
-																   AssetGetSize(gzvert_Vulkan_wall));
-	const VkShaderModule wallFragShaderModule = CreateShaderModule((uint32_t *)DecompressAsset(gzfrag_Vulkan_wall),
-																   AssetGetSize(gzfrag_Vulkan_wall));
+	const VkShaderModule wallVertShaderModule = CreateShaderModule(VK_VERT("Vulkan_wall"));
+	const VkShaderModule wallFragShaderModule = CreateShaderModule(VK_FRAG("Vulkan_wall"));
 	if (!wallVertShaderModule || !wallFragShaderModule)
 	{
 		VulkanLogError("Failed to load wall shaders!\n");
@@ -1029,10 +1029,8 @@ bool CreateGraphicsPipelines()
 #pragma endregion walls
 
 #pragma region UI
-	const VkShaderModule uiVertShaderModule = CreateShaderModule((uint32_t *)DecompressAsset(gzvert_Vulkan_ui),
-																 AssetGetSize(gzvert_Vulkan_ui));
-	const VkShaderModule uiFragShaderModule = CreateShaderModule((uint32_t *)DecompressAsset(gzfrag_Vulkan_ui),
-																 AssetGetSize(gzfrag_Vulkan_ui));
+	const VkShaderModule uiVertShaderModule = CreateShaderModule(VK_VERT("Vulkan_ui"));
+	const VkShaderModule uiFragShaderModule = CreateShaderModule(VK_FRAG("Vulkan_ui"));
 	if (!uiVertShaderModule || !uiFragShaderModule)
 	{
 		VulkanLogError("Failed to load colored quad shaders!\n");
@@ -1297,363 +1295,99 @@ bool CreateFramebuffers()
 	return true;
 }
 
-bool LoadTextures()
+bool InitTextures()
 {
-	VkDeviceSize memorySize = 0;
-	for (uint16_t textureIndex = 0; textureIndex < TEXTURE_ASSET_COUNT; textureIndex++)
+	const VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
+	VkFormatProperties formatProperties;
+	vkGetPhysicalDeviceFormatProperties(physicalDevice.device, format, &formatProperties);
+	if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
 	{
-		const uint8_t *decompressed = DecompressAsset(texture_assets[textureIndex]);
-
-		const VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
-		VkFormatProperties formatProperties;
-		vkGetPhysicalDeviceFormatProperties(physicalDevice.device, format, &formatProperties);
-		if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
-		{
-			VulkanLogError("Vulkan texture image format does not support linear blitting!\n");
-			return false;
-		}
-
-		const VkExtent3D extent = {
-			.width = ReadUintA(decompressed, IMAGE_WIDTH_OFFSET),
-			.height = ReadUintA(decompressed, IMAGE_HEIGHT_OFFSET),
-			.depth = 1,
-		};
-		textures[textureIndex].mipmapLevels = GetState()->options.mipmaps
-													  ? (uint8_t)log2(max(extent.width, extent.height)) + 1
-													  : 1;
-		if (!CreateImage(&textures[textureIndex].image,
-						 NULL,
-						 format,
-						 extent,
-						 textures[textureIndex].mipmapLevels,
-						 VK_SAMPLE_COUNT_1_BIT,
-						 VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-						 "texture"))
-		{
-			return false;
-		}
-
-		vkGetImageMemoryRequirements(device,
-									 textures[textureIndex].image,
-									 &textures[textureIndex].allocationInfo.memoryRequirements);
-
-		const VkDeviceSize alignment = textures[textureIndex].allocationInfo.memoryRequirements.alignment;
-		const double alignedSize = (double)(memorySize + textures[textureIndex].allocationInfo.memoryRequirements.size);
-		textures[textureIndex].allocationInfo.offset = alignment * (VkDeviceSize)ceil(alignedSize / (double)alignment);
-
-		memorySize = textures[textureIndex].allocationInfo.offset +
-					 textures[textureIndex].allocationInfo.memoryRequirements.size;
-
-		texturesAssetIDMap[ReadUintA(decompressed, IMAGE_ID_OFFSET)] = textureIndex;
+		VulkanLogError("Vulkan texture image format does not support linear blitting!\n");
+		return false;
 	}
 
+	ListCreate(&textures, 0);
+	memset(imageAssetIdToIndexMap, -1, sizeof(*imageAssetIdToIndexMap) * MAX_TEXTURES);
+
+	char texturesPath[300];
+	sprintf(texturesPath, "%sassets/texture/", GetState()->executableFolder);
+	DIR *dir = opendir(texturesPath);
+	if (dir == NULL)
+	{
+		VulkanLogError("Failed to open texture directory: %s\n", texturesPath);
+		textureCount = 1;
+	} else
+	{
+		const struct dirent *ent = readdir(dir);
+		while (ent != NULL)
+		{
+			if (strstr(ent->d_name, ".gtex") != NULL)
+			{
+				textureCount++;
+			}
+			ent = readdir(dir);
+		}
+		closedir(dir);
+		if (textureCount == 0)
+		{
+			VulkanLogError("Failed to find any valid textures!");
+			textureCount = 1;
+		}
+	}
+
+	/// TODO: This will first be written using a seperate allocation from the walls and other things that use VRAM, but
+	///  then once the code is fully working and comitted, I will come back to this and add the textures to the shared
+	///  allocation to improve performance.
+	textureMemory.size = MAX_TEXTURE_SIZE * MAX_TEXTURE_SIZE * 4 * textureCount;
+
+	VkImage image;
+	if (!CreateImage(&image,
+					 NULL,
+					 format,
+					 (VkExtent3D){1, 1, 1},
+					 1,
+					 VK_SAMPLE_COUNT_1_BIT,
+					 VK_IMAGE_USAGE_SAMPLED_BIT,
+					 ""))
+	{
+		return false;
+	}
+	VkMemoryRequirements memoryRequirements;
+	vkGetImageMemoryRequirements(device, image, &memoryRequirements);
+	vkDestroyImage(device, image, NULL);
 	for (uint32_t i = 0; i < physicalDevice.memoryProperties.memoryTypeCount; i++)
 	{
-		if (textures[i].allocationInfo.memoryRequirements.memoryTypeBits & 1 << i &&
-			(physicalDevice.memoryProperties.memoryTypes[i].propertyFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) ==
-					VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
+		if (memoryRequirements.memoryTypeBits & 1 << i &&
+			(physicalDevice.memoryProperties.memoryTypes[i].propertyFlags & textureMemory.type) == textureMemory.type)
 		{
 			const VkMemoryAllocateInfo allocateInfo = {
 				.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-				.pNext = NULL,
-				.allocationSize = memorySize,
+				.allocationSize = textureMemory.size,
 				.memoryTypeIndex = i,
 			};
 
-			VulkanTest(vkAllocateMemory(device, &allocateInfo, NULL, &textureMemory),
+			VulkanTest(vkAllocateMemory(device, &allocateInfo, NULL, &textureMemory.memory),
 					   "Failed to allocate Vulkan texture memory!");
 			break;
 		}
 	}
 
-	MemoryInfo memoryInfo = {
-		.type = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-	};
-	MemoryAllocationInfo allocationInfo = {
-		.memoryInfo = &memoryInfo,
-		.usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-	};
-	Buffer stagingBuffer = {
-		.size = memorySize,
-		.memoryAllocationInfo = allocationInfo,
-	};
-	if (!CreateBuffer(&stagingBuffer, true))
-	{
-		return false;
-	}
-
-	for (uint16_t textureIndex = 0; textureIndex < TEXTURE_ASSET_COUNT; textureIndex++)
-	{
-		VulkanTest(vkBindImageMemory(device,
-									 textures[textureIndex].image,
-									 textureMemory,
-									 textures[textureIndex].allocationInfo.offset),
-				   "Failed to bind Vulkan texture memory!");
-
-		const uint8_t *decompressed = DecompressAsset(texture_assets[textureIndex]);
-		uint32_t width = ReadUintA(decompressed, IMAGE_WIDTH_OFFSET);
-		uint32_t height = ReadUintA(decompressed, IMAGE_HEIGHT_OFFSET);
-		void *data;
-
-		VulkanTest(vkMapMemory(device,
-							   memoryInfo.memory,
-							   textures[textureIndex].allocationInfo.offset,
-							   textures[textureIndex].allocationInfo.memoryRequirements.size,
-							   0,
-							   &data),
-				   "Failed to map Vulkan texture staging buffer memory!");
-
-		memcpy(data, decompressed + sizeof(uint32_t) * 4, ReadUintA(decompressed, IMAGE_SIZE_OFFSET) * 4);
-		vkUnmapMemory(device, memoryInfo.memory);
-
-		const VkCommandBuffer commandBuffer;
-		if (!BeginCommandBuffer(&commandBuffer, graphicsCommandPool))
-		{
-			return false;
-		}
-
-		const VkImageSubresourceRange transferSubresourceRange = {
-			.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-			.baseMipLevel = 0,
-			.levelCount = textures[textureIndex].mipmapLevels,
-			.baseArrayLayer = 0,
-			.layerCount = 1,
-		};
-		const VkImageMemoryBarrier transferBarrier = {
-			.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-			.pNext = NULL,
-			.srcAccessMask = 0,
-			.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
-			.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-			.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-			.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-			.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-			.image = textures[textureIndex].image,
-			.subresourceRange = transferSubresourceRange,
-		};
-
-		vkCmdPipelineBarrier(commandBuffer,
-							 VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-							 VK_PIPELINE_STAGE_TRANSFER_BIT,
-							 0,
-							 0,
-							 NULL,
-							 0,
-							 NULL,
-							 1,
-							 &transferBarrier);
-
-		if (!EndCommandBuffer(commandBuffer, graphicsCommandPool, graphicsQueue))
-		{
-			return false;
-		}
-
-		if (!BeginCommandBuffer(&commandBuffer, graphicsCommandPool))
-		{
-			return false;
-		}
-
-		const VkImageSubresourceLayers subresourceLayers = {
-			.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-			.mipLevel = 0,
-			.baseArrayLayer = 0,
-			.layerCount = 1,
-		};
-		const VkExtent3D imageExtent = {
-			.width = width,
-			.height = height,
-			.depth = 1,
-		};
-		const VkBufferImageCopy bufferCopyInfo = {
-			.bufferOffset = textures[textureIndex].allocationInfo.offset,
-			.bufferRowLength = 0,
-			.bufferImageHeight = 0,
-			.imageSubresource = subresourceLayers,
-			.imageOffset = {0, 0, 0},
-			.imageExtent = imageExtent,
-		};
-
-		vkCmdCopyBufferToImage(commandBuffer,
-							   stagingBuffer.buffer,
-							   textures[textureIndex].image,
-							   VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-							   1,
-							   &bufferCopyInfo);
-
-		if (!EndCommandBuffer(commandBuffer, graphicsCommandPool, graphicsQueue))
-		{
-			return false;
-		}
-
-		if (!BeginCommandBuffer(&commandBuffer, graphicsCommandPool))
-		{
-			return false;
-		}
-
-		for (uint8_t level = 0; level < textures[textureIndex].mipmapLevels - 1; level++)
-		{
-			const VkImageSubresourceRange blitSubresourceRange = {
-				.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-				.baseMipLevel = level,
-				.levelCount = 1,
-				.baseArrayLayer = 0,
-				.layerCount = 1,
-			};
-			const VkImageMemoryBarrier blitBarrier = {
-				.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-				.pNext = NULL,
-				.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
-				.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT,
-				.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-				.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-				.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-				.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-				.image = textures[textureIndex].image,
-				.subresourceRange = blitSubresourceRange,
-			};
-
-			vkCmdPipelineBarrier(commandBuffer,
-								 VK_PIPELINE_STAGE_TRANSFER_BIT,
-								 VK_PIPELINE_STAGE_TRANSFER_BIT,
-								 0,
-								 0,
-								 NULL,
-								 0,
-								 NULL,
-								 1,
-								 &blitBarrier);
-
-			VkImageBlit blit = {
-				{
-					.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-					.mipLevel = level,
-					.baseArrayLayer = 0,
-					.layerCount = 1,
-				},
-				{
-					{0, 0, 0},
-					{
-						.x = (int32_t)width,
-						.y = (int32_t)height,
-						.z = 1,
-					},
-				},
-				{
-					.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-					.mipLevel = level + 1,
-					.baseArrayLayer = 0,
-					.layerCount = 1,
-				},
-				{
-					{0, 0, 0},
-					{
-						.x = width > 1 ? (int32_t)width / 2 : 1,
-						.y = height > 1 ? (int32_t)height / 2 : 1,
-						.z = 1,
-					},
-				},
-			};
-
-			vkCmdBlitImage(commandBuffer,
-						   textures[textureIndex].image,
-						   VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-						   textures[textureIndex].image,
-						   VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-						   1,
-						   &blit,
-						   VK_FILTER_LINEAR);
-
-			const VkImageSubresourceRange mipmapSubresourceRange = {
-				.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-				.baseMipLevel = level,
-				.levelCount = 1,
-				.baseArrayLayer = 0,
-				.layerCount = 1,
-			};
-			const VkImageMemoryBarrier mipmapBarrier = {
-				.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-				.pNext = NULL,
-				.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT,
-				.dstAccessMask = VK_ACCESS_SHADER_READ_BIT,
-				.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-				.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-				.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-				.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-				.image = textures[textureIndex].image,
-				.subresourceRange = mipmapSubresourceRange,
-			};
-
-			// TODO Best practices validation doesn't like this
-			vkCmdPipelineBarrier(commandBuffer,
-								 VK_PIPELINE_STAGE_TRANSFER_BIT,
-								 VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-								 0,
-								 0,
-								 NULL,
-								 0,
-								 NULL,
-								 1,
-								 &mipmapBarrier);
-
-			if (width > 1)
-			{
-				width /= 2;
-			}
-			if (height > 1)
-			{
-				height /= 2;
-			}
-		}
-
-		const VkImageSubresourceRange mipmapSubresourceRange = {
-			.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-			.baseMipLevel = textures[textureIndex].mipmapLevels - 1,
-			.levelCount = 1,
-			.baseArrayLayer = 0,
-			.layerCount = 1,
-		};
-		const VkImageMemoryBarrier mipmapBarrier = {
-			.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-			.pNext = NULL,
-			.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
-			.dstAccessMask = VK_ACCESS_SHADER_READ_BIT,
-			.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-			.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-			.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-			.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-			.image = textures[textureIndex].image,
-			.subresourceRange = mipmapSubresourceRange,
-		};
-
-		vkCmdPipelineBarrier(commandBuffer,
-							 VK_PIPELINE_STAGE_TRANSFER_BIT,
-							 VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-							 0,
-							 0,
-							 NULL,
-							 0,
-							 NULL,
-							 1,
-							 &mipmapBarrier);
-
-		if (!EndCommandBuffer(commandBuffer, graphicsCommandPool, graphicsQueue))
-		{
-			return false;
-		}
-	}
-
-	return DestroyBuffer(&stagingBuffer);
+	return true;
 }
 
 bool CreateTexturesImageView()
 {
-	for (uint16_t textureIndex = 0; textureIndex < TEXTURE_ASSET_COUNT; textureIndex++)
+	ListCreate(&texturesImageView, 0);
+	for (size_t textureIndex = 0; textureIndex < textures.usedSlots; textureIndex++)
 	{
-		if (!CreateImageView(&texturesImageView[textureIndex],
-							 textures[textureIndex].image,
+		const Texture *texture = ListGet(textures, textureIndex);
+		VkImageView *textureImageView = malloc(sizeof(VkImageView *));
+		ListAdd(&texturesImageView, textureImageView);
+		if (!CreateImageView(textureImageView,
+							 texture->image,
 							 VK_FORMAT_R8G8B8A8_UNORM,
 							 VK_IMAGE_ASPECT_COLOR_BIT,
-							 textures[textureIndex].mipmapLevels,
+							 texture->mipmapLevels,
 							 "Failed to create Vulkan texture image view!"))
 		{
 			return false;
@@ -1800,7 +1534,7 @@ bool CreateDescriptorPool()
 		},
 		{
 			.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-			.descriptorCount = TEXTURE_ASSET_COUNT * MAX_FRAMES_IN_FLIGHT,
+			.descriptorCount = MAX_TEXTURES * MAX_FRAMES_IN_FLIGHT,
 		},
 		{
 			.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
@@ -1841,7 +1575,37 @@ bool CreateDescriptorSets()
 	VulkanTest(vkAllocateDescriptorSets(device, &allocateInfo, descriptorSets),
 			   "Failed to allocate Vulkan descriptor sets!");
 
-	UpdateDescriptorSets();
+	VkDescriptorImageInfo imageInfo[textures.usedSlots];
+	for (size_t textureIndex = 0; textureIndex < textures.usedSlots; textureIndex++)
+	{
+		imageInfo[textureIndex] = (VkDescriptorImageInfo){
+			.sampler = textureSamplers.nearestRepeat,
+			.imageView = ListGet(texturesImageView, textureIndex),
+			.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+		};
+	}
+	for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+	{
+		if (textures.usedSlots == 0)
+		{
+			break;
+		}
+		const VkWriteDescriptorSet writeDescriptor = {
+			.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+			.pNext = NULL,
+			.dstSet = descriptorSets[i],
+			.dstBinding = 1,
+			.dstArrayElement = 0,
+			.descriptorCount = textures.usedSlots,
+			.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+			.pImageInfo = imageInfo,
+			.pBufferInfo = NULL,
+			.pTexelBufferView = NULL,
+		};
+		vkUpdateDescriptorSets(device, 1, &writeDescriptor, 0, NULL);
+	}
+
+	UpdateUniformBufferDescriptorSets();
 
 	return true;
 }

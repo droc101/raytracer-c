@@ -66,8 +66,6 @@ typedef void (*ActorDestroyFunction)(Actor *self);
 
 #define STR(x) #x
 #define TO_STR(x) STR(x)
-#define PI 3.14159265358979323846
-#define PIf 3.14159265358979323846f
 #define PHYSICS_TARGET_MS (1000 / PHYSICS_TARGET_TPS)
 #define PHYSICS_TARGET_MS_D (1000.0 / PHYSICS_TARGET_TPS)
 #define PHYSICS_TARGET_NS (1000000000 / PHYSICS_TARGET_TPS) // nanoseconds because precision
@@ -205,9 +203,9 @@ struct Level
 	char name[32];
 	short courseNum;
 	/// The list of actors in the level.
-	List *actors;
+	List actors;
 	/// The list of walls in the level.
-	List *walls;
+	List walls;
 	/// The color of the sky.
 	uint skyColor;
 	/// The texture index of the floor.

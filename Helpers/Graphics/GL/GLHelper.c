@@ -1001,12 +1001,12 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
 		GL_DrawFloor(floor_start, floor_end, WORLD_VIEW_MATRIX, l, wallTextures[l->ceilingTextureIndex], 0.5, 0.8);
 	}
 
-	for (int i = 0; i < l->walls->size; i++)
+	for (int i = 0; i < l->walls.usedSlots; i++)
 	{
 		GL_DrawWall(ListGet(l->walls, i), IDENTITY, cam, l);
 	}
 
-	for (int i = 0; i < l->actors->size; i++)
+	for (int i = 0; i < l->actors.usedSlots; i++)
 	{
 		const Actor *actor = ListGet(l->actors, i);
 		mat4 *actor_xfm = ActorTransformMatrix(actor);

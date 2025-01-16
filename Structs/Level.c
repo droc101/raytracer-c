@@ -14,8 +14,8 @@ Level *CreateLevel()
 {
 	Level *l = malloc(sizeof(Level));
 	chk_malloc(l);
-	l->actors = CreateList();
-	l->walls = CreateList();
+	ListCreate(&l->actors, 0);
+	ListCreate(&l->walls, 0);
 	l->player.pos = v2s(0);
 	l->player.angle = 0;
 	l->skyColor = 0xff82c5ff;
@@ -32,38 +32,37 @@ Level *CreateLevel()
 
 void DestroyLevel(Level *l)
 {
-	for (int i = 0; i < l->walls->size; i++)
+	for (int i = 0; i < l->walls.usedSlots; i++)
 	{
 		Wall *w = ListGet(l->walls, i);
 		FreeWall(w);
 	}
-	for (int i = 0; i < l->actors->size; i++)
+	for (int i = 0; i < l->actors.usedSlots; i++)
 	{
 		Actor *a = ListGet(l->actors, i);
 		FreeActor(a);
 	}
 
-	ListFreeWithData(l->walls);
-	ListFree(l->actors); // actors are freed above (FreeActor)
+	ListFreeOnlyContents(&l->walls);
 	free(l);
 	l = NULL;
 }
 
 void AddActor(Actor *actor)
 {
-	const Level *l = GetState()->level;
-	ListAdd(l->actors, actor);
+	Level *l = GetState()->level;
+	ListAdd(&l->actors, actor);
 }
 
 void RemoveActor(Actor *actor)
 {
-	const Level *l = GetState()->level;
-	const int idx = ListFind(l->actors, actor);
+	Level *l = GetState()->level;
+	const size_t idx = ListFind(&l->actors, actor);
 	if (idx == -1)
 	{
 		return;
 	}
-	ListRemoveAt(l->actors, idx);
+	ListRemoveAt(&l->actors, idx);
 	FreeActor(actor);
 }
 

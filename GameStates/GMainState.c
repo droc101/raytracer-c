@@ -169,7 +169,7 @@ void GMainStateFixedUpdate(GlobalState *state, double delta)
 
 	l->player.angle = wrap(l->player.angle, 0, 2 * PI);
 
-	for (int i = 0; i < l->actors->size; i++)
+	for (int i = 0; i < l->actors.usedSlots; i++)
 	{
 		Actor *a = ListGet(l->actors, i);
 		a->Update(a, delta);
@@ -212,8 +212,8 @@ void GMainStateRender(GlobalState *State)
 			l->player.angle,
 			radToDeg(l->player.angle));
 
-	DPrintF("Walls: %d", 0xFFFFFFFF, false, l->walls->size);
-	DPrintF("Actors: %d", 0xFFFFFFFF, false, l->actors->size);
+	DPrintF("Walls: %d", 0xFFFFFFFF, false, l->walls.usedSlots);
+	DPrintF("Actors: %d", 0xFFFFFFFF, false, l->actors.usedSlots);
 }
 
 void GMainStateSet()

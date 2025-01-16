@@ -36,6 +36,8 @@ bool ResizeBufferRegion(Buffer *buffer,
 						bool lossy,
 						MemoryMappingFunction MapMemory);
 
-void UpdateDescriptorSets();
+void UpdateUniformBufferDescriptorSets();
+
+bool LoadTexture(const char *textureName);
 
 #endif //VULKANRESOURCES_H

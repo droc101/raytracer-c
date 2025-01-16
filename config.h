@@ -35,7 +35,7 @@
 //#define DEBUG_NOSPLASH
 
 // Enable or disable the frame graph (just the rendering)
-#define FRAMEGRAPH_ENABLE
+// #define FRAMEGRAPH_ENABLE
 // See /Debug/FrameGrapher.h for additional frame grapher settings
 
 // Press F6 while in game to open the level editor
@@ -69,7 +69,7 @@
 
 #if defined(__LINUX__) && defined(BUILDSTYLE_DEBUG)
 /// Adds an overlay with FPS information provided by the Mesa Vulkan driver in Linux
-#define VK_ENABLE_MESA_FPS_OVERLAY
+// #define VK_ENABLE_MESA_FPS_OVERLAY
 #endif
 
 #pragma endregion

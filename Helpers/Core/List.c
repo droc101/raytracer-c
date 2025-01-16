@@ -8,91 +8,130 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "../../defines.h"
-#include "../PlatformHelpers.h"
 #include "Error.h"
 #include "Logging.h"
 
-List *CreateList()
+void ListCreate(List *list, const size_t slots)
 {
-	List *list = malloc(sizeof(List));
-	chk_malloc(list);
-	list->size = 0;
-	list->data = calloc(0, sizeof(void *));
-	if (list->data == NULL)
+	if (!list)
 	{
-		Error("libc must support zero-length calloc");
+		Error("A NULL list must not be passed to ListCreate!");
 	}
-	return list;
+
+	list->allocatedSlots = slots;
+	list->usedSlots = slots;
+	if (slots == 0)
+	{
+		list->data = NULL;
+		return;
+	}
+	list->data = calloc(slots, sizeof(void *));
+	chk_malloc(list->data);
 }
 
 void ListAdd(List *list, void *data)
 {
-	list->size++;
-	void **temp = GameReallocArray(
-			list->data,
-			list->size,
-			sizeof(void *)); // The size should never be 0 here, so we don't need to check for that
-	chk_malloc(temp);
-	list->data = temp;
-	list->data[list->size - 1] = data;
-}
-
-void ListRemoveAt(List *list, const int index)
-{
-	for (int i = index; i < list->size - 1; i++)
+	if (!list)
 	{
-		list->data[i] = list->data[i + 1];
+		Error("A NULL list must not be passed to ListAdd!");
 	}
-	list->size--;
-	void **temp = GameReallocArray(list->data, list->size, sizeof(void *));
-	if (list->size == 0 && temp == NULL) // reallocarray with size 0 frees the memory
+
+	if (list->usedSlots >= list->allocatedSlots || !list->data)
 	{
-		temp = malloc(0);
+		list->allocatedSlots = list->usedSlots + 1;
+		list->data = GameReallocArray(list->data, list->allocatedSlots, sizeof(void *));
+		chk_malloc(list->data);
 	}
-	chk_malloc(temp);
-	list->data = temp;
+	list->data[list->usedSlots] = data;
+	list->usedSlots++;
 }
 
-void ListInsertAfter(List *list, const int index, void *data)
+void ListAddBatched(List *list, const size_t count, ...)
 {
-	list->size++;
-	void **temp = GameReallocArray(
-			list->data,
-			list->size,
-			sizeof(void *)); // The size should never be 0 here, so we don't need to check for that
-	chk_malloc(temp);
-
-	for (int i = list->size - 1; i > index; i--)
+	if (!list)
 	{
-		temp[i] = temp[i - 1];
+		Error("A NULL list must not be passed to ListAddBatched!");
 	}
-	temp[index + 1] = data;
-	list->data = temp;
-}
 
-void ListFree(List *list)
-{
-	free(list->data);
-	free(list);
-}
-
-void ListFreeWithData(List *list)
-{
-	for (int i = 0; i < list->size; i++)
+	if (list->usedSlots + count > list->allocatedSlots || !list->data)
 	{
-		free(list->data[i]);
+		list->allocatedSlots = list->usedSlots + count;
+		list->data = GameReallocArray(list->data, list->allocatedSlots, sizeof(void *));
+		chk_malloc(list->data);
 	}
-	ListFree(list);
+
+	va_list args;
+	va_start(args, count);
+	for (size_t i = 0; i < count; i++)
+	{
+		list->data[list->usedSlots] = va_arg(args, void *);
+		list->usedSlots++;
+	}
+	va_end(args);
 }
 
-inline int ListGetSize(const List *list)
+void ListRemoveAt(List *list, const size_t index)
 {
-	return list->size;
+	if (!list)
+	{
+		Error("A NULL list must not be passed to ListRemoveAt!");
+	}
+	if (!list->usedSlots || !list->allocatedSlots || !list->data)
+	{
+		Error("Attempted to shrink empty list!");
+	}
+	if (index >= list->usedSlots)
+	{
+		Error("Attempted to remove an item past the end of a list!");
+	}
+
+	list->allocatedSlots--;
+	if (list->allocatedSlots == 0)
+	{
+		list->usedSlots = 0;
+		free(list->data);
+		list->data = NULL;
+		return;
+	}
+
+	list->usedSlots--;
+	memmove(&list->data[index], &list->data[index + 1], sizeof(void *) * (list->usedSlots - index));
+	list->data = GameReallocArray(list->data, list->allocatedSlots, sizeof(void *));
+	chk_malloc(list->data);
 }
 
-int ListFind(const List *list, const void *data)
+void ListInsertAfter(List *list, size_t index, void *data)
 {
-	for (int i = 0; i < list->size; i++)
+	if (!list)
+	{
+		Error("A NULL list must not be passed to ListInsertAfter!");
+	}
+	if (index >= list->usedSlots)
+	{
+		Error("Attempted to insert an item past the end of a list!");
+	}
+
+	index++;
+	list->allocatedSlots++;
+	list->data = GameReallocArray(list->data, list->allocatedSlots, sizeof(void *));
+	chk_malloc(list->data);
+
+	memmove(&list->data[index + 1], &list->data[index], sizeof(void *) * (list->usedSlots - index));
+	list->data[index] = data;
+}
+
+size_t ListFind(const List *list, const void *data)
+{
+	if (!list)
+	{
+		Error("A NULL list must not be passed to ListFind!");
+	}
+	if (!list->usedSlots || !list->allocatedSlots || !list->data)
+	{
+		Error("Attempted to find a value in an empty list!");
+	}
+
+	for (size_t i = 0; i < list->usedSlots; i++)
 	{
 		if (list->data[i] == data)
 		{
@@ -102,12 +141,59 @@ int ListFind(const List *list, const void *data)
 	return -1;
 }
 
+void ListFree(List *list, const bool freeListPointer)
+{
+	if (!list)
+	{
+		Error("A NULL list must not be passed to ListFree!");
+	}
+
+	free(list->data);
+	if (freeListPointer)
+	{
+		free(list);
+	}
+}
+
+void ListFreeOnlyContents(List *list)
+{
+	if (!list)
+	{
+		Error("A NULL list must not be passed to ListFreeOnlyContents!");
+	}
+
+	if (list->usedSlots && list->data)
+	{
+		for (size_t i = 0; i < list->usedSlots; i++)
+		{
+			free(list->data[i]);
+		}
+	}
+}
+
+void ListAndContentsFree(List *list, const bool freeListPointer)
+{
+	if (!list)
+	{
+		Error("A NULL list must not be passed to ListAndContentsFree!");
+	}
+
+	ListFreeOnlyContents(list);
+
+	ListFree(list, freeListPointer);
+}
+
 void ListClear(List *list)
 {
-	list->size = 0;
+	if (!list)
+	{
+		Error("A NULL list must not be passed to ListClear!");
+	}
+
+	list->allocatedSlots = 0;
+	list->usedSlots = 0;
 	free(list->data);
-	list->data = calloc(0, sizeof(void *));
-	chk_malloc(list->data);
+	list->data = NULL;
 }
 
 void *GameReallocArray(void *ptr, const size_t arrayLength, const size_t elementSize)

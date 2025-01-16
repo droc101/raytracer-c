@@ -19,7 +19,7 @@ bool VK_Init(SDL_Window *window)
 	if (CreateInstance() && CreateSurface() && PickPhysicalDevice() && CreateLogicalDevice() && CreateSwapChain() &&
 		CreateImageViews() && CreateRenderPass() && CreateDescriptorSetLayouts() && CreateGraphicsPipelineCache() &&
 		CreateGraphicsPipelines() && CreateCommandPools() && CreateColorImage() && CreateDepthImage() &&
-		CreateFramebuffers() && LoadTextures() && CreateTexturesImageView() && CreateTextureSampler() &&
+		CreateFramebuffers() && InitTextures() && CreateTexturesImageView() && CreateTextureSampler() &&
 		CreateBuffers() && AllocateMemoryPools() && CreateDescriptorPool() && CreateDescriptorSets() &&
 		CreateCommandBuffers() && CreateSyncObjects())
 	{
@@ -181,54 +181,57 @@ VkResult VK_FrameEnd()
 			}
 		}
 
-		UpdateDescriptorSets();
+		UpdateUniformBufferDescriptorSets();
 
 		buffers.ui.shouldResize = false;
 	}
 	memcpy(buffers.ui.vertexStaging, buffers.ui.vertices, sizeof(UiVertex) * buffers.ui.quadCount * 4);
 	memcpy(buffers.ui.indexStaging, buffers.ui.indices, sizeof(uint32_t) * buffers.ui.quadCount * 6);
 
-	const VkCommandBuffer commandBuffer;
-	if (!BeginCommandBuffer(&commandBuffer, transferCommandPool))
+	if (buffers.ui.quadCount > 0)
 	{
-		return false;
-	}
+		const VkCommandBuffer commandBuffer;
+		if (!BeginCommandBuffer(&commandBuffer, transferCommandPool))
+		{
+			return false;
+		}
 
-	vkCmdCopyBuffer(commandBuffer,
-					buffers.ui.stagingBufferInfo->buffer,
-					buffers.ui.bufferInfo->buffer,
-					2,
-					(VkBufferCopy[]){
-						{
-							.srcOffset = buffers.ui.verticesStagingOffset,
-							.dstOffset = buffers.ui.verticesOffset,
-							.size = sizeof(UiVertex) * buffers.ui.quadCount * 4,
-						},
-						{
-							.srcOffset = buffers.ui.indicesStagingOffset,
-							.dstOffset = buffers.ui.indicesOffset,
-							.size = sizeof(uint32_t) * buffers.ui.quadCount * 6,
-						},
-					});
+		vkCmdCopyBuffer(commandBuffer,
+						buffers.ui.stagingBufferInfo->buffer,
+						buffers.ui.bufferInfo->buffer,
+						2,
+						(VkBufferCopy[]){
+							{
+								.srcOffset = buffers.ui.verticesStagingOffset,
+								.dstOffset = buffers.ui.verticesOffset,
+								.size = sizeof(UiVertex) * buffers.ui.quadCount * 4,
+							},
+							{
+								.srcOffset = buffers.ui.indicesStagingOffset,
+								.dstOffset = buffers.ui.indicesOffset,
+								.size = sizeof(uint32_t) * buffers.ui.quadCount * 6,
+							},
+						});
 
-	if (!EndCommandBuffer(commandBuffer, transferCommandPool, transferQueue))
-	{
-		return false;
+		if (!EndCommandBuffer(commandBuffer, transferCommandPool, transferQueue))
+		{
+			return false;
+		}
 	}
 
 	VulkanTestReturnResult(BeginRenderPass(commandBuffers[currentFrame], swapchainImageIndex),
 						   "Failed to begin render pass!");
 
-	vkCmdPushConstants(commandBuffers[currentFrame],
-					   pipelineLayout,
-					   VK_SHADER_STAGE_VERTEX_BIT,
-					   0,
-					   8,
-					   (vec2){(float)loadedLevel->player.pos.x, (float)loadedLevel->player.pos.y});
-
 	const GlobalState *g = GetState();
-	if (g->currentState == MAIN_STATE || g->currentState == PAUSE_STATE)
+	if (g->currentState == MAIN_STATE || g->currentState == PAUSE_STATE && buffers.walls.wallCount > 0)
 	{
+		vkCmdPushConstants(commandBuffers[currentFrame],
+						   pipelineLayout,
+						   VK_SHADER_STAGE_VERTEX_BIT,
+						   0,
+						   8,
+						   (vec2){(float)loadedLevel->player.pos.x, (float)loadedLevel->player.pos.y});
+
 		vkCmdBindPipeline(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.walls);
 
 		vkCmdBindVertexBuffers(commandBuffers[currentFrame],
@@ -256,29 +259,32 @@ VkResult VK_FrameEnd()
 
 	vkCmdNextSubpass(commandBuffers[currentFrame], VK_SUBPASS_CONTENTS_INLINE);
 
-	vkCmdBindPipeline(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.ui);
+	if (buffers.ui.quadCount > 0)
+	{
+		vkCmdBindPipeline(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.ui);
 
-	vkCmdBindVertexBuffers(commandBuffers[currentFrame],
-						   0,
-						   1,
-						   &buffers.ui.bufferInfo->buffer,
-						   &buffers.ui.verticesOffset);
+		vkCmdBindVertexBuffers(commandBuffers[currentFrame],
+							   0,
+							   1,
+							   &buffers.ui.bufferInfo->buffer,
+							   &buffers.ui.verticesOffset);
 
-	vkCmdBindIndexBuffer(commandBuffers[currentFrame],
-						 buffers.ui.bufferInfo->buffer,
-						 buffers.ui.indicesOffset,
-						 VK_INDEX_TYPE_UINT32);
+		vkCmdBindIndexBuffer(commandBuffers[currentFrame],
+							 buffers.ui.bufferInfo->buffer,
+							 buffers.ui.indicesOffset,
+							 VK_INDEX_TYPE_UINT32);
 
-	vkCmdBindDescriptorSets(commandBuffers[currentFrame],
-							VK_PIPELINE_BIND_POINT_GRAPHICS,
-							pipelineLayout,
-							0,
-							1,
-							&descriptorSets[currentFrame],
-							0,
-							NULL);
+		vkCmdBindDescriptorSets(commandBuffers[currentFrame],
+								VK_PIPELINE_BIND_POINT_GRAPHICS,
+								pipelineLayout,
+								0,
+								1,
+								&descriptorSets[currentFrame],
+								0,
+								NULL);
 
-	vkCmdDrawIndexed(commandBuffers[currentFrame], buffers.ui.quadCount * 6, 1, 0, 0, 0);
+		vkCmdDrawIndexed(commandBuffers[currentFrame], buffers.ui.quadCount * 6, 1, 0, 0, 0);
+	}
 
 	VulkanTestReturnResult(EndRenderPass(commandBuffers[currentFrame]), "Failed to end render pass!");
 
@@ -350,12 +356,12 @@ bool VK_Cleanup()
 		vkDestroySampler(device, textureSamplers.nearestRepeat, NULL);
 		vkDestroySampler(device, textureSamplers.linearNoRepeat, NULL);
 		vkDestroySampler(device, textureSamplers.nearestNoRepeat, NULL);
-		for (uint16_t textureIndex = 0; textureIndex < TEXTURE_ASSET_COUNT; textureIndex++)
+		for (size_t textureIndex = 0; textureIndex < textures.usedSlots; textureIndex++)
 		{
-			vkDestroyImageView(device, texturesImageView[textureIndex], NULL);
-			vkDestroyImage(device, textures[textureIndex].image, NULL);
+			vkDestroyImageView(device, ListGet(texturesImageView, textureIndex), NULL);
+			vkDestroyImage(device, ((Texture *)ListGet(textures, textureIndex))->image, NULL);
 		}
-		vkFreeMemory(device, textureMemory, NULL);
+		vkFreeMemory(device, textureMemory.memory, NULL);
 
 		CleanupColorImage();
 		CleanupDepthImage();
@@ -416,7 +422,7 @@ bool VK_LoadLevelWalls(const Level *level)
 {
 	void *data;
 
-	buffers.walls.wallCount = level->walls->size + 2;
+	buffers.walls.wallCount = level->walls.usedSlots + 2;
 	if (buffers.walls.wallCount > buffers.walls.maxWallCount)
 	{
 		buffers.walls.maxWallCount = buffers.walls.wallCount;
@@ -655,7 +661,7 @@ bool VK_DrawColoredQuad(const int32_t x, const int32_t y, const int32_t w, const
 
 bool VK_DrawColoredQuadsBatched(const float *vertices, const int32_t quadCount, const uint32_t color)
 {
-	for (int i = 0; i < quadCount; i++)
+	for (int32_t i = 0; i < quadCount; i++)
 	{
 		const uint32_t index = i * 8;
 		const mat4 matrix = {
@@ -673,7 +679,7 @@ bool VK_DrawColoredQuadsBatched(const float *vertices, const int32_t quadCount, 
 	return true;
 }
 
-bool VK_DrawTexturedQuad(const int32_t x, const int32_t y, const int32_t w, const int32_t h, const uint8_t *texture)
+bool VK_DrawTexturedQuad(const int32_t x, const int32_t y, const int32_t w, const int32_t h, const char *texture)
 {
 	return DrawRectInternal(VK_X_TO_NDC(x),
 							VK_Y_TO_NDC(y),
@@ -691,7 +697,7 @@ bool VK_DrawTexturedQuadMod(const int32_t x,
 							const int32_t y,
 							const int32_t w,
 							const int32_t h,
-							const uint8_t *texture,
+							const char *texture,
 							const uint32_t color)
 {
 	return DrawRectInternal(VK_X_TO_NDC(x),
@@ -714,15 +720,12 @@ bool VK_DrawTexturedQuadRegion(const int32_t x,
 							   const int32_t regionY,
 							   const int32_t regionW,
 							   const int32_t regionH,
-							   const uint8_t *texture)
+							   const char *texture)
 {
-	const uint8_t *decompressed = DecompressAsset(texture);
+	const Image *image = LoadImage(texture);
 
-	const uint32_t width = ReadUintA(decompressed, IMAGE_WIDTH_OFFSET);
-	const uint32_t height = ReadUintA(decompressed, IMAGE_HEIGHT_OFFSET);
-
-	const float startU = (float)regionX / (float)width;
-	const float startV = (float)regionY / (float)height;
+	const float startU = (float)regionX / (float)image->width;
+	const float startV = (float)regionY / (float)image->height;
 
 	return DrawRectInternal(VK_X_TO_NDC(x),
 							VK_Y_TO_NDC(y),
@@ -730,10 +733,10 @@ bool VK_DrawTexturedQuadRegion(const int32_t x,
 							VK_Y_TO_NDC(y + h),
 							startU,
 							startV,
-							startU + (float)regionW / (float)width,
-							startV + (float)regionH / (float)height,
+							startU + (float)regionW / (float)image->width,
+							startV + (float)regionH / (float)image->height,
 							0xFFFFFFFF,
-							texturesAssetIDMap[ReadUintA(decompressed, IMAGE_ID_OFFSET)]);
+							imageAssetIdToIndexMap[image->id]);
 }
 
 bool VK_DrawTexturedQuadRegionMod(const int32_t x,
@@ -744,16 +747,13 @@ bool VK_DrawTexturedQuadRegionMod(const int32_t x,
 								  const int32_t regionY,
 								  const int32_t regionW,
 								  const int32_t regionH,
-								  const uint8_t *texture,
+								  const char *texture,
 								  const uint32_t color)
 {
-	const uint8_t *decompressed = DecompressAsset(texture);
+	const Image *image = LoadImage(texture);
 
-	const uint32_t width = ReadUintA(decompressed, IMAGE_WIDTH_OFFSET);
-	const uint32_t height = ReadUintA(decompressed, IMAGE_HEIGHT_OFFSET);
-
-	const float startU = (float)regionX / (float)width;
-	const float startV = (float)regionY / (float)height;
+	const float startU = (float)regionX / (float)image->width;
+	const float startV = (float)regionY / (float)image->height;
 
 	return DrawRectInternal(VK_X_TO_NDC(x),
 							VK_Y_TO_NDC(y),
@@ -761,18 +761,18 @@ bool VK_DrawTexturedQuadRegionMod(const int32_t x,
 							VK_Y_TO_NDC(y + h),
 							startU,
 							startV,
-							startU + (float)regionW / (float)width,
-							startV + (float)regionH / (float)height,
+							startU + (float)regionW / (float)image->width,
+							startV + (float)regionH / (float)image->height,
 							color,
-							texturesAssetIDMap[ReadUintA(decompressed, IMAGE_ID_OFFSET)]);
+							imageAssetIdToIndexMap[image->id]);
 }
 
 bool VK_DrawTexturedQuadsBatched(const float *vertices,
-								 const int quadCount,
-								 const uint8_t *texture,
+								 const int32_t quadCount,
+								 const char *texture,
 								 const uint32_t color)
 {
-	for (int i = 0; i < quadCount; i++)
+	for (int32_t i = 0; i < quadCount; i++)
 	{
 		const uint32_t index = i * 16;
 		const mat4 matrix = {
@@ -925,14 +925,14 @@ void VK_ClearScreen() {}
 
 void VK_ClearDepthOnly() {}
 
-void VK_SetTexParams(const uint8_t *texture, const bool linear, const bool repeat)
+void VK_SetTexParams(const char *texture, const bool linear, const bool repeat)
 {
 	const uint32_t textureIndex = TextureIndex(texture);
 	for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 	{
 		VkDescriptorImageInfo imageInfo = {
 			.sampler = textureSamplers.nearestNoRepeat,
-			.imageView = texturesImageView[textureIndex],
+			.imageView = *(VkImageView *)ListGet(texturesImageView, textureIndex),
 			.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 		};
 		if (linear && repeat)
@@ -961,3 +961,5 @@ void VK_SetTexParams(const uint8_t *texture, const bool linear, const bool repea
 		vkUpdateDescriptorSets(device, 1, &writeDescriptor, 0, NULL);
 	}
 }
+
+void VK_LoadTexture(const char *texture) {}

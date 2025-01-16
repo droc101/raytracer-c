@@ -9,8 +9,7 @@
 // ReSharper disable CppUnusedIncludeDirective
 #include <cglm/cglm.h>
 #include <vulkan/vulkan.h>
-#include "../../../Assets/AssetReader.h"
-#include "../../../Assets/Assets.h"
+#include "../../Core/AssetReader.h"
 #include "../../Core/DataReader.h"
 #include "../../Core/Logging.h"
 // ReSharper restore CppUnusedIncludeDirective
@@ -18,8 +17,11 @@
 #pragma region macros
 #define VULKAN_VERSION VK_MAKE_VERSION(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH)
 #define MAX_FRAMES_IN_FLIGHT 2
-#define MAX_UI_QUADS_INIT 1
+#define MAX_UI_QUADS_INIT 8192 // TODO: find best value
 #define MAX_WALLS_INIT 1024
+/// This is an expected estimate for the largest that a texture will be. It is used to create an overallocation of
+/// texture memory with the formula @code MAX_TEXTURE_SIZE * MAX_TEXTURE_SIZE * 4 * textureCount@endcode
+#define MAX_TEXTURE_SIZE 384
 
 #define VulkanLogError(...) LogInternal("VULKAN", 31, true, __VA_ARGS__)
 // TODO Use LogInternal
@@ -47,7 +49,6 @@
 	const float g = ((color) >> 8 & 0xFF) / 255.0f; \
 	const float b = ((color) & 0xFF) / 255.0f; \
 	const float a = ((color) >> 24 & 0xFF) / 255.0f
-#define TextureIndex(texture) texturesAssetIDMap[ReadUintA(DecompressAsset(texture), IMAGE_ID_OFFSET)]
 #pragma endregion macros
 
 #pragma region typedefs
@@ -169,13 +170,14 @@ typedef struct WallVertex
 	uint32_t textureIndex; // TODO Per-vertex is less than ideal
 } WallVertex;
 
-typedef struct Image
+typedef struct Texture
 {
 	VkImage image;
+	const Image *imageInfo;
 	VkExtent3D extent;
 	uint8_t mipmapLevels;
 	MemoryAllocationInfo allocationInfo;
-} Image;
+} Texture;
 
 /**
  * A structure holding data about a Vulkan buffer.
@@ -392,10 +394,10 @@ extern MemoryPools memoryPools;
 extern Buffers buffers;
 extern VkDescriptorPool descriptorPool;
 extern VkDescriptorSet descriptorSets[MAX_FRAMES_IN_FLIGHT];
-extern Image textures[TEXTURE_ASSET_COUNT];
-extern VkDeviceMemory textureMemory;
-extern VkImageView texturesImageView[TEXTURE_ASSET_COUNT];
-extern uint32_t texturesAssetIDMap[ASSET_COUNT];
+extern List textures;
+extern MemoryInfo textureMemory;
+extern List texturesImageView;
+extern uint32_t imageAssetIdToIndexMap[MAX_TEXTURES];
 extern TextureSamplers textureSamplers;
 extern VkFormat depthImageFormat;
 extern VkImage depthImage;
@@ -406,6 +408,7 @@ extern VkDeviceMemory colorImageMemory;
 extern VkImageView colorImageView;
 extern VkClearColorValue clearColor;
 extern VkSampleCountFlagBits msaaSamples;
+extern uint16_t textureCount;
 #pragma endregion variables
 
 #pragma region helperFunctions
@@ -423,7 +426,7 @@ bool CreateImageView(VkImageView *imageView,
 					 uint8_t mipmapLevels,
 					 const char *errorMessage);
 
-VkShaderModule CreateShaderModule(const uint32_t *code, size_t size);
+VkShaderModule CreateShaderModule(const char *path);
 
 bool CreateImage(VkImage *image,
 				 VkDeviceMemory *imageMemory,
@@ -441,6 +444,8 @@ bool EndCommandBuffer(VkCommandBuffer commandBuffer, VkCommandPool commandPool, 
 bool CreateBuffer(Buffer *buffer, bool newAllocation);
 
 bool CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, uint32_t regionCount, const VkBufferCopy *regions);
+
+uint32_t TextureIndex(const char *texture);
 
 void CleanupSwapChain();
 

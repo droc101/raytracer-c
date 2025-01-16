@@ -135,12 +135,12 @@ add_executable(
         Structs/UI/Controls/TextBox.h
         Helpers/Graphics/Vulkan/Vulkan.c
         Helpers/Graphics/Vulkan/Vulkan.h
-        Helpers/Graphics/Vulkan/VulkanInternal.h
         Helpers/Graphics/Vulkan/VulkanInternal.c
+        Helpers/Graphics/Vulkan/VulkanInternal.h
         Helpers/Graphics/Vulkan/VulkanHelpers.c
         Helpers/Graphics/Vulkan/VulkanHelpers.h
-        Helpers/Graphics/Vulkan/VulkanMemory.h
         Helpers/Graphics/Vulkan/VulkanMemory.c
+        Helpers/Graphics/Vulkan/VulkanMemory.h
         Helpers/Graphics/Vulkan/VulkanResources.c
         Helpers/Graphics/Vulkan/VulkanResources.h
 )

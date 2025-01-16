@@ -6,7 +6,9 @@
 #include <cglm/clipspace/persp_lh_zo.h>
 #include <cglm/clipspace/view_lh_zo.h>
 
+#include "../../Core/Error.h"
 #include "VulkanInternal.h"
+#include "VulkanResources.h"
 
 #pragma region variables
 SDL_Window *vk_window;
@@ -59,10 +61,10 @@ MemoryPools memoryPools = {
 Buffers buffers = {0};
 VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
 VkDescriptorSet descriptorSets[MAX_FRAMES_IN_FLIGHT];
-Image textures[TEXTURE_ASSET_COUNT];
-VkDeviceMemory textureMemory = VK_NULL_HANDLE;
-VkImageView texturesImageView[TEXTURE_ASSET_COUNT];
-uint32_t texturesAssetIDMap[ASSET_COUNT];
+List textures;
+MemoryInfo textureMemory = {.type = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT};
+List texturesImageView;
+uint32_t imageAssetIdToIndexMap[MAX_TEXTURES];
 TextureSamplers textureSamplers = {
 	.linearRepeat = VK_NULL_HANDLE,
 	.nearestRepeat = VK_NULL_HANDLE,
@@ -78,6 +80,7 @@ VkDeviceMemory colorImageMemory = VK_NULL_HANDLE;
 VkImageView colorImageView = VK_NULL_HANDLE;
 VkClearColorValue clearColor = {{0.0f, 0.0f, 0.0f, 1.0f}};
 VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
+uint16_t textureCount;
 #pragma endregion variables
 
 bool QuerySwapChainSupport(const VkPhysicalDevice pDevice)
@@ -154,16 +157,17 @@ bool CreateImageView(VkImageView *imageView,
 	return true;
 }
 
-VkShaderModule CreateShaderModule(const uint32_t *code, const size_t size)
+VkShaderModule CreateShaderModule(const char *path)
 {
 	VkShaderModule shaderModule;
+	const Asset *shader = DecompressAsset(path);
 
 	const VkShaderModuleCreateInfo createInfo = {
 		.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
 		.pNext = NULL,
 		.flags = 0,
-		.codeSize = size - 16,
-		.pCode = code,
+		.codeSize = shader->size - sizeof(uint32_t) * 4, // sizeof(uint32_t) * 4 is the asset header
+		.pCode = (uint32_t *)shader->data,
 	};
 
 	VulkanTestWithReturn(vkCreateShaderModule(device, &createInfo, NULL, &shaderModule),
@@ -412,6 +416,20 @@ bool CopyBuffer(const VkBuffer srcBuffer,
 	return true;
 }
 
+inline uint32_t TextureIndex(const char *texture)
+{
+	const uint32_t index = imageAssetIdToIndexMap[LoadImage(texture)->id];
+	if (index == -1)
+	{
+		if (!LoadTexture(texture))
+		{
+			Error("Failed to load texture!");
+		}
+		return imageAssetIdToIndexMap[LoadImage(texture)->id];
+	}
+	return index;
+}
+
 void CleanupSwapChain()
 {
 	if (swapChainFramebuffers)
@@ -595,7 +613,6 @@ bool DrawQuadInternal(const mat4 vertices_posXY_uvZW, const uint32_t color, cons
 		UiVertex *newVertices = realloc(buffers.ui.vertices, sizeof(UiVertex) * buffers.ui.maxQuads * 4);
 		if (!newVertices)
 		{
-			free(newVertices); // newVertices should be NULL, but it's best to be safe
 			free(buffers.ui.vertices);
 			buffers.ui.vertices = NULL;
 
@@ -608,11 +625,10 @@ bool DrawQuadInternal(const mat4 vertices_posXY_uvZW, const uint32_t color, cons
 		uint32_t *newIndices = realloc(buffers.ui.indices, sizeof(uint32_t) * buffers.ui.maxQuads * 6);
 		if (!newIndices)
 		{
-			free(newVertices); // newVertices should be NULL, but it's best to be safe
+			free(newVertices);
 			free(buffers.ui.vertices);
 			buffers.ui.vertices = NULL;
 
-			free(newIndices); // newIndices should be NULL, but it's best to be safe
 			free(buffers.ui.indices);
 			buffers.ui.indices = NULL;
 

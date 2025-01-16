@@ -9,7 +9,6 @@
 #include "../Helpers/Core/Logging.h"
 #include "../Helpers/Core/PhysicsThread.h"
 #include "../Helpers/Graphics/RenderingHelpers.h"
-#include "../Helpers/LevelEntries.h"
 #include "../Helpers/LevelLoader.h"
 #include "../Structs/Level.h"
 #include "../Structs/Wall.h"
@@ -143,7 +142,7 @@ void ChangeLevel(Level *l)
 		StopMusic();
 	}
 
-	for (int i = 0; i < l->walls->size; i++)
+	for (int i = 0; i < l->walls.usedSlots; i++)
 	{
 		Wall *w = ListGet(l->walls, i);
 		WallBake(w);

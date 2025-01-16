@@ -121,7 +121,7 @@ void SetTexParams(const char *texture, const bool linear, const bool repeat)
 	switch (currentRenderer)
 	{
 		case RENDERER_VULKAN:
-			VK_SetTexParams(imageData, linear, repeat);
+			VK_SetTexParams(texture, linear, repeat);
 			break;
 		case RENDERER_OPENGL:
 			GL_SetTexParams(texture, linear, repeat);
@@ -176,7 +176,7 @@ inline void DrawTexture(const Vector2 pos, const Vector2 size, const char *textu
 	switch (currentRenderer)
 	{
 		case RENDERER_VULKAN:
-			VK_DrawTexturedQuad((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, imageData);
+			VK_DrawTexturedQuad((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, texture);
 			break;
 		case RENDERER_OPENGL:
 			GL_DrawTexture(pos, size, texture);
@@ -191,7 +191,7 @@ inline void DrawTextureMod(const Vector2 pos, const Vector2 size, const char *te
 	switch (currentRenderer)
 	{
 		case RENDERER_VULKAN:
-			VK_DrawTexturedQuadMod((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, imageData, color);
+			VK_DrawTexturedQuadMod((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, texture, color);
 			break;
 		case RENDERER_OPENGL:
 			GL_DrawTextureMod(pos, size, texture, color);
@@ -218,7 +218,7 @@ inline void DrawTextureRegion(const Vector2 pos,
 									  (int)region_start.y,
 									  (int)region_end.x,
 									  (int)region_end.y,
-									  imageData);
+									  texture);
 			break;
 		case RENDERER_OPENGL:
 			GL_DrawTextureRegion(pos, size, texture, region_start, region_end);
@@ -246,7 +246,7 @@ inline void DrawTextureRegionMod(const Vector2 pos,
 										 (int)region_start.y,
 										 (int)region_end.x,
 										 (int)region_end.y,
-										 imageData,
+										 texture,
 										 color);
 			break;
 		case RENDERER_OPENGL:

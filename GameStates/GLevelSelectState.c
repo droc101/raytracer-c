@@ -19,7 +19,7 @@
 #include "GMenuState.h"
 
 int GLevelSelectState_SelectedLevel = 0;
-List *levelList = NULL;
+List levelList;
 
 void GLevelSelectStateUpdate(GlobalState * /*State*/)
 {
@@ -30,11 +30,11 @@ void GLevelSelectStateUpdate(GlobalState * /*State*/)
 	if (IsKeyJustPressed(SDL_SCANCODE_DOWN) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_DPAD_DOWN))
 	{
 		GLevelSelectState_SelectedLevel--;
-		GLevelSelectState_SelectedLevel = wrap(GLevelSelectState_SelectedLevel, 0, levelList->size);
+		GLevelSelectState_SelectedLevel = wrap(GLevelSelectState_SelectedLevel, 0, levelList.usedSlots);
 	} else if (IsKeyJustPressed(SDL_SCANCODE_UP) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_DPAD_UP))
 	{
 		GLevelSelectState_SelectedLevel++;
-		GLevelSelectState_SelectedLevel = wrap(GLevelSelectState_SelectedLevel, 0, levelList->size);
+		GLevelSelectState_SelectedLevel = wrap(GLevelSelectState_SelectedLevel, 0, levelList.usedSlots);
 	} else if (IsKeyJustReleased(SDL_SCANCODE_SPACE) || IsButtonJustReleased(CONTROLLER_OK))
 	{
 		ConsumeKey(SDL_SCANCODE_SPACE);
@@ -69,9 +69,9 @@ void GLevelSelectStateRender(GlobalState * /*State*/)
 
 void GLevelSelectStateSet()
 {
-	if (levelList == NULL)
+	if (levelList.allocatedSlots == 0)
 	{
-		levelList = CreateList();
+		ListCreate(&levelList, 0);
 		char levelDataPath[300];
 		sprintf(levelDataPath, "%sassets/level/", GetState()->executableFolder);
 
@@ -93,9 +93,10 @@ void GLevelSelectStateSet()
 				strcpy(levelName, ent->d_name);
 				// Remove the .gmap extension
 				levelName[strlen(levelName) - 5] = '\0';
-				ListAdd(levelList, levelName);
+				ListAdd(&levelList, levelName);
 			}
 		}
+		closedir(dir);
 	}
 	StopMusic();
 	SetStateCallbacks(GLevelSelectStateUpdate,

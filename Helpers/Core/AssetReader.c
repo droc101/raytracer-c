@@ -12,8 +12,8 @@
 #include "Error.h"
 #include "Logging.h"
 
-List *assetCacheNames;
-List *assetCacheData;
+List assetCacheNames;
+List assetCacheData;
 TextureSizeTable *tsb;
 uint textureId;
 Image *images[MAX_TEXTURES];
@@ -95,20 +95,20 @@ const TextureSizeTable *GetTextureSizeTable()
 
 void AssetCacheInit()
 {
-	assetCacheNames = CreateList();
-	assetCacheData = CreateList();
+	ListCreate(&assetCacheNames, 0);
+	ListCreate(&assetCacheData, 0);
 	LoadTextureSizeTable();
 }
 
 void DestroyAssetCache()
 {
-	for (int i = 0; i < assetCacheData->size; i++)
+	for (int i = 0; i < assetCacheData.usedSlots; i++)
 	{
 		Asset *asset = ListGet(assetCacheData, i);
 		free(asset->data);
 		free(asset);
 	}
-	ListFree(assetCacheData);
+	free(assetCacheData.data);
 
 	for (int i = 0; i < MAX_TEXTURES; i++)
 	{
@@ -119,7 +119,7 @@ void DestroyAssetCache()
 		}
 	}
 
-	ListFreeWithData(assetCacheNames);
+	ListAndContentsFree(&assetCacheNames, false);
 	free(tsb->textureNames);
 	free(tsb);
 }
@@ -127,7 +127,7 @@ void DestroyAssetCache()
 Asset *DecompressAsset(const char *relPath)
 {
 	// see if relPath is already in the cache
-	for (int i = 0; i < assetCacheNames->size; i++)
+	for (int i = 0; i < assetCacheNames.usedSlots; i++)
 	{
 		if (strcmp(ListGet(assetCacheNames, i), relPath) == 0)
 		{
@@ -222,8 +222,8 @@ Asset *DecompressAsset(const char *relPath)
 	const size_t pathLength = strlen(relPath);
 	char *data = malloc(pathLength + 1);
 	strncpy(data, relPath, pathLength);
-	ListAdd(assetCacheNames, data);
-	ListAdd(assetCacheData, assetStruct);
+	ListAdd(&assetCacheNames, data);
+	ListAdd(&assetCacheData, assetStruct);
 
 	return assetStruct;
 }
@@ -289,8 +289,8 @@ Image *LoadImage(const char *asset)
 
 	img->id = textureId;
 
-	const size_t nameLength = strlen(asset);
-	img->name = malloc(nameLength + 1);
+	const size_t nameLength = strlen(asset) + 1;
+	img->name = malloc(nameLength);
 	strncpy(img->name, asset, nameLength);
 
 	images[textureId] = img;
