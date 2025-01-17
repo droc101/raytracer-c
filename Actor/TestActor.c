@@ -4,7 +4,6 @@
 
 #include "TestActor.h"
 #include "../Helpers/Collision.h"
-#include "../Helpers/CommonAssets.h"
 #include "../Helpers/Core/AssetReader.h"
 #include "../Structs/Vector2.h"
 #include "../Structs/Wall.h"
@@ -20,7 +19,7 @@ void TestActorInit(Actor *this)
 	this->solid = true;
 	this->actorModel = leafyModel;
 	this->actorModelTexture = TEXTURE("actor_BLOB2");
-	this->actorWall = CreateWall(v2(-0.5, 0), v2(0.5, 0), actorTextures[0], 1.0, 0.0);
+	this->actorWall = CreateWall(v2(-0.5, 0), v2(0.5, 0), "", 1.0, 0.0);
 }
 
 void TestActorUpdate(Actor *this, double delta)

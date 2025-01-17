@@ -16,10 +16,6 @@
 
 GlobalState state;
 
-const char *music[MUSIC_COUNT] = {
-	MUSIC("audio_field"),
-};
-
 /**
  * callback for when a channel finishes playing (so we can free it)
  * @param channel The channel that finished
@@ -133,9 +129,11 @@ void ChangeLevel(Level *l)
 	DestroyLevel(state.level);
 	state.level = l;
 	state.textBoxActive = false;
-	if (l->musicID != 0)
+	if (strcmp(l->music, "none") != 0)
 	{
-		ChangeMusic(music[l->musicID - 1]);
+		char musicPath[48];
+		snprintf(musicPath, 48, "audio/%s.gmus", l->music);
+		ChangeMusic(musicPath);
 	} else
 	{
 		StopMusic();

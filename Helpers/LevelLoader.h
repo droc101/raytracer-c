@@ -7,14 +7,6 @@
 
 #include "../defines.h"
 
-typedef struct LevelBytecode LevelBytecode;
-
-struct LevelBytecode
-{
-	byte *data;
-	int size;
-};
-
 // Level bytecode commands
 #define LEVEL_CMD_WALL 0 // Indicates that the next 36 bytes should be parsed as a wall
 #define LEVEL_CMD_ACTOR 1 // Load an Actor
@@ -32,12 +24,5 @@ struct LevelBytecode
  * @return Level struct
  */
 Level *LoadLevel(const byte *data);
-
-/**
- * Generate level bytecode from a level struct
- * @param l Level struct
- * @return Bytecode struct
- */
-LevelBytecode *GenerateBytecode(const Level *l);
 
 #endif //GAME_LEVELLOADER_H

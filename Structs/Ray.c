@@ -7,38 +7,38 @@
 #include "Vector2.h"
 
 // Perform a ray cast from a position and rotation into a wall. Don't forget to free the result!
-RayCastResult Intersect(const Wall wall, const Vector2 from, const double direction)
+RayCastResult Intersect(const Wall *wall, const Vector2 from, const double direction)
 {
 	RayCastResult rr = {0};
 	rr.collided = false;
 	rr.distance = 0;
-	if (wall.dx == 0)
+	if (wall->dx == 0)
 	{
-		const double distance = wall.dy * (wall.a.x - from.x) / (wall.dy * cos(direction));
+		const double distance = wall->dy * (wall->a.x - from.x) / (wall->dy * cos(direction));
 		if (distance > 0)
 		{
 			const double y = from.y + distance * sin(direction);
-			if ((y >= wall.a.y && y <= wall.b.y) || (y >= wall.b.y && y <= wall.a.y))
+			if ((y >= wall->a.y && y <= wall->b.y) || (y >= wall->b.y && y <= wall->a.y))
 			{
 				rr.collided = true;
 				rr.distance = distance;
-				rr.collisionPoint = v2(wall.a.x, y);
+				rr.collisionPoint = v2(wall->a.x, y);
 				rr.collisionWall = wall;
 				return rr;
 			}
 		}
 		return rr;
 	}
-	const double distance = (wall.dy * (wall.a.x - from.x) - wall.dx * (wall.a.y - from.y)) /
-							(wall.dy * cos(direction) - wall.dx * sin(direction));
+	const double distance = (wall->dy * (wall->a.x - from.x) - wall->dx * (wall->a.y - from.y)) /
+							(wall->dy * cos(direction) - wall->dx * sin(direction));
 	if (distance > 0)
 	{
 		const double x = from.x + distance * cos(direction);
-		if ((x >= wall.a.x && x <= wall.b.x) || (x >= wall.b.x && x <= wall.a.x))
+		if ((x >= wall->a.x && x <= wall->b.x) || (x >= wall->b.x && x <= wall->a.x))
 		{
 			rr.collided = true;
 			rr.distance = distance;
-			rr.collisionPoint = v2(x, wall.dy * (x - wall.a.x) / wall.dx + wall.a.y);
+			rr.collisionPoint = v2(x, wall->dy * (x - wall->a.x) / wall->dx + wall->a.y);
 			rr.collisionWall = wall;
 			return rr;
 		}

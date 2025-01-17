@@ -185,8 +185,7 @@ struct Wall
 {
 	Vector2 a; // The first point of the wall
 	Vector2 b; // The second point of the wall
-	const char *tex; // The texture name
-	int texId; // The texture ID
+	const char tex[48]; // The fully qualified texture name (texture/level_uvtest.gtex instead of level_uvtest)
 	double length; // The length of the wall (Call WallBake to update)
 	double angle; // The angle of the wall (Call WallBake to update)
 	double dx;
@@ -201,15 +200,22 @@ struct Level
 {
 	char name[32];
 	short courseNum;
+
 	List *actors; // The list of actors in the level. You must bake this into staticActors before it is used.
 	List *walls; // The list of walls in the level. You must bake this into staticWalls before it is used.
-	uint skyColor; // The color of the sky
-	uint floorTexture; // The texture index of the floor
-	uint ceilingTexture; // The texture index + 1 of the ceiling. 0 is no ceiling
-	uint musicID; // The music ID
-	uint fogColor; // The color of the fog
-	double fogStart; // The start of the fog
-	double fogEnd; // The end of the fog
+	List *triggers;
+	List *models;
+
+	bool hasCeiling;
+	char ceilOrSkyTex[32]; // The fully qualified texture name (texture/level_uvtest.gtex instead of level_uvtest)
+	char floorTex[32]; // The fully qualified texture name (texture/level_uvtest.gtex instead of level_uvtest)
+
+	char music[32]; // The fully qualified music name (texture/level_uvtest.gtex instead of level_uvtest) or "none" for no music
+
+	uint fogColor;
+	double fogStart;
+	double fogEnd;
+
 	Player player;
 };
 
@@ -219,7 +225,7 @@ struct RayCastResult
 	Vector2 collisionPoint; // The point of collision
 	double distance; // The distance to the collision
 	bool collided; // Whether the ray collided with anything
-	Wall collisionWall; // The wall that was collided with
+	Wall *collisionWall; // The wall that was collided with
 };
 
 struct TextBox

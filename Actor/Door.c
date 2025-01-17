@@ -4,12 +4,12 @@
 
 #include "Door.h"
 #include "../Helpers/Collision.h"
-#include "../Helpers/CommonAssets.h"
 #include "../Helpers/Core/Error.h"
 #include "../Helpers/Core/Logging.h"
 #include "../Structs/GlobalState.h"
 #include "../Structs/Vector2.h"
 #include "../Structs/Wall.h"
+#include "../Helpers/Core/AssetReader.h"
 
 typedef enum
 {
@@ -47,7 +47,7 @@ void DoorInit(Actor *this)
 {
 	this->showShadow = false;
 	this->solid = true;
-	this->actorWall = CreateWall(v2(0, 0), v2(1, 0), actorTextures[11], 1, 0.0);
+	this->actorWall = CreateWall(v2(0, 0), v2(1, 0), TEXTURE("actor_door"), 1, 0.0);
 	this->extra_data = malloc(sizeof(DoorData));
 	chk_malloc(this->extra_data);
 	memset(this->extra_data, 0, sizeof(DoorData));

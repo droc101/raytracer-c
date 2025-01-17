@@ -18,10 +18,10 @@ Level *CreateLevel()
 	l->walls = CreateList();
 	l->player.pos = v2s(0);
 	l->player.angle = 0;
-	l->skyColor = 0xff82c5ff;
-	l->floorTexture = 0;
-	l->ceilingTexture = 0;
-	l->musicID = 0;
+	l->hasCeiling = false;
+	strcpy(l->ceilOrSkyTex, "texture/level_sky_test.gtex");
+	strcpy(l->floorTex, "texture/level_floor_test.gtex");
+	strcpy(l->music, "none");
 	l->fogColor = 0xff000000;
 	l->fogStart = 10;
 	l->fogEnd = 30;

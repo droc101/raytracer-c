@@ -7,9 +7,6 @@
 
 #include "../defines.h"
 
-#define MUSIC_COUNT 1
-extern const char *music[MUSIC_COUNT];
-
 /**
  * Load options
  * @warning This function should only be called once
