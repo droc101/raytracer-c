@@ -72,7 +72,7 @@
 #define PAUSE_EXIT_LEVEL "leveldata_hub"
 
 // The level to start on when the game loads
-#define STARTING_LEVEL "leveldata_hub"
+#define STARTING_LEVEL "leveldata_fromeditor"
 
 // Number of sound effect channels
 // (sound effects that can play at the same time)

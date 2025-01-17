@@ -155,7 +155,7 @@ Asset *DecompressAsset(const char *relPath)
 	Asset *assetStruct = malloc(sizeof(Asset));
 	chk_malloc(assetStruct);
 
-	int offset = 0;
+	size_t offset = 0;
 	// Read the first 4 bytes of the asset to get the size of the compressed data
 	const uint compressedSize = ReadUint(asset, &offset);
 	const uint decompressedSize = ReadUint(asset, &offset);

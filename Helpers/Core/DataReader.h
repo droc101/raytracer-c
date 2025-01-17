@@ -16,7 +16,7 @@
  * @return The double read
  * @note Increments the offset by 8
  */
-double ReadDouble(const byte *data, int *offset);
+double ReadDouble(const byte *data, size_t *offset);
 
 /**
  * Reads a double from the given data at the given offset, but doesn't increment the offset
@@ -24,7 +24,7 @@ double ReadDouble(const byte *data, int *offset);
  * @param offset Offset to read from
  * @return The double read
  */
-double ReadDoubleA(const byte *data, int offset);
+double ReadDoubleA(const byte *data, size_t offset);
 
 /**
  * Reads a uint from the given data at the given offset
@@ -33,9 +33,9 @@ double ReadDoubleA(const byte *data, int offset);
  * @return The uint read
  * @note Increments the offset by 4
  */
-uint ReadUint(const byte *data, int *offset);
+uint ReadUint(const byte *data, size_t *offset);
 
-int ReadInt(const byte *data, int *offset);
+int ReadInt(const byte *data, size_t *offset);
 
 /**
  * Reads a uint from the given data at the given offset, but doesn't increment the offset
@@ -43,7 +43,7 @@ int ReadInt(const byte *data, int *offset);
  * @param offset The offset to read from
  * @return The uint read
  */
-uint ReadUintA(const byte *data, int offset);
+uint ReadUintA(const byte *data, size_t offset);
 
 /**
  * Reads a float from the given data at the given offset
@@ -52,7 +52,7 @@ uint ReadUintA(const byte *data, int offset);
  * @return The float read
  * @note Increments the offset by 4
  */
-float ReadFloat(const byte *data, int *offset);
+float ReadFloat(const byte *data, size_t *offset);
 
 /**
  * Reads a byte from the given data at the given offset
@@ -61,45 +61,10 @@ float ReadFloat(const byte *data, int *offset);
  * @return The byte read
  * @note Increments the offset by 1
  */
-byte ReadByte(const byte *data, int *offset);
+byte ReadByte(const byte *data, size_t *offset);
 
+void ReadString(const byte *date, size_t *offset, char *dest, size_t len);
 
-/**
- * Writes a double to the given data at the given offset
- * @param data The data to write to
- * @param offset The offset to write to
- * @param d The double to write
- * @note Increments the offset by 8
- */
-void WriteDouble(byte *data, int *offset, double d);
-
-/**
- * Writes a uint to the given data at the given offset
- * @param data The data to write to
- * @param offset The offset to write to
- * @param i The uint to write
- * @note Increments the offset by 4
- */
-void WriteUint(byte *data, int *offset, uint i);
-
-void WriteInt(byte *data, int *offset, int i);
-
-/**
- * Writes a float to the given data at the given offset
- * @param data The data to write to
- * @param offset The offset to write to
- * @param f The float to write
- * @note Increments the offset by 4
- */
-void WriteFloat(byte *data, int *offset, float f);
-
-/**
- * Writes a byte to the given data at the given offset
- * @param data The data to write to
- * @param offset The offset to write to
- * @param b The byte to write
- * @note Increments the offset by 1
- */
-void WriteByte(byte *data, int *offset, byte b);
+short ReadShort(const byte *data, size_t *offset);
 
 #endif //GAME_DATAREADER_H

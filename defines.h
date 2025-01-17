@@ -207,10 +207,10 @@ struct Level
 	List *models;
 
 	bool hasCeiling;
-	char ceilOrSkyTex[32]; // The fully qualified texture name (texture/level_uvtest.gtex instead of level_uvtest)
-	char floorTex[32]; // The fully qualified texture name (texture/level_uvtest.gtex instead of level_uvtest)
+	char ceilOrSkyTex[48]; // The fully qualified texture name (texture/level_uvtest.gtex instead of level_uvtest)
+	char floorTex[48]; // The fully qualified texture name (texture/level_uvtest.gtex instead of level_uvtest)
 
-	char music[32]; // The fully qualified music name (texture/level_uvtest.gtex instead of level_uvtest) or "none" for no music
+	char music[48]; // The fully qualified music name (texture/level_uvtest.gtex instead of level_uvtest) or "none" for no music
 
 	uint fogColor;
 	double fogStart;

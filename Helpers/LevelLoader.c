@@ -15,6 +15,62 @@
 Level *LoadLevel(const byte *data)
 {
 	Level *l = CreateLevel();
-	// TODO: new level bytecode
+	size_t offset = 0;
+
+	ReadString(data, &offset, l->name, 32);
+	l->courseNum = ReadShort(data, &offset);
+	l->hasCeiling = ReadByte(data, &offset);
+
+	char lDataCeilOrSkyTex[32];
+	char lDataFloorTex[32];
+
+	ReadString(data, &offset, lDataCeilOrSkyTex, 32);
+	ReadString(data, &offset, lDataFloorTex, 32);
+
+
+	snprintf(l->ceilOrSkyTex, 48, "texture/%s.gtex", lDataCeilOrSkyTex);
+	snprintf(l->floorTex, 48, "texture/%s.gtex", lDataFloorTex);
+
+	ReadString(data, &offset, l->music, 32);
+
+	l->fogColor = ReadUint(data, &offset);
+	l->fogStart = ReadDouble(data, &offset);
+	l->fogEnd = ReadDouble(data, &offset);
+	l->player.pos.x = ReadDouble(data, &offset);
+	l->player.pos.y = ReadDouble(data, &offset);
+	l->player.angle = ReadDouble(data, &offset);
+
+	uint actorCount = ReadUint(data, &offset);
+	for (int i = 0; i < actorCount; i++)
+	{
+		const double actorX = ReadDouble(data, &offset);
+		const double actorY = ReadDouble(data, &offset);
+		const double actorRot = ReadDouble(data, &offset);
+		const int actorType = ReadInt(data, &offset);
+		const byte actorParamA = ReadByte(data, &offset);
+		const byte actorParamB = ReadByte(data, &offset);
+		const byte actorParamC = ReadByte(data, &offset);
+		const byte actorParamD = ReadByte(data, &offset);
+		Actor *a = CreateActor(v2(actorX, actorY), actorRot, actorType, actorParamA, actorParamB, actorParamC, actorParamD);
+		ListAdd(l->actors, a);
+	}
+
+	uint wallCount = ReadUint(data, &offset);
+	for (int i = 0; i < wallCount; i++)
+	{
+		const double wallAX = ReadDouble(data, &offset);
+		const double wallAY = ReadDouble(data, &offset);
+		const double wallBX = ReadDouble(data, &offset);
+		const double wallBY = ReadDouble(data, &offset);
+		char lDataWallTex[32];
+		ReadString(data, &offset, (char*)&lDataWallTex, 32);
+		const char wallTex[48];
+		snprintf(wallTex, 48, "texture/%s.gtex", lDataWallTex);
+		const float wallUVScale = ReadFloat(data, &offset);
+		const float wallUVOffset = ReadFloat(data, &offset);
+		Wall *w = CreateWall(v2(wallAX, wallAY), v2(wallBX, wallBY), wallTex, wallUVScale, wallUVOffset);
+		ListAdd(l->walls, w);
+	}
+
 	return l;
 }
