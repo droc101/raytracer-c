@@ -38,9 +38,6 @@
 #define FRAMEGRAPH_ENABLE
 // See /Debug/FrameGrapher.h for additional frame grapher settings
 
-// Press F6 while in game to open the level editor
-#define ENABLE_LEVEL_EDITOR
-
 // Show debug print statements in the top left corner
 #define ENABLE_DEBUG_PRINT
 

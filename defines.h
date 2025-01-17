@@ -108,7 +108,6 @@ enum ImageDataOffsets
  */
 enum CurrentState
 {
-	EDITOR_STATE,
 	LEVEL_SELECT_STATE,
 	LOGO_SPLASH_STATE,
 	MAIN_STATE,

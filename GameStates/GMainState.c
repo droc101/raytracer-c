@@ -17,7 +17,6 @@
 #include "../Structs/GlobalState.h"
 #include "../Structs/Level.h"
 #include "../Structs/Vector2.h"
-#include "GEditorState.h"
 #include "GPauseState.h"
 
 void GMainStateUpdate(GlobalState *State)
@@ -28,13 +27,6 @@ void GMainStateUpdate(GlobalState *State)
 		GPauseStateSet();
 		return;
 	}
-#ifdef ENABLE_LEVEL_EDITOR
-	if (IsKeyJustPressed(SDL_SCANCODE_F6))
-	{
-		GEditorStateSet();
-		return;
-	}
-#endif
 
 	if (State->textBoxActive)
 	{

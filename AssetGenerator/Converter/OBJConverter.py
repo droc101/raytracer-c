@@ -66,7 +66,7 @@ def ParseOBJ(file_path):
  
 	bin_data = bytearray()
 	bin_data += struct.pack('4s', b'MSH\0')
-	bin_data.extend(util.IntToBytesLE(idx_val))
+	bin_data.extend(util.IntToBytes(idx_val))
 	bin_data += struct.pack('4s', b'DAT\0')
 	bin_data += vtx_bin_data
  
