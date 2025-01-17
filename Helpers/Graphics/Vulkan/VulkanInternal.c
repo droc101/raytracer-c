@@ -913,9 +913,16 @@ bool CreateGraphicsPipelines()
 		.pDynamicStates = NULL,
 	};
 
-	VkPushConstantRange pushConstantRange = {
-		.stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
-		.size = 8,
+	VkPushConstantRange pushConstantRanges[2] = {
+		{
+			.stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
+			.size = 12,
+		},
+		{
+			.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT,
+			.offset = 12,
+			.size = 4,
+		},
 	};
 	const VkPipelineLayoutCreateInfo pipelineLayoutInfo = {
 		.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
@@ -923,8 +930,8 @@ bool CreateGraphicsPipelines()
 		.flags = 0,
 		.setLayoutCount = 1,
 		.pSetLayouts = &descriptorSetLayout,
-		.pushConstantRangeCount = 1,
-		.pPushConstantRanges = &pushConstantRange,
+		.pushConstantRangeCount = 2,
+		.pPushConstantRanges = pushConstantRanges,
 	};
 	VulkanTest(vkCreatePipelineLayout(device, &pipelineLayoutInfo, NULL, &pipelineLayout),
 			   "Failed to create graphics pipeline layout!");

@@ -294,6 +294,8 @@ typedef struct WallVertexBuffer
 	VkDeviceSize indexSize;
 	/// The number of walls that are currently stored in the buffer, plus one for the floor.
 	uint32_t wallCount;
+	/// The number of indices required to draw the sky.
+	uint32_t skyIndexCount;
 	/// The maximum number of walls that can currently be stored in the buffer.
 	/// @note This in order to determine how many walls can be used you must subtract one from this number, due to the inclusion of the floor as a wall.
 	uint32_t maxWallCount;

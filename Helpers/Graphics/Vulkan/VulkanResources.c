@@ -4,15 +4,30 @@
 
 #include "VulkanResources.h"
 #include "../../../Structs/GlobalState.h"
+#include "../../CommonAssets.h"
 #include "../../Core/MathEx.h"
 #include "VulkanMemory.h"
 
 bool CreateLocalBuffer()
 {
-	buffers.walls.vertexSize = sizeof(WallVertex) * buffers.walls.maxWallCount * 4;
-	buffers.walls.indexSize = sizeof(uint32_t) * buffers.walls.maxWallCount * 6;
-	buffers.ui.vertexSize = sizeof(UiVertex) * buffers.ui.maxQuads * 4;
-	buffers.ui.indexSize = sizeof(uint32_t) * buffers.ui.maxQuads * 6;
+	if (skyModel)
+	{
+		buffers.walls.vertexSize = sizeof(WallVertex) *
+								   (buffers.walls.maxWallCount * 4 + skyModel->packedVertsUvsCount);
+		buffers.walls.indexSize = sizeof(uint32_t) * (buffers.walls.maxWallCount * 6 + skyModel->packedIndicesCount);
+		buffers.ui.vertexSize = sizeof(UiVertex) * buffers.ui.maxQuads * 4;
+		buffers.ui.indexSize = sizeof(uint32_t) * buffers.ui.maxQuads * 6;
+	} else
+	{
+		Model *fallbackSkyModel = LoadModel(MODEL("model_sky"));
+		buffers.walls.vertexSize = sizeof(WallVertex) *
+								   (buffers.walls.maxWallCount * 4 + fallbackSkyModel->packedVertsUvsCount);
+		buffers.walls.indexSize = sizeof(uint32_t) *
+								  (buffers.walls.maxWallCount * 6 + fallbackSkyModel->packedIndicesCount);
+		buffers.ui.vertexSize = sizeof(UiVertex) * buffers.ui.maxQuads * 4;
+		buffers.ui.indexSize = sizeof(uint32_t) * buffers.ui.maxQuads * 6;
+		FreeModel(fallbackSkyModel);
+	}
 
 	buffers.local.size = buffers.walls.vertexSize +
 						 buffers.walls.indexSize +
@@ -114,10 +129,12 @@ bool ResizeBuffer(Buffer *buffer, bool lossy, const MemoryMappingFunction MapMem
 	// TODO: Fix to dynamically set aliasing information from buffer information
 	if (buffer->memoryAllocationInfo.memoryInfo->type == VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
 	{
-		buffers.walls.vertexSize = sizeof(WallVertex) * buffers.walls.maxWallCount * 4;
-		buffers.walls.indexSize = sizeof(uint32_t) * buffers.walls.maxWallCount * 6;
+		buffers.walls.vertexSize = sizeof(WallVertex) *
+								   (buffers.walls.maxWallCount * 4 + skyModel->packedVertsUvsCount);
+		buffers.walls.indexSize = sizeof(uint32_t) * (buffers.walls.maxWallCount * 6 + skyModel->packedIndicesCount);
 		buffers.ui.vertexSize = sizeof(UiVertex) * buffers.ui.maxQuads * 4;
 		buffers.ui.indexSize = sizeof(uint32_t) * buffers.ui.maxQuads * 6;
+
 		SetLocalBufferAliasingInfo();
 	} else if (buffer->memoryAllocationInfo.memoryInfo->type ==
 			   (VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))

@@ -225,12 +225,25 @@ VkResult VK_FrameEnd()
 	const GlobalState *g = GetState();
 	if (g->currentState == MAIN_STATE || g->currentState == PAUSE_STATE && buffers.walls.wallCount > 0)
 	{
+		const uint32_t skyColor = (loadedLevel->skyColor & 0xFFFFFF00) | (TextureIndex(TEXTURE("level_sky")) & 0xFF);
 		vkCmdPushConstants(commandBuffers[currentFrame],
 						   pipelineLayout,
 						   VK_SHADER_STAGE_VERTEX_BIT,
 						   0,
 						   8,
 						   (vec2){(float)loadedLevel->player.pos.x, (float)loadedLevel->player.pos.y});
+		vkCmdPushConstants(commandBuffers[currentFrame],
+						   pipelineLayout,
+						   VK_SHADER_STAGE_VERTEX_BIT,
+						   8,
+						   4,
+						   &skyModel->packedVertsUvsCount);
+		vkCmdPushConstants(commandBuffers[currentFrame],
+						   pipelineLayout,
+						   VK_SHADER_STAGE_FRAGMENT_BIT,
+						   12,
+						   4,
+						   &skyColor);
 
 		vkCmdBindPipeline(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.walls);
 
@@ -254,7 +267,12 @@ VkResult VK_FrameEnd()
 								0,
 								NULL);
 
-		vkCmdDrawIndexed(commandBuffers[currentFrame], 6 * buffers.walls.wallCount, 1, 0, 0, 0);
+		vkCmdDrawIndexed(commandBuffers[currentFrame],
+						 buffers.walls.wallCount * 6 + buffers.walls.skyIndexCount,
+						 1,
+						 0,
+						 0,
+						 0);
 	}
 
 	vkCmdNextSubpass(commandBuffers[currentFrame], VK_SUBPASS_CONTENTS_INLINE);
@@ -358,7 +376,7 @@ bool VK_Cleanup()
 		vkDestroySampler(device, textureSamplers.nearestNoRepeat, NULL);
 		for (size_t textureIndex = 0; textureIndex < textures.usedSlots; textureIndex++)
 		{
-			vkDestroyImageView(device, *(VkImageView*)ListGet(texturesImageView, textureIndex), NULL);
+			vkDestroyImageView(device, *(VkImageView *)ListGet(texturesImageView, textureIndex), NULL);
 			vkDestroyImage(device, ((Texture *)ListGet(textures, textureIndex))->image, NULL);
 		}
 		vkFreeMemory(device, textureMemory.memory, NULL);
@@ -421,8 +439,19 @@ inline uint8_t VK_GetSampleCountFlags()
 bool VK_LoadLevelWalls(const Level *level)
 {
 	void *data;
+	uint32_t skyVertexCount = 0;
 
-	buffers.walls.wallCount = level->walls.usedSlots + 2;
+	if (level->ceilingTextureIndex == -1)
+	{
+		skyVertexCount = skyModel->packedVertsUvsCount;
+		buffers.walls.skyIndexCount = skyModel->packedIndicesCount;
+		buffers.walls.wallCount = level->walls.usedSlots + 1;
+	} else
+	{
+		buffers.walls.skyIndexCount = 0;
+		buffers.walls.wallCount = level->walls.usedSlots + 2;
+	}
+
 	if (buffers.walls.wallCount > buffers.walls.maxWallCount)
 	{
 		buffers.walls.maxWallCount = buffers.walls.wallCount;
@@ -434,7 +463,9 @@ bool VK_LoadLevelWalls(const Level *level)
 									buffers.walls.verticesOffset,
 									buffers.walls.vertexSize + buffers.walls.indexSize,
 									sizeof(UiVertex) * buffers.walls.maxWallCount * 4 +
-											sizeof(uint32_t) * buffers.walls.maxWallCount * 6,
+											sizeof(uint32_t) * buffers.walls.maxWallCount * 6 +
+											sizeof(UiVertex) * skyModel->packedVertsUvsCount +
+											sizeof(uint32_t) * skyModel->packedIndicesCount,
 									true,
 									NULL))
 			{
@@ -447,7 +478,9 @@ bool VK_LoadLevelWalls(const Level *level)
 									buffers.walls.indicesOffset,
 									buffers.walls.indexSize + buffers.walls.vertexSize,
 									sizeof(UiVertex) * buffers.walls.maxWallCount * 4 +
-											sizeof(uint32_t) * buffers.walls.maxWallCount * 6,
+											sizeof(uint32_t) * buffers.walls.maxWallCount * 6 +
+											sizeof(UiVertex) * skyModel->packedVertsUvsCount +
+											sizeof(uint32_t) * skyModel->packedIndicesCount,
 									true,
 									NULL))
 			{
@@ -458,7 +491,8 @@ bool VK_LoadLevelWalls(const Level *level)
 			if (!ResizeBufferRegion(&buffers.local,
 									buffers.walls.verticesOffset,
 									buffers.walls.vertexSize,
-									sizeof(UiVertex) * buffers.walls.maxWallCount * 4,
+									sizeof(UiVertex) * buffers.walls.maxWallCount * 4 +
+											sizeof(UiVertex) * skyModel->packedVertsUvsCount,
 									true,
 									NULL))
 			{
@@ -467,7 +501,8 @@ bool VK_LoadLevelWalls(const Level *level)
 			if (!ResizeBufferRegion(&buffers.local,
 									buffers.walls.indicesOffset,
 									buffers.walls.indexSize,
-									sizeof(uint32_t) * buffers.walls.maxWallCount * 6,
+									sizeof(uint32_t) * buffers.walls.maxWallCount * 6 +
+											sizeof(uint32_t) * skyModel->packedIndicesCount,
 									true,
 									NULL))
 			{
@@ -476,47 +511,52 @@ bool VK_LoadLevelWalls(const Level *level)
 		}
 	}
 
-	WallVertex vertices[buffers.walls.wallCount * 4];
-	uint32_t indices[buffers.walls.wallCount * 6];
+	WallVertex vertices[buffers.walls.wallCount * 4 + skyVertexCount];
+	uint32_t indices[buffers.walls.wallCount * 6 + buffers.walls.skyIndexCount];
 
-	vertices[0].x = -100;
-	vertices[0].y = -0.5f;
-	vertices[0].z = -100;
-	vertices[0].u = -100;
-	vertices[0].v = -100;
-	vertices[0].textureIndex = TextureIndex(wallTextures[level->floorTextureIndex]);
+	vertices[0 + skyVertexCount].x = -100;
+	vertices[0 + skyVertexCount].y = -0.5f;
+	vertices[0 + skyVertexCount].z = -100;
+	vertices[0 + skyVertexCount].u = -100;
+	vertices[0 + skyVertexCount].v = -100;
+	vertices[0 + skyVertexCount].textureIndex = TextureIndex(wallTextures[level->floorTextureIndex]);
 
-	vertices[1].x = 100;
-	vertices[1].y = -0.5f;
-	vertices[1].z = -100;
-	vertices[1].u = 100;
-	vertices[1].v = -100;
-	vertices[1].textureIndex = TextureIndex(wallTextures[level->floorTextureIndex]);
+	vertices[1 + skyVertexCount].x = 100;
+	vertices[1 + skyVertexCount].y = -0.5f;
+	vertices[1 + skyVertexCount].z = -100;
+	vertices[1 + skyVertexCount].u = 100;
+	vertices[1 + skyVertexCount].v = -100;
+	vertices[1 + skyVertexCount].textureIndex = TextureIndex(wallTextures[level->floorTextureIndex]);
 
-	vertices[2].x = 100;
-	vertices[2].y = -0.5f;
-	vertices[2].z = 100;
-	vertices[2].u = 100;
-	vertices[2].v = 100;
-	vertices[2].textureIndex = TextureIndex(wallTextures[level->floorTextureIndex]);
+	vertices[2 + skyVertexCount].x = 100;
+	vertices[2 + skyVertexCount].y = -0.5f;
+	vertices[2 + skyVertexCount].z = 100;
+	vertices[2 + skyVertexCount].u = 100;
+	vertices[2 + skyVertexCount].v = 100;
+	vertices[2 + skyVertexCount].textureIndex = TextureIndex(wallTextures[level->floorTextureIndex]);
 
-	vertices[3].x = -100;
-	vertices[3].y = -0.5f;
-	vertices[3].z = 100;
-	vertices[3].u = -100;
-	vertices[3].v = 100;
-	vertices[3].textureIndex = TextureIndex(wallTextures[level->floorTextureIndex]);
+	vertices[3 + skyVertexCount].x = -100;
+	vertices[3 + skyVertexCount].y = -0.5f;
+	vertices[3 + skyVertexCount].z = 100;
+	vertices[3 + skyVertexCount].u = -100;
+	vertices[3 + skyVertexCount].v = 100;
+	vertices[3 + skyVertexCount].textureIndex = TextureIndex(wallTextures[level->floorTextureIndex]);
 
-	indices[0] = 0;
-	indices[1] = 1;
-	indices[2] = 2;
-	indices[3] = 0;
-	indices[4] = 2;
-	indices[5] = 3;
+	indices[0 + buffers.walls.skyIndexCount] = 0 + buffers.walls.skyIndexCount;
+	indices[1 + buffers.walls.skyIndexCount] = 1 + buffers.walls.skyIndexCount;
+	indices[2 + buffers.walls.skyIndexCount] = 2 + buffers.walls.skyIndexCount;
+	indices[3 + buffers.walls.skyIndexCount] = 0 + buffers.walls.skyIndexCount;
+	indices[4 + buffers.walls.skyIndexCount] = 2 + buffers.walls.skyIndexCount;
+	indices[5 + buffers.walls.skyIndexCount] = 3 + buffers.walls.skyIndexCount;
 
-	if (level->ceilingTextureIndex == (uint32_t)-1)
+	if (level->ceilingTextureIndex == -1)
 	{
-		memset(&vertices[4], 0, sizeof(*vertices) * 4);
+		for (uint32_t i = 0; i < skyModel->packedVertsUvsCount; i++)
+		{
+			memcpy(&vertices[i], &skyModel->packedVertsUvs[i * 8], sizeof(float) * 5);
+			vertices[i].textureIndex = TextureIndex(TEXTURE("level_sky"));
+		}
+		memcpy(indices, skyModel->packedIndices, sizeof(uint32_t) * skyModel->packedIndicesCount);
 	} else
 	{
 		vertices[4].x = -100;
@@ -546,58 +586,58 @@ bool VK_LoadLevelWalls(const Level *level)
 		vertices[7].u = -100;
 		vertices[7].v = 100;
 		vertices[7].textureIndex = TextureIndex(wallTextures[level->ceilingTextureIndex]);
+
+		indices[6] = 4;
+		indices[7] = 5;
+		indices[8] = 6;
+		indices[9] = 4;
+		indices[10] = 6;
+		indices[11] = 7;
 	}
 
-	indices[6] = 4;
-	indices[7] = 5;
-	indices[8] = 6;
-	indices[9] = 4;
-	indices[10] = 6;
-	indices[11] = 7;
-
-	for (uint32_t i = 2; i < buffers.walls.wallCount; i++)
+	for (uint32_t i = !skyVertexCount ? 2 : 1; i < buffers.walls.wallCount; i++)
 	{
-		const Wall *wall = ListGet(level->walls, i - 2);
+		const Wall *wall = ListGet(level->walls, i - (!skyVertexCount ? 2 : 1));
 		const float halfHeight = wall->height / 2.0f;
 		const vec2 startVertex = {(float)wall->a.x, (float)wall->a.y};
 		const vec2 endVertex = {(float)wall->b.x, (float)wall->b.y};
 		const vec2 startUV = {wall->uvOffset, 0};
 		const vec2 endUV = {(float)(wall->uvScale * wall->length + wall->uvOffset), 1};
 
-		vertices[4 * i].x = startVertex[0];
-		vertices[4 * i].y = halfHeight;
-		vertices[4 * i].z = startVertex[1];
-		vertices[4 * i].u = startUV[0];
-		vertices[4 * i].v = startUV[1];
-		vertices[4 * i].textureIndex = TextureIndex(wall->tex);
+		vertices[4 * i + skyVertexCount].x = startVertex[0];
+		vertices[4 * i + skyVertexCount].y = halfHeight;
+		vertices[4 * i + skyVertexCount].z = startVertex[1];
+		vertices[4 * i + skyVertexCount].u = startUV[0];
+		vertices[4 * i + skyVertexCount].v = startUV[1];
+		vertices[4 * i + skyVertexCount].textureIndex = TextureIndex(wall->tex);
 
-		vertices[4 * i + 1].x = endVertex[0];
-		vertices[4 * i + 1].y = halfHeight;
-		vertices[4 * i + 1].z = endVertex[1];
-		vertices[4 * i + 1].u = endUV[0];
-		vertices[4 * i + 1].v = startUV[1];
-		vertices[4 * i + 1].textureIndex = TextureIndex(wall->tex);
+		vertices[4 * i + 1 + skyVertexCount].x = endVertex[0];
+		vertices[4 * i + 1 + skyVertexCount].y = halfHeight;
+		vertices[4 * i + 1 + skyVertexCount].z = endVertex[1];
+		vertices[4 * i + 1 + skyVertexCount].u = endUV[0];
+		vertices[4 * i + 1 + skyVertexCount].v = startUV[1];
+		vertices[4 * i + 1 + skyVertexCount].textureIndex = TextureIndex(wall->tex);
 
-		vertices[4 * i + 2].x = endVertex[0];
-		vertices[4 * i + 2].y = -halfHeight;
-		vertices[4 * i + 2].z = endVertex[1];
-		vertices[4 * i + 2].u = endUV[0];
-		vertices[4 * i + 2].v = endUV[1];
-		vertices[4 * i + 2].textureIndex = TextureIndex(wall->tex);
+		vertices[4 * i + 2 + skyVertexCount].x = endVertex[0];
+		vertices[4 * i + 2 + skyVertexCount].y = -halfHeight;
+		vertices[4 * i + 2 + skyVertexCount].z = endVertex[1];
+		vertices[4 * i + 2 + skyVertexCount].u = endUV[0];
+		vertices[4 * i + 2 + skyVertexCount].v = endUV[1];
+		vertices[4 * i + 2 + skyVertexCount].textureIndex = TextureIndex(wall->tex);
 
-		vertices[4 * i + 3].x = startVertex[0];
-		vertices[4 * i + 3].y = -halfHeight;
-		vertices[4 * i + 3].z = startVertex[1];
-		vertices[4 * i + 3].u = startUV[0];
-		vertices[4 * i + 3].v = endUV[1];
-		vertices[4 * i + 3].textureIndex = TextureIndex(wall->tex);
+		vertices[4 * i + 3 + skyVertexCount].x = startVertex[0];
+		vertices[4 * i + 3 + skyVertexCount].y = -halfHeight;
+		vertices[4 * i + 3 + skyVertexCount].z = startVertex[1];
+		vertices[4 * i + 3 + skyVertexCount].u = startUV[0];
+		vertices[4 * i + 3 + skyVertexCount].v = endUV[1];
+		vertices[4 * i + 3 + skyVertexCount].textureIndex = TextureIndex(wall->tex);
 
-		indices[6 * i] = i * 4;
-		indices[6 * i + 1] = i * 4 + 1;
-		indices[6 * i + 2] = i * 4 + 2;
-		indices[6 * i + 3] = i * 4;
-		indices[6 * i + 4] = i * 4 + 2;
-		indices[6 * i + 5] = i * 4 + 3;
+		indices[6 * i + buffers.walls.skyIndexCount] = i * 4 + buffers.walls.skyIndexCount;
+		indices[6 * i + 1 + buffers.walls.skyIndexCount] = i * 4 + 1 + buffers.walls.skyIndexCount;
+		indices[6 * i + 2 + buffers.walls.skyIndexCount] = i * 4 + 2 + buffers.walls.skyIndexCount;
+		indices[6 * i + 3 + buffers.walls.skyIndexCount] = i * 4 + buffers.walls.skyIndexCount;
+		indices[6 * i + 4 + buffers.walls.skyIndexCount] = i * 4 + 2 + buffers.walls.skyIndexCount;
+		indices[6 * i + 5 + buffers.walls.skyIndexCount] = i * 4 + 3 + buffers.walls.skyIndexCount;
 	}
 
 	MemoryInfo memoryInfo = {
@@ -619,8 +659,10 @@ bool VK_LoadLevelWalls(const Level *level)
 	VulkanTest(vkMapMemory(device, memoryInfo.memory, 0, stagingBuffer.size, 0, &data),
 			   "Failed to map wall staging buffer memory!");
 
-	memcpy(data, vertices, sizeof(WallVertex) * buffers.walls.wallCount * 4);
-	memcpy(data + buffers.walls.vertexSize, indices, sizeof(uint32_t) * buffers.walls.wallCount * 6);
+	memcpy(data, vertices, sizeof(WallVertex) * (buffers.walls.wallCount * 4 + skyVertexCount));
+	memcpy(data + buffers.walls.vertexSize,
+		   indices,
+		   sizeof(uint32_t) * (buffers.walls.wallCount * 6 + buffers.walls.skyIndexCount));
 	vkUnmapMemory(device, memoryInfo.memory);
 
 	const VkBufferCopy regions[] = {

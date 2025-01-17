@@ -1,7 +1,8 @@
 #version 460
 
 layout(push_constant) uniform PushConstants {
-    vec2 playerPosition;
+    layout(offset = 0) vec2 playerPosition;
+    layout(offset = 8) uint skyVertexCount;
 } pushConstants;
 
 layout(binding = 0) uniform Mat4 {
@@ -19,12 +20,23 @@ layout(location = 0) out vec2 outUV;
 layout(location = 1) flat out uint outTextureIndex;
 
 void main() {
-    if (gl_VertexIndex < 8) {
-        gl_Position = mat4(transform.i, transform.j, transform.k, transform.l) * (vec4(inVertex, 1.0) + vec4(pushConstants.playerPosition.x, 0, pushConstants.playerPosition.y, 0));
-        outUV = inUV + pushConstants.playerPosition;
+    if (pushConstants.skyVertexCount == 0) {
+        if (gl_VertexIndex < 8) {
+            gl_Position = mat4(transform.i, transform.j, transform.k, transform.l) * (vec4(inVertex, 1.0) + vec4(pushConstants.playerPosition.x, 0, pushConstants.playerPosition.y, 0));
+            outUV = inUV + pushConstants.playerPosition;
+        } else {
+            gl_Position = mat4(transform.i, transform.j, transform.k, transform.l) * vec4(inVertex, 1.0);
+            outUV = inUV;
+        }
     } else {
-        gl_Position = mat4(transform.i, transform.j, transform.k, transform.l) * vec4(inVertex, 1.0);
-        outUV = inUV;
+        if (gl_VertexIndex < pushConstants.skyVertexCount + 4 && pushConstants.skyVertexCount <= gl_VertexIndex) {
+            gl_Position = mat4(transform.i, transform.j, transform.k, transform.l) * (vec4(inVertex, 1.0) + vec4(pushConstants.playerPosition.x, 0, pushConstants.playerPosition.y, 0));
+            outUV = inUV + pushConstants.playerPosition;
+        } else {
+            gl_Position = mat4(transform.i, transform.j, transform.k, transform.l) * vec4(inVertex, 1.0);
+            outUV = inUV;
+        }
     }
+
     outTextureIndex = inTextureIndex;
 }
