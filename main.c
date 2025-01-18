@@ -19,6 +19,7 @@
 #include "Helpers/Graphics/RenderingHelpers.h"
 #include "Helpers/PlatformHelpers.h"
 #include "Structs/GlobalState.h"
+#include "Structs/Level.h"
 
 SDL_Surface *windowIcon;
 
@@ -215,7 +216,7 @@ int main(const int argc, char *argv[])
 
 	InitCommonAssets();
 
-	ChangeLevelByName(STARTING_LEVEL);
+	ChangeLevel(CreateLevel());
 
 	GLogoSplashStateSet();
 
