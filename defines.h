@@ -229,8 +229,8 @@ struct Level
 	/// The fully qualified texture name (texture/level_uvtest.gtex instead of level_uvtest)
 	char floorTex[48];
 
-	/// The fully qualified music name (texture/level_uvtest.gtex instead of level_uvtest) or "none" for no music
-	char music[48];
+	/// The music name, or "none" for no music
+	char music[32];
 
 	/// The color of the fog
 	uint fogColor;
