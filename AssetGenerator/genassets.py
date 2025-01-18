@@ -12,6 +12,7 @@ import Converter.MP3Converter
 import Converter.OBJConverter
 import Converter.VulkanShaderConverter
 import Converter.WAVConverter
+import Converter.GLShaderConverter
 
 if (len(sys.argv) != 3):
 	print("Usage: python genassets.py <input_path> <output_path>")
@@ -90,7 +91,7 @@ def RecursiveSearch(in_path, out_path):
 				Converter.OBJConverter.ConvertOBJ(in_path + file)
 			elif file.endswith(".glsl"):
 				print("Converting " + path_from_assets + file)
-				Converter.FileConverter.ConvertFile(in_path + file, 4, "gshd", "glshader")
+				Converter.GLShaderConverter.ConvertGLShader(in_path + file)
 			else:
 				print("Unrecognized file type: " + file)
 

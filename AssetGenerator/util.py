@@ -1,17 +1,14 @@
 import gzip
+import struct
 
 aid = 0
 
 input_path = ""
 output_path = ""
 
-# Convert an integer to bytes big endian, 4 bytes
+# Convert an integer to bytes little-endian, 4 bytes
 def IntToBytes(i):
-	return [(i >> 24) & 0xFF, (i >> 16) & 0xFF, (i >> 8) & 0xFF, i & 0xFF]
-
-# Convert an integer to bytes little endian, 4 bytes
-def IntToBytesLE(i):
-	return [i & 0xFF, (i >> 8) & 0xFF, (i >> 16) & 0xFF, (i >> 24) & 0xFF]
+	return struct.pack("<I", i)
 
 # Write to a file in the output folder
 def Write(subfolder, name, data):

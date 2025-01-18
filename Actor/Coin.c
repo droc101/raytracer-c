@@ -5,7 +5,6 @@
 #include "Coin.h"
 #include <math.h>
 #include "../Helpers/Collision.h"
-#include "../Helpers/CommonAssets.h"
 #include "../Helpers/Core/AssetReader.h"
 #include "../Structs/GlobalState.h"
 #include "../Structs/Level.h"
@@ -17,7 +16,7 @@ void CoinInit(Actor *this)
 	this->solid = false;
 	this->actorWall = CreateWall(v2(0, -0.125),
 								 v2(0, 0.125),
-								 this->paramB == 1 ? actorTextures[8] : actorTextures[7],
+								 this->paramB == 1 ? TEXTURE("actor_bluecoin") : TEXTURE("actor_coin"),
 								 1.0,
 								 0.0);
 	this->paramA = 0;
@@ -59,6 +58,5 @@ void CoinUpdate(Actor *this, double /*delta*/)
 // ReSharper disable once CppParameterMayBeConstPtrOrRef
 void CoinDestroy(Actor *this)
 {
-	FreeWall(this->actorWall);
 	free(this->actorWall);
 }
