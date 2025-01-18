@@ -14,6 +14,6 @@
  * @param direction Ray direction
  * @return @c RayCastResult with hit information
  */
-RayCastResult Intersect(Wall wall, Vector2 from, double direction);
+RayCastResult Intersect(Wall *wall, Vector2 from, double direction);
 
 #endif //GAME_RAY_H

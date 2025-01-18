@@ -77,8 +77,6 @@ add_executable(
         Helpers/Core/DataReader.h
         Helpers/Collision.c
         Helpers/Collision.h
-        GameStates/GEditorState.c
-        GameStates/GEditorState.h
         config.h
         GameStates/GLevelSelectState.c
         GameStates/GLevelSelectState.h

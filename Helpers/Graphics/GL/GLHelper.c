@@ -668,11 +668,6 @@ void GL_SetLevelParams(const mat4 *mvp, const Level *l)
 					   1,
 					   GL_FALSE,
 					   mvp[0][0]); // world -> screen
-	const uint skyColor = l->skyColor;
-	const float sr = (skyColor >> 16 & 0xFF) / 255.0f;
-	const float sg = (skyColor >> 8 & 0xFF) / 255.0f;
-	const float sb = (skyColor & 0xFF) / 255.0f;
-	glUniform4f(glGetUniformLocation(sky->program, "col"), sr, sg, sb, 1.0f);
 
 	glUseProgram(modelShaded->program);
 	glUniformMatrix4fv(glGetUniformLocation(modelShaded->program, "WORLD_VIEW_MATRIX"),
@@ -967,15 +962,16 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
 
 	GL_SetLevelParams(WORLD_VIEW_MATRIX, l);
 
-	GL_RenderModel(skyModel, SKY_MODEL_WORLD, TEXTURE("level_sky"), SHADER_SKY);
-
-	GL_ClearDepthOnly(); // prevent sky from clipping into walls
-
-	GL_DrawFloor(floor_start, floor_end, WORLD_VIEW_MATRIX, l, wallTextures[l->floorTexture], -0.5, 1.0);
-	if (l->ceilingTexture != 0)
+	if (l->hasCeiling)
 	{
-		GL_DrawFloor(floor_start, floor_end, WORLD_VIEW_MATRIX, l, wallTextures[l->ceilingTexture - 1], 0.5, 0.8);
+		GL_DrawFloor(floor_start, floor_end, WORLD_VIEW_MATRIX, l, l->ceilOrSkyTex, 0.5, 0.8);
+	} else
+	{
+		GL_RenderModel(skyModel, SKY_MODEL_WORLD, l->ceilOrSkyTex, SHADER_SKY);
+		GL_ClearDepthOnly(); // prevent sky from clipping into walls
 	}
+
+	GL_DrawFloor(floor_start, floor_end, WORLD_VIEW_MATRIX, l, l->floorTex, -0.5, 1.0);
 
 	for (int i = 0; i < l->walls->size; i++)
 	{
