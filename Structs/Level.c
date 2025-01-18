@@ -19,9 +19,9 @@ Level *CreateLevel()
 	l->player.pos = v2s(0);
 	l->player.angle = 0;
 	l->hasCeiling = false;
-	strcpy(l->ceilOrSkyTex, "texture/level_sky_test.gtex");
-	strcpy(l->floorTex, "texture/level_floor_test.gtex");
-	strcpy(l->music, "none");
+	strncpy(l->ceilOrSkyTex, "texture/level_sky_test.gtex", 28);
+	strncpy(l->floorTex, "texture/level_floor_test.gtex", 30);
+	strncpy(l->music, "none", 5);
 	l->fogColor = 0xff000000;
 	l->fogStart = 10;
 	l->fogEnd = 30;
@@ -32,11 +32,6 @@ Level *CreateLevel()
 
 void DestroyLevel(Level *l)
 {
-	for (int i = 0; i < l->walls->size; i++)
-	{
-		Wall *w = ListGet(l->walls, i);
-		FreeWall(w);
-	}
 	for (int i = 0; i < l->actors->size; i++)
 	{
 		Actor *a = ListGet(l->actors, i);

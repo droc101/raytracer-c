@@ -37,6 +37,5 @@ void TestActorUpdate(Actor *this, double delta)
 // ReSharper disable once CppParameterMayBeConstPtrOrRef
 void TestActorDestroy(Actor *this)
 {
-	FreeWall(this->actorWall);
 	free(this->actorWall);
 }

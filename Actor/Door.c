@@ -108,6 +108,5 @@ void DoorUpdate(Actor *this, double /*delta*/)
 void DoorDestroy(Actor *this)
 {
 	free(this->extra_data);
-	FreeWall(this->actorWall);
 	free(this->actorWall);
 }

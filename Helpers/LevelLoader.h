@@ -7,17 +7,6 @@
 
 #include "../defines.h"
 
-// Level bytecode commands
-#define LEVEL_CMD_WALL 0 // Indicates that the next 36 bytes should be parsed as a wall
-#define LEVEL_CMD_ACTOR 1 // Load an Actor
-#define LEVEL_CMD_PLAYER 2 // Indicates that the next 24 bytes should be parsed as the player's spawn pos and rot
-#define LEVEL_CMD_COLORS 3 // Indicates that the next 8 bytes should be parsed as the sky and floor colors
-#define LEVEL_CMD_FINISH 4 // Indicates that the level is completed and no further data should be processed
-#define LEVEL_CMD_FOG 5 // Indicates that the next 20 bytes should be parsed as the fog color and distances
-#define LEVEL_CMD_FLOOR_CEIL 6 // Indicates that the next 8 bytes should be parsed as the floor and ceiling textures
-#define LEVEL_CMD_MUSIC 7 // Indicates that the next 4 bytes should be parsed as the music track ID
-#define LEVEL_CMD_METADATA 8 // Indicates that the next 36 bytes should be parsed as the name and course number
-
 /**
  * Load a level from level bytecode
  * @param data Level bytecode

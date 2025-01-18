@@ -35,6 +35,13 @@ double ReadDoubleA(const byte *data, size_t offset);
  */
 uint ReadUint(const byte *data, size_t *offset);
 
+/**
+ * Reads an int from the given data at the given offset
+ * @param data The data to read from
+ * @param offset The offset to read from
+ * @return The int read
+ * @note Increments the offset by 4
+ */
 int ReadInt(const byte *data, size_t *offset);
 
 /**
@@ -63,8 +70,23 @@ float ReadFloat(const byte *data, size_t *offset);
  */
 byte ReadByte(const byte *data, size_t *offset);
 
-void ReadString(const byte *date, size_t *offset, char *dest, size_t len);
+/**
+ * Reads a string of length @c len from the given data at the given offset into @c dest
+ * @param data The data to read from
+ * @param offset The offset to read from
+ * @param dest The pointer to read the string into
+ * @param len The length of the string to read
+ * @note Increments the offset by @c len
+ */
+void ReadString(const byte *data, size_t *offset, char *dest, size_t len);
 
+/**
+ * Reads a short from the given data at the given offset
+ * @param data The data to read from
+ * @param offset The offset to read from
+ * @return The short read
+ * @note Increments the offset by 2
+ */
 short ReadShort(const byte *data, size_t *offset);
 
 #endif //GAME_DATAREADER_H

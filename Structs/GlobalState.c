@@ -129,7 +129,7 @@ void ChangeLevel(Level *l)
 	DestroyLevel(state.level);
 	state.level = l;
 	state.textBoxActive = false;
-	if (strcmp(l->music, "none") != 0)
+	if (strncmp(l->music, "none", 4) != 0)
 	{
 		char musicPath[48];
 		snprintf(musicPath, 48, "audio/%s.gmus", l->music);

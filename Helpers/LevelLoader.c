@@ -40,7 +40,7 @@ Level *LoadLevel(const byte *data)
 	l->player.pos.y = ReadDouble(data, &offset);
 	l->player.angle = ReadDouble(data, &offset);
 
-	uint actorCount = ReadUint(data, &offset);
+	const uint actorCount = ReadUint(data, &offset);
 	for (int i = 0; i < actorCount; i++)
 	{
 		const double actorX = ReadDouble(data, &offset);
@@ -51,11 +51,17 @@ Level *LoadLevel(const byte *data)
 		const byte actorParamB = ReadByte(data, &offset);
 		const byte actorParamC = ReadByte(data, &offset);
 		const byte actorParamD = ReadByte(data, &offset);
-		Actor *a = CreateActor(v2(actorX, actorY), actorRot, actorType, actorParamA, actorParamB, actorParamC, actorParamD);
+		Actor *a = CreateActor(v2(actorX, actorY),
+							   actorRot,
+							   actorType,
+							   actorParamA,
+							   actorParamB,
+							   actorParamC,
+							   actorParamD);
 		ListAdd(l->actors, a);
 	}
 
-	uint wallCount = ReadUint(data, &offset);
+	const uint wallCount = ReadUint(data, &offset);
 	for (int i = 0; i < wallCount; i++)
 	{
 		const double wallAX = ReadDouble(data, &offset);
@@ -63,7 +69,7 @@ Level *LoadLevel(const byte *data)
 		const double wallBX = ReadDouble(data, &offset);
 		const double wallBY = ReadDouble(data, &offset);
 		char lDataWallTex[32];
-		ReadString(data, &offset, (char*)&lDataWallTex, 32);
+		ReadString(data, &offset, (char *)&lDataWallTex, 32);
 		const char wallTex[48];
 		snprintf(wallTex, 48, "texture/%s.gtex", lDataWallTex);
 		const float wallUVScale = ReadFloat(data, &offset);

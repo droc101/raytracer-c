@@ -69,7 +69,7 @@
 #define APPDATA_APP_NAME "Game"
 
 // The level to load when pause exiting
-#define PAUSE_EXIT_LEVEL "leveldata_hub"
+#define PAUSE_EXIT_LEVEL "leveldata_fromeditor"
 
 // The level to start on when the game loads
 #define STARTING_LEVEL "leveldata_fromeditor"

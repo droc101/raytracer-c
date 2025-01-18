@@ -57,9 +57,9 @@ byte ReadByte(const byte *data, size_t *offset)
 	return b;
 }
 
-void ReadString(const byte *date, size_t *offset, char *dest, const size_t len)
+void ReadString(const byte *data, size_t *offset, char *dest, const size_t len)
 {
-	strncpy(dest, (const char *)(date + *offset), len);
+	strncpy(dest, (const char *)(data + *offset), len);
 	*offset += len;
 }
 

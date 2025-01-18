@@ -42,6 +42,5 @@ void GoalUpdate(Actor *this, double /*delta*/)
 // ReSharper disable once CppParameterMayBeConstPtrOrRef
 void GoalDestroy(Actor *this)
 {
-	FreeWall(this->actorWall);
 	free(this->actorWall);
 }

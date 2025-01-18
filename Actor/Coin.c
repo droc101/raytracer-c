@@ -58,6 +58,5 @@ void CoinUpdate(Actor *this, double /*delta*/)
 // ReSharper disable once CppParameterMayBeConstPtrOrRef
 void CoinDestroy(Actor *this)
 {
-	FreeWall(this->actorWall);
 	free(this->actorWall);
 }

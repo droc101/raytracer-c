@@ -21,11 +21,6 @@ Wall *CreateWall(const Vector2 a, const Vector2 b, const char *texture, const fl
 	return w;
 }
 
-void FreeWall(Wall * /*w*/)
-{
-	// no longer need to free the texture
-}
-
 double WallGetLength(const Wall w)
 {
 	return sqrt(pow(w.b.x - w.a.x, 2) + pow(w.b.y - w.a.y, 2));

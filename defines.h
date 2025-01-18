@@ -183,39 +183,63 @@ struct Player
 // Utility functions are in Structs/wall.h
 struct Wall
 {
-	Vector2 a; // The first point of the wall
-	Vector2 b; // The second point of the wall
-	const char tex[48]; // The fully qualified texture name (texture/level_uvtest.gtex instead of level_uvtest)
-	double length; // The length of the wall (Call WallBake to update)
-	double angle; // The angle of the wall (Call WallBake to update)
+	/// The first point of the wall
+	Vector2 a;
+	/// The second point of the wall
+	Vector2 b;
+	/// The fully qualified texture name (texture/level_uvtest.gtex instead of level_uvtest)
+	const char tex[48];
+	/// The length of the wall (Call @c WallBake to update)
+	double length;
+	/// The angle of the wall (Call @c WallBake to update)
+	double angle;
+	/// The change in x over the length of the wall, calculated with @code Wall.b.x - Wall.a.x@endcode
 	double dx;
+	/// The change in y over the length of the wall, calculated with @code Wall.b.y - Wall.a.y@endcode
 	double dy;
-	float uvScale; // The X scale of the texture
-	float uvOffset; // The X offset of the texture
-	float height; // height of the wall for rendering. Does not affect collision
+	/// The X scale of the texture
+	float uvScale;
+	/// The X offset of the texture
+	float uvOffset;
+	/// height of the wall for rendering. Does not affect collision
+	float height;
 };
 
 // Utility functions are in Structs/level.h
 struct Level
 {
+	/// The level's display name
 	char name[32];
+	/// The level's display course number, with -1 being none
 	short courseNum;
 
-	List *actors; // The list of actors in the level. You must bake this into staticActors before it is used.
-	List *walls; // The list of walls in the level. You must bake this into staticWalls before it is used.
+	/// The list of actors in the level
+	List *actors;
+	/// The list of walls in the level
+	List *walls;
+	/// The list of triggers in the level
 	List *triggers;
+	/// The list of models in the level
 	List *models;
 
+	/// Indicates if the level has a ceiling. If false, the level will use a sky instead
 	bool hasCeiling;
-	char ceilOrSkyTex[48]; // The fully qualified texture name (texture/level_uvtest.gtex instead of level_uvtest)
-	char floorTex[48]; // The fully qualified texture name (texture/level_uvtest.gtex instead of level_uvtest)
+	/// The fully qualified texture name (texture/level_uvtest.gtex instead of level_uvtest)
+	char ceilOrSkyTex[48];
+	/// The fully qualified texture name (texture/level_uvtest.gtex instead of level_uvtest)
+	char floorTex[48];
 
-	char music[48]; // The fully qualified music name (texture/level_uvtest.gtex instead of level_uvtest) or "none" for no music
+	/// The fully qualified music name (texture/level_uvtest.gtex instead of level_uvtest) or "none" for no music
+	char music[48];
 
+	/// The color of the fog
 	uint fogColor;
+	/// The distance at which the fog begins to fade in
 	double fogStart;
+	/// The distance at which the fog is fully opaque
 	double fogEnd;
 
+	/// The player object
 	Player player;
 };
 

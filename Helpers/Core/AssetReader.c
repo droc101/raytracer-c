@@ -129,7 +129,7 @@ Asset *DecompressAsset(const char *relPath)
 	// see if relPath is already in the cache
 	for (int i = 0; i < assetCacheNames->size; i++)
 	{
-		if (strcmp(ListGet(assetCacheNames, i), relPath) == 0)
+		if (strncmp(ListGet(assetCacheNames, i), relPath, 48) == 0)
 		{
 			return ListGet(assetCacheData, i);
 		}
@@ -266,7 +266,7 @@ Image *LoadImage(const char *asset)
 		{
 			break;
 		}
-		if (strcmp(asset, img->name) == 0)
+		if (strncmp(asset, img->name, 48) == 0)
 		{
 			return img;
 		}
@@ -317,14 +317,14 @@ Model *LoadModel(const char *asset)
 	chk_malloc(model);
 	memcpy(&model->header, assetData->data, sizeof(ModelHeader));
 
-	if (strcmp(model->header.sig, "MSH") != 0)
+	if (strncmp(model->header.sig, "MSH", 3) != 0)
 	{
 		LogError("Tried to load a model, but its first magic was incorrect (got %s)!", model->header.sig);
 		free(model);
 		return NULL;
 	}
 
-	if (strcmp(model->header.dataSig, "DAT") != 0)
+	if (strncmp(model->header.dataSig, "DAT", 3) != 0)
 	{
 		LogError("Tried to load a model, but its second magic was incorrect (got %s)!", model->header.dataSig);
 		free(model);
