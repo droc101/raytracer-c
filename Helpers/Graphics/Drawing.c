@@ -44,8 +44,8 @@ inline int WindowHeight()
 inline void UpdateWindowSize()
 {
 	SDL_GetWindowSize(window, &windowWidth, &windowHeight);
-	windowWidth /= (int)GetState()->uiScale;
-	windowHeight /= (int)GetState()->uiScale;
+	windowWidth = (int)(windowWidth / GetState()->uiScale);
+	windowHeight = (int)(windowHeight / GetState()->uiScale);
 }
 
 inline Vector2 ActualWindowSize()
