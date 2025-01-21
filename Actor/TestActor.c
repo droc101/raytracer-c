@@ -9,16 +9,10 @@
 #include "../Structs/Vector2.h"
 #include "../Structs/Wall.h"
 
-Model *leafyModel = NULL;
-
 void TestActorInit(Actor *this)
 {
-	if (leafyModel == NULL)
-	{
-		leafyModel = LoadModel(MODEL("model_leafy"));
-	}
 	this->solid = true;
-	this->actorModel = leafyModel;
+	this->actorModel = LoadModel(MODEL("model_leafy"));
 	this->actorModelTexture = TEXTURE("actor_BLOB2");
 	this->actorWall = CreateWall(v2(-0.5, 0), v2(0.5, 0), actorTextures[0], 1.0, 0.0);
 }

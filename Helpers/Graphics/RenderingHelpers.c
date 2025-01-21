@@ -14,14 +14,15 @@
 Renderer currentRenderer;
 bool lowFPSMode;
 
-mat4 *ActorTransformMatrix(const Actor *Actor)
+void ActorTransformMatrix(const Actor *Actor, mat4 *transformMatrix)
 {
-	mat4 *MODEL = malloc(sizeof(mat4));
-	chk_malloc(MODEL);
-	glm_mat4_identity(*MODEL);
-	glm_translate(*MODEL, (vec3){Actor->position.x, Actor->yPosition, Actor->position.y});
-	glm_rotate(*MODEL, -Actor->rotation, (vec3){0, 1, 0});
-	return MODEL;
+	if (!transformMatrix)
+	{
+		Error("A NULL transformMatrix must not be passed to ActorTransformMatrix!");
+	}
+	glm_mat4_identity(*transformMatrix);
+	glm_translate(*transformMatrix, (vec3){Actor->position.x, Actor->yPosition, Actor->position.y});
+	glm_rotate(*transformMatrix, -Actor->rotation, (vec3){0, 1, 0});
 }
 
 bool RenderPreInit()

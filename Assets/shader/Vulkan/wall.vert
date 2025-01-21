@@ -29,9 +29,13 @@ void main() {
             outUV = inUV;
         }
     } else {
-        if (gl_VertexIndex < pushConstants.skyVertexCount + 4 && pushConstants.skyVertexCount <= gl_VertexIndex) {
+        if (gl_VertexIndex < pushConstants.skyVertexCount + 4) {
             gl_Position = mat4(transform.i, transform.j, transform.k, transform.l) * (vec4(inVertex, 1.0) + vec4(pushConstants.playerPosition.x, 0, pushConstants.playerPosition.y, 0));
-            outUV = inUV + pushConstants.playerPosition;
+            if (pushConstants.skyVertexCount <= gl_VertexIndex) {
+                outUV = inUV + pushConstants.playerPosition;
+            } else {
+                outUV = inUV;
+            }
         } else {
             gl_Position = mat4(transform.i, transform.j, transform.k, transform.l) * vec4(inVertex, 1.0);
             outUV = inUV;

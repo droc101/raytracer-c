@@ -269,10 +269,13 @@ void ChangeLevelByName(const char *name)
 
 	if (snprintf(levelPath, maxPathLength, "level/%s.gmap", name) > maxPathLength)
 	{
+		free(levelPath);
+
 		LogError("Failed to load level due to level name %s being too long\n", name);
 		Error("Failed to load level.");
 	}
 	const Asset *levelData = DecompressAsset(levelPath);
+	free(levelPath);
 	if (levelData == NULL)
 	{
 		LogError("Failed to load level asset.\n");

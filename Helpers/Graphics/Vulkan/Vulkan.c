@@ -319,6 +319,9 @@ bool VK_Cleanup()
 
 	vkDestroyInstance(instance, NULL);
 
+	free(swapChainSupport.formats);
+	free(swapChainSupport.presentMode);
+
 	return true;
 }
 
@@ -343,7 +346,7 @@ bool VK_LoadLevelWalls(const Level *level)
 {
 	void *data;
 	uint32_t skyVertexCount = 0;
-	Model *_skyModel = !skyModel ? LoadModel(MODEL("model_sky")) : skyModel;
+	const Model *_skyModel = !skyModel ? LoadModel(MODEL("model_sky")) : skyModel;
 	if (level->ceilingTextureIndex == -1)
 	{
 		skyVertexCount = _skyModel->packedVertsUvsNormalCount;
@@ -419,6 +422,7 @@ bool VK_LoadLevelWalls(const Level *level)
 	free(buffers.actors.models.modelCounts);
 	memset(&buffers.actors, 0, sizeof(ActorBuffer));
 	buffers.actors.walls.count = ACTOR_WALL_OVERALLOCATION_COUNT;
+	buffers.actors.models.modelCounts = calloc(buffers.actors.models.loadedModelIds.length, sizeof(uint16_t));
 	for (size_t i = 0; i < level->actors.length; i++)
 	{
 		const Actor *actor = ListGet(level->actors, i);
@@ -431,15 +435,17 @@ bool VK_LoadLevelWalls(const Level *level)
 			buffers.actors.walls.count++;
 		} else
 		{
-			if (ListFind(buffers.actors.models.loadedModelIds, &actor->actorModel->id) == -1)
+			size_t index = ListFind(buffers.actors.models.loadedModelIds, (void *)actor->actorModel->id);
+			if (index == -1)
 			{
-				ListAdd(&buffers.actors.models.loadedModelIds, &actor->actorModel->id);
+				index = buffers.actors.models.loadedModelIds.length;
+				ListAdd(&buffers.actors.models.loadedModelIds, (void *)actor->actorModel->id);
 				buffers.actors.models.vertexCount += actor->actorModel->packedVertsUvsNormalCount;
 				buffers.actors.models.indexCount += actor->actorModel->packedIndicesCount;
 			}
+			buffers.actors.models.modelCounts[index]++;
 		}
 	}
-	buffers.actors.models.modelCounts = calloc(buffers.actors.models.loadedModelIds.length, sizeof(uint16_t));
 
 	if (sizeof(ActorVertex) * buffers.actors.models.vertexCount > buffers.actors.models.vertexSize ||
 		sizeof(uint32_t) * buffers.actors.models.indexCount > buffers.actors.models.indexSize ||
@@ -548,10 +554,6 @@ bool VK_LoadLevelWalls(const Level *level)
 	free(wallIndices);
 	free(actorVertices);
 	free(actorIndices);
-	if (!skyModel)
-	{
-		FreeModel(_skyModel);
-	}
 
 	return DestroyBuffer(&stagingBuffer);
 }

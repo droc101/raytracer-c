@@ -67,5 +67,4 @@ int FindWallTextureIndex(const char *texture)
 
 void DestroyCommonAssets()
 {
-	FreeModel(skyModel);
 }

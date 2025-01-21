@@ -677,7 +677,7 @@ void GL_SetLevelParams(const mat4 *mvp, const Level *l)
 					   mvp[0][0]); // world -> screen
 }
 
-void GL_DrawWall(const Wall *w, const mat4 *mdl, const Camera *cam, const Level * /*l*/)
+void GL_DrawWall(const Wall *w, const mat4 mdl, const Camera *cam, const Level * /*l*/)
 {
 	glUseProgram(wall->program);
 
@@ -686,7 +686,7 @@ void GL_DrawWall(const Wall *w, const mat4 *mdl, const Camera *cam, const Level 
 	glUniformMatrix4fv(glGetUniformLocation(wall->program, "MODEL_WORLD_MATRIX"),
 					   1,
 					   GL_FALSE,
-					   mdl[0][0]); // model -> world
+					   mdl[0]); // model -> world
 
 	glUniform1f(glGetUniformLocation(wall->program, "camera_yaw"), cam->yaw);
 	glUniform1f(glGetUniformLocation(wall->program, "wall_angle"), w->angle);
@@ -782,7 +782,7 @@ void GL_DrawFloor(const Vector2 vp1,
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 }
 
-void GL_DrawShadow(const Vector2 vp1, const Vector2 vp2, const mat4 *mvp, const mat4 *mdl, const Level *l)
+void GL_DrawShadow(const Vector2 vp1, const Vector2 vp2, const mat4 *mvp, const mat4 mdl, const Level *l)
 {
 	glUseProgram(shadow->program);
 
@@ -795,7 +795,7 @@ void GL_DrawShadow(const Vector2 vp1, const Vector2 vp2, const mat4 *mvp, const 
 	glUniformMatrix4fv(glGetUniformLocation(shadow->program, "MODEL_WORLD_MATRIX"),
 					   1,
 					   GL_FALSE,
-					   mdl[0][0]); // model -> world
+					   mdl[0]); // model -> world
 
 	const uint color = l->fogColor;
 	const float r = (color >> 16 & 0xFF) / 255.0f;
@@ -978,13 +978,9 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
 	//glLineWidth(2);
 
 	mat4 *WORLD_VIEW_MATRIX = GL_GetMatrix(cam);
-	mat4 *IDENTITY = malloc(sizeof(mat4));
-	chk_malloc(IDENTITY);
-	glm_mat4_identity(*IDENTITY);
-	mat4 *SKY_MODEL_WORLD = malloc(sizeof(mat4));
-	chk_malloc(SKY_MODEL_WORLD);
-	glm_mat4_identity(*SKY_MODEL_WORLD);
-	glm_translated(*SKY_MODEL_WORLD, (vec3){l->player.pos.x, 0, l->player.pos.y});
+	const mat4 IDENTITY = GLM_MAT4_IDENTITY_INIT;
+	mat4 SKY_MODEL_WORLD = GLM_MAT4_IDENTITY_INIT;
+	glm_translated(SKY_MODEL_WORLD, (vec3){l->player.pos.x, 0, l->player.pos.y});
 
 	const Vector2 floor_start = v2(l->player.pos.x - 100, l->player.pos.y - 100);
 	const Vector2 floor_end = v2(l->player.pos.x + 100, l->player.pos.y + 100);
@@ -1009,7 +1005,8 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
 	for (int i = 0; i < l->actors.length; i++)
 	{
 		const Actor *actor = ListGet(l->actors, i);
-		mat4 *actor_xfm = ActorTransformMatrix(actor);
+		mat4 actor_xfm;
+		ActorTransformMatrix(actor, &actor_xfm);
 		if (actor->actorModel == NULL)
 		{
 			if (actor->actorWall == NULL)
@@ -1029,23 +1026,20 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
 		if (actor->showShadow)
 		{
 			// remove the rotation and y position from the actor matrix so the shadow draws correctly
-			glm_rotate(*actor_xfm, actor->rotation, (vec3){0, 1, 0});
-			glm_translate(*actor_xfm, (vec3){0, -actor->yPosition, 0});
+			glm_rotate(actor_xfm, actor->rotation, (vec3){0, 1, 0});
+			glm_translate(actor_xfm, (vec3){0, -actor->yPosition, 0});
 
 			GL_DrawShadow(v2s(-0.5 * actor->shadowSize), v2s(0.5 * actor->shadowSize), WORLD_VIEW_MATRIX, actor_xfm, l);
 		}
-
-		free(actor_xfm);
 	}
 
 	free(WORLD_VIEW_MATRIX);
-	free(IDENTITY);
 
 	//glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 	GL_Disable3D();
 }
 
-void GL_RenderModel(const Model *model, const mat4 *modelWorldMatrix, const char *texture, const ModelShader shader)
+void GL_RenderModel(const Model *model, const mat4 modelWorldMatrix, const char *texture, const ModelShader shader)
 {
 	GL_Shader *shd;
 	switch (shader)
@@ -1070,7 +1064,7 @@ void GL_RenderModel(const Model *model, const mat4 *modelWorldMatrix, const char
 	glUniformMatrix4fv(glGetUniformLocation(shd->program, "MODEL_WORLD_MATRIX"),
 					   1,
 					   GL_FALSE,
-					   modelWorldMatrix[0][0]); // model -> world
+					   modelWorldMatrix[0]); // model -> world
 
 	glBindVertexArray(glBuffer->vao);
 

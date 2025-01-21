@@ -661,11 +661,9 @@ void LoadActorModels(const Level *level, ActorVertex *vertices, uint32_t *indice
 		{
 			continue;
 		}
-		size_t index = ListFind(buffers.actors.models.loadedModelIds, &actor->actorModel->id);
-		if (index == -1)
+		if (ListFind(buffers.actors.models.loadedModelIds, (void *)actor->actorModel->id) == -1)
 		{
-			index = buffers.actors.models.loadedModelIds.length;
-			ListAdd(&buffers.actors.models.loadedModelIds, &actor->actorModel->id);
+			ListAdd(&buffers.actors.models.loadedModelIds, (void *)actor->actorModel->id);
 			const size_t vertexSize = sizeof(*vertices) * actor->actorModel->packedVertsUvsNormalCount;
 			const size_t indexSize = sizeof(*indices) * actor->actorModel->packedIndicesCount;
 			memcpy(&vertices[vertexOffset], actor->actorModel->packedVertsUvsNormal, vertexSize);
@@ -673,7 +671,6 @@ void LoadActorModels(const Level *level, ActorVertex *vertices, uint32_t *indice
 			vertexOffset += vertexSize;
 			indexOffset += indexSize;
 		}
-		buffers.actors.models.modelCounts[index]++;
 	}
 }
 
@@ -734,10 +731,11 @@ void LoadActorWalls(const Level *level, ActorVertex *vertices, uint32_t *indices
 
 void LoadActorInstanceData(const Level *level, ActorInstanceData *instanceData)
 {
+	mat4 transformMatrix;
 	uint32_t wallCount = 0;
 	uint16_t *modelCounts = calloc(buffers.actors.models.loadedModelIds.length, sizeof(uint16_t));
 	uint32_t *offsets = calloc(buffers.actors.models.loadedModelIds.length + 1, sizeof(uint32_t));
-	for (size_t i = 1; i < buffers.actors.models.loadedModelIds.length; i++)
+	for (size_t i = 1; i <= buffers.actors.models.loadedModelIds.length; i++)
 	{
 		offsets[i] = offsets[i - 1] + buffers.actors.models.modelCounts[i - 1] * sizeof(ActorInstanceData);
 	}
@@ -748,21 +746,24 @@ void LoadActorInstanceData(const Level *level, ActorInstanceData *instanceData)
 		{
 			continue;
 		}
+		ActorTransformMatrix(actor, &transformMatrix);
 		if (actor->actorModel)
 		{
-			const size_t index = ListFind(buffers.actors.models.loadedModelIds, &actor->actorModel->id);
-			memcpy((instanceData + offsets[index])[modelCounts[index]].transform,
-				   ActorTransformMatrix(actor),
-				   sizeof(mat4));
-			(instanceData + offsets[index])[modelCounts[index]].textureIndex = TextureIndex(actor->actorModelTexture);
+			const size_t index = ListFind(buffers.actors.models.loadedModelIds, (void *)actor->actorModel->id);
+			ActorInstanceData *offsetInstanceData = (void *)instanceData + offsets[index];
+
+			memcpy(offsetInstanceData[modelCounts[index]].transform, transformMatrix, sizeof(mat4));
+			offsetInstanceData[modelCounts[index]].textureIndex = TextureIndex(actor->actorModelTexture);
+
 			modelCounts[index]++;
 		} else if (actor->actorWall)
 		{
-			memcpy((instanceData + offsets[buffers.actors.models.loadedModelIds.length])[wallCount].transform,
-				   ActorTransformMatrix(actor),
-				   sizeof(mat4));
-			(instanceData + offsets[buffers.actors.models.loadedModelIds.length])[wallCount]
-					.textureIndex = TextureIndex(actor->actorWall->tex);
+			ActorInstanceData *offsetInstanceData = (void *)instanceData +
+													offsets[buffers.actors.models.loadedModelIds.length];
+
+			memcpy(offsetInstanceData[wallCount].transform, transformMatrix, sizeof(mat4));
+			offsetInstanceData[wallCount].textureIndex = TextureIndex(actor->actorWall->tex);
+
 			wallCount++;
 		}
 	}
@@ -772,28 +773,30 @@ void LoadActorInstanceData(const Level *level, ActorInstanceData *instanceData)
 
 void LoadActorDrawInfo(const Level *level, VkDrawIndexedIndirectCommand *drawInfo)
 {
-	uint32_t wallCount = buffers.actors.models.loadedModelIds.length;
+	uint32_t modelCount = 0;
+	uint32_t wallCount = 0;
+	for (size_t i = 0; i < buffers.actors.models.loadedModelIds.length; i++)
+	{
+		drawInfo[i].indexCount = GetModelFromId((size_t)ListGet(buffers.actors.models.loadedModelIds, i))
+										 ->packedIndicesCount;
+		drawInfo[i].instanceCount = buffers.actors.models.modelCounts[i];
+		modelCount += buffers.actors.models.modelCounts[i];
+	}
 	for (size_t i = 0; i < level->actors.length; i++)
 	{
 		const Actor *actor = ListGet(level->actors, i);
-		if (!actor->actorWall && !actor->actorModel)
+		if (!actor->actorWall || actor->actorModel)
 		{
 			continue;
 		}
-		if (actor->actorModel)
+		if (actor->actorWall)
 		{
-			const size_t index = ListFind(buffers.actors.models.loadedModelIds, &actor->actorModel->id);
-			if (!drawInfo[index].indexCount || !drawInfo[index].instanceCount)
-			{
-				drawInfo[index].indexCount = actor->actorModel->packedIndicesCount;
-				drawInfo[index].instanceCount = buffers.actors.models.modelCounts[index];
-			}
-		} else if (actor->actorWall)
-		{
-			drawInfo[wallCount].indexCount = 6;
-			drawInfo[wallCount].instanceCount = 1;
-			drawInfo[wallCount].firstInstance = wallCount;
-			drawInfo[wallCount].firstIndex = (int32_t)(wallCount * 6);
+			const size_t index = wallCount + buffers.actors.models.loadedModelIds.length;
+			drawInfo[index].indexCount = 6;
+			drawInfo[index].instanceCount = 1;
+			drawInfo[index].firstInstance = wallCount + modelCount;
+			drawInfo[index].firstIndex = buffers.actors.models.indexCount + (int32_t)(wallCount * 6);
+			drawInfo[index].vertexOffset = buffers.actors.models.vertexCount;
 			wallCount++;
 		}
 	}
@@ -804,7 +807,8 @@ VkResult CopyBuffers(const Level *level)
 	memcpy(buffers.ui.vertexStaging, buffers.ui.vertices, sizeof(UiVertex) * buffers.ui.quadCount * 4);
 	memcpy(buffers.ui.indexStaging, buffers.ui.indices, sizeof(uint32_t) * buffers.ui.quadCount * 6);
 
-	if (buffers.actors.walls.vertexSize && buffers.actors.walls.indexSize)
+	if (buffers.actors.models.loadedModelIds.length ||
+		(buffers.actors.walls.vertexSize && buffers.actors.walls.indexSize))
 	{
 		ActorVertex *actorVertices = calloc(1, buffers.actors.walls.vertexSize);
 		uint32_t *actorIndices = calloc(1, buffers.actors.walls.indexSize);
@@ -825,74 +829,199 @@ VkResult CopyBuffers(const Level *level)
 		free(actorDrawInfo);
 	}
 
-	if (buffers.ui.quadCount > 0 || (buffers.actors.walls.vertexSize && buffers.actors.walls.indexSize))
+	// TODO: The transfer command buffer should be left open and multiple commands should be submitted, that way it can
+	//  be handled according to if it should be or not. That will allow this function to be broken into multiple more
+	//  manageable functions, as well as increase overall performance.
+	if (buffers.ui.quadCount > 0 || (buffers.actors.models.loadedModelIds.length ||
+									 (buffers.actors.walls.vertexSize && buffers.actors.walls.indexSize)))
 	{
 		const VkCommandBuffer commandBuffer;
 		if (!BeginCommandBuffer(&commandBuffer, transferCommandPool))
 		{
 			return VK_ERROR_UNKNOWN;
 		}
-		if (buffers.ui.quadCount > 0 && (buffers.actors.walls.vertexSize && buffers.actors.walls.indexSize))
+		if (buffers.ui.quadCount > 0 && (buffers.actors.models.loadedModelIds.length ||
+										 (buffers.actors.walls.vertexSize && buffers.actors.walls.indexSize)))
 		{
-			if (buffers.ui.stagingBufferInfo == &buffers.shared &&
-				buffers.actors.stagingBufferInfo == &buffers.shared &&
-				buffers.ui.bufferInfo == &buffers.local &&
-				buffers.actors.bufferInfo == &buffers.local)
+			if (buffers.actors.walls.vertexSize && buffers.actors.walls.indexSize)
 			{
-				vkCmdCopyBuffer(commandBuffer,
-								buffers.shared.buffer,
-								buffers.local.buffer,
-								6,
-								(VkBufferCopy[]){
-									{
-										.srcOffset = buffers.ui.vertexStagingOffset,
-										.dstOffset = buffers.ui.vertexOffset,
-										.size = sizeof(UiVertex) * buffers.ui.quadCount * 4,
-									},
-									{
-										.srcOffset = buffers.ui.indexStagingOffset,
-										.dstOffset = buffers.ui.indexOffset,
-										.size = sizeof(uint32_t) * buffers.ui.quadCount * 6,
-									},
-									{
-										.srcOffset = buffers.actors.walls.vertexStagingOffset,
-										.dstOffset = buffers.actors.walls.vertexOffset,
-										.size = buffers.actors.walls.vertexSize,
-									},
-									{
-										.srcOffset = buffers.actors.walls.indexStagingOffset,
-										.dstOffset = buffers.actors.walls.indexOffset,
-										.size = buffers.actors.walls.indexSize,
-									},
-									{
-										.srcOffset = buffers.actors.instanceDataStagingOffset,
-										.dstOffset = buffers.actors.instanceDataOffset,
-										.size = buffers.actors.instanceDataSize,
-									},
-									{
-										.srcOffset = buffers.actors.drawInfoStagingOffset,
-										.dstOffset = buffers.actors.drawInfoOffset,
-										.size = buffers.actors.drawInfoSize,
-									},
-								});
+				if (buffers.ui.stagingBufferInfo == &buffers.shared &&
+					buffers.actors.stagingBufferInfo == &buffers.shared &&
+					buffers.ui.bufferInfo == &buffers.local &&
+					buffers.actors.bufferInfo == &buffers.local)
+				{
+					vkCmdCopyBuffer(commandBuffer,
+									buffers.shared.buffer,
+									buffers.local.buffer,
+									6,
+									(VkBufferCopy[]){
+										{
+											.srcOffset = buffers.ui.vertexStagingOffset,
+											.dstOffset = buffers.ui.vertexOffset,
+											.size = sizeof(UiVertex) * buffers.ui.quadCount * 4,
+										},
+										{
+											.srcOffset = buffers.ui.indexStagingOffset,
+											.dstOffset = buffers.ui.indexOffset,
+											.size = sizeof(uint32_t) * buffers.ui.quadCount * 6,
+										},
+										{
+											.srcOffset = buffers.actors.walls.vertexStagingOffset,
+											.dstOffset = buffers.actors.walls.vertexOffset,
+											.size = buffers.actors.walls.vertexSize,
+										},
+										{
+											.srcOffset = buffers.actors.walls.indexStagingOffset,
+											.dstOffset = buffers.actors.walls.indexOffset,
+											.size = buffers.actors.walls.indexSize,
+										},
+										{
+											.srcOffset = buffers.actors.instanceDataStagingOffset,
+											.dstOffset = buffers.actors.instanceDataOffset,
+											.size = buffers.actors.instanceDataSize,
+										},
+										{
+											.srcOffset = buffers.actors.drawInfoStagingOffset,
+											.dstOffset = buffers.actors.drawInfoOffset,
+											.size = buffers.actors.drawInfoSize,
+										},
+									});
+				} else
+				{
+					vkCmdCopyBuffer(commandBuffer,
+									buffers.ui.stagingBufferInfo->buffer,
+									buffers.ui.bufferInfo->buffer,
+									2,
+									(VkBufferCopy[]){
+										{
+											.srcOffset = buffers.ui.vertexStagingOffset,
+											.dstOffset = buffers.ui.vertexOffset,
+											.size = sizeof(UiVertex) * buffers.ui.quadCount * 4,
+										},
+										{
+											.srcOffset = buffers.ui.indexStagingOffset,
+											.dstOffset = buffers.ui.indexOffset,
+											.size = sizeof(uint32_t) * buffers.ui.quadCount * 6,
+										},
+									});
+					vkCmdCopyBuffer(commandBuffer,
+									buffers.actors.stagingBufferInfo->buffer,
+									buffers.actors.bufferInfo->buffer,
+									4,
+									(VkBufferCopy[]){
+										{
+											.srcOffset = buffers.actors.walls.vertexStagingOffset,
+											.dstOffset = buffers.actors.walls.vertexOffset,
+											.size = buffers.actors.walls.vertexSize,
+										},
+										{
+											.srcOffset = buffers.actors.walls.indexStagingOffset,
+											.dstOffset = buffers.actors.walls.indexOffset,
+											.size = buffers.actors.walls.indexSize,
+										},
+										{
+											.srcOffset = buffers.actors.instanceDataStagingOffset,
+											.dstOffset = buffers.actors.instanceDataOffset,
+											.size = buffers.actors.instanceDataSize,
+										},
+										{
+											.srcOffset = buffers.actors.drawInfoStagingOffset,
+											.dstOffset = buffers.actors.drawInfoOffset,
+											.size = buffers.actors.drawInfoSize,
+										},
+									});
+				}
 			} else
 			{
-				vkCmdCopyBuffer(commandBuffer,
-								buffers.ui.stagingBufferInfo->buffer,
-								buffers.ui.bufferInfo->buffer,
-								2,
-								(VkBufferCopy[]){
-									{
-										.srcOffset = buffers.ui.vertexStagingOffset,
-										.dstOffset = buffers.ui.vertexOffset,
-										.size = sizeof(UiVertex) * buffers.ui.quadCount * 4,
-									},
-									{
-										.srcOffset = buffers.ui.indexStagingOffset,
-										.dstOffset = buffers.ui.indexOffset,
-										.size = sizeof(uint32_t) * buffers.ui.quadCount * 6,
-									},
-								});
+				if (buffers.ui.stagingBufferInfo == &buffers.shared &&
+					buffers.actors.stagingBufferInfo == &buffers.shared &&
+					buffers.ui.bufferInfo == &buffers.local &&
+					buffers.actors.bufferInfo == &buffers.local)
+				{
+					vkCmdCopyBuffer(commandBuffer,
+									buffers.shared.buffer,
+									buffers.local.buffer,
+									4,
+									(VkBufferCopy[]){
+										{
+											.srcOffset = buffers.ui.vertexStagingOffset,
+											.dstOffset = buffers.ui.vertexOffset,
+											.size = sizeof(UiVertex) * buffers.ui.quadCount * 4,
+										},
+										{
+											.srcOffset = buffers.ui.indexStagingOffset,
+											.dstOffset = buffers.ui.indexOffset,
+											.size = sizeof(uint32_t) * buffers.ui.quadCount * 6,
+										},
+										{
+											.srcOffset = buffers.actors.instanceDataStagingOffset,
+											.dstOffset = buffers.actors.instanceDataOffset,
+											.size = buffers.actors.instanceDataSize,
+										},
+										{
+											.srcOffset = buffers.actors.drawInfoStagingOffset,
+											.dstOffset = buffers.actors.drawInfoOffset,
+											.size = buffers.actors.drawInfoSize,
+										},
+									});
+				} else
+				{
+					vkCmdCopyBuffer(commandBuffer,
+									buffers.ui.stagingBufferInfo->buffer,
+									buffers.ui.bufferInfo->buffer,
+									2,
+									(VkBufferCopy[]){
+										{
+											.srcOffset = buffers.ui.vertexStagingOffset,
+											.dstOffset = buffers.ui.vertexOffset,
+											.size = sizeof(UiVertex) * buffers.ui.quadCount * 4,
+										},
+										{
+											.srcOffset = buffers.ui.indexStagingOffset,
+											.dstOffset = buffers.ui.indexOffset,
+											.size = sizeof(uint32_t) * buffers.ui.quadCount * 6,
+										},
+									});
+					vkCmdCopyBuffer(commandBuffer,
+									buffers.actors.stagingBufferInfo->buffer,
+									buffers.actors.bufferInfo->buffer,
+									2,
+									(VkBufferCopy[]){
+										{
+											.srcOffset = buffers.actors.instanceDataStagingOffset,
+											.dstOffset = buffers.actors.instanceDataOffset,
+											.size = buffers.actors.instanceDataSize,
+										},
+										{
+											.srcOffset = buffers.actors.drawInfoStagingOffset,
+											.dstOffset = buffers.actors.drawInfoOffset,
+											.size = buffers.actors.drawInfoSize,
+										},
+									});
+				}
+			}
+		} else if (buffers.ui.quadCount > 0)
+		{
+			vkCmdCopyBuffer(commandBuffer,
+							buffers.ui.stagingBufferInfo->buffer,
+							buffers.ui.bufferInfo->buffer,
+							2,
+							(VkBufferCopy[]){
+								{
+									.srcOffset = buffers.ui.vertexStagingOffset,
+									.dstOffset = buffers.ui.vertexOffset,
+									.size = sizeof(UiVertex) * buffers.ui.quadCount * 4,
+								},
+								{
+									.srcOffset = buffers.ui.indexStagingOffset,
+									.dstOffset = buffers.ui.indexOffset,
+									.size = sizeof(uint32_t) * buffers.ui.quadCount * 6,
+								},
+							});
+		} else
+		{
+			if (buffers.actors.walls.vertexSize && buffers.actors.walls.indexSize)
+			{
 				vkCmdCopyBuffer(commandBuffer,
 								buffers.actors.stagingBufferInfo->buffer,
 								buffers.actors.bufferInfo->buffer,
@@ -919,53 +1048,25 @@ VkResult CopyBuffers(const Level *level)
 										.size = buffers.actors.drawInfoSize,
 									},
 								});
+			} else
+			{
+				vkCmdCopyBuffer(commandBuffer,
+								buffers.actors.stagingBufferInfo->buffer,
+								buffers.actors.bufferInfo->buffer,
+								2,
+								(VkBufferCopy[]){
+									{
+										.srcOffset = buffers.actors.instanceDataStagingOffset,
+										.dstOffset = buffers.actors.instanceDataOffset,
+										.size = buffers.actors.instanceDataSize,
+									},
+									{
+										.srcOffset = buffers.actors.drawInfoStagingOffset,
+										.dstOffset = buffers.actors.drawInfoOffset,
+										.size = buffers.actors.drawInfoSize,
+									},
+								});
 			}
-		} else if (buffers.ui.quadCount > 0)
-		{
-			vkCmdCopyBuffer(commandBuffer,
-							buffers.ui.stagingBufferInfo->buffer,
-							buffers.ui.bufferInfo->buffer,
-							2,
-							(VkBufferCopy[]){
-								{
-									.srcOffset = buffers.ui.vertexStagingOffset,
-									.dstOffset = buffers.ui.vertexOffset,
-									.size = sizeof(UiVertex) * buffers.ui.quadCount * 4,
-								},
-								{
-									.srcOffset = buffers.ui.indexStagingOffset,
-									.dstOffset = buffers.ui.indexOffset,
-									.size = sizeof(uint32_t) * buffers.ui.quadCount * 6,
-								},
-							});
-		} else
-		{
-			vkCmdCopyBuffer(commandBuffer,
-							buffers.actors.stagingBufferInfo->buffer,
-							buffers.actors.bufferInfo->buffer,
-							4,
-							(VkBufferCopy[]){
-								{
-									.srcOffset = buffers.actors.walls.vertexStagingOffset,
-									.dstOffset = buffers.actors.walls.vertexOffset,
-									.size = buffers.actors.walls.vertexSize,
-								},
-								{
-									.srcOffset = buffers.actors.walls.indexStagingOffset,
-									.dstOffset = buffers.actors.walls.indexOffset,
-									.size = buffers.actors.walls.indexSize,
-								},
-								{
-									.srcOffset = buffers.actors.instanceDataStagingOffset,
-									.dstOffset = buffers.actors.instanceDataOffset,
-									.size = buffers.actors.instanceDataSize,
-								},
-								{
-									.srcOffset = buffers.actors.drawInfoStagingOffset,
-									.dstOffset = buffers.actors.drawInfoOffset,
-									.size = buffers.actors.drawInfoSize,
-								},
-							});
 		}
 
 

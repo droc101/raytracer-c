@@ -53,10 +53,11 @@ Image *LoadImage(const char *asset);
 Model *LoadModel(const char *asset);
 
 /**
- * Free a model
- * @param model The model to free
+ * Fetch a cached model from an ID
+ * @param id The model ID to fetch
+ * @return The model with the given ID
  */
-void FreeModel(Model *model);
+Model *GetModelFromId(uint id);
 
 #define TEXTURE(assetName) ("texture/" assetName ".gtex")
 #define MUSIC(assetName) ("audio/" assetName ".gmus")

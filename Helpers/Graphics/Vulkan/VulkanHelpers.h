@@ -19,7 +19,7 @@
 #define MAX_FRAMES_IN_FLIGHT 2
 #define MAX_UI_QUADS_INIT 8192 // TODO: find best value
 #define MAX_WALLS_INIT 1024
-#define ACTOR_WALL_OVERALLOCATION_COUNT 30
+#define ACTOR_WALL_OVERALLOCATION_COUNT 0
 /// This is an expected estimate for the largest that a texture will be. It is used to create an overallocation of
 /// texture memory with the formula @code MAX_TEXTURE_SIZE * MAX_TEXTURE_SIZE * 4 * textureCount@endcode
 #define MAX_TEXTURE_SIZE 384

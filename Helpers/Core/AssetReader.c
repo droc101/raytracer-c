@@ -18,6 +18,7 @@ TextureSizeTable *tsb;
 uint textureId;
 uint modelId;
 Image *images[MAX_TEXTURES];
+Model *models[MAX_MODELS];
 
 FILE *OpenAssetFile(const char *relPath)
 {
@@ -89,6 +90,19 @@ void LoadTextureSizeTable()
 	fclose(file);
 }
 
+void FreeModel(Model *model)
+{
+	if (model == NULL)
+	{
+		return;
+	}
+	free(model->name);
+	free(model->packedVertsUvsNormal);
+	free(model->packedIndices);
+	free(model);
+	model = NULL;
+}
+
 const TextureSizeTable *GetTextureSizeTable()
 {
 	return tsb;
@@ -118,6 +132,11 @@ void DestroyAssetCache()
 			free(images[i]->name);
 			free(images[i]);
 		}
+	}
+
+	for (int i = 0; i < MAX_MODELS; i++)
+	{
+		FreeModel(models[i]);
 	}
 
 	ListAndContentsFree(&assetCacheNames, false);
@@ -222,6 +241,7 @@ Asset *DecompressAsset(const char *relPath)
 	// Add the asset to the cache
 	const size_t pathLength = strlen(relPath);
 	char *data = malloc(pathLength + 1);
+	chk_malloc(data);
 	strncpy(data, relPath, pathLength);
 	ListAdd(&assetCacheNames, data);
 	ListAdd(&assetCacheData, assetStruct);
@@ -303,6 +323,19 @@ Image *LoadImage(const char *asset)
 
 Model *LoadModel(const char *asset)
 {
+	for (int i = 0; i < MAX_MODELS; i++)
+	{
+		Model *model = models[i];
+		if (model == NULL)
+		{
+			break;
+		}
+		if (strcmp(asset, model->name) == 0)
+		{
+			return model;
+		}
+	}
+
 	const Asset *assetData = DecompressAsset(asset);
 	if (assetData == NULL)
 	{
@@ -333,7 +366,12 @@ Model *LoadModel(const char *asset)
 	}
 
 	model->id = modelId;
+	models[modelId] = model;
 	modelId++;
+
+	const size_t nameLength = strlen(asset) + 1;
+	model->name = malloc(nameLength);
+	strncpy(model->name, asset, nameLength);
 
 	const size_t vertsSizeBytes = model->header.indexCount * (sizeof(float) * 8);
 	const size_t indexSizeBytes = model->header.indexCount * sizeof(uint);
@@ -356,15 +394,12 @@ Model *LoadModel(const char *asset)
 	return model;
 }
 
-void FreeModel(Model *model)
+Model *GetModelFromId(const uint id)
 {
-	if (model == NULL)
+	if (id >= modelId)
 	{
-		LogWarning("Tried to free NULL model!");
-		return;
+		Error("Invalid model ID!");
 	}
-	free(model->packedVertsUvsNormal);
-	free(model->packedIndices);
-	free(model);
-	model = NULL;
+
+	return models[id];
 }

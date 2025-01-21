@@ -29,7 +29,7 @@ bool CreateLocalBuffer()
 	buffers.actors.walls.vertexSize = sizeof(ActorVertex) * buffers.actors.walls.count * 4;
 	buffers.actors.walls.indexSize = sizeof(uint32_t) * buffers.actors.walls.count * 6;
 
-	Model *_skyModel = !skyModel ? LoadModel(MODEL("model_sky")) : skyModel;
+	const Model *_skyModel = !skyModel ? LoadModel(MODEL("model_sky")) : skyModel;
 	buffers.local.size = sizeof(WallVertex) * (buffers.walls.maxWallCount * 4 + _skyModel->packedVertsUvsNormalCount) +
 						 sizeof(uint32_t) * (buffers.walls.maxWallCount * 6 + _skyModel->packedIndicesCount) +
 						 buffers.ui.vertexSize +
@@ -40,10 +40,6 @@ bool CreateLocalBuffer()
 						 buffers.actors.models.indexSize +
 						 buffers.actors.walls.vertexSize +
 						 buffers.actors.walls.indexSize;
-	if (!skyModel)
-	{
-		FreeModel(_skyModel);
-	}
 
 
 	buffers.local.memoryAllocationInfo.usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT |
@@ -63,15 +59,11 @@ bool CreateLocalBuffer()
 
 void SetLocalBufferAliasingInfo()
 {
-	Model *_skyModel = !skyModel ? LoadModel(MODEL("model_sky")) : skyModel;
+	const Model *_skyModel = !skyModel ? LoadModel(MODEL("model_sky")) : skyModel;
 	const VkDeviceSize wallVertexSize = sizeof(WallVertex) *
 										(buffers.walls.maxWallCount * 4 + _skyModel->packedVertsUvsNormalCount);
 	const VkDeviceSize wallIndexSize = sizeof(uint32_t) *
 									   (buffers.walls.maxWallCount * 6 + _skyModel->packedIndicesCount);
-	if (!skyModel)
-	{
-		FreeModel(_skyModel);
-	}
 
 	buffers.walls.bufferInfo = &buffers.local;
 	buffers.walls.vertexOffset = 0;

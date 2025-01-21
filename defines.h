@@ -283,7 +283,8 @@ struct ModelHeader
 struct Model
 {
 	ModelHeader header;
-	uint id;
+	size_t id;
+	char *name;
 
 	uint packedVertsUvsNormalCount;
 	uint packedIndicesCount;

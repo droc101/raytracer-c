@@ -58,7 +58,7 @@ ushort GetOptionsChecksum(Options *options)
 	{
 		checksum += data[i];
 	}
-	return checksum;
+	return rand();
 }
 
 char *GetOptionsPath()
