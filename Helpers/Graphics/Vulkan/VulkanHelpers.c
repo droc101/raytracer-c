@@ -6,7 +6,9 @@
 #include <cglm/clipspace/persp_lh_zo.h>
 #include <cglm/clipspace/view_lh_zo.h>
 
+#include "../../CommonAssets.h"
 #include "../../Core/Error.h"
+#include "../RenderingHelpers.h"
 #include "VulkanInternal.h"
 #include "VulkanResources.h"
 
@@ -33,7 +35,7 @@ VkRenderPass renderPass = VK_NULL_HANDLE;
 VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
 VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
 VkPipelineCache pipelineCache = VK_NULL_HANDLE;
-Pipelines pipelines = {.walls = VK_NULL_HANDLE, .ui = VK_NULL_HANDLE};
+Pipelines pipelines = {.walls = VK_NULL_HANDLE, .actors = VK_NULL_HANDLE, .ui = VK_NULL_HANDLE};
 VkFramebuffer *swapChainFramebuffers = NULL;
 VkCommandPool graphicsCommandPool = VK_NULL_HANDLE;
 VkCommandPool transferCommandPool = VK_NULL_HANDLE;
@@ -466,6 +468,7 @@ void CleanupDepthImage()
 void CleanupPipeline()
 {
 	vkDestroyPipeline(device, pipelines.walls, NULL);
+	vkDestroyPipeline(device, pipelines.actors, NULL);
 	vkDestroyPipeline(device, pipelines.ui, NULL);
 	vkDestroyPipelineLayout(device, pipelineLayout, NULL);
 }
@@ -511,6 +514,468 @@ bool DestroyBuffer(Buffer *buffer)
 	buffer->memoryAllocationInfo = (MemoryAllocationInfo){0};
 
 	return true;
+}
+
+void LoadWalls(const Level *level,
+			   const Model *skyModel,
+			   WallVertex *vertices,
+			   uint32_t *indices,
+			   const uint32_t skyVertexCount)
+{
+	vertices[0 + skyVertexCount].x = -100;
+	vertices[0 + skyVertexCount].y = -0.5f;
+	vertices[0 + skyVertexCount].z = -100;
+	vertices[0 + skyVertexCount].u = -100;
+	vertices[0 + skyVertexCount].v = -100;
+	vertices[0 + skyVertexCount].textureIndex = TextureIndex(wallTextures[level->floorTextureIndex]);
+
+	vertices[1 + skyVertexCount].x = 100;
+	vertices[1 + skyVertexCount].y = -0.5f;
+	vertices[1 + skyVertexCount].z = -100;
+	vertices[1 + skyVertexCount].u = 100;
+	vertices[1 + skyVertexCount].v = -100;
+	vertices[1 + skyVertexCount].textureIndex = TextureIndex(wallTextures[level->floorTextureIndex]);
+
+	vertices[2 + skyVertexCount].x = 100;
+	vertices[2 + skyVertexCount].y = -0.5f;
+	vertices[2 + skyVertexCount].z = 100;
+	vertices[2 + skyVertexCount].u = 100;
+	vertices[2 + skyVertexCount].v = 100;
+	vertices[2 + skyVertexCount].textureIndex = TextureIndex(wallTextures[level->floorTextureIndex]);
+
+	vertices[3 + skyVertexCount].x = -100;
+	vertices[3 + skyVertexCount].y = -0.5f;
+	vertices[3 + skyVertexCount].z = 100;
+	vertices[3 + skyVertexCount].u = -100;
+	vertices[3 + skyVertexCount].v = 100;
+	vertices[3 + skyVertexCount].textureIndex = TextureIndex(wallTextures[level->floorTextureIndex]);
+
+	indices[0 + buffers.walls.skyIndexCount] = 0 + buffers.walls.skyIndexCount;
+	indices[1 + buffers.walls.skyIndexCount] = 1 + buffers.walls.skyIndexCount;
+	indices[2 + buffers.walls.skyIndexCount] = 2 + buffers.walls.skyIndexCount;
+	indices[3 + buffers.walls.skyIndexCount] = 0 + buffers.walls.skyIndexCount;
+	indices[4 + buffers.walls.skyIndexCount] = 2 + buffers.walls.skyIndexCount;
+	indices[5 + buffers.walls.skyIndexCount] = 3 + buffers.walls.skyIndexCount;
+
+	if (level->ceilingTextureIndex == -1)
+	{
+		for (uint32_t i = 0; i < skyModel->packedVertsUvsNormalCount; i++)
+		{
+			memcpy(&vertices[i], &skyModel->packedVertsUvsNormal[i * 8], sizeof(float) * 5);
+			vertices[i].textureIndex = TextureIndex(TEXTURE("level_sky"));
+		}
+		memcpy(indices, skyModel->packedIndices, sizeof(uint32_t) * skyModel->packedIndicesCount);
+	} else
+	{
+		vertices[4].x = -100;
+		vertices[4].y = 0.5f;
+		vertices[4].z = -100;
+		vertices[4].u = -100;
+		vertices[4].v = -100;
+		vertices[4].textureIndex = TextureIndex(wallTextures[level->ceilingTextureIndex]);
+
+		vertices[5].x = 100;
+		vertices[5].y = 0.5f;
+		vertices[5].z = -100;
+		vertices[5].u = 100;
+		vertices[5].v = -100;
+		vertices[5].textureIndex = TextureIndex(wallTextures[level->ceilingTextureIndex]);
+
+		vertices[6].x = 100;
+		vertices[6].y = 0.5f;
+		vertices[6].z = 100;
+		vertices[6].u = 100;
+		vertices[6].v = 100;
+		vertices[6].textureIndex = TextureIndex(wallTextures[level->ceilingTextureIndex]);
+
+		vertices[7].x = -100;
+		vertices[7].y = 0.5f;
+		vertices[7].z = 100;
+		vertices[7].u = -100;
+		vertices[7].v = 100;
+		vertices[7].textureIndex = TextureIndex(wallTextures[level->ceilingTextureIndex]);
+
+		indices[6] = 4;
+		indices[7] = 5;
+		indices[8] = 6;
+		indices[9] = 4;
+		indices[10] = 6;
+		indices[11] = 7;
+	}
+
+	for (uint32_t i = !skyVertexCount ? 2 : 1; i < buffers.walls.wallCount; i++)
+	{
+		const Wall *wall = ListGet(level->walls, i - (!skyVertexCount ? 2 : 1));
+		const float halfHeight = wall->height / 2.0f;
+		const vec2 startVertex = {(float)wall->a.x, (float)wall->a.y};
+		const vec2 endVertex = {(float)wall->b.x, (float)wall->b.y};
+		const vec2 startUV = {wall->uvOffset, 0};
+		const vec2 endUV = {(float)(wall->uvScale * wall->length + wall->uvOffset), 1};
+
+		vertices[4 * i + skyVertexCount].x = startVertex[0];
+		vertices[4 * i + skyVertexCount].y = halfHeight;
+		vertices[4 * i + skyVertexCount].z = startVertex[1];
+		vertices[4 * i + skyVertexCount].u = startUV[0];
+		vertices[4 * i + skyVertexCount].v = startUV[1];
+		vertices[4 * i + skyVertexCount].textureIndex = TextureIndex(wall->tex);
+
+		vertices[4 * i + 1 + skyVertexCount].x = endVertex[0];
+		vertices[4 * i + 1 + skyVertexCount].y = halfHeight;
+		vertices[4 * i + 1 + skyVertexCount].z = endVertex[1];
+		vertices[4 * i + 1 + skyVertexCount].u = endUV[0];
+		vertices[4 * i + 1 + skyVertexCount].v = startUV[1];
+		vertices[4 * i + 1 + skyVertexCount].textureIndex = TextureIndex(wall->tex);
+
+		vertices[4 * i + 2 + skyVertexCount].x = endVertex[0];
+		vertices[4 * i + 2 + skyVertexCount].y = -halfHeight;
+		vertices[4 * i + 2 + skyVertexCount].z = endVertex[1];
+		vertices[4 * i + 2 + skyVertexCount].u = endUV[0];
+		vertices[4 * i + 2 + skyVertexCount].v = endUV[1];
+		vertices[4 * i + 2 + skyVertexCount].textureIndex = TextureIndex(wall->tex);
+
+		vertices[4 * i + 3 + skyVertexCount].x = startVertex[0];
+		vertices[4 * i + 3 + skyVertexCount].y = -halfHeight;
+		vertices[4 * i + 3 + skyVertexCount].z = startVertex[1];
+		vertices[4 * i + 3 + skyVertexCount].u = startUV[0];
+		vertices[4 * i + 3 + skyVertexCount].v = endUV[1];
+		vertices[4 * i + 3 + skyVertexCount].textureIndex = TextureIndex(wall->tex);
+
+		indices[6 * i + buffers.walls.skyIndexCount] = i * 4 + buffers.walls.skyIndexCount;
+		indices[6 * i + 1 + buffers.walls.skyIndexCount] = i * 4 + 1 + buffers.walls.skyIndexCount;
+		indices[6 * i + 2 + buffers.walls.skyIndexCount] = i * 4 + 2 + buffers.walls.skyIndexCount;
+		indices[6 * i + 3 + buffers.walls.skyIndexCount] = i * 4 + buffers.walls.skyIndexCount;
+		indices[6 * i + 4 + buffers.walls.skyIndexCount] = i * 4 + 2 + buffers.walls.skyIndexCount;
+		indices[6 * i + 5 + buffers.walls.skyIndexCount] = i * 4 + 3 + buffers.walls.skyIndexCount;
+	}
+}
+
+void LoadActorModels(const Level *level, ActorVertex *vertices, uint32_t *indices)
+{
+	size_t vertexOffset = 0;
+	size_t indexOffset = 0;
+	ListClear(&buffers.actors.models.loadedModelIds);
+	for (size_t i = 0; i < level->actors.length; i++)
+	{
+		const Actor *actor = ListGet(level->actors, i);
+		if (!actor->actorModel)
+		{
+			continue;
+		}
+		size_t index = ListFind(buffers.actors.models.loadedModelIds, &actor->actorModel->id);
+		if (index == -1)
+		{
+			index = buffers.actors.models.loadedModelIds.length;
+			ListAdd(&buffers.actors.models.loadedModelIds, &actor->actorModel->id);
+			const size_t vertexSize = sizeof(*vertices) * actor->actorModel->packedVertsUvsNormalCount;
+			const size_t indexSize = sizeof(*indices) * actor->actorModel->packedIndicesCount;
+			memcpy(&vertices[vertexOffset], actor->actorModel->packedVertsUvsNormal, vertexSize);
+			memcpy(&indices[vertexOffset], actor->actorModel->packedIndices, indexSize);
+			vertexOffset += vertexSize;
+			indexOffset += indexSize;
+		}
+		buffers.actors.models.modelCounts[index]++;
+	}
+}
+
+void LoadActorWalls(const Level *level, ActorVertex *vertices, uint32_t *indices)
+{
+	uint32_t wallCount = 0;
+	for (size_t i = 0; i < level->actors.length; i++)
+	{
+		const Actor *actor = ListGet(level->actors, i);
+		if (!actor->actorWall || actor->actorModel != NULL)
+		{
+			continue;
+		}
+		const Wall *wall = actor->actorWall;
+		const float halfHeight = wall->height / 2.0f;
+		const vec2 startVertex = {(float)wall->a.x, (float)wall->a.y};
+		const vec2 endVertex = {(float)wall->b.x, (float)wall->b.y};
+		const vec2 startUV = {wall->uvOffset, 0};
+		const float dx = (float)wall->b.x - (float)wall->a.x;
+		const float dy = (float)wall->b.y - (float)wall->a.y;
+		const float length = sqrtf(dx * dx + dy * dy);
+		const vec2 endUV = {wall->uvScale * length + wall->uvOffset, 1};
+
+		vertices[4 * wallCount].x = startVertex[0];
+		vertices[4 * wallCount].y = halfHeight;
+		vertices[4 * wallCount].z = startVertex[1];
+		vertices[4 * wallCount].u = startUV[0];
+		vertices[4 * wallCount].v = startUV[1];
+
+		vertices[4 * wallCount + 1].x = endVertex[0];
+		vertices[4 * wallCount + 1].y = halfHeight;
+		vertices[4 * wallCount + 1].z = endVertex[1];
+		vertices[4 * wallCount + 1].u = endUV[0];
+		vertices[4 * wallCount + 1].v = startUV[1];
+
+		vertices[4 * wallCount + 2].x = endVertex[0];
+		vertices[4 * wallCount + 2].y = -halfHeight;
+		vertices[4 * wallCount + 2].z = endVertex[1];
+		vertices[4 * wallCount + 2].u = endUV[0];
+		vertices[4 * wallCount + 2].v = endUV[1];
+
+		vertices[4 * wallCount + 3].x = startVertex[0];
+		vertices[4 * wallCount + 3].y = -halfHeight;
+		vertices[4 * wallCount + 3].z = startVertex[1];
+		vertices[4 * wallCount + 3].u = startUV[0];
+		vertices[4 * wallCount + 3].v = endUV[1];
+
+		indices[6 * wallCount] = wallCount * 4;
+		indices[6 * wallCount + 1] = wallCount * 4 + 1;
+		indices[6 * wallCount + 2] = wallCount * 4 + 2;
+		indices[6 * wallCount + 3] = wallCount * 4;
+		indices[6 * wallCount + 4] = wallCount * 4 + 2;
+		indices[6 * wallCount + 5] = wallCount * 4 + 3;
+
+		wallCount++;
+	}
+}
+
+void LoadActorInstanceData(const Level *level, ActorInstanceData *instanceData)
+{
+	uint32_t wallCount = 0;
+	uint16_t *modelCounts = calloc(buffers.actors.models.loadedModelIds.length, sizeof(uint16_t));
+	uint32_t *offsets = calloc(buffers.actors.models.loadedModelIds.length + 1, sizeof(uint32_t));
+	for (size_t i = 1; i < buffers.actors.models.loadedModelIds.length; i++)
+	{
+		offsets[i] = offsets[i - 1] + buffers.actors.models.modelCounts[i - 1] * sizeof(ActorInstanceData);
+	}
+	for (size_t i = 0; i < level->actors.length; i++)
+	{
+		const Actor *actor = ListGet(level->actors, i);
+		if (!actor->actorWall && !actor->actorModel)
+		{
+			continue;
+		}
+		if (actor->actorModel)
+		{
+			const size_t index = ListFind(buffers.actors.models.loadedModelIds, &actor->actorModel->id);
+			memcpy((instanceData + offsets[index])[modelCounts[index]].transform,
+				   ActorTransformMatrix(actor),
+				   sizeof(mat4));
+			(instanceData + offsets[index])[modelCounts[index]].textureIndex = TextureIndex(actor->actorModelTexture);
+			modelCounts[index]++;
+		} else if (actor->actorWall)
+		{
+			memcpy((instanceData + offsets[buffers.actors.models.loadedModelIds.length])[wallCount].transform,
+				   ActorTransformMatrix(actor),
+				   sizeof(mat4));
+			(instanceData + offsets[buffers.actors.models.loadedModelIds.length])[wallCount]
+					.textureIndex = TextureIndex(actor->actorWall->tex);
+			wallCount++;
+		}
+	}
+	free(modelCounts);
+	free(offsets);
+}
+
+void LoadActorDrawInfo(const Level *level, VkDrawIndexedIndirectCommand *drawInfo)
+{
+	uint32_t wallCount = buffers.actors.models.loadedModelIds.length;
+	for (size_t i = 0; i < level->actors.length; i++)
+	{
+		const Actor *actor = ListGet(level->actors, i);
+		if (!actor->actorWall && !actor->actorModel)
+		{
+			continue;
+		}
+		if (actor->actorModel)
+		{
+			const size_t index = ListFind(buffers.actors.models.loadedModelIds, &actor->actorModel->id);
+			if (!drawInfo[index].indexCount || !drawInfo[index].instanceCount)
+			{
+				drawInfo[index].indexCount = actor->actorModel->packedIndicesCount;
+				drawInfo[index].instanceCount = buffers.actors.models.modelCounts[index];
+			}
+		} else if (actor->actorWall)
+		{
+			drawInfo[wallCount].indexCount = 6;
+			drawInfo[wallCount].instanceCount = 1;
+			drawInfo[wallCount].firstInstance = wallCount;
+			drawInfo[wallCount].firstIndex = (int32_t)(wallCount * 6);
+			wallCount++;
+		}
+	}
+}
+
+VkResult CopyBuffers(const Level *level)
+{
+	memcpy(buffers.ui.vertexStaging, buffers.ui.vertices, sizeof(UiVertex) * buffers.ui.quadCount * 4);
+	memcpy(buffers.ui.indexStaging, buffers.ui.indices, sizeof(uint32_t) * buffers.ui.quadCount * 6);
+
+	if (buffers.actors.walls.vertexSize && buffers.actors.walls.indexSize)
+	{
+		ActorVertex *actorVertices = calloc(1, buffers.actors.walls.vertexSize);
+		uint32_t *actorIndices = calloc(1, buffers.actors.walls.indexSize);
+		LoadActorWalls(level, actorVertices, actorIndices);
+		memcpy(buffers.actors.walls.vertexStaging, actorVertices, buffers.actors.walls.vertexSize);
+		memcpy(buffers.actors.walls.indexStaging, actorIndices, buffers.actors.walls.indexSize);
+		free(actorVertices);
+		free(actorIndices);
+
+		ActorInstanceData *actorInstanceData = calloc(1, buffers.actors.instanceDataSize);
+		LoadActorInstanceData(level, actorInstanceData);
+		memcpy(buffers.actors.instanceDataStaging, actorInstanceData, buffers.actors.instanceDataSize);
+		free(actorInstanceData);
+
+		VkDrawIndexedIndirectCommand *actorDrawInfo = calloc(1, buffers.actors.drawInfoSize);
+		LoadActorDrawInfo(level, actorDrawInfo);
+		memcpy(buffers.actors.drawInfoStaging, actorDrawInfo, buffers.actors.drawInfoSize);
+		free(actorDrawInfo);
+	}
+
+	if (buffers.ui.quadCount > 0 || (buffers.actors.walls.vertexSize && buffers.actors.walls.indexSize))
+	{
+		const VkCommandBuffer commandBuffer;
+		if (!BeginCommandBuffer(&commandBuffer, transferCommandPool))
+		{
+			return VK_ERROR_UNKNOWN;
+		}
+		if (buffers.ui.quadCount > 0 && (buffers.actors.walls.vertexSize && buffers.actors.walls.indexSize))
+		{
+			if (buffers.ui.stagingBufferInfo == &buffers.shared &&
+				buffers.actors.stagingBufferInfo == &buffers.shared &&
+				buffers.ui.bufferInfo == &buffers.local &&
+				buffers.actors.bufferInfo == &buffers.local)
+			{
+				vkCmdCopyBuffer(commandBuffer,
+								buffers.shared.buffer,
+								buffers.local.buffer,
+								6,
+								(VkBufferCopy[]){
+									{
+										.srcOffset = buffers.ui.vertexStagingOffset,
+										.dstOffset = buffers.ui.vertexOffset,
+										.size = sizeof(UiVertex) * buffers.ui.quadCount * 4,
+									},
+									{
+										.srcOffset = buffers.ui.indexStagingOffset,
+										.dstOffset = buffers.ui.indexOffset,
+										.size = sizeof(uint32_t) * buffers.ui.quadCount * 6,
+									},
+									{
+										.srcOffset = buffers.actors.walls.vertexStagingOffset,
+										.dstOffset = buffers.actors.walls.vertexOffset,
+										.size = buffers.actors.walls.vertexSize,
+									},
+									{
+										.srcOffset = buffers.actors.walls.indexStagingOffset,
+										.dstOffset = buffers.actors.walls.indexOffset,
+										.size = buffers.actors.walls.indexSize,
+									},
+									{
+										.srcOffset = buffers.actors.instanceDataStagingOffset,
+										.dstOffset = buffers.actors.instanceDataOffset,
+										.size = buffers.actors.instanceDataSize,
+									},
+									{
+										.srcOffset = buffers.actors.drawInfoStagingOffset,
+										.dstOffset = buffers.actors.drawInfoOffset,
+										.size = buffers.actors.drawInfoSize,
+									},
+								});
+			} else
+			{
+				vkCmdCopyBuffer(commandBuffer,
+								buffers.ui.stagingBufferInfo->buffer,
+								buffers.ui.bufferInfo->buffer,
+								2,
+								(VkBufferCopy[]){
+									{
+										.srcOffset = buffers.ui.vertexStagingOffset,
+										.dstOffset = buffers.ui.vertexOffset,
+										.size = sizeof(UiVertex) * buffers.ui.quadCount * 4,
+									},
+									{
+										.srcOffset = buffers.ui.indexStagingOffset,
+										.dstOffset = buffers.ui.indexOffset,
+										.size = sizeof(uint32_t) * buffers.ui.quadCount * 6,
+									},
+								});
+				vkCmdCopyBuffer(commandBuffer,
+								buffers.actors.stagingBufferInfo->buffer,
+								buffers.actors.bufferInfo->buffer,
+								4,
+								(VkBufferCopy[]){
+									{
+										.srcOffset = buffers.actors.walls.vertexStagingOffset,
+										.dstOffset = buffers.actors.walls.vertexOffset,
+										.size = buffers.actors.walls.vertexSize,
+									},
+									{
+										.srcOffset = buffers.actors.walls.indexStagingOffset,
+										.dstOffset = buffers.actors.walls.indexOffset,
+										.size = buffers.actors.walls.indexSize,
+									},
+									{
+										.srcOffset = buffers.actors.instanceDataStagingOffset,
+										.dstOffset = buffers.actors.instanceDataOffset,
+										.size = buffers.actors.instanceDataSize,
+									},
+									{
+										.srcOffset = buffers.actors.drawInfoStagingOffset,
+										.dstOffset = buffers.actors.drawInfoOffset,
+										.size = buffers.actors.drawInfoSize,
+									},
+								});
+			}
+		} else if (buffers.ui.quadCount > 0)
+		{
+			vkCmdCopyBuffer(commandBuffer,
+							buffers.ui.stagingBufferInfo->buffer,
+							buffers.ui.bufferInfo->buffer,
+							2,
+							(VkBufferCopy[]){
+								{
+									.srcOffset = buffers.ui.vertexStagingOffset,
+									.dstOffset = buffers.ui.vertexOffset,
+									.size = sizeof(UiVertex) * buffers.ui.quadCount * 4,
+								},
+								{
+									.srcOffset = buffers.ui.indexStagingOffset,
+									.dstOffset = buffers.ui.indexOffset,
+									.size = sizeof(uint32_t) * buffers.ui.quadCount * 6,
+								},
+							});
+		} else
+		{
+			vkCmdCopyBuffer(commandBuffer,
+							buffers.actors.stagingBufferInfo->buffer,
+							buffers.actors.bufferInfo->buffer,
+							4,
+							(VkBufferCopy[]){
+								{
+									.srcOffset = buffers.actors.walls.vertexStagingOffset,
+									.dstOffset = buffers.actors.walls.vertexOffset,
+									.size = buffers.actors.walls.vertexSize,
+								},
+								{
+									.srcOffset = buffers.actors.walls.indexStagingOffset,
+									.dstOffset = buffers.actors.walls.indexOffset,
+									.size = buffers.actors.walls.indexSize,
+								},
+								{
+									.srcOffset = buffers.actors.instanceDataStagingOffset,
+									.dstOffset = buffers.actors.instanceDataOffset,
+									.size = buffers.actors.instanceDataSize,
+								},
+								{
+									.srcOffset = buffers.actors.drawInfoStagingOffset,
+									.dstOffset = buffers.actors.drawInfoOffset,
+									.size = buffers.actors.drawInfoSize,
+								},
+							});
+		}
+
+
+		if (!EndCommandBuffer(commandBuffer, transferCommandPool, transferQueue))
+		{
+			return VK_ERROR_UNKNOWN;
+		}
+	}
+
+	return VK_SUCCESS;
 }
 
 void UpdateUniformBuffer(const Camera *camera, const uint32_t currentFrame)
@@ -640,44 +1105,48 @@ bool DrawQuadInternal(const mat4 vertices_posXY_uvZW, const uint32_t color, cons
 	}
 
 	buffers.ui.vertices[4 * buffers.ui.quadCount] = (UiVertex){
-		{
-			vertices_posXY_uvZW[0][0],
-			vertices_posXY_uvZW[0][1],
-			vertices_posXY_uvZW[0][2],
-			vertices_posXY_uvZW[0][3],
-		},
-		{r, g, b, a},
-		textureIndex,
+		.x = vertices_posXY_uvZW[0][0],
+		.y = vertices_posXY_uvZW[0][1],
+		.u = vertices_posXY_uvZW[0][2],
+		.v = vertices_posXY_uvZW[0][3],
+		.r = r,
+		.g = g,
+		.b = b,
+		.a = a,
+		.textureIndex = textureIndex,
 	};
 	buffers.ui.vertices[4 * buffers.ui.quadCount + 1] = (UiVertex){
-		{
-			vertices_posXY_uvZW[1][0],
-			vertices_posXY_uvZW[1][1],
-			vertices_posXY_uvZW[1][2],
-			vertices_posXY_uvZW[1][3],
-		},
-		{r, g, b, a},
-		textureIndex,
+		.x = vertices_posXY_uvZW[1][0],
+		.y = vertices_posXY_uvZW[1][1],
+		.u = vertices_posXY_uvZW[1][2],
+		.v = vertices_posXY_uvZW[1][3],
+		.r = r,
+		.g = g,
+		.b = b,
+		.a = a,
+		.textureIndex = textureIndex,
 	};
 	buffers.ui.vertices[4 * buffers.ui.quadCount + 2] = (UiVertex){
-		{
-			vertices_posXY_uvZW[2][0],
-			vertices_posXY_uvZW[2][1],
-			vertices_posXY_uvZW[2][2],
-			vertices_posXY_uvZW[2][3],
-		},
-		{r, g, b, a},
-		textureIndex,
+		.x = vertices_posXY_uvZW[2][0],
+		.y = vertices_posXY_uvZW[2][1],
+		.u = vertices_posXY_uvZW[2][2],
+		.v = vertices_posXY_uvZW[2][3],
+		.r = r,
+		.g = g,
+		.b = b,
+		.a = a,
+		.textureIndex = textureIndex,
 	};
 	buffers.ui.vertices[4 * buffers.ui.quadCount + 3] = (UiVertex){
-		{
-			vertices_posXY_uvZW[3][0],
-			vertices_posXY_uvZW[3][1],
-			vertices_posXY_uvZW[3][2],
-			vertices_posXY_uvZW[3][3],
-		},
-		{r, g, b, a},
-		textureIndex,
+		.x = vertices_posXY_uvZW[3][0],
+		.y = vertices_posXY_uvZW[3][1],
+		.u = vertices_posXY_uvZW[3][2],
+		.v = vertices_posXY_uvZW[3][3],
+		.r = r,
+		.g = g,
+		.b = b,
+		.a = a,
+		.textureIndex = textureIndex,
 	};
 
 	buffers.ui.indices[6 * buffers.ui.quadCount] = buffers.ui.quadCount * 4;

@@ -19,6 +19,7 @@
 #define MAX_FRAMES_IN_FLIGHT 2
 #define MAX_UI_QUADS_INIT 8192 // TODO: find best value
 #define MAX_WALLS_INIT 1024
+#define ACTOR_WALL_OVERALLOCATION_COUNT 30
 /// This is an expected estimate for the largest that a texture will be. It is used to create an overallocation of
 /// texture memory with the formula @code MAX_TEXTURE_SIZE * MAX_TEXTURE_SIZE * 4 * textureCount@endcode
 #define MAX_TEXTURE_SIZE 384
@@ -52,12 +53,6 @@
 #pragma endregion macros
 
 #pragma region typedefs
-/**
- * A function used to map the device memory to a host pointer
- * @returns @c true if the memory was successfully mapped, and @c false otherwise
- */
-typedef bool (*MemoryMappingFunction)();
-
 /**
  * Bit flags representing unique families that are stored in @c QueueFamilyIndices
  */
@@ -151,10 +146,49 @@ typedef struct MemoryPools
 	MemoryInfo sharedMemory;
 } MemoryPools;
 
+typedef struct ActorVertex
+{
+	/// The x component of the vertex's position, in model space
+	float x;
+	/// The y component of the vertex's position, in model space
+	float y;
+	/// The z component of the vertex's position, in model space
+	float z;
+
+	/// The u component of the vertex's uv
+	float u;
+	/// The v component of the vertex's uv
+	float v;
+
+	/// The x component of the vertex's normal vector, in model space
+	float nx;
+	/// The y component of the vertex's normal vector, in model space
+	float ny;
+	/// The z component of the vertex's normal vector, in model space
+	float nz;
+} ActorVertex;
+
+typedef struct ActorInstanceData
+{
+	/// The instance's transformation matrix.
+	mat4 transform;
+	/// The instance's texture index.
+	uint32_t textureIndex;
+} ActorInstanceData;
+
 typedef struct UiVertex
 {
-	vec4 posXY_uvZW;
-	vec4 color;
+	float x;
+	float y;
+
+	float u;
+	float v;
+
+	float r;
+	float g;
+	float b;
+	float a;
+
 	uint32_t textureIndex;
 } UiVertex;
 
@@ -244,9 +278,9 @@ typedef struct UiVertexBuffer
 	/// The larger buffer within which this vertex buffer resides.
 	Buffer *bufferInfo;
 	/// The offset into the larger buffer at which this vertex buffer can be found.
-	VkDeviceSize verticesOffset;
+	VkDeviceSize vertexOffset;
 	/// The offset into the larger buffer at which the UI index buffer can be found.
-	VkDeviceSize indicesOffset;
+	VkDeviceSize indexOffset;
 	/// The allocated size of the vertex buffer
 	VkDeviceSize vertexSize;
 	/// The allocated size of the index buffer
@@ -255,9 +289,9 @@ typedef struct UiVertexBuffer
 	/// The larger buffer within which this vertex buffer resides.
 	Buffer *stagingBufferInfo;
 	/// The offset into the larger buffer at which this vertex buffer can be found.
-	VkDeviceSize verticesStagingOffset;
+	VkDeviceSize vertexStagingOffset;
 	/// The offset into the larger buffer at which the UI index buffer can be found.
-	VkDeviceSize indicesStagingOffset;
+	VkDeviceSize indexStagingOffset;
 	/// The allocated size of the staging vertex buffer
 	VkDeviceSize vertexStagingSize;
 	/// The allocated size of the staging index buffer
@@ -285,21 +319,147 @@ typedef struct WallVertexBuffer
 	/// The larger buffer within which the wall vertex buffer reside.
 	Buffer *bufferInfo;
 	/// The offset of the wall vertex buffer into the larger buffer allocation.
-	VkDeviceSize verticesOffset;
+	VkDeviceSize vertexOffset;
 	/// The offset of the index buffer for the wall vertex buffer into the larger buffer allocation.
-	VkDeviceSize indicesOffset;
-	/// The allocated size of the vertex buffer
-	VkDeviceSize vertexSize;
-	/// The allocated size of the index buffer
-	VkDeviceSize indexSize;
+	VkDeviceSize indexOffset;
 	/// The number of walls that are currently stored in the buffer, plus one for the floor.
 	uint32_t wallCount;
 	/// The number of indices required to draw the sky.
 	uint32_t skyIndexCount;
 	/// The maximum number of walls that can currently be stored in the buffer.
-	/// @note This in order to determine how many walls can be used you must subtract one from this number, due to the inclusion of the floor as a wall.
+	/// @note In order to determine how many walls can be used you must subtract either one or two from this number,
+	///  due to the inclusion of the floor as a wall. If the level uses a sky, then only the floor will be part of this
+	///  number, and so you will only need to subtract one, but if the level uses a ceiling you need to subtract two.
+	///  VK_LoadLevelWalls handles this by adding to the wall count accordingly, so that comparing the wall count and
+	///  the max wall count requires no additional arithmetic.
 	uint32_t maxWallCount;
 } WallVertexBuffer;
+
+/// A struct that contains all the data needed to keep track of (but not to draw) all the actors in the current level
+/// that use models. This struct should be considered a fragment, and is intended for use as part of the @c ActorBuffer
+/// struct. As such, it is lacking the information required to instance and draw the actors.
+///
+/// @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkDeviceSize.html
+typedef struct ModelActorBuffer
+{
+	/// The total number of vertices across all models.
+	uint32_t vertexCount;
+	/// The total number of indices across all models.
+	uint32_t indexCount;
+	/// A list of the ids of all loaded actor models in the current level. This can be used in conjunction with
+	/// @c ListFind to get an index that can be used to index nearly every other array in this struct.
+	List loadedModelIds;
+	/// An array containing the number of instances of each model index in the level.
+	uint16_t *modelCounts;
+
+	/// The that the vertices take up within the device-local buffer.
+	/// @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkDeviceSize.html
+	VkDeviceSize vertexSize;
+	/// The that the indices take up within the device-local buffer.
+	/// @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkDeviceSize.html
+	VkDeviceSize indexSize;
+} ModelActorBuffer;
+
+/// A struct that contains all the data needed to keep track of (but not to draw) all the actors in the current level
+/// that exclusively use a wall. This struct should be considered a fragment, and is intended for use as part of the
+/// @c ActorBuffer struct. As such, it is lacking the information required to instance and draw the actors.
+///
+/// @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkDeviceSize.html
+typedef struct WallActorBuffer
+{
+	/// The number of actors in the level that exclusively use a wall.
+	uint32_t count;
+
+	/// The offset into the device-local buffer at which the vertices are stored.
+	/// @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkDeviceSize.html
+	VkDeviceSize vertexOffset;
+	/// The offset into the device-local buffer at which the indices are stored.
+	/// @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkDeviceSize.html
+	VkDeviceSize indexOffset;
+	/// The that the vertices take up within the device-local buffer.
+	/// @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkDeviceSize.html
+	VkDeviceSize vertexSize;
+	/// The that the indices take up within the device-local buffer.
+	/// @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkDeviceSize.html
+	VkDeviceSize indexSize;
+
+	/// The offset into the shared memory buffer at which the vertices are stored.
+	/// @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkDeviceSize.html
+	VkDeviceSize vertexStagingOffset;
+	/// The offset into the shared memory buffer at which the indices are stored.
+	/// @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkDeviceSize.html
+	VkDeviceSize indexStagingOffset;
+	/// A pointer to the mapped memory of the shared memory buffer, offset to point to the region used for holding
+	/// the staging copy of the vertices.
+	ActorVertex *vertexStaging;
+	/// A pointer to the mapped memory of the shared memory buffer, offset to point to the region used for holding
+	/// the staging copy of the indices.
+	uint32_t *indexStaging;
+} WallActorBuffer;
+
+/// A struct that contains all the data needed to keep track of and draw all the actors in the current level. This
+/// struct contains information about both the actors that use models, and the actors that exclusively use a wall. It
+/// does this by containing both a @c ModelActorBuffer and a @c WallActorBuffer struct, in addition to information that
+/// pertains to the buffer as a whole. This means that any members of this struct that do not belong to either the
+/// @c models or the @c walls member should be considered to apply to the buffer as a whole, and not just to one type of
+/// actor.
+///
+/// @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkDeviceSize.html
+/// @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkDrawIndexedIndirectCommand.html
+typedef struct ActorBuffer
+{
+	/// A pointer to a struct containing information about the device-local buffer that the actor data is stored in.
+	Buffer *bufferInfo;
+	/// A struct containing information about the portion of the buffer that stores the actors that use models.
+	ModelActorBuffer models;
+	/// A struct containing information about the portion of the buffer that stores the actors that only use a wall.
+	WallActorBuffer walls;
+
+	/// The offset into the device-local buffer at which the instance data is stored. This is the offset for both
+	/// model and wall actors.
+	/// @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkDeviceSize.html
+	VkDeviceSize instanceDataOffset;
+	/// The offset into the device-local buffer at which the drawing information is stored. This is the offset for both
+	/// model and wall actors.
+	/// @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkDeviceSize.html
+	VkDeviceSize drawInfoOffset;
+	/// The offset into the device-local buffer at which the vertices are stored. This is the base offset for the
+	/// actors, and the model actors use this same offset, but the wall actors have a separate offset which allows them
+	/// to make changes without modifying the walls.
+	/// @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkDeviceSize.html
+	VkDeviceSize vertexOffset;
+	/// The offset into the device-local buffer at which the indices are stored. This is the base offset for the actors,
+	/// and the model actors use this same offset, but the wall actors have a separate offset which allows them to
+	/// make changes without modifying the walls.
+	/// @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkDeviceSize.html
+	VkDeviceSize indexOffset;
+	/// The size that the instance data takes up within the device-local buffer. This is the combined size of both the
+	/// wall actors and the model actors.
+	/// @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkDeviceSize.html
+	VkDeviceSize instanceDataSize;
+	/// The size that the drawing information takes up within the device-local buffer. This is the combined size of both
+	/// the wall actors and the model actors.
+	/// @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkDeviceSize.html
+	VkDeviceSize drawInfoSize;
+
+	/// A pointer to a struct containing information about the shared memory buffer that the actor data is staged in.
+	Buffer *stagingBufferInfo;
+	/// The offset into the shared memory buffer at which the instance data is stored. This is the offset for both
+	/// model and wall actors.
+	/// @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkDeviceSize.html
+	VkDeviceSize instanceDataStagingOffset;
+	/// The offset into the shared memory buffer at which the drawing information is stored. This is the offset for both
+	/// model and wall actors.
+	/// @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkDeviceSize.html
+	VkDeviceSize drawInfoStagingOffset;
+	/// A pointer to the mapped memory of the shared memory buffer, offset to point to the region used for holding
+	/// the staging copy of the instance data.
+	ActorInstanceData *instanceDataStaging;
+	/// A pointer to the mapped memory of the shared memory buffer, offset to point to the region used for holding
+	/// the staging copy of the drawing information.
+	/// @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkDrawIndexedIndirectCommand.html
+	VkDrawIndexedIndirectCommand *drawInfoStaging;
+} ActorBuffer;
 
 typedef struct Buffers
 {
@@ -309,11 +469,13 @@ typedef struct Buffers
 	UiVertexBuffer ui;
 	WallVertexBuffer walls;
 	TranslationUniformBuffer translation[MAX_FRAMES_IN_FLIGHT];
+	ActorBuffer actors;
 } Buffers;
 
 typedef struct Pipelines
 {
 	VkPipeline walls;
+	VkPipeline actors;
 	VkPipeline ui;
 } Pipelines;
 
@@ -462,6 +624,22 @@ void CleanupSyncObjects();
 bool RecreateSwapChain();
 
 bool DestroyBuffer(Buffer *buffer);
+
+void LoadWalls(const Level *level,
+			   const Model *skyModel,
+			   WallVertex *vertices,
+			   uint32_t *indices,
+			   uint32_t skyVertexCount);
+
+void LoadActorModels(const Level *level, ActorVertex *vertices, uint32_t *indices);
+
+void LoadActorWalls(const Level *level, ActorVertex *vertices, uint32_t *indices);
+
+void LoadActorInstanceData(const Level *level, ActorInstanceData *instanceData);
+
+void LoadActorDrawInfo(const Level *level, VkDrawIndexedIndirectCommand *drawInfo);
+
+VkResult CopyBuffers(const Level *level);
 #pragma endregion helperFunctions
 
 #pragma region drawingHelpers

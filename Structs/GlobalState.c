@@ -142,7 +142,7 @@ void ChangeLevel(Level *l)
 		StopMusic();
 	}
 
-	for (int i = 0; i < l->walls.usedSlots; i++)
+	for (int i = 0; i < l->walls.length; i++)
 	{
 		Wall *w = ListGet(l->walls, i);
 		WallBake(w);

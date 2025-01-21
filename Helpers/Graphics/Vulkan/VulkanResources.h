@@ -9,6 +9,7 @@
 #include "VulkanHelpers.h"
 
 bool CreateLocalBuffer();
+
 void SetLocalBufferAliasingInfo();
 
 /**
@@ -26,15 +27,16 @@ void SetLocalBufferAliasingInfo();
  * @note This function is NOT for recreating or resizing buffers. That functionality can instead be found in the @c ResizeBuffer function. This means that this function expects that @c buffers.shared.buffer is @c NULL, and will do nothing if this is not the case.
  */
 bool CreateSharedBuffer();
+
 void SetSharedBufferAliasingInfo();
 
-bool ResizeBuffer(Buffer *buffer, bool lossy, MemoryMappingFunction MapMemory);
-bool ResizeBufferRegion(Buffer *buffer,
-						VkDeviceSize offset,
-						VkDeviceSize oldSize,
-						VkDeviceSize newSize,
-						bool lossy,
-						MemoryMappingFunction MapMemory);
+bool ResizeBuffer(Buffer *buffer, bool lossy);
+
+bool ResizeBufferRegion(Buffer *buffer, VkDeviceSize offset, VkDeviceSize oldSize, VkDeviceSize newSize, bool lossy);
+
+VkResult ResizeUiBuffer();
+
+bool ResizeActorBuffer();
 
 void UpdateUniformBufferDescriptorSets();
 

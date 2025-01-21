@@ -11,10 +11,8 @@ typedef struct List List;
 
 struct List
 {
-	/// The number of slots that there is memory allocation available to use
-	size_t allocatedSlots;
 	/// The number of slots that are actually in use
-	size_t usedSlots;
+	size_t length;
 	/// The data that the list is storing
 	void **data;
 };
@@ -22,16 +20,8 @@ struct List
 /**
  * Create a new list of a given size, with zeroed data
  * @param list A pointer to the list object to initialize
- * @param slots The number of slots that the list should be initialized with
  */
-void ListCreate(List *list, size_t slots);
-
-/**
- * Resize a list
- * @param list The list to resize
- * @param slots The number of slots that the list should be reallocated with
- */
-void ListResize(List *list, size_t slots);
+void ListCreate(List *list);
 
 /**
  * Append an item to the list
@@ -75,7 +65,7 @@ void ListFree(List *list, bool freeListPointer);
  * Free the data stored in the list
  * @param list List to free
  */
-void ListFreeOnlyContents(List *list);
+void ListFreeOnlyContents(List list);
 
 /**
  * Free the list structure and the data in the list
@@ -91,7 +81,7 @@ void ListAndContentsFree(List *list, bool freeListPointer);
  * @param data Data to search for
  * @return Index of the item in the list, -1 if not found
  */
-size_t ListFind(const List *list, const void *data);
+size_t ListFind(List list, const void *data);
 
 /**
  * Clear all items from the list

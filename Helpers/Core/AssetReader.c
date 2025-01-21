@@ -16,6 +16,7 @@ List assetCacheNames;
 List assetCacheData;
 TextureSizeTable *tsb;
 uint textureId;
+uint modelId;
 Image *images[MAX_TEXTURES];
 
 FILE *OpenAssetFile(const char *relPath)
@@ -95,14 +96,14 @@ const TextureSizeTable *GetTextureSizeTable()
 
 void AssetCacheInit()
 {
-	ListCreate(&assetCacheNames, 0);
-	ListCreate(&assetCacheData, 0);
+	ListCreate(&assetCacheNames);
+	ListCreate(&assetCacheData);
 	LoadTextureSizeTable();
 }
 
 void DestroyAssetCache()
 {
-	for (int i = 0; i < assetCacheData.usedSlots; i++)
+	for (int i = 0; i < assetCacheData.length; i++)
 	{
 		Asset *asset = ListGet(assetCacheData, i);
 		free(asset->data);
@@ -127,7 +128,7 @@ void DestroyAssetCache()
 Asset *DecompressAsset(const char *relPath)
 {
 	// see if relPath is already in the cache
-	for (int i = 0; i < assetCacheNames.usedSlots; i++)
+	for (int i = 0; i < assetCacheNames.length; i++)
 	{
 		if (strcmp(ListGet(assetCacheNames, i), relPath) == 0)
 		{
@@ -331,18 +332,21 @@ Model *LoadModel(const char *asset)
 		return NULL;
 	}
 
+	model->id = modelId;
+	modelId++;
+
 	const size_t vertsSizeBytes = model->header.indexCount * (sizeof(float) * 8);
 	const size_t indexSizeBytes = model->header.indexCount * sizeof(uint);
 
-	model->packedVertsUvsCount = model->header.indexCount;
+	model->packedVertsUvsNormalCount = model->header.indexCount;
 	model->packedIndicesCount = model->header.indexCount;
 
-	model->packedVertsUvs = malloc(vertsSizeBytes);
-	chk_malloc(model->packedVertsUvs);
+	model->packedVertsUvsNormal = malloc(vertsSizeBytes);
+	chk_malloc(model->packedVertsUvsNormal);
 	model->packedIndices = malloc(indexSizeBytes);
 	chk_malloc(model->packedIndices);
 
-	memcpy(model->packedVertsUvs, (byte *)assetData->data + sizeof(ModelHeader), vertsSizeBytes);
+	memcpy(model->packedVertsUvsNormal, (byte *)assetData->data + sizeof(ModelHeader), vertsSizeBytes);
 
 	for (int i = 0; i < model->header.indexCount; i++)
 	{
@@ -359,7 +363,7 @@ void FreeModel(Model *model)
 		LogWarning("Tried to free NULL model!");
 		return;
 	}
-	free(model->packedVertsUvs);
+	free(model->packedVertsUvsNormal);
 	free(model->packedIndices);
 	free(model);
 	model = NULL;

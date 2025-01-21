@@ -340,6 +340,7 @@ bool CreateLogicalDevice()
 
 	VkPhysicalDeviceFeatures deviceFeatures = {
 		.logicOp = VK_TRUE,
+		.multiDrawIndirect = VK_TRUE,
 		.samplerAnisotropy = VK_TRUE,
 		.tessellationShader = VK_TRUE,
 	};
@@ -1012,7 +1013,7 @@ bool CreateGraphicsPipelines()
 		.primitiveRestartEnable = VK_FALSE,
 	};
 
-	VkGraphicsPipelineCreateInfo wallsPipelineInfo = {
+	VkGraphicsPipelineCreateInfo wallPipelineInfo = {
 		.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
 		.pNext = NULL,
 		.flags = 0,
@@ -1034,6 +1035,139 @@ bool CreateGraphicsPipelines()
 		.basePipelineIndex = -1,
 	};
 #pragma endregion walls
+
+#pragma region actors
+	const VkShaderModule actorVertShaderModule = CreateShaderModule(VK_VERT("Vulkan_actor"));
+	const VkShaderModule actorFragShaderModule = CreateShaderModule(VK_FRAG("Vulkan_actor"));
+	if (!actorVertShaderModule || !actorFragShaderModule)
+	{
+		VulkanLogError("Failed to load actor shaders!\n");
+		return false;
+	}
+
+	const VkPipelineShaderStageCreateInfo actorShaderStages[2] = {
+		{
+			.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+			.pNext = NULL,
+			.flags = 0,
+			.stage = VK_SHADER_STAGE_VERTEX_BIT,
+			.module = actorVertShaderModule,
+			.pName = "main",
+			.pSpecializationInfo = NULL,
+		},
+		{
+			.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+			.pNext = NULL,
+			.flags = 0,
+			.stage = VK_SHADER_STAGE_FRAGMENT_BIT,
+			.module = actorFragShaderModule,
+			.pName = "main",
+			.pSpecializationInfo = NULL,
+		},
+	};
+
+	const VkVertexInputBindingDescription actorBindingDescriptions[2] = {
+		{
+			.binding = 0,
+			.stride = sizeof(ActorVertex),
+			.inputRate = VK_VERTEX_INPUT_RATE_VERTEX,
+		},
+		{
+			.binding = 1,
+			.stride = sizeof(ActorInstanceData),
+			.inputRate = VK_VERTEX_INPUT_RATE_INSTANCE,
+		},
+	};
+	const VkVertexInputAttributeDescription actorVertexDescriptions[8] = {
+		{
+			.location = 0,
+			.binding = 0,
+			.format = VK_FORMAT_R32G32B32_SFLOAT,
+			.offset = offsetof(ActorVertex, x),
+		},
+		{
+			.location = 1,
+			.binding = 0,
+			.format = VK_FORMAT_R32G32_SFLOAT,
+			.offset = offsetof(ActorVertex, u),
+		},
+		{
+			.location = 2,
+			.binding = 0,
+			.format = VK_FORMAT_R32G32B32_SFLOAT,
+			.offset = offsetof(ActorVertex, nx),
+		},
+		{
+			.location = 3,
+			.binding = 1,
+			.format = VK_FORMAT_R32G32B32A32_SFLOAT,
+			.offset = offsetof(ActorInstanceData, transform) + sizeof(vec4) * 0,
+		},
+		{
+			.location = 4,
+			.binding = 1,
+			.format = VK_FORMAT_R32G32B32A32_SFLOAT,
+			.offset = offsetof(ActorInstanceData, transform) + sizeof(vec4) * 1,
+		},
+		{
+			.location = 5,
+			.binding = 1,
+			.format = VK_FORMAT_R32G32B32A32_SFLOAT,
+			.offset = offsetof(ActorInstanceData, transform) + sizeof(vec4) * 2,
+		},
+		{
+			.location = 6,
+			.binding = 1,
+			.format = VK_FORMAT_R32G32B32A32_SFLOAT,
+			.offset = offsetof(ActorInstanceData, transform) + sizeof(vec4) * 3,
+		},
+		{
+			.location = 7,
+			.binding = 1,
+			.format = VK_FORMAT_R32_UINT,
+			.offset = offsetof(ActorInstanceData, textureIndex),
+		},
+	};
+	const VkPipelineVertexInputStateCreateInfo actorVertexInputInfo = {
+		.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
+		.pNext = NULL,
+		.flags = 0,
+		.vertexBindingDescriptionCount = 2,
+		.pVertexBindingDescriptions = actorBindingDescriptions,
+		.vertexAttributeDescriptionCount = 8,
+		.pVertexAttributeDescriptions = actorVertexDescriptions,
+	};
+
+	const VkPipelineInputAssemblyStateCreateInfo actorInputAssembly = {
+		.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
+		.pNext = NULL,
+		.flags = 0,
+		.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
+		.primitiveRestartEnable = VK_FALSE,
+	};
+
+	VkGraphicsPipelineCreateInfo actorPipelineInfo = {
+		.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
+		.pNext = NULL,
+		.flags = 0,
+		.stageCount = 2,
+		.pStages = actorShaderStages,
+		.pVertexInputState = &actorVertexInputInfo,
+		.pInputAssemblyState = &actorInputAssembly,
+		.pTessellationState = NULL,
+		.pViewportState = &viewportState,
+		.pRasterizationState = &rasterizer,
+		.pMultisampleState = &multisampling,
+		.pDepthStencilState = &depthStencil,
+		.pColorBlendState = &colorBlending,
+		.pDynamicState = &dynamicState,
+		.layout = pipelineLayout,
+		.renderPass = renderPass,
+		.subpass = 0,
+		.basePipelineHandle = VK_NULL_HANDLE,
+		.basePipelineIndex = -1,
+	};
+#pragma endregion actors
 
 #pragma region UI
 	const VkShaderModule uiVertShaderModule = CreateShaderModule(VK_VERT("Vulkan_ui"));
@@ -1070,21 +1204,27 @@ bool CreateGraphicsPipelines()
 		.stride = sizeof(UiVertex),
 		.inputRate = VK_VERTEX_INPUT_RATE_VERTEX,
 	};
-	const VkVertexInputAttributeDescription uiAttributeDescriptions[3] = {
+	const VkVertexInputAttributeDescription uiAttributeDescriptions[4] = {
 		{
 			.location = 0,
 			.binding = 0,
-			.format = VK_FORMAT_R32G32B32A32_SFLOAT,
-			.offset = offsetof(UiVertex, posXY_uvZW),
+			.format = VK_FORMAT_R32G32_SFLOAT,
+			.offset = offsetof(UiVertex, x),
 		},
 		{
 			.location = 1,
 			.binding = 0,
-			.format = VK_FORMAT_R32G32B32A32_SFLOAT,
-			.offset = offsetof(UiVertex, color),
+			.format = VK_FORMAT_R32G32_SFLOAT,
+			.offset = offsetof(UiVertex, u),
 		},
 		{
 			.location = 2,
+			.binding = 0,
+			.format = VK_FORMAT_R32G32B32A32_SFLOAT,
+			.offset = offsetof(UiVertex, r),
+		},
+		{
+			.location = 3,
 			.binding = 0,
 			.format = VK_FORMAT_R32_UINT,
 			.offset = offsetof(UiVertex, textureIndex),
@@ -1096,7 +1236,7 @@ bool CreateGraphicsPipelines()
 		.flags = 0,
 		.vertexBindingDescriptionCount = 1,
 		.pVertexBindingDescriptions = &uiBindingDescription,
-		.vertexAttributeDescriptionCount = 3,
+		.vertexAttributeDescriptionCount = 4,
 		.pVertexAttributeDescriptions = uiAttributeDescriptions,
 	};
 
@@ -1132,21 +1272,26 @@ bool CreateGraphicsPipelines()
 #pragma endregion UI
 
 
-	VkGraphicsPipelineCreateInfo pipelinesCreateInfo[2] = {
-		wallsPipelineInfo,
+	VkGraphicsPipelineCreateInfo pipelinesCreateInfo[3] = {
+		wallPipelineInfo,
+		actorPipelineInfo,
 		uiPipelineInfo,
 	};
-	VkPipeline pipelineList[2] = {0};
+	VkPipeline pipelineList[3] = {0};
 
-	VulkanTest(vkCreateGraphicsPipelines(device, pipelineCache, 2, pipelinesCreateInfo, NULL, pipelineList),
+	VulkanTest(vkCreateGraphicsPipelines(device, pipelineCache, 3, pipelinesCreateInfo, NULL, pipelineList),
 			   "Failed to create graphics pipelines!");
 
 	pipelines.walls = pipelineList[0];
-	pipelines.ui = pipelineList[1];
+	pipelines.actors = pipelineList[1];
+	pipelines.ui = pipelineList[2];
 
 
 	vkDestroyShaderModule(device, wallVertShaderModule, NULL);
 	vkDestroyShaderModule(device, wallFragShaderModule, NULL);
+
+	vkDestroyShaderModule(device, actorVertShaderModule, NULL);
+	vkDestroyShaderModule(device, actorFragShaderModule, NULL);
 
 	vkDestroyShaderModule(device, uiVertShaderModule, NULL);
 	vkDestroyShaderModule(device, uiFragShaderModule, NULL);
@@ -1313,7 +1458,7 @@ bool InitTextures()
 		return false;
 	}
 
-	ListCreate(&textures, 0);
+	ListCreate(&textures);
 	memset(imageAssetIdToIndexMap, -1, sizeof(*imageAssetIdToIndexMap) * MAX_TEXTURES);
 
 	char texturesPath[300];
@@ -1384,8 +1529,8 @@ bool InitTextures()
 
 bool CreateTexturesImageView()
 {
-	ListCreate(&texturesImageView, 0);
-	for (size_t textureIndex = 0; textureIndex < textures.usedSlots; textureIndex++)
+	ListCreate(&texturesImageView);
+	for (size_t textureIndex = 0; textureIndex < textures.length; textureIndex++)
 	{
 		const Texture *texture = ListGet(textures, textureIndex);
 		VkImageView *textureImageView = malloc(sizeof(VkImageView *));
@@ -1582,8 +1727,8 @@ bool CreateDescriptorSets()
 	VulkanTest(vkAllocateDescriptorSets(device, &allocateInfo, descriptorSets),
 			   "Failed to allocate Vulkan descriptor sets!");
 
-	VkDescriptorImageInfo imageInfo[textures.usedSlots];
-	for (size_t textureIndex = 0; textureIndex < textures.usedSlots; textureIndex++)
+	VkDescriptorImageInfo imageInfo[textures.length];
+	for (size_t textureIndex = 0; textureIndex < textures.length; textureIndex++)
 	{
 		imageInfo[textureIndex] = (VkDescriptorImageInfo){
 			.sampler = textureSamplers.nearestRepeat,
@@ -1593,7 +1738,7 @@ bool CreateDescriptorSets()
 	}
 	for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 	{
-		if (textures.usedSlots == 0)
+		if (textures.length == 0)
 		{
 			break;
 		}
@@ -1603,7 +1748,7 @@ bool CreateDescriptorSets()
 			.dstSet = descriptorSets[i],
 			.dstBinding = 1,
 			.dstArrayElement = 0,
-			.descriptorCount = textures.usedSlots,
+			.descriptorCount = textures.length,
 			.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 			.pImageInfo = imageInfo,
 			.pBufferInfo = NULL,

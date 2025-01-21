@@ -11,22 +11,15 @@
 #include "Error.h"
 #include "Logging.h"
 
-void ListCreate(List *list, const size_t slots)
+void ListCreate(List *list)
 {
 	if (!list)
 	{
 		Error("A NULL list must not be passed to ListCreate!");
 	}
 
-	list->allocatedSlots = slots;
-	list->usedSlots = slots;
-	if (slots == 0)
-	{
-		list->data = NULL;
-		return;
-	}
-	list->data = calloc(slots, sizeof(void *));
-	chk_malloc(list->data);
+	list->length = 0;
+	list->data = NULL;
 }
 
 void ListAdd(List *list, void *data)
@@ -36,14 +29,10 @@ void ListAdd(List *list, void *data)
 		Error("A NULL list must not be passed to ListAdd!");
 	}
 
-	if (list->usedSlots >= list->allocatedSlots || !list->data)
-	{
-		list->allocatedSlots = list->usedSlots + 1;
-		list->data = GameReallocArray(list->data, list->allocatedSlots, sizeof(void *));
-		chk_malloc(list->data);
-	}
-	list->data[list->usedSlots] = data;
-	list->usedSlots++;
+	list->data = GameReallocArray(list->data, list->length + 1, sizeof(void *));
+	chk_malloc(list->data);
+	list->data[list->length] = data;
+	list->length++;
 }
 
 void ListAddBatched(List *list, const size_t count, ...)
@@ -53,19 +42,15 @@ void ListAddBatched(List *list, const size_t count, ...)
 		Error("A NULL list must not be passed to ListAddBatched!");
 	}
 
-	if (list->usedSlots + count > list->allocatedSlots || !list->data)
-	{
-		list->allocatedSlots = list->usedSlots + count;
-		list->data = GameReallocArray(list->data, list->allocatedSlots, sizeof(void *));
-		chk_malloc(list->data);
-	}
+	list->data = GameReallocArray(list->data, list->length + count, sizeof(void *));
+	chk_malloc(list->data);
 
 	va_list args;
 	va_start(args, count);
 	for (size_t i = 0; i < count; i++)
 	{
-		list->data[list->usedSlots] = va_arg(args, void *);
-		list->usedSlots++;
+		list->data[list->length] = va_arg(args, void *);
+		list->length++;
 	}
 	va_end(args);
 }
@@ -76,27 +61,24 @@ void ListRemoveAt(List *list, const size_t index)
 	{
 		Error("A NULL list must not be passed to ListRemoveAt!");
 	}
-	if (!list->usedSlots || !list->allocatedSlots || !list->data)
+	if (!list->length || !list->data)
 	{
 		Error("Attempted to shrink empty list!");
 	}
-	if (index >= list->usedSlots)
+	if (index >= list->length)
 	{
 		Error("Attempted to remove an item past the end of a list!");
 	}
 
-	list->allocatedSlots--;
-	if (list->allocatedSlots == 0)
+	list->length--;
+	if (list->length == 0)
 	{
-		list->usedSlots = 0;
 		free(list->data);
 		list->data = NULL;
 		return;
 	}
-
-	list->usedSlots--;
-	memmove(&list->data[index], &list->data[index + 1], sizeof(void *) * (list->usedSlots - index));
-	list->data = GameReallocArray(list->data, list->allocatedSlots, sizeof(void *));
+	memmove(&list->data[index], &list->data[index + 1], sizeof(void *) * (list->length - index));
+	list->data = GameReallocArray(list->data, list->length, sizeof(void *));
 	chk_malloc(list->data);
 }
 
@@ -106,34 +88,30 @@ void ListInsertAfter(List *list, size_t index, void *data)
 	{
 		Error("A NULL list must not be passed to ListInsertAfter!");
 	}
-	if (index >= list->usedSlots)
+	if (index >= list->length)
 	{
 		Error("Attempted to insert an item past the end of a list!");
 	}
 
 	index++;
-	list->allocatedSlots++;
-	list->data = GameReallocArray(list->data, list->allocatedSlots, sizeof(void *));
+	list->length++;
+	list->data = GameReallocArray(list->data, list->length, sizeof(void *));
 	chk_malloc(list->data);
 
-	memmove(&list->data[index + 1], &list->data[index], sizeof(void *) * (list->usedSlots - index));
+	memmove(&list->data[index + 1], &list->data[index], sizeof(void *) * (list->length - index - 1));
 	list->data[index] = data;
 }
 
-size_t ListFind(const List *list, const void *data)
+size_t ListFind(const List list, const void *data)
 {
-	if (!list)
+	if (!list.length || !list.data)
 	{
-		Error("A NULL list must not be passed to ListFind!");
-	}
-	if (!list->usedSlots || !list->allocatedSlots || !list->data)
-	{
-		Error("Attempted to find a value in an empty list!");
+		return -1;
 	}
 
-	for (size_t i = 0; i < list->usedSlots; i++)
+	for (size_t i = 0; i < list.length; i++)
 	{
-		if (list->data[i] == data)
+		if (list.data[i] == data)
 		{
 			return i;
 		}
@@ -155,18 +133,13 @@ void ListFree(List *list, const bool freeListPointer)
 	}
 }
 
-void ListFreeOnlyContents(List *list)
+void ListFreeOnlyContents(const List list)
 {
-	if (!list)
+	if (list.length && list.data)
 	{
-		Error("A NULL list must not be passed to ListFreeOnlyContents!");
-	}
-
-	if (list->usedSlots && list->data)
-	{
-		for (size_t i = 0; i < list->usedSlots; i++)
+		for (size_t i = 0; i < list.length; i++)
 		{
-			free(list->data[i]);
+			free(list.data[i]);
 		}
 	}
 }
@@ -178,7 +151,7 @@ void ListAndContentsFree(List *list, const bool freeListPointer)
 		Error("A NULL list must not be passed to ListAndContentsFree!");
 	}
 
-	ListFreeOnlyContents(list);
+	ListFreeOnlyContents(*list);
 
 	ListFree(list, freeListPointer);
 }
@@ -190,8 +163,7 @@ void ListClear(List *list)
 		Error("A NULL list must not be passed to ListClear!");
 	}
 
-	list->allocatedSlots = 0;
-	list->usedSlots = 0;
+	list->length = 0;
 	free(list->data);
 	list->data = NULL;
 }

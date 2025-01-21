@@ -53,6 +53,36 @@ inline bool CreateLocalMemory()
 	return true;
 }
 
+void SetSharedMemoryMappingInfo()
+{
+	for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+	{
+		buffers.translation[i].data = memoryPools.sharedMemory.mappedMemory +
+									  buffers.shared.memoryAllocationInfo.offset +
+									  buffers.translation[i].offset;
+	}
+
+	buffers.ui.vertexStaging = memoryPools.sharedMemory.mappedMemory +
+							   buffers.shared.memoryAllocationInfo.offset +
+							   buffers.ui.vertexStagingOffset;
+	buffers.ui.indexStaging = memoryPools.sharedMemory.mappedMemory +
+							  buffers.shared.memoryAllocationInfo.offset +
+							  buffers.ui.indexStagingOffset;
+
+	buffers.actors.instanceDataStaging = memoryPools.sharedMemory.mappedMemory +
+										 buffers.shared.memoryAllocationInfo.offset +
+										 buffers.actors.instanceDataStagingOffset;
+	buffers.actors.drawInfoStaging = memoryPools.sharedMemory.mappedMemory +
+									 buffers.shared.memoryAllocationInfo.offset +
+									 buffers.actors.drawInfoStagingOffset;
+	buffers.actors.walls.vertexStaging = memoryPools.sharedMemory.mappedMemory +
+										 buffers.shared.memoryAllocationInfo.offset +
+										 buffers.actors.walls.vertexStagingOffset;
+	buffers.actors.walls.indexStaging = memoryPools.sharedMemory.mappedMemory +
+										buffers.shared.memoryAllocationInfo.offset +
+										buffers.actors.walls.indexStagingOffset;
+}
+
 bool MapSharedMemory()
 {
 	VulkanTest(vkMapMemory(device,
@@ -63,18 +93,7 @@ bool MapSharedMemory()
 						   &memoryPools.sharedMemory.mappedMemory),
 			   "Failed to map shared buffer memory!");
 
-	buffers.ui.vertexStaging = memoryPools.sharedMemory.mappedMemory +
-							   buffers.shared.memoryAllocationInfo.offset +
-							   buffers.ui.verticesStagingOffset;
-	buffers.ui.indexStaging = memoryPools.sharedMemory.mappedMemory +
-							  buffers.shared.memoryAllocationInfo.offset +
-							  buffers.ui.indicesStagingOffset;
-	for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-	{
-		buffers.translation[i].data = memoryPools.sharedMemory.mappedMemory +
-									  buffers.shared.memoryAllocationInfo.offset +
-									  buffers.translation[i].offset;
-	}
+	SetSharedMemoryMappingInfo();
 
 	return true;
 }

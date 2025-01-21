@@ -275,18 +275,19 @@ struct Options
 
 struct ModelHeader
 {
-	char sig[4]; // "MESH"
+	char sig[4]; // "MSH"
 	uint indexCount;
-	char dataSig[4]; // "DATA"
+	char dataSig[4]; // "DAT"
 } __attribute__((packed));
 
 struct Model
 {
 	ModelHeader header;
+	uint id;
 
-	uint packedVertsUvsCount;
+	uint packedVertsUvsNormalCount;
 	uint packedIndicesCount;
-	float *packedVertsUvs; // X Y Z U V, use for rendering
+	float *packedVertsUvsNormal; // X Y Z U V NX NY NZ, use for rendering
 	uint *packedIndices; // Just the vert index, use for rendering
 };
 

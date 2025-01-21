@@ -131,15 +131,6 @@ float X_TO_NDC(float x);
 float Y_TO_NDC(float y);
 
 /**
- * Render a 3D model
- * @param m The model to render
- * @param MODEL_WORLD_MATRIX The model -> world matrix
- * @param texture The texture name
- * @param shd The shader to use
- */
-void RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const char *texture, ModelShader shd);
-
-/**
  * Render the background of the menu screen (main menu, options, level select, etc.)
  */
 void RenderMenuBackground();

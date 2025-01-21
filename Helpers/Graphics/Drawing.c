@@ -277,7 +277,7 @@ inline void ClearScreen()
 	switch (currentRenderer)
 	{
 		case RENDERER_VULKAN:
-			VK_ClearScreen();
+			// Unused
 			break;
 		case RENDERER_OPENGL:
 			GL_ClearScreen();
@@ -292,25 +292,10 @@ inline void ClearDepthOnly()
 	switch (currentRenderer)
 	{
 		case RENDERER_VULKAN:
-			VK_ClearDepthOnly();
+			// Unused
 			break;
 		case RENDERER_OPENGL:
 			GL_ClearDepthOnly();
-			break;
-		default:
-			break;
-	}
-}
-
-inline void Swap()
-{
-	switch (currentRenderer)
-	{
-		case RENDERER_VULKAN:
-
-			break;
-		case RENDERER_OPENGL:
-			GL_Swap();
 			break;
 		default:
 			break;

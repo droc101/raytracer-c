@@ -249,20 +249,6 @@ inline float Y_TO_NDC(const float y)
 	}
 }
 
-void RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const char *texture, const ModelShader shd)
-{
-	switch (currentRenderer)
-	{
-		case RENDERER_VULKAN:
-
-			break;
-		case RENDERER_OPENGL:
-			GL_RenderModel(m, MODEL_WORLD_MATRIX, texture, shd);
-		default:
-			break;
-	}
-}
-
 void RenderMenuBackground()
 {
 	// sorry for the confusing variable names

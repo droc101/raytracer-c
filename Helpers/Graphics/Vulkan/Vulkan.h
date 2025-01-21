@@ -5,6 +5,7 @@
 #ifndef GAME_VULKAN_H
 #define GAME_VULKAN_H
 
+#include <simd/sse2/mat4.h>
 #include <vulkan/vulkan.h>
 #include "../Drawing.h"
 
@@ -77,10 +78,6 @@ bool VK_DrawLine(int startX, int startY, int endX, int endY, float thickness, ui
 bool VK_DrawRectOutline(int x, int y, int w, int h, float thickness, uint32_t color);
 
 void VK_ClearColor(uint32_t color);
-
-void VK_ClearScreen();
-
-void VK_ClearDepthOnly();
 
 void VK_SetTexParams(const char *texture, bool linear, bool repeat);
 

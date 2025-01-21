@@ -10,6 +10,9 @@
 /// The maximum number of textures that can be loaded in any one execution of the game
 #define MAX_TEXTURES 512
 
+/// The maximum number of textures that can be loaded in any one execution of the game
+#define MAX_MODELS 128
+
 /**
  * Get the texture size table
  * @return A pointer to the texture size table

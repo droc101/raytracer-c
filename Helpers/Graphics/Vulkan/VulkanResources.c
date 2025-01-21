@@ -10,33 +10,47 @@
 
 bool CreateLocalBuffer()
 {
-	if (skyModel)
+	buffers.ui.vertexSize = sizeof(UiVertex) * buffers.ui.maxQuads * 4;
+	buffers.ui.indexSize = sizeof(uint32_t) * buffers.ui.maxQuads * 6;
+
+	buffers.actors.instanceDataSize = sizeof(ActorInstanceData) * buffers.actors.walls.count;
+	if (buffers.actors.models.modelCounts && buffers.actors.models.loadedModelIds.length)
 	{
-		buffers.walls.vertexSize = sizeof(WallVertex) *
-								   (buffers.walls.maxWallCount * 4 + skyModel->packedVertsUvsCount);
-		buffers.walls.indexSize = sizeof(uint32_t) * (buffers.walls.maxWallCount * 6 + skyModel->packedIndicesCount);
-		buffers.ui.vertexSize = sizeof(UiVertex) * buffers.ui.maxQuads * 4;
-		buffers.ui.indexSize = sizeof(uint32_t) * buffers.ui.maxQuads * 6;
-	} else
+		for (size_t i = 0; i < buffers.actors.models.loadedModelIds.length; i++)
+		{
+			buffers.actors.instanceDataSize += sizeof(ActorInstanceData) * buffers.actors.models.modelCounts[i];
+		}
+	}
+	buffers.actors.drawInfoSize = sizeof(VkDrawIndexedIndirectCommand) * buffers.actors.models.loadedModelIds.length +
+								  sizeof(VkDrawIndexedIndirectCommand) * buffers.actors.walls.count;
+
+	buffers.actors.models.vertexSize = sizeof(ActorVertex) * buffers.actors.models.vertexCount;
+	buffers.actors.models.indexSize = sizeof(uint32_t) * buffers.actors.models.indexCount;
+	buffers.actors.walls.vertexSize = sizeof(ActorVertex) * buffers.actors.walls.count * 4;
+	buffers.actors.walls.indexSize = sizeof(uint32_t) * buffers.actors.walls.count * 6;
+
+	Model *_skyModel = !skyModel ? LoadModel(MODEL("model_sky")) : skyModel;
+	buffers.local.size = sizeof(WallVertex) * (buffers.walls.maxWallCount * 4 + _skyModel->packedVertsUvsNormalCount) +
+						 sizeof(uint32_t) * (buffers.walls.maxWallCount * 6 + _skyModel->packedIndicesCount) +
+						 buffers.ui.vertexSize +
+						 buffers.ui.indexSize +
+						 buffers.actors.instanceDataSize +
+						 buffers.actors.drawInfoSize +
+						 buffers.actors.models.vertexSize +
+						 buffers.actors.models.indexSize +
+						 buffers.actors.walls.vertexSize +
+						 buffers.actors.walls.indexSize;
+	if (!skyModel)
 	{
-		Model *fallbackSkyModel = LoadModel(MODEL("model_sky"));
-		buffers.walls.vertexSize = sizeof(WallVertex) *
-								   (buffers.walls.maxWallCount * 4 + fallbackSkyModel->packedVertsUvsCount);
-		buffers.walls.indexSize = sizeof(uint32_t) *
-								  (buffers.walls.maxWallCount * 6 + fallbackSkyModel->packedIndicesCount);
-		buffers.ui.vertexSize = sizeof(UiVertex) * buffers.ui.maxQuads * 4;
-		buffers.ui.indexSize = sizeof(uint32_t) * buffers.ui.maxQuads * 6;
-		FreeModel(fallbackSkyModel);
+		FreeModel(_skyModel);
 	}
 
-	buffers.local.size = buffers.walls.vertexSize +
-						 buffers.walls.indexSize +
-						 buffers.ui.vertexSize +
-						 buffers.ui.indexSize;
+
 	buffers.local.memoryAllocationInfo.usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT |
 													VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+													VK_BUFFER_USAGE_INDEX_BUFFER_BIT |
 													VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
-													VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+													VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
 
 	buffers.local.memoryAllocationInfo.memoryInfo = &memoryPools.localMemory;
 	if (!CreateBuffer(&buffers.local, false))
@@ -49,22 +63,60 @@ bool CreateLocalBuffer()
 
 void SetLocalBufferAliasingInfo()
 {
+	Model *_skyModel = !skyModel ? LoadModel(MODEL("model_sky")) : skyModel;
+	const VkDeviceSize wallVertexSize = sizeof(WallVertex) *
+										(buffers.walls.maxWallCount * 4 + _skyModel->packedVertsUvsNormalCount);
+	const VkDeviceSize wallIndexSize = sizeof(uint32_t) *
+									   (buffers.walls.maxWallCount * 6 + _skyModel->packedIndicesCount);
+	if (!skyModel)
+	{
+		FreeModel(_skyModel);
+	}
+
 	buffers.walls.bufferInfo = &buffers.local;
-	buffers.walls.verticesOffset = 0;
-	buffers.walls.indicesOffset = buffers.walls.vertexSize;
+	buffers.walls.vertexOffset = 0;
+	buffers.walls.indexOffset = wallVertexSize;
 
 	buffers.ui.bufferInfo = &buffers.local;
-	buffers.ui.verticesOffset = buffers.walls.vertexSize + buffers.walls.indexSize;
-	buffers.ui.indicesOffset = buffers.walls.vertexSize + buffers.walls.indexSize + buffers.ui.vertexSize;
+	buffers.ui.vertexOffset = buffers.walls.indexOffset + wallIndexSize;
+	buffers.ui.indexOffset = buffers.ui.vertexOffset + buffers.ui.vertexSize;
+
+	buffers.actors.bufferInfo = &buffers.local;
+	buffers.actors.instanceDataOffset = buffers.ui.indexOffset + buffers.ui.indexSize;
+	buffers.actors.drawInfoOffset = buffers.actors.instanceDataOffset + buffers.actors.instanceDataSize;
+	buffers.actors.vertexOffset = buffers.actors.drawInfoOffset + buffers.actors.drawInfoSize;
+	buffers.actors.walls.vertexOffset = buffers.actors.vertexOffset + buffers.actors.models.vertexSize;
+	buffers.actors.indexOffset = buffers.actors.walls.vertexOffset + buffers.actors.walls.vertexSize;
+	buffers.actors.walls.indexOffset = buffers.actors.indexOffset + buffers.actors.models.indexSize;
 }
 
 bool CreateSharedBuffer()
 {
+	const VkDeviceSize translationBufferSize = sizeof(mat4) * MAX_FRAMES_IN_FLIGHT;
 	buffers.ui.vertexStagingSize = sizeof(UiVertex) * buffers.ui.maxQuads * 4;
 	buffers.ui.indexStagingSize = sizeof(uint32_t) * buffers.ui.maxQuads * 6;
-	const VkDeviceSize translationBufferSize = sizeof(mat4) * MAX_FRAMES_IN_FLIGHT;
 
-	buffers.shared.size = buffers.ui.vertexStagingSize + buffers.ui.indexStagingSize + translationBufferSize;
+	buffers.actors.instanceDataSize = sizeof(ActorInstanceData) * buffers.actors.walls.count;
+	if (buffers.actors.models.modelCounts && buffers.actors.models.loadedModelIds.length)
+	{
+		for (size_t i = 0; i < buffers.actors.models.loadedModelIds.length; i++)
+		{
+			buffers.actors.instanceDataSize += sizeof(ActorInstanceData) * buffers.actors.models.modelCounts[i];
+		}
+	}
+	buffers.actors.drawInfoSize = sizeof(VkDrawIndexedIndirectCommand) * buffers.actors.models.loadedModelIds.length +
+								  sizeof(VkDrawIndexedIndirectCommand) * buffers.actors.walls.count;
+
+	buffers.actors.walls.vertexSize = sizeof(ActorVertex) * buffers.actors.walls.count * 4;
+	buffers.actors.walls.indexSize = sizeof(uint32_t) * buffers.actors.walls.count * 6;
+
+	buffers.shared.size = translationBufferSize +
+						  buffers.ui.vertexStagingSize +
+						  buffers.ui.indexStagingSize +
+						  buffers.actors.instanceDataSize +
+						  buffers.actors.drawInfoSize +
+						  buffers.actors.walls.vertexSize +
+						  buffers.actors.walls.indexSize;
 	buffers.shared.memoryAllocationInfo.usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT |
 													 VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 
@@ -107,13 +159,23 @@ void SetSharedBufferAliasingInfo()
 		buffers.translation[i].bufferInfo = &buffers.shared;
 		buffers.translation[i].offset = sizeof(mat4) * i;
 	}
+
 	buffers.ui.stagingBufferInfo = &buffers.shared;
-	buffers.ui.verticesStagingOffset = translationBufferSize;
-	buffers.ui.indicesStagingOffset = translationBufferSize + buffers.ui.vertexStagingSize;
+	buffers.ui.vertexStagingOffset = translationBufferSize;
+	buffers.ui.indexStagingOffset = buffers.ui.vertexStagingOffset + buffers.ui.vertexStagingSize;
+
+	buffers.actors.stagingBufferInfo = &buffers.shared;
+	buffers.actors.instanceDataStagingOffset = buffers.ui.indexStagingOffset + buffers.ui.indexStagingSize;
+	buffers.actors.drawInfoStagingOffset = buffers.actors.instanceDataStagingOffset + buffers.actors.instanceDataSize;
+	buffers.actors.walls.vertexStagingOffset = buffers.actors.drawInfoStagingOffset + buffers.actors.drawInfoSize;
+	buffers.actors.walls.indexStagingOffset = buffers.actors.walls.vertexStagingOffset +
+											  buffers.actors.walls.vertexSize;
+
+	SetSharedMemoryMappingInfo();
 }
 
 // TODO: lossless
-bool ResizeBuffer(Buffer *buffer, bool lossy, const MemoryMappingFunction MapMemory)
+bool ResizeBuffer(Buffer *buffer, bool lossy)
 {
 	vkDestroyBuffer(device, buffer->buffer, NULL);
 	buffer->buffer = VK_NULL_HANDLE;
@@ -126,23 +188,35 @@ bool ResizeBuffer(Buffer *buffer, bool lossy, const MemoryMappingFunction MapMem
 		return false;
 	}
 
-	// TODO: Fix to dynamically set aliasing information from buffer information
-	if (buffer->memoryAllocationInfo.memoryInfo->type == VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
+	if (buffer == &buffers.local)
 	{
-		buffers.walls.vertexSize = sizeof(WallVertex) *
-								   (buffers.walls.maxWallCount * 4 + skyModel->packedVertsUvsCount);
-		buffers.walls.indexSize = sizeof(uint32_t) * (buffers.walls.maxWallCount * 6 + skyModel->packedIndicesCount);
 		buffers.ui.vertexSize = sizeof(UiVertex) * buffers.ui.maxQuads * 4;
 		buffers.ui.indexSize = sizeof(uint32_t) * buffers.ui.maxQuads * 6;
 
-		SetLocalBufferAliasingInfo();
-	} else if (buffer->memoryAllocationInfo.memoryInfo->type ==
-			   (VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))
+		buffers.actors.instanceDataSize = sizeof(ActorInstanceData) * buffers.actors.walls.count;
+		if (buffers.actors.models.modelCounts && buffers.actors.models.loadedModelIds.length)
+		{
+			for (size_t i = 0; i < buffers.actors.models.loadedModelIds.length; i++)
+			{
+				buffers.actors.instanceDataSize += sizeof(ActorInstanceData) * buffers.actors.models.modelCounts[i];
+			}
+		}
+		buffers.actors.drawInfoSize = sizeof(VkDrawIndexedIndirectCommand) *
+											  buffers.actors.models.loadedModelIds.length +
+									  sizeof(VkDrawIndexedIndirectCommand) * buffers.actors.walls.count;
+
+		buffers.actors.models.vertexSize = sizeof(ActorVertex) * buffers.actors.models.vertexCount;
+		buffers.actors.models.indexSize = sizeof(uint32_t) * buffers.actors.models.indexCount;
+		buffers.actors.walls.vertexSize = sizeof(ActorVertex) * buffers.actors.walls.count * 4;
+		buffers.actors.walls.indexSize = sizeof(uint32_t) * buffers.actors.walls.count * 6;
+	}
+	if (buffer == &buffers.shared)
 	{
 		buffers.ui.vertexStagingSize = sizeof(UiVertex) * buffers.ui.maxQuads * 4;
 		buffers.ui.indexStagingSize = sizeof(uint32_t) * buffers.ui.maxQuads * 6;
-		SetSharedBufferAliasingInfo();
 	}
+	SetLocalBufferAliasingInfo();
+	SetSharedBufferAliasingInfo();
 
 	if (!AllocateMemory(buffer->memoryAllocationInfo.memoryInfo,
 						buffer->memoryAllocationInfo.memoryRequirements.memoryTypeBits))
@@ -153,40 +227,38 @@ bool ResizeBuffer(Buffer *buffer, bool lossy, const MemoryMappingFunction MapMem
 	{
 		return false;
 	}
-	if (MapMemory)
+	if (buffer == &buffers.shared)
 	{
-		return MapMemory();
+		return MapSharedMemory();
 	}
 
 	return true;
 }
 
-// TODO: This function assumes the buffer (not sub-buffer, but the larger buffer) consumes the whole memory allocation
 // TODO: Rewrite to allow for batched resizes
 bool ResizeBufferRegion(Buffer *buffer,
 						const VkDeviceSize offset,
 						const VkDeviceSize oldSize,
 						const VkDeviceSize newSize,
-						const bool lossy,
-						const MemoryMappingFunction MapMemory)
+						const bool lossy)
 {
-	const VkDeviceSize memorySize = buffer->memoryAllocationInfo.memoryInfo->size;
-	void *otherBufferMemory = NULL;
-	void *bufferMemory = NULL;
+	const VkDeviceSize bufferSize = buffer->size;
+	void *resizedBufferData = NULL;
+	void *otherBufferData = NULL;
 	Buffer stagingBuffer = {.buffer = VK_NULL_HANDLE};
 	if (buffer->memoryAllocationInfo.memoryInfo->mappedMemory)
 	{
-		otherBufferMemory = malloc(memorySize - oldSize);
+		otherBufferData = malloc(bufferSize - oldSize);
 
-		memcpy(otherBufferMemory, buffer->memoryAllocationInfo.memoryInfo->mappedMemory, offset);
-		memcpy(otherBufferMemory + offset,
+		memcpy(otherBufferData, buffer->memoryAllocationInfo.memoryInfo->mappedMemory, offset);
+		memcpy(otherBufferData + offset,
 			   buffer->memoryAllocationInfo.memoryInfo->mappedMemory + offset + oldSize,
-			   memorySize - offset - oldSize);
+			   bufferSize - offset - oldSize);
 
 		if (!lossy)
 		{
-			bufferMemory = malloc(oldSize);
-			memcpy(bufferMemory, buffer->memoryAllocationInfo.memoryInfo->mappedMemory + offset, oldSize);
+			resizedBufferData = malloc(oldSize);
+			memcpy(resizedBufferData, buffer->memoryAllocationInfo.memoryInfo->mappedMemory + offset, oldSize);
 		}
 	} else
 	{
@@ -197,7 +269,7 @@ bool ResizeBufferRegion(Buffer *buffer,
 			.memoryInfo = &memoryInfo,
 			.usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 		};
-		stagingBuffer.size = memorySize - oldSize;
+		stagingBuffer.size = bufferSize - oldSize;
 		if (!CreateBuffer(&stagingBuffer, true))
 		{
 			return false;
@@ -210,7 +282,7 @@ bool ResizeBufferRegion(Buffer *buffer,
 			{
 				.srcOffset = offset + oldSize,
 				.dstOffset = offset,
-				.size = memorySize - offset - oldSize,
+				.size = bufferSize - offset - oldSize,
 			},
 		};
 		if (!CopyBuffer(buffer->buffer, stagingBuffer.buffer, offset + oldSize == buffer->size ? 1 : 2, regions))
@@ -219,29 +291,29 @@ bool ResizeBufferRegion(Buffer *buffer,
 		}
 	}
 
-	buffer->size = memorySize - oldSize + newSize;
-	if (!ResizeBuffer(buffer, true, MapMemory))
+	buffer->size = bufferSize - oldSize + newSize;
+	if (!ResizeBuffer(buffer, true))
 	{
-		free(bufferMemory);
-		free(otherBufferMemory);
+		free(resizedBufferData);
+		free(otherBufferData);
 
 		return false;
 	}
 
 	if (buffer->memoryAllocationInfo.memoryInfo->mappedMemory)
 	{
-		memcpy(buffer->memoryAllocationInfo.memoryInfo->mappedMemory, otherBufferMemory, offset);
+		memcpy(buffer->memoryAllocationInfo.memoryInfo->mappedMemory, otherBufferData, offset);
 		// ReSharper disable once CppDFANullDereference
 		memcpy(buffer->memoryAllocationInfo.memoryInfo->mappedMemory + offset + newSize,
-			   otherBufferMemory + offset,
-			   memorySize - offset - oldSize);
+			   otherBufferData + offset,
+			   bufferSize - offset - oldSize);
 		if (!lossy)
 		{
-			memcpy(buffer->memoryAllocationInfo.memoryInfo->mappedMemory + offset, bufferMemory, oldSize);
+			memcpy(buffer->memoryAllocationInfo.memoryInfo->mappedMemory + offset, resizedBufferData, oldSize);
 		}
 
-		free(bufferMemory);
-		free(otherBufferMemory);
+		free(resizedBufferData);
+		free(otherBufferData);
 	} else
 	{
 		const VkBufferCopy regions[] = {
@@ -251,7 +323,7 @@ bool ResizeBufferRegion(Buffer *buffer,
 			{
 				.srcOffset = offset,
 				.dstOffset = offset + newSize,
-				.size = memorySize - offset - oldSize,
+				.size = bufferSize - offset - oldSize,
 			},
 		};
 		if (!CopyBuffer(stagingBuffer.buffer, buffer->buffer, offset + newSize == buffer->size ? 1 : 2, regions))
@@ -264,6 +336,152 @@ bool ResizeBufferRegion(Buffer *buffer,
 			return false;
 		}
 	}
+
+	return true;
+}
+
+VkResult ResizeUiBuffer()
+{
+	if (buffers.ui.vertexStagingOffset <= buffers.ui.indexStagingOffset &&
+		buffers.ui.indexStagingOffset == buffers.ui.vertexStagingOffset + buffers.ui.vertexStagingSize)
+	{
+		if (!ResizeBufferRegion(&buffers.shared,
+								buffers.ui.vertexStagingOffset,
+								buffers.ui.vertexStagingSize + buffers.ui.indexStagingSize,
+								sizeof(UiVertex) * buffers.ui.maxQuads * 4 + sizeof(uint32_t) * buffers.ui.maxQuads * 6,
+								true))
+		{
+			return VK_ERROR_UNKNOWN;
+		}
+	} else if (buffers.ui.indexStagingOffset < buffers.ui.vertexStagingOffset &&
+			   buffers.ui.vertexStagingOffset == buffers.ui.indexStagingOffset + buffers.ui.indexStagingSize)
+	{
+		if (!ResizeBufferRegion(&buffers.shared,
+								buffers.ui.indexStagingOffset,
+								buffers.ui.indexStagingSize + buffers.ui.vertexStagingSize,
+								sizeof(UiVertex) * buffers.ui.maxQuads * 4 + sizeof(uint32_t) * buffers.ui.maxQuads * 6,
+								true))
+		{
+			return VK_ERROR_UNKNOWN;
+		}
+	} else
+	{
+		if (!ResizeBufferRegion(&buffers.shared,
+								buffers.ui.vertexStagingOffset,
+								buffers.ui.vertexStagingSize,
+								sizeof(UiVertex) * buffers.ui.maxQuads * 4,
+								true))
+		{
+			return VK_ERROR_UNKNOWN;
+		}
+		if (!ResizeBufferRegion(&buffers.shared,
+								buffers.ui.indexStagingOffset,
+								buffers.ui.indexStagingSize,
+								sizeof(uint32_t) * buffers.ui.maxQuads * 6,
+								true))
+		{
+			return VK_ERROR_UNKNOWN;
+		}
+	}
+
+
+	if (buffers.ui.vertexOffset <= buffers.ui.indexOffset &&
+		buffers.ui.indexOffset == buffers.ui.vertexOffset + buffers.ui.vertexSize)
+	{
+		if (!ResizeBufferRegion(&buffers.local,
+								buffers.ui.vertexOffset,
+								buffers.ui.vertexSize + buffers.ui.indexSize,
+								sizeof(UiVertex) * buffers.ui.maxQuads * 4 + sizeof(uint32_t) * buffers.ui.maxQuads * 6,
+								true))
+		{
+			return VK_ERROR_UNKNOWN;
+		}
+	} else if (buffers.ui.indexOffset < buffers.ui.vertexOffset &&
+			   buffers.ui.vertexOffset == buffers.ui.indexOffset + buffers.ui.indexSize)
+	{
+		if (!ResizeBufferRegion(&buffers.local,
+								buffers.ui.indexOffset,
+								buffers.ui.indexSize + buffers.ui.vertexSize,
+								sizeof(UiVertex) * buffers.ui.maxQuads * 4 + sizeof(uint32_t) * buffers.ui.maxQuads * 6,
+								true))
+		{
+			return VK_ERROR_UNKNOWN;
+		}
+	} else
+	{
+		if (!ResizeBufferRegion(&buffers.local,
+								buffers.ui.vertexOffset,
+								buffers.ui.vertexSize,
+								sizeof(UiVertex) * buffers.ui.maxQuads * 4,
+								true))
+		{
+			return VK_ERROR_UNKNOWN;
+		}
+		if (!ResizeBufferRegion(&buffers.local,
+								buffers.ui.indexOffset,
+								buffers.ui.indexSize,
+								sizeof(uint32_t) * buffers.ui.maxQuads * 6,
+								true))
+		{
+			return VK_ERROR_UNKNOWN;
+		}
+	}
+
+	UpdateUniformBufferDescriptorSets();
+
+	return VK_SUCCESS;
+}
+
+/// TODO: This assumes the current layout of the buffer (instanceData, vertex, index) and will not work if this is not
+///  the case. I have done this to greatly simplify this function, since a function that takes multiple regions and
+///  dynamically resizes them based on their layout is upcoming and will therefore be replacing this function entirely.
+bool ResizeActorBuffer()
+{
+	VkDeviceSize newInstanceDataSize = sizeof(ActorInstanceData) * buffers.actors.walls.count;
+	if (buffers.actors.models.modelCounts && buffers.actors.models.loadedModelIds.length)
+	{
+		for (size_t i = 0; i < buffers.actors.models.loadedModelIds.length; i++)
+		{
+			newInstanceDataSize += sizeof(ActorInstanceData) * buffers.actors.models.modelCounts[i];
+		}
+	}
+	if (!ResizeBufferRegion(&buffers.shared,
+							buffers.actors.instanceDataStagingOffset,
+							buffers.actors.instanceDataSize +
+									buffers.actors.drawInfoSize +
+									buffers.actors.walls.vertexSize +
+									buffers.actors.walls.indexSize,
+							newInstanceDataSize +
+									sizeof(VkDrawIndexedIndirectCommand) * buffers.actors.models.loadedModelIds.length +
+									sizeof(VkDrawIndexedIndirectCommand) * buffers.actors.walls.count +
+									sizeof(ActorVertex) * buffers.actors.walls.count * 4 +
+									sizeof(uint32_t) * buffers.actors.walls.count * 6,
+							true))
+	{
+		return false;
+	}
+
+	if (!ResizeBufferRegion(&buffers.local,
+							buffers.actors.instanceDataOffset,
+							buffers.actors.instanceDataSize +
+									buffers.actors.drawInfoSize +
+									buffers.actors.models.vertexSize +
+									buffers.actors.walls.vertexSize +
+									buffers.actors.models.indexSize +
+									buffers.actors.walls.indexSize,
+							newInstanceDataSize +
+									sizeof(VkDrawIndexedIndirectCommand) * buffers.actors.models.loadedModelIds.length +
+									sizeof(VkDrawIndexedIndirectCommand) * buffers.actors.walls.count +
+									sizeof(ActorVertex) * buffers.actors.models.vertexCount +
+									sizeof(ActorVertex) * buffers.actors.walls.count * 4 +
+									sizeof(uint32_t) * buffers.actors.models.indexCount +
+									sizeof(uint32_t) * buffers.actors.walls.count * 6,
+							true))
+	{
+		return false;
+	}
+
+	UpdateUniformBufferDescriptorSets();
 
 	return true;
 }
@@ -320,7 +538,7 @@ bool LoadTexture(const char *textureName)
 	}
 
 	vkGetImageMemoryRequirements(device, texture->image, &texture->allocationInfo.memoryRequirements);
-	const size_t index = textures.usedSlots - 1;
+	const size_t index = textures.length - 1;
 	if (index == 0)
 	{
 		texture->allocationInfo.offset = 0;
@@ -334,7 +552,7 @@ bool LoadTexture(const char *textureName)
 
 		texture->allocationInfo.offset = previousAllocation.offset + previousAlignedSize;
 	}
-	imageAssetIdToIndexMap[image->id] = textures.usedSlots - 1;
+	imageAssetIdToIndexMap[image->id] = textures.length - 1;
 
 	MemoryInfo stagingBufferMemoryInfo = {
 		.type = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,

@@ -117,7 +117,7 @@ LevelBytecode *GenerateBytecode(const Level *l)
 	byte *dataBuffer = malloc(1048576);
 	chk_malloc(dataBuffer);
 	int dataBufferOffset = 0;
-	for (int j = 0; j < l->walls.usedSlots; j++)
+	for (int j = 0; j < l->walls.length; j++)
 	{
 		const Wall *w = ListGet(l->walls, j);
 		dataBuffer[dataBufferOffset] = LEVEL_CMD_WALL;
@@ -132,7 +132,7 @@ LevelBytecode *GenerateBytecode(const Level *l)
 		WriteUint(dataBuffer, &dataBufferOffset, wall_texID);
 		WriteFloat(dataBuffer, &dataBufferOffset, w->uvScale);
 	}
-	for (int j = 0; j < l->actors.usedSlots; j++)
+	for (int j = 0; j < l->actors.length; j++)
 	{
 		const Actor *a = ListGet(l->actors, j);
 		dataBuffer[dataBufferOffset] = LEVEL_CMD_ACTOR;
