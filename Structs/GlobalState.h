@@ -105,6 +105,7 @@ void DestroyGlobalState();
 /**
  * Change the level by name
  * @param name Level name to change to
+ * @warning Don't use this from GMainState, use @c GLoadingSelectStateSet instead to avoid potential crashes
  */
 bool ChangeLevelByName(const char *name);
 

@@ -5,7 +5,10 @@
 #ifndef GLOADINGSTATE_H
 #define GLOADINGSTATE_H
 
-
+/**
+ * Change to the level loading state
+ * @param levelName The name of the level to load
+ */
 void GLoadingSelectStateSet(char *levelName);
 
 #endif //GLOADINGSTATE_H
