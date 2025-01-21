@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include "../Debug/DPrint.h"
 #include "../Helpers/Collision.h"
+#include "../Helpers/CommandParser.h"
 #include "../Helpers/Core/AssetReader.h"
 #include "../Helpers/Core/Error.h"
 #include "../Helpers/Core/Input.h"
@@ -16,6 +17,7 @@
 #include "../Helpers/TextBox.h"
 #include "../Structs/GlobalState.h"
 #include "../Structs/Level.h"
+#include "../Structs/Trigger.h"
 #include "../Structs/Vector2.h"
 #include "GPauseState.h"
 
@@ -167,7 +169,16 @@ void GMainStateFixedUpdate(GlobalState *state, double delta)
 		a->Update(a, delta);
 	}
 
-	state->physicsFrame++;
+	// Check for collisions with triggers
+	for (int i = 0; i < l->triggers->size; i++)
+	{
+		Trigger *t = ListGet(l->triggers, i);
+		if (CheckTriggerCollision(t, &l->player))
+		{
+			ExecuteCommand(t->command);
+			break;
+		}
+	}
 }
 
 // ReSharper disable once CppParameterMayBeConstPtrOrRef
@@ -206,6 +217,7 @@ void GMainStateRender(GlobalState *State)
 
 	DPrintF("Walls: %d", 0xFFFFFFFF, false, l->walls->size);
 	DPrintF("Actors: %d", 0xFFFFFFFF, false, l->actors->size);
+	DPrintF("Triggers: %d", 0xFFFFFFFF, false, l->triggers->size);
 }
 
 void GMainStateSet()

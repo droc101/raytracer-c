@@ -131,6 +131,12 @@ add_executable(
         Debug/FrameBenchmark.h
         Structs/UI/Controls/TextBox.c
         Structs/UI/Controls/TextBox.h
+        Helpers/CommandParser.c
+        Helpers/CommandParser.h
+        Structs/Trigger.c
+        Structs/Trigger.h
+        GameStates/GLoadingState.c
+        GameStates/GLoadingState.h
 )
 
 set(SDL2_PATH "${CMAKE_SOURCE_DIR}/lib/SDL2/x86_64-w64-mingw32")

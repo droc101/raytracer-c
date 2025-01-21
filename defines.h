@@ -44,6 +44,7 @@ typedef struct Options Options;
 typedef struct Asset Asset;
 typedef struct TextureSizeTable TextureSizeTable;
 typedef struct Image Image;
+typedef struct Trigger Trigger;
 
 // Function signatures
 typedef void (*FixedUpdateFunction)(GlobalState *state, double delta);
@@ -116,7 +117,8 @@ enum CurrentState
 	OPTIONS_STATE,
 	VIDEO_OPTIONS_STATE,
 	SOUND_OPTIONS_STATE,
-	INPUT_OPTIONS_STATE
+	INPUT_OPTIONS_STATE,
+	LOADING_STATE,
 };
 
 /**
@@ -401,6 +403,15 @@ struct Image
 	uint id;
 	char *name;
 	byte *pixelData;
+};
+
+struct Trigger
+{
+	Vector2 position;
+	double rotation;
+	Vector2 extents;
+	char command[64];
+	uint flags;
 };
 
 #pragma endregion

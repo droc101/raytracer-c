@@ -254,7 +254,7 @@ void DestroyGlobalState()
 	}
 }
 
-void ChangeLevelByName(const char *name)
+bool ChangeLevelByName(const char *name)
 {
 	LogInfo("Loading level \"%s\"\n", name);
 
@@ -265,15 +265,17 @@ void ChangeLevelByName(const char *name)
 	if (snprintf(levelPath, maxPathLength, "level/%s.gmap", name) > maxPathLength)
 	{
 		LogError("Failed to load level due to level name %s being too long\n", name);
-		Error("Failed to load level.");
+		free(levelPath);
+		return false;
 	}
 	const Asset *levelData = DecompressAsset(levelPath);
 	if (levelData == NULL)
 	{
 		LogError("Failed to load level asset.\n");
-		Error("Failed to load level.");
+		return false;
 	}
 	GetState()->blueCoins = 0;
 	Level *l = LoadLevel(levelData->data);
 	ChangeLevel(l);
+	return true;
 }

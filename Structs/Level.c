@@ -16,6 +16,7 @@ Level *CreateLevel()
 	chk_malloc(l);
 	l->actors = CreateList();
 	l->walls = CreateList();
+	l->triggers = CreateList();
 	l->player.pos = v2s(0);
 	l->player.angle = 0;
 	l->hasCeiling = false;
@@ -39,6 +40,7 @@ void DestroyLevel(Level *l)
 	}
 
 	ListFreeWithData(l->walls);
+	ListFreeWithData(l->triggers);
 	ListFree(l->actors); // actors are freed above (FreeActor)
 	free(l);
 	l = NULL;

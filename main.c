@@ -21,6 +21,8 @@
 #include "Structs/GlobalState.h"
 #include "Structs/Level.h"
 
+#include "Helpers/CommandParser.h"
+
 SDL_Surface *windowIcon;
 
 /**

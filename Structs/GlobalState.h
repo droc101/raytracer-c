@@ -106,6 +106,6 @@ void DestroyGlobalState();
  * Change the level by name
  * @param name Level name to change to
  */
-void ChangeLevelByName(const char *name);
+bool ChangeLevelByName(const char *name);
 
 #endif //GAME_GLOBALSTATE_H

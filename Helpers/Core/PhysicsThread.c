@@ -56,6 +56,7 @@ int PhysicsThreadMain(void *)
 		// ticks should be around 1/60th of a second
 		const double delta = lastFrameTime / PHYSICS_TARGET_NS_D;
 		UpdateFunction(GetState(), delta);
+		GetState()->physicsFrame++;
 
 		ulong timeEnd = GetTimeNs();
 		ulong timeElapsed = timeEnd - timeStart;

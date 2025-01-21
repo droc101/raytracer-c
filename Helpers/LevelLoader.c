@@ -11,6 +11,7 @@
 #include "Core/DataReader.h"
 #include "Core/Error.h"
 #include "Core/Logging.h"
+#include "../Structs/Trigger.h"
 
 Level *LoadLevel(const byte *data)
 {
@@ -76,6 +77,20 @@ Level *LoadLevel(const byte *data)
 		const float wallUVOffset = ReadFloat(data, &offset);
 		Wall *w = CreateWall(v2(wallAX, wallAY), v2(wallBX, wallBY), wallTex, wallUVScale, wallUVOffset);
 		ListAdd(l->walls, w);
+	}
+
+	const uint triggerCount = ReadUint(data, &offset);
+	for (int i = 0; i < triggerCount; i++)
+	{
+		const double trigX = ReadDouble(data, &offset);
+		const double trigY = ReadDouble(data, &offset);
+		const double trigRot = ReadDouble(data, &offset);
+		const double trigExtX = ReadDouble(data, &offset);
+		const double trigExtY = ReadDouble(data, &offset);
+		char trigCommand[64];
+		ReadString(data, &offset, (char *)&trigCommand, 64);
+		Trigger *t = CreateTrigger(v2(trigX, trigY), v2(trigExtX, trigExtY), trigRot, trigCommand);
+		ListAdd(l->triggers, t);
 	}
 
 	return l;
