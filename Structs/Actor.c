@@ -159,5 +159,5 @@ bool GetTransformedWall(const Actor *actor, Wall *wall)
 
 void ActorListenFor(const Actor *actor, const int signal)
 {
-	ListAdd(actor->listeningFor, (void *)signal);
+	ListAdd(actor->listeningFor, (void *)((size_t)signal));
 }

@@ -288,7 +288,7 @@ void SendSignal(const int signal, const Actor* sender)
 		Actor *a = ListGet(state.level->actors, i);
 		if (a->SignalHandler != NULL)
 		{
-			if (ListFind(a->listeningFor, (void*)signal) != -1)
+			if (ListFind(a->listeningFor, (void*)((size_t)signal)) != -1)
 			{
 				a->SignalHandler(a, sender, signal);
 			}
