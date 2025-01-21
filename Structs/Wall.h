@@ -11,19 +11,6 @@
 #define WALL_HITBOX_EXTENTS 0.2
 
 /**
- * Get the number of available wall textures
- * @return
- */
-int GetTextureCount();
-
-/**
- * Load a wall texture by index
- * @param index index of the texture
- * @return Wall texture as @c SDL_Texture
- */
-const byte *LoadWallTexture(int index);
-
-/**
  * Create a wall
  * @param a Wall start point
  * @param b Wall end point
@@ -33,13 +20,6 @@ const byte *LoadWallTexture(int index);
  * @return Wall pointer
  */
 Wall *CreateWall(Vector2 a, Vector2 b, const char *texture, float uvScale, float uvOffset);
-
-/**
- * Free the memory used by a wall
- * @param w Wall to free
- * @warning This function also frees the texture used by the wall
- */
-void FreeWall(Wall *w);
 
 /**
  * Bake a wall's information

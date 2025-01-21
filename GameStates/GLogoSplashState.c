@@ -33,8 +33,6 @@ void GLogoSplashStateFixedUpdate(GlobalState *State, double /*delta*/)
 	{
 		GMenuStateSet();
 	}
-
-	State->physicsFrame++;
 }
 
 // ReSharper disable once CppParameterMayBeConstPtrOrRef

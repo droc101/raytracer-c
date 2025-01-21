@@ -27,20 +27,23 @@ void GLevelSelectStateUpdate(GlobalState * /*State*/)
 	{
 		GMenuStateSet();
 	}
-	if (IsKeyJustPressed(SDL_SCANCODE_DOWN) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_DPAD_DOWN))
+	if (levelList.length > 0)
 	{
-		GLevelSelectState_SelectedLevel--;
-		GLevelSelectState_SelectedLevel = wrap(GLevelSelectState_SelectedLevel, 0, levelList.length);
-	} else if (IsKeyJustPressed(SDL_SCANCODE_UP) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_DPAD_UP))
-	{
-		GLevelSelectState_SelectedLevel++;
-		GLevelSelectState_SelectedLevel = wrap(GLevelSelectState_SelectedLevel, 0, levelList.length);
-	} else if (IsKeyJustReleased(SDL_SCANCODE_SPACE) || IsButtonJustReleased(CONTROLLER_OK))
-	{
-		ConsumeKey(SDL_SCANCODE_SPACE);
-		ConsumeButton(CONTROLLER_OK);
-		ChangeLevelByName(ListGet(levelList, GLevelSelectState_SelectedLevel));
-		GMainStateSet();
+		if (IsKeyJustPressed(SDL_SCANCODE_DOWN) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_DPAD_DOWN))
+		{
+			GLevelSelectState_SelectedLevel--;
+			GLevelSelectState_SelectedLevel = wrap(GLevelSelectState_SelectedLevel, 0, levelList.length);
+		} else if (IsKeyJustPressed(SDL_SCANCODE_UP) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_DPAD_UP))
+		{
+			GLevelSelectState_SelectedLevel++;
+			GLevelSelectState_SelectedLevel = wrap(GLevelSelectState_SelectedLevel, 0, levelList.length);
+		} else if (IsKeyJustReleased(SDL_SCANCODE_SPACE) || IsButtonJustReleased(CONTROLLER_OK))
+		{
+			ConsumeKey(SDL_SCANCODE_SPACE);
+			ConsumeButton(CONTROLLER_OK);
+			ChangeLevelByName(ListGet(levelList, GLevelSelectState_SelectedLevel));
+			GMainStateSet();
+		}
 	}
 }
 
@@ -54,9 +57,18 @@ void GLevelSelectStateRender(GlobalState * /*State*/)
 	FontDrawString(v2(20, 20), GAME_TITLE, 128, 0xFFFFFFFF, false);
 	FontDrawString(v2(20, 150), "Press Space to start.", 32, 0xFFa0a0a0, false);
 
-	char *levelName = ListGet(levelList, GLevelSelectState_SelectedLevel);
 	char levelNameBuffer[64];
-	sprintf(levelNameBuffer, "%02d %s", GLevelSelectState_SelectedLevel + 1, levelName);
+
+	if (levelList.length > 0)
+	{
+		char *levelName = ListGet(levelList, GLevelSelectState_SelectedLevel);
+
+		sprintf(levelNameBuffer, "%02d %s", GLevelSelectState_SelectedLevel + 1, levelName);
+	} else
+	{
+		strcpy((char*)&levelNameBuffer, "No levels found");
+	}
+
 	DrawTextAligned(levelNameBuffer,
 					32,
 					0xFFFFFFFF,
@@ -67,36 +79,41 @@ void GLevelSelectStateRender(GlobalState * /*State*/)
 					false);
 }
 
+void LoadLevelList()
+{
+	ListCreate(&levelList);
+	char levelDataPath[300];
+	sprintf(levelDataPath, "%sassets/level/", GetState()->executableFolder);
+
+	// Get the name of all gmap files in the level directory
+	DIR *dir = opendir(levelDataPath);
+	if (dir == NULL)
+	{
+		LogError("Failed to open level directory: %s\n", levelDataPath);
+		return;
+	}
+
+	struct dirent *ent;
+	while ((ent = readdir(dir)) != NULL)
+	{
+		if (strstr(ent->d_name, ".gmap") != NULL)
+		{
+			char *levelName = malloc(strlen(ent->d_name) + 1);
+			chk_malloc(levelName);
+			strcpy(levelName, ent->d_name);
+			// Remove the .gmap extension
+			levelName[strlen(levelName) - 5] = '\0';
+			ListAdd(&levelList, levelName);
+		}
+	}
+	closedir(dir);
+}
+
 void GLevelSelectStateSet()
 {
 	if (levelList.length == 0)
 	{
-		ListCreate(&levelList);
-		char levelDataPath[300];
-		sprintf(levelDataPath, "%sassets/level/", GetState()->executableFolder);
-
-		// Get the name of all gmap files in the level directory
-		DIR *dir = opendir(levelDataPath);
-		if (dir == NULL)
-		{
-			LogError("Failed to open level directory: %s\n", levelDataPath);
-			Error("Failed to open level directory.");
-		}
-
-		struct dirent *ent;
-		while ((ent = readdir(dir)) != NULL)
-		{
-			if (strstr(ent->d_name, ".gmap") != NULL)
-			{
-				char *levelName = malloc(strlen(ent->d_name) + 1);
-				chk_malloc(levelName);
-				strcpy(levelName, ent->d_name);
-				// Remove the .gmap extension
-				levelName[strlen(levelName) - 5] = '\0';
-				ListAdd(&levelList, levelName);
-			}
-		}
-		closedir(dir);
+		LoadLevelList();
 	}
 	StopMusic();
 	SetStateCallbacks(GLevelSelectStateUpdate,

@@ -4,17 +4,25 @@
 
 #include "TestActor.h"
 #include "../Helpers/Collision.h"
-#include "../Helpers/CommonAssets.h"
 #include "../Helpers/Core/AssetReader.h"
+#include "../Helpers/Core/Logging.h"
+#include "../Structs/Actor.h"
 #include "../Structs/Vector2.h"
 #include "../Structs/Wall.h"
+
+void TestActorSignalHandler(Actor *self, const Actor *sender, int signal)
+{
+	LogDebug("Test actor got signal %d from actor %p\n", signal, sender);
+}
 
 void TestActorInit(Actor *this)
 {
 	this->solid = true;
 	this->actorModel = LoadModel(MODEL("model_leafy"));
 	this->actorModelTexture = TEXTURE("actor_BLOB2");
-	this->actorWall = CreateWall(v2(-0.5, 0), v2(0.5, 0), actorTextures[0], 1.0, 0.0);
+	this->actorWall = CreateWall(v2(-0.5, 0), v2(0.5, 0), "", 1.0, 0.0);
+	this->SignalHandler = TestActorSignalHandler;
+	ActorListenFor(this, 0);
 }
 
 void TestActorUpdate(Actor *this, double delta)
@@ -32,6 +40,5 @@ void TestActorUpdate(Actor *this, double delta)
 // ReSharper disable once CppParameterMayBeConstPtrOrRef
 void TestActorDestroy(Actor *this)
 {
-	FreeWall(this->actorWall);
 	free(this->actorWall);
 }

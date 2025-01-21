@@ -77,8 +77,6 @@ add_executable(
         Helpers/Core/DataReader.h
         Helpers/Collision.c
         Helpers/Collision.h
-        GameStates/GEditorState.c
-        GameStates/GEditorState.h
         config.h
         GameStates/GLevelSelectState.c
         GameStates/GLevelSelectState.h
@@ -133,6 +131,12 @@ add_executable(
         Debug/FrameBenchmark.h
         Structs/UI/Controls/TextBox.c
         Structs/UI/Controls/TextBox.h
+        Helpers/CommandParser.c
+        Helpers/CommandParser.h
+        Structs/Trigger.c
+        Structs/Trigger.h
+        GameStates/GLoadingState.c
+        GameStates/GLoadingState.h
         Helpers/Graphics/Vulkan/Vulkan.c
         Helpers/Graphics/Vulkan/Vulkan.h
         Helpers/Graphics/Vulkan/VulkanInternal.c

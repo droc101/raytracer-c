@@ -7,9 +7,6 @@
 
 #include "../defines.h"
 
-#define MUSIC_COUNT 1
-extern const char *music[MUSIC_COUNT];
-
 /**
  * Load options
  * @warning This function should only be called once
@@ -108,7 +105,21 @@ void DestroyGlobalState();
 /**
  * Change the level by name
  * @param name Level name to change to
+ * @warning Don't use this from GMainState, use @c GLoadingSelectStateSet instead to avoid potential crashes
  */
-void ChangeLevelByName(const char *name);
+bool ChangeLevelByName(const char *name);
+
+/**
+ * Send a signal to all actors listening for it
+ * @param signal The signal to send
+ * @param sender The actor sending the signal (can be NULL)
+ */
+void SendSignal(const int signal, const Actor* sender);
+
+/**
+ * Remove a trigger from a level
+ * @param t The trigger to remove
+ */
+void RemoveTrigger(Trigger *t);
 
 #endif //GAME_GLOBALSTATE_H

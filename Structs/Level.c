@@ -16,12 +16,13 @@ Level *CreateLevel()
 	chk_malloc(l);
 	ListCreate(&l->actors);
 	ListCreate(&l->walls);
+	ListCreate(&l->triggers);
 	l->player.pos = v2s(0);
 	l->player.angle = 0;
-	l->skyColor = 0xff82c5ff;
-	l->floorTextureIndex = 0;
-	l->ceilingTextureIndex = -1;
-	l->musicIndex = 0;
+	l->hasCeiling = false;
+	strncpy(l->ceilOrSkyTex, "texture/level_sky_test.gtex", 28);
+	strncpy(l->floorTex, "texture/level_floor_test.gtex", 30);
+	strncpy(l->music, "none", 5);
 	l->fogColor = 0xff000000;
 	l->fogStart = 10;
 	l->fogEnd = 30;
@@ -32,11 +33,6 @@ Level *CreateLevel()
 
 void DestroyLevel(Level *l)
 {
-	for (int i = 0; i < l->walls.length; i++)
-	{
-		Wall *w = ListGet(l->walls, i);
-		FreeWall(w);
-	}
 	for (int i = 0; i < l->actors.length; i++)
 	{
 		Actor *a = ListGet(l->actors, i);
@@ -44,6 +40,7 @@ void DestroyLevel(Level *l)
 	}
 
 	ListAndContentsFree(&l->walls, false);
+	ListAndContentsFree(&l->triggers, false);
 	ListFree(&l->actors, false);
 	free(l);
 	l = NULL;

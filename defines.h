@@ -44,6 +44,7 @@ typedef struct Options Options;
 typedef struct Asset Asset;
 typedef struct TextureSizeTable TextureSizeTable;
 typedef struct Image Image;
+typedef struct Trigger Trigger;
 
 // Function signatures
 typedef void (*FixedUpdateFunction)(GlobalState *state, double delta);
@@ -59,6 +60,8 @@ typedef void (*ActorInitFunction)(Actor *self);
 typedef void (*ActorUpdateFunction)(Actor *self, double delta);
 
 typedef void (*ActorDestroyFunction)(Actor *self);
+
+typedef void (*ActorSignalHandlerFunction)(Actor *self, const Actor *sender, int signal);
 
 #pragma endregion
 
@@ -108,7 +111,6 @@ enum ImageDataOffsets
  */
 enum CurrentState
 {
-	EDITOR_STATE,
 	LEVEL_SELECT_STATE,
 	LOGO_SPLASH_STATE,
 	MAIN_STATE,
@@ -117,7 +119,8 @@ enum CurrentState
 	OPTIONS_STATE,
 	VIDEO_OPTIONS_STATE,
 	SOUND_OPTIONS_STATE,
-	INPUT_OPTIONS_STATE
+	INPUT_OPTIONS_STATE,
+	LOADING_STATE,
 };
 
 /**
@@ -149,6 +152,14 @@ enum ModelShader
 	SHADER_SKY,
 	SHADER_UNSHADED,
 	SHADER_SHADED
+};
+
+/**
+ * List of flags that can be set on a trigger
+ */
+enum TriggerFlag
+{
+	TRIGGER_FLAG_ONE_SHOT = 1
 };
 
 #pragma endregion
@@ -184,43 +195,63 @@ struct Player
 // Utility functions are in Structs/wall.h
 struct Wall
 {
-	Vector2 a; // The first point of the wall
-	Vector2 b; // The second point of the wall
-	const char *tex; // The texture name
-	int texId; // The texture ID
-	double length; // The length of the wall (Call WallBake to update)
-	double angle; // The angle of the wall (Call WallBake to update)
+	/// The first point of the wall
+	Vector2 a;
+	/// The second point of the wall
+	Vector2 b;
+	/// The fully qualified texture name (texture/level_uvtest.gtex instead of level_uvtest)
+	const char tex[48];
+	/// The length of the wall (Call @c WallBake to update)
+	double length;
+	/// The angle of the wall (Call @c WallBake to update)
+	double angle;
+	/// The change in x over the length of the wall, calculated with @code Wall.b.x - Wall.a.x@endcode
 	double dx;
+	/// The change in y over the length of the wall, calculated with @code Wall.b.y - Wall.a.y@endcode
 	double dy;
-	float uvScale; // The X scale of the texture
-	float uvOffset; // The X offset of the texture
-	float height; // height of the wall for rendering. Does not affect collision
+	/// The X scale of the texture
+	float uvScale;
+	/// The X offset of the texture
+	float uvOffset;
+	/// height of the wall for rendering. Does not affect collision
+	float height;
 };
 
 // Utility functions are in Structs/level.h
 struct Level
 {
+	/// The level's display name
 	char name[32];
+	/// The level's display course number, with -1 being none
 	short courseNum;
-	/// The list of actors in the level.
+
+	/// The list of actors in the level
 	List actors;
-	/// The list of walls in the level.
+	/// The list of walls in the level
 	List walls;
-	/// The color of the sky.
-	uint skyColor;
-	/// The texture index of the floor.
-	uint floorTextureIndex;
-	/// The texture index of the ceiling, where -1 means that the level has no ceiling.
-	uint ceilingTextureIndex;
-	/// The index of the music used in the level.
-	uint musicIndex;
-	/// The color of the fog in the level.
+	/// The list of triggers in the level
+	List triggers;
+	/// The list of models in the level
+	List models;
+
+	/// Indicates if the level has a ceiling. If false, the level will use a sky instead
+	bool hasCeiling;
+	/// The fully qualified texture name (texture/level_uvtest.gtex instead of level_uvtest)
+	char ceilOrSkyTex[48];
+	/// The fully qualified texture name (texture/level_uvtest.gtex instead of level_uvtest)
+	char floorTex[48];
+
+	/// The music name, or "none" for no music
+	char music[32];
+
+	/// The color of the fog
 	uint fogColor;
-	/// The distance from the player at which the fog begins.
+	/// The distance from the player at which the fog begins to fade in
 	double fogStart;
-	/// The distance from the player at which the fog ends.
+	/// The distance from the player at which the fog is fully opaque
 	double fogEnd;
-	/// The player object.
+
+	/// The player object
 	Player player;
 };
 
@@ -230,7 +261,7 @@ struct RayCastResult
 	Vector2 collisionPoint; // The point of collision
 	double distance; // The distance to the collision
 	bool collided; // Whether the ray collided with anything
-	Wall collisionWall; // The wall that was collided with
+	Wall *collisionWall; // The wall that was collided with
 };
 
 struct TextBox
@@ -339,6 +370,7 @@ struct Actor
 	ActorInitFunction Init;
 	ActorUpdateFunction Update;
 	ActorDestroyFunction Destroy;
+	ActorSignalHandlerFunction SignalHandler;
 	int actorType; // type of actor. do not change this after creation.
 	byte paramA; // extra parameters for the actor. saved in level data, so can be used during Init
 	byte paramB;
@@ -349,6 +381,7 @@ struct Actor
 	float shadowSize; // size of the shadow
 	Model *actorModel; // Optional model for the actor, if not NULL, will be rendered instead of the wall
 	char *actorModelTexture; // Texture for the model
+	List listeningFor; // List of signals the actor is listening for
 };
 
 struct Asset
@@ -378,6 +411,15 @@ struct Image
 	uint id;
 	char *name;
 	byte *pixelData;
+};
+
+struct Trigger
+{
+	Vector2 position;
+	double rotation;
+	Vector2 extents;
+	char command[64];
+	uint flags;
 };
 
 #pragma endregion

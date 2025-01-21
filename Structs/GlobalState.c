@@ -17,10 +17,6 @@
 
 GlobalState state;
 
-const char *music[MUSIC_COUNT] = {
-	MUSIC("audio_field"),
-};
-
 /**
  * callback for when a channel finishes playing (so we can free it)
  * @param channel The channel that finished
@@ -134,9 +130,11 @@ void ChangeLevel(Level *l)
 	DestroyLevel(state.level);
 	state.level = l;
 	state.textBoxActive = false;
-	if (l->musicIndex != 0)
+	if (strncmp(l->music, "none", 4) != 0)
 	{
-		ChangeMusic(music[l->musicIndex - 1]);
+		char musicPath[48];
+		snprintf(musicPath, 48, "audio/%s.gmus", l->music);
+		ChangeMusic(musicPath);
 	} else
 	{
 		StopMusic();
@@ -259,7 +257,7 @@ void DestroyGlobalState()
 	}
 }
 
-void ChangeLevelByName(const char *name)
+bool ChangeLevelByName(const char *name)
 {
 	LogInfo("Loading level \"%s\"\n", name);
 
@@ -269,19 +267,49 @@ void ChangeLevelByName(const char *name)
 
 	if (snprintf(levelPath, maxPathLength, "level/%s.gmap", name) > maxPathLength)
 	{
-		free(levelPath);
-
 		LogError("Failed to load level due to level name %s being too long\n", name);
-		Error("Failed to load level.");
+		free(levelPath);
+		return false;
 	}
 	const Asset *levelData = DecompressAsset(levelPath);
 	free(levelPath);
 	if (levelData == NULL)
 	{
 		LogError("Failed to load level asset.\n");
-		Error("Failed to load level.");
+		return false;
 	}
 	GetState()->blueCoins = 0;
 	Level *l = LoadLevel(levelData->data);
 	ChangeLevel(l);
+	return true;
+}
+
+void SendSignal(const int signal, const Actor* sender)
+{
+	// LogDebug("Sending signal %d from actor %p\n", signal, sender);
+	for (int i = 0; i < state.level->actors.length; i++)
+	{
+		Actor *a = ListGet(state.level->actors, i);
+		if (a->SignalHandler != NULL)
+		{
+			if (ListFind(a->listeningFor, (void*)(size_t)signal) != -1)
+			{
+				a->SignalHandler(a, sender, signal);
+			}
+		}
+	}
+}
+
+void RemoveTrigger(Trigger *t)
+{
+	List triggers = state.level->triggers;
+	const size_t idx = ListFind(triggers, t);
+	if (idx != -1)
+	{
+		ListRemoveAt(&triggers, idx);
+		free(t);
+	} else
+	{
+		LogError("Tried to remove a trigger from a level, but it was not in the level!");
+	}
 }

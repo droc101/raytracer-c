@@ -38,9 +38,6 @@
 #define FRAMEGRAPH_ENABLE
 // See /Debug/FrameGrapher.h for additional frame grapher settings
 
-// Press F6 while in game to open the level editor
-#define ENABLE_LEVEL_EDITOR
-
 // Show debug print statements in the top left corner
 #define ENABLE_DEBUG_PRINT
 
@@ -88,10 +85,10 @@
 #define APPDATA_APP_NAME "Game"
 
 // The level to load when pause exiting
-#define PAUSE_EXIT_LEVEL "leveldata_hub"
+#define PAUSE_EXIT_LEVEL "leveldata_fromeditor"
 
 // The level to start on when the game loads
-#define STARTING_LEVEL "leveldata_hub"
+#define STARTING_LEVEL "leveldata_fromeditor"
 
 // Number of sound effect channels
 // (sound effects that can play at the same time)

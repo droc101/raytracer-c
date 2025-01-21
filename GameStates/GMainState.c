@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include "../Debug/DPrint.h"
 #include "../Helpers/Collision.h"
+#include "../Helpers/CommandParser.h"
 #include "../Helpers/Core/AssetReader.h"
 #include "../Helpers/Core/Error.h"
 #include "../Helpers/Core/Input.h"
@@ -16,8 +17,8 @@
 #include "../Helpers/TextBox.h"
 #include "../Structs/GlobalState.h"
 #include "../Structs/Level.h"
+#include "../Structs/Trigger.h"
 #include "../Structs/Vector2.h"
-#include "GEditorState.h"
 #include "GPauseState.h"
 
 void GMainStateUpdate(GlobalState *State)
@@ -28,13 +29,6 @@ void GMainStateUpdate(GlobalState *State)
 		GPauseStateSet();
 		return;
 	}
-#ifdef ENABLE_LEVEL_EDITOR
-	if (IsKeyJustPressed(SDL_SCANCODE_F6))
-	{
-		GEditorStateSet();
-		return;
-	}
-#endif
 
 	if (State->textBoxActive)
 	{
@@ -175,7 +169,20 @@ void GMainStateFixedUpdate(GlobalState *state, double delta)
 		a->Update(a, delta);
 	}
 
-	state->physicsFrame++;
+	// Check for collisions with triggers
+	for (int i = 0; i < l->triggers.length; i++)
+	{
+		Trigger *t = ListGet(l->triggers, i);
+		if (CheckTriggerCollision(t, &l->player))
+		{
+			ExecuteCommand(t->command);
+			if (t->flags & TRIGGER_FLAG_ONE_SHOT)
+			{
+				RemoveTrigger(t); // goodbye
+			}
+			break;
+		}
+	}
 }
 
 // ReSharper disable once CppParameterMayBeConstPtrOrRef
@@ -214,6 +221,7 @@ void GMainStateRender(GlobalState *State)
 
 	DPrintF("Walls: %d", 0xFFFFFFFF, false, l->walls.length);
 	DPrintF("Actors: %d", 0xFFFFFFFF, false, l->actors.length);
+	DPrintF("Triggers: %d", 0xFFFFFFFF, false, l->triggers.length);
 }
 
 void GMainStateSet()
