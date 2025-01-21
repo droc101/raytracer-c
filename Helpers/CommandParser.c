@@ -4,6 +4,7 @@
 
 #include "CommandParser.h"
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -38,6 +39,25 @@ void ExecuteCommand(const char *command)
 		{
 			GLoadingSelectStateSet((char*)ListGet(commandList, 1));
 		}
+	}
+	else if (strcmp(commandName, "signal") == 0)
+	{
+		if (commandList->size < 2)
+        {
+            printf("signal command requires a signal number\n");
+        } else
+        {
+			errno = 0;
+        	char *end;
+        	const int signal = strtol(ListGet(commandList, 1), &end, 10);
+        	if (errno != 0 || *end != '\0')
+        	{
+        		printf("Invalid signal number: %s\n", (char*)ListGet(commandList, 1));
+        	} else
+        	{
+        		SendSignal(signal, NULL);
+        	}
+        }
 	}
 	// TODO: signal system and related commands
 	else

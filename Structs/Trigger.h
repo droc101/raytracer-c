@@ -12,9 +12,10 @@
  * @param extents The extents of the trigger (half in each direction)
  * @param rot The rotation of the trigger
  * @param command The command to execute when the trigger is activated
+ * @param flags
  * @return The created trigger
  */
-Trigger *CreateTrigger(Vector2 pos, Vector2 extents, double rot, const char* command);
+Trigger *CreateTrigger(Vector2 pos, Vector2 extents, double rot, const char *command, uint flags);
 
 /**
  * Check if a player is colliding with a trigger

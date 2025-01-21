@@ -176,6 +176,10 @@ void GMainStateFixedUpdate(GlobalState *state, double delta)
 		if (CheckTriggerCollision(t, &l->player))
 		{
 			ExecuteCommand(t->command);
+			if (t->flags & TRIGGER_FLAG_ONE_SHOT)
+			{
+				RemoveTrigger(t); // goodbye
+			}
 			break;
 		}
 	}

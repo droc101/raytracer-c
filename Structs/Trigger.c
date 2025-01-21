@@ -6,12 +6,17 @@
 
 #include "Vector2.h"
 
-Trigger *CreateTrigger(const Vector2 pos, const Vector2 extents, const double rot, const char* command)
+Trigger *CreateTrigger(const Vector2 pos,
+					   const Vector2 extents,
+					   const double rot,
+					   const char *command,
+					   const uint flags)
 {
 	Trigger *t = malloc(sizeof(Trigger));
 	t->position = pos;
 	t->extents = extents;
 	t->rotation = rot;
+	t->flags = flags;
 	strncpy(t->command, command, 64);
 
 	return t;

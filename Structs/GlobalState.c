@@ -279,3 +279,33 @@ bool ChangeLevelByName(const char *name)
 	ChangeLevel(l);
 	return true;
 }
+
+void SendSignal(const int signal, const Actor* sender)
+{
+	//LogDebug("Sending signal %d from actor %p\n", signal, sender);
+	for (int i = 0; i < state.level->actors->size; i++)
+	{
+		Actor *a = ListGet(state.level->actors, i);
+		if (a->SignalHandler != NULL)
+		{
+			if (ListFind(a->listeningFor, (void*)signal) != -1)
+			{
+				a->SignalHandler(a, sender, signal);
+			}
+		}
+	}
+}
+
+void RemoveTrigger(Trigger *t)
+{
+	List *triggers = state.level->triggers;
+	int idx = ListFind(triggers, t);
+	if (idx != -1)
+	{
+		ListRemoveAt(triggers, idx);
+		free(t);
+	} else
+	{
+		LogError("Tried to remove a trigger from a level, but it was not in the level!");
+	}
+}

@@ -5,10 +5,17 @@
 #include "TestActor.h"
 #include "../Helpers/Collision.h"
 #include "../Helpers/Core/AssetReader.h"
+#include "../Helpers/Core/Logging.h"
+#include "../Structs/Actor.h"
 #include "../Structs/Vector2.h"
 #include "../Structs/Wall.h"
 
 Model *leafyModel = NULL;
+
+void TestActorSignalHandler(Actor *self, const Actor *sender, int signal)
+{
+	LogDebug("Test actor got signal %d from actor %p\n", signal, sender);
+}
 
 void TestActorInit(Actor *this)
 {
@@ -20,6 +27,8 @@ void TestActorInit(Actor *this)
 	this->actorModel = leafyModel;
 	this->actorModelTexture = TEXTURE("actor_BLOB2");
 	this->actorWall = CreateWall(v2(-0.5, 0), v2(0.5, 0), "", 1.0, 0.0);
+	this->SignalHandler = TestActorSignalHandler;
+	ActorListenFor(this, 0);
 }
 
 void TestActorUpdate(Actor *this, double delta)

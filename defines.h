@@ -61,6 +61,8 @@ typedef void (*ActorUpdateFunction)(Actor *self, double delta);
 
 typedef void (*ActorDestroyFunction)(Actor *self);
 
+typedef void (*ActorSignalHandlerFunction)(Actor *self, const Actor *sender, int signal);
+
 #pragma endregion
 
 #pragma region Utility defines
@@ -150,6 +152,14 @@ enum ModelShader
 	SHADER_SKY,
 	SHADER_UNSHADED,
 	SHADER_SHADED
+};
+
+/**
+ * List of flags that can be set on a trigger
+ */
+enum TriggerFlag
+{
+	TRIGGER_FLAG_ONE_SHOT = 1
 };
 
 #pragma endregion
@@ -358,6 +368,7 @@ struct Actor
 	ActorInitFunction Init;
 	ActorUpdateFunction Update;
 	ActorDestroyFunction Destroy;
+	ActorSignalHandlerFunction SignalHandler;
 	int actorType; // type of actor. do not change this after creation.
 	byte paramA; // extra parameters for the actor. saved in level data, so can be used during Init
 	byte paramB;
@@ -368,6 +379,7 @@ struct Actor
 	float shadowSize; // size of the shadow
 	Model *actorModel; // Optional model for the actor, if not NULL, will be rendered instead of the wall
 	char *actorModelTexture; // Texture for the model
+	List *listeningFor; // List of signals the actor is listening for
 };
 
 struct Asset

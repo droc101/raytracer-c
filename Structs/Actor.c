@@ -118,6 +118,8 @@ Actor *CreateActor(const Vector2 position,
 	actor->shadowSize = 1.0f;
 	actor->actorModel = NULL;
 	actor->actorModelTexture = NULL;
+	actor->listeningFor = CreateList();
+	actor->SignalHandler = NULL;
 	actor->Init = ActorInitFuncs[actorType];
 	actor->Update = ActorUpdateFuncs[actorType];
 	actor->Destroy = ActorDestroyFuncs[actorType];
@@ -129,6 +131,7 @@ Actor *CreateActor(const Vector2 position,
 void FreeActor(Actor *actor)
 {
 	actor->Destroy(actor);
+	ListFree(actor->listeningFor);
 	free(actor);
 	actor = NULL;
 }
@@ -152,4 +155,9 @@ bool GetTransformedWall(const Actor *actor, Wall *wall)
 	WallBake(wall);
 
 	return true;
+}
+
+void ActorListenFor(const Actor *actor, const int signal)
+{
+	ListAdd(actor->listeningFor, (void *)signal);
 }

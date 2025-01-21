@@ -22,7 +22,7 @@ void GLoadingStateRender(GlobalState *)
 }
 
 void GLoadingStateFixedUpdate(GlobalState *state, double /*delta*/) {
-	if (state->physicsFrame == 10)
+	if (state->physicsFrame == 15)
 	{
 		if (ChangeLevelByName((char*)&loadStateLevelname))
 		{
@@ -34,7 +34,7 @@ void GLoadingStateFixedUpdate(GlobalState *state, double /*delta*/) {
 	}
 }
 
-void GLoadingSelectStateSet(char *levelName)
+void GLoadingSelectStateSet(const char *levelName)
 {
 	strncpy(loadStateLevelname, levelName, 32);
 	StopMusic();

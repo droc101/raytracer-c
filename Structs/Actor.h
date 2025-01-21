@@ -51,4 +51,11 @@ void FreeActor(Actor *actor);
  */
 bool GetTransformedWall(const Actor *actor, Wall *wall);
 
+/**
+ * Add a signal to listen for
+ * @param actor The actor that will listen
+ * @param signal The signal to listen for
+ */
+void ActorListenFor(const Actor *actor, const int signal);
+
 #endif //GAME_ACTOR_H
