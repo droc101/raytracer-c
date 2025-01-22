@@ -97,7 +97,8 @@ VkResult VK_FrameEnd()
 	const GlobalState *g = GetState();
 	if ((g->currentState == MAIN_STATE || g->currentState == PAUSE_STATE) && buffers.walls.wallCount > 0)
 	{
-		const uint32_t skyColor = (loadedLevel->skyColor & 0xFFFFFF00) | (TextureIndex(TEXTURE("level_sky")) & 0xFF);
+		const uint32_t skyVertexCount = loadedLevel->hasCeiling ? 0 : skyModel->packedVertsUvsNormalCount;
+		const uint32_t skyTextureIndex = TextureIndex(loadedLevel->ceilOrSkyTex);
 		vkCmdPushConstants(commandBuffers[currentFrame],
 						   pipelineLayout,
 						   VK_SHADER_STAGE_VERTEX_BIT,
@@ -109,14 +110,13 @@ VkResult VK_FrameEnd()
 						   VK_SHADER_STAGE_VERTEX_BIT,
 						   8,
 						   4,
-						   buffers.walls.skyIndexCount == 0 ? &buffers.walls.skyIndexCount
-															: &skyModel->packedVertsUvsNormalCount);
+						   &skyVertexCount);
 		vkCmdPushConstants(commandBuffers[currentFrame],
 						   pipelineLayout,
-						   VK_SHADER_STAGE_FRAGMENT_BIT,
+						   VK_SHADER_STAGE_VERTEX_BIT,
 						   12,
 						   4,
-						   &skyColor);
+						   &skyTextureIndex);
 
 		vkCmdBindPipeline(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.walls);
 
@@ -347,15 +347,15 @@ bool VK_LoadLevelWalls(const Level *level)
 	void *data;
 	uint32_t skyVertexCount = 0;
 	const Model *_skyModel = !skyModel ? LoadModel(MODEL("model_sky")) : skyModel;
-	if (level->ceilingTextureIndex == -1)
+	if (level->hasCeiling)
+	{
+		buffers.walls.skyIndexCount = 0;
+		buffers.walls.wallCount = level->walls.length + 2;
+	} else
 	{
 		skyVertexCount = _skyModel->packedVertsUvsNormalCount;
 		buffers.walls.skyIndexCount = _skyModel->packedIndicesCount;
 		buffers.walls.wallCount = level->walls.length + 1;
-	} else
-	{
-		buffers.walls.skyIndexCount = 0;
-		buffers.walls.wallCount = level->walls.length + 2;
 	}
 
 	if (buffers.walls.wallCount > buffers.walls.maxWallCount)
@@ -420,7 +420,8 @@ bool VK_LoadLevelWalls(const Level *level)
 
 	ListClear(&buffers.actors.models.loadedModelIds);
 	free(buffers.actors.models.modelCounts);
-	memset(&buffers.actors, 0, sizeof(ActorBuffer));
+	memset(&buffers.actors.models, 0, sizeof(ModelActorBuffer));
+	memset(&buffers.actors.walls, 0, sizeof(WallActorBuffer));
 	buffers.actors.walls.count = ACTOR_WALL_OVERALLOCATION_COUNT;
 	buffers.actors.models.modelCounts = calloc(buffers.actors.models.loadedModelIds.length, sizeof(uint16_t));
 	for (size_t i = 0; i < level->actors.length; i++)

@@ -527,28 +527,28 @@ void LoadWalls(const Level *level,
 	vertices[0 + skyVertexCount].z = -100;
 	vertices[0 + skyVertexCount].u = -100;
 	vertices[0 + skyVertexCount].v = -100;
-	vertices[0 + skyVertexCount].textureIndex = TextureIndex(wallTextures[level->floorTextureIndex]);
+	vertices[0 + skyVertexCount].textureIndex = TextureIndex(level->floorTex);
 
 	vertices[1 + skyVertexCount].x = 100;
 	vertices[1 + skyVertexCount].y = -0.5f;
 	vertices[1 + skyVertexCount].z = -100;
 	vertices[1 + skyVertexCount].u = 100;
 	vertices[1 + skyVertexCount].v = -100;
-	vertices[1 + skyVertexCount].textureIndex = TextureIndex(wallTextures[level->floorTextureIndex]);
+	vertices[1 + skyVertexCount].textureIndex = TextureIndex(level->floorTex);
 
 	vertices[2 + skyVertexCount].x = 100;
 	vertices[2 + skyVertexCount].y = -0.5f;
 	vertices[2 + skyVertexCount].z = 100;
 	vertices[2 + skyVertexCount].u = 100;
 	vertices[2 + skyVertexCount].v = 100;
-	vertices[2 + skyVertexCount].textureIndex = TextureIndex(wallTextures[level->floorTextureIndex]);
+	vertices[2 + skyVertexCount].textureIndex = TextureIndex(level->floorTex);
 
 	vertices[3 + skyVertexCount].x = -100;
 	vertices[3 + skyVertexCount].y = -0.5f;
 	vertices[3 + skyVertexCount].z = 100;
 	vertices[3 + skyVertexCount].u = -100;
 	vertices[3 + skyVertexCount].v = 100;
-	vertices[3 + skyVertexCount].textureIndex = TextureIndex(wallTextures[level->floorTextureIndex]);
+	vertices[3 + skyVertexCount].textureIndex = TextureIndex(level->floorTex);
 
 	indices[0 + buffers.walls.skyIndexCount] = 0 + buffers.walls.skyIndexCount;
 	indices[1 + buffers.walls.skyIndexCount] = 1 + buffers.walls.skyIndexCount;
@@ -557,43 +557,35 @@ void LoadWalls(const Level *level,
 	indices[4 + buffers.walls.skyIndexCount] = 2 + buffers.walls.skyIndexCount;
 	indices[5 + buffers.walls.skyIndexCount] = 3 + buffers.walls.skyIndexCount;
 
-	if (level->ceilingTextureIndex == -1)
-	{
-		for (uint32_t i = 0; i < skyModel->packedVertsUvsNormalCount; i++)
-		{
-			memcpy(&vertices[i], &skyModel->packedVertsUvsNormal[i * 8], sizeof(float) * 5);
-			vertices[i].textureIndex = TextureIndex(TEXTURE("level_sky"));
-		}
-		memcpy(indices, skyModel->packedIndices, sizeof(uint32_t) * skyModel->packedIndicesCount);
-	} else
+	if (level->hasCeiling)
 	{
 		vertices[4].x = -100;
 		vertices[4].y = 0.5f;
 		vertices[4].z = -100;
 		vertices[4].u = -100;
 		vertices[4].v = -100;
-		vertices[4].textureIndex = TextureIndex(wallTextures[level->ceilingTextureIndex]);
+		vertices[4].textureIndex = TextureIndex(level->ceilOrSkyTex);
 
 		vertices[5].x = 100;
 		vertices[5].y = 0.5f;
 		vertices[5].z = -100;
 		vertices[5].u = 100;
 		vertices[5].v = -100;
-		vertices[5].textureIndex = TextureIndex(wallTextures[level->ceilingTextureIndex]);
+		vertices[5].textureIndex = TextureIndex(level->ceilOrSkyTex);
 
 		vertices[6].x = 100;
 		vertices[6].y = 0.5f;
 		vertices[6].z = 100;
 		vertices[6].u = 100;
 		vertices[6].v = 100;
-		vertices[6].textureIndex = TextureIndex(wallTextures[level->ceilingTextureIndex]);
+		vertices[6].textureIndex = TextureIndex(level->ceilOrSkyTex);
 
 		vertices[7].x = -100;
 		vertices[7].y = 0.5f;
 		vertices[7].z = 100;
 		vertices[7].u = -100;
 		vertices[7].v = 100;
-		vertices[7].textureIndex = TextureIndex(wallTextures[level->ceilingTextureIndex]);
+		vertices[7].textureIndex = TextureIndex(level->ceilOrSkyTex);
 
 		indices[6] = 4;
 		indices[7] = 5;
@@ -601,6 +593,14 @@ void LoadWalls(const Level *level,
 		indices[9] = 4;
 		indices[10] = 6;
 		indices[11] = 7;
+	} else
+	{
+		for (uint32_t i = 0; i < skyModel->packedVertsUvsNormalCount; i++)
+		{
+			memcpy(&vertices[i], &skyModel->packedVertsUvsNormal[i * 8], sizeof(float) * 5);
+			vertices[i].textureIndex = TextureIndex(TEXTURE("level_sky"));
+		}
+		memcpy(indices, skyModel->packedIndices, sizeof(uint32_t) * skyModel->packedIndicesCount);
 	}
 
 	for (uint32_t i = !skyVertexCount ? 2 : 1; i < buffers.walls.wallCount; i++)

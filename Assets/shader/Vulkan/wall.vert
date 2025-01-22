@@ -3,6 +3,7 @@
 layout(push_constant) uniform PushConstants {
     layout(offset = 0) vec2 playerPosition;
     layout(offset = 8) uint skyVertexCount;
+    layout(offset = 12) uint skyTextureIndex;
 } pushConstants;
 
 layout(binding = 0) uniform Mat4 {
@@ -28,19 +29,21 @@ void main() {
             gl_Position = mat4(transform.i, transform.j, transform.k, transform.l) * vec4(inVertex, 1.0);
             outUV = inUV;
         }
+        outTextureIndex = inTextureIndex;
     } else {
         if (gl_VertexIndex < pushConstants.skyVertexCount + 4) {
             gl_Position = mat4(transform.i, transform.j, transform.k, transform.l) * (vec4(inVertex, 1.0) + vec4(pushConstants.playerPosition.x, 0, pushConstants.playerPosition.y, 0));
             if (pushConstants.skyVertexCount <= gl_VertexIndex) {
                 outUV = inUV + pushConstants.playerPosition;
+                outTextureIndex = inTextureIndex;
             } else {
                 outUV = inUV;
+                outTextureIndex = pushConstants.skyTextureIndex;
             }
         } else {
             gl_Position = mat4(transform.i, transform.j, transform.k, transform.l) * vec4(inVertex, 1.0);
             outUV = inUV;
+            outTextureIndex = inTextureIndex;
         }
     }
-
-    outTextureIndex = inTextureIndex;
 }
