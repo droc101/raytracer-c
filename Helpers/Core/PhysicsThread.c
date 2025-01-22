@@ -45,7 +45,8 @@ int PhysicsThreadMain(void *)
 		if (PhysicsThreadFunction == NULL)
 		{
 			SDL_UnlockMutex(PhysicsThreadMutex);
-			SDL_Delay(1); // pls no spin 🥺
+			SDL_Delay(PHYSICS_TARGET_MS); // pls no spin 🥺
+			GetState()->physicsFrame++;
 			continue;
 		}
 		// The function is copied to a local variable so we can unlock the mutex during its runtime

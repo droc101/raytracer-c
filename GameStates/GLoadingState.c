@@ -13,15 +13,8 @@
 
 char loadStateLevelname[32];
 
-void GLoadingStateUpdate(GlobalState *) {}
-
-void GLoadingStateRender(GlobalState *)
+void GLoadingStateUpdate(GlobalState *state)
 {
-	ClearColor(0xFF000000);
-	DrawTextAligned("LOADING", 16, -1, v2s(0), v2(WindowWidth(), WindowHeight()), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
-}
-
-void GLoadingStateFixedUpdate(GlobalState *state, double /*delta*/) {
 	if (state->physicsFrame == 15)
 	{
 		if (ChangeLevelByName((char*)&loadStateLevelname))
@@ -34,12 +27,18 @@ void GLoadingStateFixedUpdate(GlobalState *state, double /*delta*/) {
 	}
 }
 
+void GLoadingStateRender(GlobalState *)
+{
+	ClearColor(0xFF000000);
+	DrawTextAligned("LOADING", 16, -1, v2s(0), v2(WindowWidth(), WindowHeight()), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
+}
+
 void GLoadingSelectStateSet(const char *levelName)
 {
 	strncpy(loadStateLevelname, levelName, 32);
 	StopMusic();
 	SetStateCallbacks(GLoadingStateUpdate,
-					  GLoadingStateFixedUpdate,
+					  NULL,
 					  LOADING_STATE,
 					  GLoadingStateRender);
 }
