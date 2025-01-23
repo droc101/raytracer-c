@@ -38,7 +38,7 @@ void ExecuteCommand(const char *command)
 			printf("level command requires a level name\n");
 		} else
 		{
-			GLoadingSelectStateSet(ListGet(commandList, 1));
+			GLoadingStateSet(ListGet(commandList, 1));
 		}
 	}
 	else if (strcmp(commandName, "signal") == 0)

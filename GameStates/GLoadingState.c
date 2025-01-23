@@ -27,9 +27,6 @@ void GLoadingStateUpdate(GlobalState *state)
 	}
 }
 
-// This is needed so that the physics thread keeps running in this state
-void GLoadingStateFixedUpdate(GlobalState * /*state*/, double /*delta*/) {}
-
 void GLoadingStateRender(GlobalState *)
 {
 	ClearColor(0xFF000000);
@@ -43,9 +40,12 @@ void GLoadingStateRender(GlobalState *)
 					true);
 }
 
-void GLoadingSelectStateSet(const char *levelName)
+void GLoadingStateSet(const char *levelName)
 {
 	strncpy(loadStateLevelname, levelName, 32);
 	StopMusic();
-	SetStateCallbacks(GLoadingStateUpdate, GLoadingStateFixedUpdate, LOADING_STATE, GLoadingStateRender);
+	SetStateCallbacks(GLoadingStateUpdate,
+					  NULL,
+					  LOADING_STATE,
+					  GLoadingStateRender);
 }

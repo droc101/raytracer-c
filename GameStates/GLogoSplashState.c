@@ -5,6 +5,7 @@
 #include "GLogoSplashState.h"
 #include "../Helpers/Core/AssetReader.h"
 #include "../Helpers/Core/Input.h"
+#include "../Helpers/Core/MathEx.h"
 #include "../Helpers/Graphics/Drawing.h"
 #include "../Structs/GlobalState.h"
 #include "../Structs/Vector2.h"
@@ -46,7 +47,20 @@ void GLogoSplashStateRender(GlobalState *State)
 	}
 
 	const SDL_Rect destRect = {WindowWidth() / 2 - 150, WindowHeight() / 2 - 150, 300, 300};
-	DrawTexture(v2(destRect.x, destRect.y), v2(destRect.w, destRect.h), TEXTURE("interface_studio"));
+
+	// HIGH EFFORT FANCY ANIMATION
+	float alpha = 1.0;
+	if (State->physicsFrame < 40)
+	{
+		alpha = (State->physicsFrame - 20) / 20.0;
+	}
+	else if (State->physicsFrame > 80)
+	{
+		alpha = 1.0 - ((State->physicsFrame - 80) / 20.0);
+	}
+	const uint color = (uint)(alpha * 255) << 24 | 0xFFFFFF;
+
+	DrawTextureMod(v2(destRect.x, destRect.y), v2(destRect.w, destRect.h), TEXTURE("interface_studio"), color);
 }
 
 void GLogoSplashStateSet()
