@@ -33,7 +33,7 @@ void GLoadingStateRender(GlobalState *)
 	DrawTextAligned("LOADING", 16, -1, v2s(0), v2(WindowWidth(), WindowHeight()), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
 }
 
-void GLoadingSelectStateSet(const char *levelName)
+void GLoadingStateSet(const char *levelName)
 {
 	strncpy(loadStateLevelname, levelName, 32);
 	StopMusic();
