@@ -347,7 +347,7 @@ typedef struct ModelActorBuffer
 	/// @c ListFind to get an index that can be used to index nearly every other array in this struct.
 	List loadedModelIds;
 	/// An array containing the number of instances of each model index in the level.
-	uint16_t *modelCounts;
+	List modelCounts;
 
 	/// The that the vertices take up within the device-local buffer.
 	/// @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkDeviceSize.html

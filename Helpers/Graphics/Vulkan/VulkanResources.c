@@ -17,11 +17,12 @@ bool CreateLocalBuffer()
 	buffers.ui.indexSize = sizeof(uint32_t) * buffers.ui.maxQuads * 6;
 
 	buffers.actors.instanceDataSize = sizeof(ActorInstanceData) * buffers.actors.walls.count;
-	if (buffers.actors.models.modelCounts && buffers.actors.models.loadedModelIds.length)
+	if (buffers.actors.models.modelCounts.length && buffers.actors.models.loadedModelIds.length)
 	{
 		for (size_t i = 0; i < buffers.actors.models.loadedModelIds.length; i++)
 		{
-			buffers.actors.instanceDataSize += sizeof(ActorInstanceData) * buffers.actors.models.modelCounts[i];
+			buffers.actors.instanceDataSize += sizeof(ActorInstanceData) *
+											   (size_t)ListGet(buffers.actors.models.modelCounts, i);
 		}
 	}
 	buffers.actors.drawInfoSize = sizeof(VkDrawIndexedIndirectCommand) * buffers.actors.models.loadedModelIds.length +
@@ -96,11 +97,12 @@ bool CreateSharedBuffer()
 	buffers.ui.indexStagingSize = sizeof(uint32_t) * buffers.ui.maxQuads * 6;
 
 	buffers.actors.instanceDataStagingSize = sizeof(ActorInstanceData) * buffers.actors.walls.count;
-	if (buffers.actors.models.modelCounts && buffers.actors.models.loadedModelIds.length)
+	if (buffers.actors.models.modelCounts.length && buffers.actors.models.loadedModelIds.length)
 	{
 		for (size_t i = 0; i < buffers.actors.models.loadedModelIds.length; i++)
 		{
-			buffers.actors.instanceDataStagingSize += sizeof(ActorInstanceData) * buffers.actors.models.modelCounts[i];
+			buffers.actors.instanceDataStagingSize += sizeof(ActorInstanceData) *
+													  (size_t)ListGet(buffers.actors.models.modelCounts, i);
 		}
 	}
 	buffers.actors.drawInfoStagingSize = sizeof(VkDrawIndexedIndirectCommand) *
@@ -194,12 +196,12 @@ bool ResizeBuffer(Buffer *buffer, bool lossy)
 		buffers.ui.indexStagingSize = sizeof(uint32_t) * buffers.ui.maxQuads * 6;
 
 		buffers.actors.instanceDataStagingSize = sizeof(ActorInstanceData) * buffers.actors.walls.count;
-		if (buffers.actors.models.modelCounts && buffers.actors.models.loadedModelIds.length)
+		if (buffers.actors.models.modelCounts.length && buffers.actors.models.loadedModelIds.length)
 		{
 			for (size_t i = 0; i < buffers.actors.models.loadedModelIds.length; i++)
 			{
 				buffers.actors.instanceDataStagingSize += sizeof(ActorInstanceData) *
-														  buffers.actors.models.modelCounts[i];
+														  (size_t)ListGet(buffers.actors.models.modelCounts, i);
 			}
 		}
 		buffers.actors.drawInfoStagingSize = sizeof(VkDrawIndexedIndirectCommand) *
@@ -430,11 +432,11 @@ bool ResizeActorBuffer()
 {
 	const VkDeviceSize shadowStagingSize = buffers.walls.shadowStagingSize;
 	VkDeviceSize newInstanceDataSize = sizeof(ActorInstanceData) * buffers.actors.walls.count;
-	if (buffers.actors.models.modelCounts && buffers.actors.models.loadedModelIds.length)
+	if (buffers.actors.models.modelCounts.length && buffers.actors.models.loadedModelIds.length)
 	{
 		for (size_t i = 0; i < buffers.actors.models.loadedModelIds.length; i++)
 		{
-			newInstanceDataSize += sizeof(ActorInstanceData) * buffers.actors.models.modelCounts[i];
+			newInstanceDataSize += sizeof(ActorInstanceData) * (size_t)ListGet(buffers.actors.models.modelCounts, i);
 		}
 	}
 	if (!ResizeBufferRegion(&buffers.shared,
@@ -500,11 +502,12 @@ bool ResizeActorBuffer()
 	buffers.ui.indexSize = sizeof(uint32_t) * buffers.ui.maxQuads * 6;
 
 	buffers.actors.instanceDataSize = sizeof(ActorInstanceData) * buffers.actors.walls.count;
-	if (buffers.actors.models.modelCounts && buffers.actors.models.loadedModelIds.length)
+	if (buffers.actors.models.modelCounts.length && buffers.actors.models.loadedModelIds.length)
 	{
 		for (size_t i = 0; i < buffers.actors.models.loadedModelIds.length; i++)
 		{
-			buffers.actors.instanceDataSize += sizeof(ActorInstanceData) * buffers.actors.models.modelCounts[i];
+			buffers.actors.instanceDataSize += sizeof(ActorInstanceData) *
+											   (size_t)ListGet(buffers.actors.models.modelCounts, i);
 		}
 	}
 	buffers.actors.drawInfoSize = sizeof(VkDrawIndexedIndirectCommand) * buffers.actors.models.loadedModelIds.length +

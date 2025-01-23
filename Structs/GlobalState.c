@@ -300,14 +300,11 @@ void SendSignal(const int signal, const Actor* sender)
 	}
 }
 
-void RemoveTrigger(Trigger *t)
+void RemoveTrigger(const size_t index)
 {
-	List triggers = state.level->triggers;
-	const size_t idx = ListFind(triggers, t);
-	if (idx != -1)
+	if (index != -1)
 	{
-		ListRemoveAt(&triggers, idx);
-		free(t);
+		ListRemoveAt(&state.level->triggers, index);
 	} else
 	{
 		LogError("Tried to remove a trigger from a level, but it was not in the level!");

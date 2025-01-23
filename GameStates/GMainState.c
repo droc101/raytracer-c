@@ -178,7 +178,8 @@ void GMainStateFixedUpdate(GlobalState *state, double delta)
 			ExecuteCommand(t->command);
 			if (t->flags & TRIGGER_FLAG_ONE_SHOT)
 			{
-				RemoveTrigger(t); // goodbye
+				RemoveTrigger(i); // goodbye
+				free(t);
 			}
 			break;
 		}

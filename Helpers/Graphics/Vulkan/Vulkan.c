@@ -336,6 +336,9 @@ bool VK_Cleanup()
 
 	free(swapChainSupport.formats);
 	free(swapChainSupport.presentMode);
+	free(swapChainImages);
+	free(swapChainImageViews);
+	free(swapChainFramebuffers);
 
 	return true;
 }
@@ -434,10 +437,9 @@ bool VK_LoadLevelWalls(const Level *level)
 	}
 
 	ListClear(&buffers.actors.models.loadedModelIds);
-	free(buffers.actors.models.modelCounts);
+	ListClear(&buffers.actors.models.modelCounts);
 	memset(&buffers.actors.models, 0, sizeof(ModelActorBuffer));
 	memset(&buffers.actors.walls, 0, sizeof(WallActorBuffer));
-	buffers.actors.models.modelCounts = calloc(buffers.actors.models.loadedModelIds.length, sizeof(uint16_t));
 	for (size_t i = 0; i < level->actors.length; i++)
 	{
 		const Actor *actor = ListGet(level->actors, i);
@@ -458,7 +460,13 @@ bool VK_LoadLevelWalls(const Level *level)
 				buffers.actors.models.vertexCount += actor->actorModel->packedVertsUvsNormalCount;
 				buffers.actors.models.indexCount += actor->actorModel->packedIndicesCount;
 			}
-			buffers.actors.models.modelCounts[index]++;
+			if (index < buffers.actors.models.modelCounts.length)
+			{
+				buffers.actors.models.modelCounts.data[index]++;
+			} else
+			{
+				ListAdd(&buffers.actors.models.modelCounts, (void *)1);
+			}
 		}
 		if (actor->showShadow)
 		{

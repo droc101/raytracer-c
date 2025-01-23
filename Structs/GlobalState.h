@@ -118,8 +118,8 @@ void SendSignal(const int signal, const Actor* sender);
 
 /**
  * Remove a trigger from a level
- * @param t The trigger to remove
+ * @param index The trigger to remove
  */
-void RemoveTrigger(Trigger *t);
+void RemoveTrigger(size_t index);
 
 #endif //GAME_GLOBALSTATE_H

@@ -745,7 +745,8 @@ void LoadActorInstanceData(const Level *level,
 	uint32_t *offsets = calloc(buffers.actors.models.loadedModelIds.length + 1, sizeof(uint32_t));
 	for (size_t i = 1; i <= buffers.actors.models.loadedModelIds.length; i++)
 	{
-		offsets[i] = offsets[i - 1] + buffers.actors.models.modelCounts[i - 1] * sizeof(ActorInstanceData);
+		offsets[i] = offsets[i - 1] +
+					 (size_t)ListGet(buffers.actors.models.modelCounts, i - 1) * sizeof(ActorInstanceData);
 	}
 	for (size_t i = 0; i < level->actors.length; i++)
 	{
@@ -844,8 +845,8 @@ void LoadActorDrawInfo(const Level *level, VkDrawIndexedIndirectCommand *drawInf
 	{
 		drawInfo[i].indexCount = GetModelFromId((size_t)ListGet(buffers.actors.models.loadedModelIds, i))
 										 ->packedIndicesCount;
-		drawInfo[i].instanceCount = buffers.actors.models.modelCounts[i];
-		modelCount += buffers.actors.models.modelCounts[i];
+		drawInfo[i].instanceCount = (size_t)ListGet(buffers.actors.models.modelCounts, i);
+		modelCount += (size_t)ListGet(buffers.actors.models.modelCounts, i);
 	}
 	for (size_t i = 0; i < level->actors.length; i++)
 	{
