@@ -21,13 +21,20 @@ layout(location = 1) flat out uint outTextureIndex;
 layout (location = 2) flat out float outShading;
 
 const vec2 shadowUV[] = vec2[](
-vec2(0.0, 0.0), // 0
-vec2(1.0, 0.0), // 1
-vec2(1.0, 1.0), // 2
-vec2(0.0, 1.0)  // 3
+vec2(0.0, 0.0),
+vec2(1.0, 0.0),
+vec2(1.0, 1.0),
+vec2(0.0, 1.0)
 );
 
 void main() {
+	if (gl_InstanceIndex == 0x57414C4C) {
+		gl_Position = pushConstants.translationMatrix * vec4(inWallVertex, 1.0);
+		outUV = inUV;
+		outTextureIndex = inTextureIndex;
+		outShading = max(0.6, min(1, abs(cos(pushConstants.yaw - inWallAngle))));
+		return;
+	}
 	if (gl_InstanceIndex == 0x53484457) {
 		// Shadows
 		gl_Position = pushConstants.translationMatrix * vec4(inShadowVertex, 1.0);
@@ -58,9 +65,4 @@ void main() {
 		outShading = 1;
 		return;
 	}
-	// Walls
-	gl_Position = pushConstants.translationMatrix * vec4(inWallVertex, 1.0);
-	outUV = inUV;
-	outTextureIndex = inTextureIndex;
-	outShading = max(0.6, min(1, abs(cos(pushConstants.yaw - inWallAngle))));
 }

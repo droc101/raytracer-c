@@ -20,10 +20,10 @@ layout (location = 2) flat in float inShading;
 layout(location = 0) out vec4 outColor;
 
 void main() {
-	outColor = texture(textureSampler[nonuniformEXT(inTextureIndex)], inUV);// * vec4(inShading, inShading, inShading, 1);
+	outColor = texture(textureSampler[nonuniformEXT(inTextureIndex)], inUV) * vec4(inShading, inShading, inShading, 1);
 	if (outColor.a < 0.5) discard;
 	outColor.a = 1.0;
 	if (inTextureIndex == pushConstants.shadowTextureIndex) {
-		outColor.a *= 0.5;
+		outColor.a = 0.5;
 	}
 }

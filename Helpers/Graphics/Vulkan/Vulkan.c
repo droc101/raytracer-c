@@ -159,7 +159,7 @@ VkResult VK_FrameEnd()
 						 1,
 						 0,
 						 0,
-						 0);
+						 0x57414C4C); // 0x57414C4C is "WALL", to encode that we are drawing the walls
 
 		vkCmdBindPipeline(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.actors);
 
