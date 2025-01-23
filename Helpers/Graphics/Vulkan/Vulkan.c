@@ -5,6 +5,7 @@
 #include "Vulkan.h"
 #include "../../../Structs/GlobalState.h"
 #include "../../CommonAssets.h"
+#include "../../Core/MathEx.h"
 #include "VulkanHelpers.h"
 #include "VulkanInternal.h"
 #include "VulkanMemory.h"
@@ -97,39 +98,14 @@ VkResult VK_FrameEnd()
 	const GlobalState *g = GetState();
 	if ((g->currentState == MAIN_STATE || g->currentState == PAUSE_STATE) && buffers.walls.wallCount > 0)
 	{
-		const uint32_t skyVertexCount = loadedLevel->hasCeiling ? 0 : skyModel->packedVertsUvsNormalCount;
-		const uint32_t skyTextureIndex = TextureIndex(loadedLevel->ceilOrSkyTex);
 		vkCmdPushConstants(commandBuffers[currentFrame],
 						   pipelineLayout,
-						   VK_SHADER_STAGE_VERTEX_BIT,
+						   VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
 						   0,
-						   8,
-						   (vec2){(float)loadedLevel->player.pos.x, (float)loadedLevel->player.pos.y});
-		vkCmdPushConstants(commandBuffers[currentFrame],
-						   pipelineLayout,
-						   VK_SHADER_STAGE_VERTEX_BIT,
-						   8,
-						   4,
-						   &skyVertexCount);
-		vkCmdPushConstants(commandBuffers[currentFrame],
-						   pipelineLayout,
-						   VK_SHADER_STAGE_VERTEX_BIT,
-						   12,
-						   4,
-						   &skyTextureIndex);
+						   sizeof(PushConstants),
+						   &pushConstants);
 
 		vkCmdBindPipeline(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.walls);
-
-		vkCmdBindVertexBuffers(commandBuffers[currentFrame],
-							   0,
-							   1,
-							   &buffers.walls.bufferInfo->buffer,
-							   &buffers.walls.vertexOffset);
-
-		vkCmdBindIndexBuffer(commandBuffers[currentFrame],
-							 buffers.walls.bufferInfo->buffer,
-							 buffers.walls.indexOffset,
-							 VK_INDEX_TYPE_UINT32);
 
 		vkCmdBindDescriptorSets(commandBuffers[currentFrame],
 								VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -140,8 +116,46 @@ VkResult VK_FrameEnd()
 								0,
 								NULL);
 
+		vkCmdBindVertexBuffers(commandBuffers[currentFrame],
+							   0,
+							   2,
+							   (VkBuffer[]){buffers.walls.bufferInfo->buffer, buffers.walls.bufferInfo->buffer},
+							   (VkDeviceSize[]){buffers.walls.shadowOffset,
+												buffers.walls.vertexOffset});
+
+		vkCmdBindIndexBuffer(commandBuffers[currentFrame],
+							 buffers.walls.bufferInfo->buffer,
+							 buffers.walls.indexOffset,
+							 VK_INDEX_TYPE_UINT32);
+
 		vkCmdDrawIndexed(commandBuffers[currentFrame],
-						 buffers.walls.wallCount * 6 + buffers.walls.skyIndexCount,
+						 6 + (loadedLevel->hasCeiling ? 6 : buffers.walls.skyIndexCount),
+						 1,
+						 0,
+						 0,
+						 0);
+
+		vkCmdBindIndexBuffer(commandBuffers[currentFrame],
+							 buffers.walls.bufferInfo->buffer,
+							 buffers.walls.shadowOffset + sizeof(ShadowVertex) * buffers.walls.shadowCount * 4,
+							 VK_INDEX_TYPE_UINT32);
+
+		vkCmdDrawIndexed(commandBuffers[currentFrame],
+						 buffers.walls.shadowCount * 6,
+						 1,
+						 0,
+						 0,
+						 0x53484457); // 0x53484457 is "SHDW", to encode that we are drawing the shadows
+
+		vkCmdBindIndexBuffer(commandBuffers[currentFrame],
+							 buffers.walls.bufferInfo->buffer,
+							 buffers.walls.indexOffset +
+									 sizeof(uint32_t) *
+											 (6 + (loadedLevel->hasCeiling ? 6 : buffers.walls.skyIndexCount)),
+							 VK_INDEX_TYPE_UINT32);
+
+		vkCmdDrawIndexed(commandBuffers[currentFrame],
+						 buffers.walls.wallCount * 6 - (loadedLevel->hasCeiling ? 12 : 6),
 						 1,
 						 0,
 						 0,
@@ -172,9 +186,7 @@ VkResult VK_FrameEnd()
 		vkCmdDrawIndexedIndirect(commandBuffers[currentFrame],
 								 buffers.actors.bufferInfo->buffer,
 								 buffers.actors.drawInfoOffset,
-								 buffers.actors.models.loadedModelIds.length +
-										 buffers.actors.walls.count -
-										 ACTOR_WALL_OVERALLOCATION_COUNT,
+								 buffers.actors.models.loadedModelIds.length + buffers.actors.walls.count,
 								 sizeof(VkDrawIndexedIndirectCommand));
 	}
 
@@ -261,7 +273,10 @@ VkResult VK_RenderLevel(const Level *level, const Camera *camera)
 			return VK_ERROR_UNKNOWN;
 		}
 	}
-	UpdateUniformBuffer(camera, currentFrame);
+	pushConstants.position[0] = (float)loadedLevel->player.pos.x;
+	pushConstants.position[1] = (float)loadedLevel->player.pos.y;
+	pushConstants.yaw = camera->yaw + 1.5f * PIf;
+	UpdateTranslationMatrix(camera);
 	return VK_SUCCESS;
 }
 
@@ -422,7 +437,6 @@ bool VK_LoadLevelWalls(const Level *level)
 	free(buffers.actors.models.modelCounts);
 	memset(&buffers.actors.models, 0, sizeof(ModelActorBuffer));
 	memset(&buffers.actors.walls, 0, sizeof(WallActorBuffer));
-	buffers.actors.walls.count = ACTOR_WALL_OVERALLOCATION_COUNT;
 	buffers.actors.models.modelCounts = calloc(buffers.actors.models.loadedModelIds.length, sizeof(uint16_t));
 	for (size_t i = 0; i < level->actors.length; i++)
 	{
@@ -445,6 +459,10 @@ bool VK_LoadLevelWalls(const Level *level)
 				buffers.actors.models.indexCount += actor->actorModel->packedIndicesCount;
 			}
 			buffers.actors.models.modelCounts[index]++;
+		}
+		if (actor->showShadow)
+		{
+			buffers.walls.shadowCount++;
 		}
 	}
 
@@ -550,6 +568,9 @@ bool VK_LoadLevelWalls(const Level *level)
 	}
 
 	loadedLevel = level;
+	pushConstants.skyVertexCount = loadedLevel->hasCeiling ? 0 : skyModel->packedVertsUvsNormalCount;
+	pushConstants.skyTextureIndex = TextureIndex(loadedLevel->ceilOrSkyTex);
+	pushConstants.shadowTextureIndex = TextureIndex(TEXTURE("vfx_shadow"));
 
 	free(wallVertices);
 	free(wallIndices);
@@ -859,7 +880,7 @@ void VK_SetTexParams(const char *texture, const bool linear, const bool repeat)
 			.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
 			.pNext = NULL,
 			.dstSet = descriptorSets[i],
-			.dstBinding = 1,
+			.dstBinding = 0,
 			.dstArrayElement = textureIndex,
 			.descriptorCount = 1,
 			.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,

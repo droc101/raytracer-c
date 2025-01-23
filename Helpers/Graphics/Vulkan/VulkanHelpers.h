@@ -19,7 +19,6 @@
 #define MAX_FRAMES_IN_FLIGHT 2
 #define MAX_UI_QUADS_INIT 8192 // TODO: find best value
 #define MAX_WALLS_INIT 1024
-#define ACTOR_WALL_OVERALLOCATION_COUNT 0
 /// This is an expected estimate for the largest that a texture will be. It is used to create an overallocation of
 /// texture memory with the formula @code MAX_TEXTURE_SIZE * MAX_TEXTURE_SIZE * 4 * textureCount@endcode
 #define MAX_TEXTURE_SIZE 384
@@ -137,7 +136,7 @@ typedef struct MemoryAllocationInfo
 	VkMemoryRequirements memoryRequirements;
 	/// A bitmask of usage flags that describes what the buffer is allowed to be used for.
 	/// @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkBufferUsageFlags.html
-	VkBufferUsageFlags usageFlags;
+	VkBufferUsageFlags usageFlags; // TODO: Move me when rewriting buffer allocation
 } MemoryAllocationInfo;
 
 typedef struct MemoryPools
@@ -192,6 +191,13 @@ typedef struct UiVertex
 	uint32_t textureIndex;
 } UiVertex;
 
+typedef struct ShadowVertex
+{
+	float x;
+	float y;
+	float z;
+} ShadowVertex;
+
 typedef struct WallVertex
 {
 	float x;
@@ -202,6 +208,7 @@ typedef struct WallVertex
 	float v;
 
 	uint32_t textureIndex; // TODO Per-vertex is less than ideal
+	float wallAngle;
 } WallVertex;
 
 typedef struct Texture
@@ -231,26 +238,6 @@ typedef struct Buffer
 	/// Stores information about what memory contains the buffer as well as where the buffer is in the memory.
 	MemoryAllocationInfo memoryAllocationInfo;
 } Buffer;
-
-/**
- * A structure holding data about a translation uniform buffer.
- *
- * This structure is used to keep track of not only the larger buffer that the vertex buffer is offset into, but also to
- * keep track of the host mapped memory and vertex count information.
- *
- * @note This is still C, so there are no actual guardrails preventing you from potentially causing a SEGFAULT by attempting to use @c data as an array.
- */
-typedef struct TranslationUniformBuffer
-{
-	/// The larger buffer within which this uniform buffer resides.
-	Buffer *bufferInfo;
-	/// The offset into the larger buffer at which the uniform buffer can be found.
-	VkDeviceSize offset;
-	/// This pointer will be mapped directly to an offset into some larger block of memory, which allows for data to be
-	/// written to the uniform buffer directly.
-	/// @note This pointer is NOT an array, and only has @c sizeof(mat4) bytes allocated to it.
-	mat4 *data;
-} TranslationUniformBuffer;
 
 /**
  * A structure holding data about a UI vertex buffer.
@@ -316,14 +303,9 @@ typedef struct UiVertexBuffer
  */
 typedef struct WallVertexBuffer
 {
-	/// The larger buffer within which the wall vertex buffer reside.
-	Buffer *bufferInfo;
-	/// The offset of the wall vertex buffer into the larger buffer allocation.
-	VkDeviceSize vertexOffset;
-	/// The offset of the index buffer for the wall vertex buffer into the larger buffer allocation.
-	VkDeviceSize indexOffset;
-	/// The number of walls that are currently stored in the buffer, plus one for the floor.
+	/// The number of walls that are currently stored in the buffer, plus one for the floor and one for the ceiling.
 	uint32_t wallCount;
+	uint32_t shadowCount;
 	/// The number of indices required to draw the sky.
 	uint32_t skyIndexCount;
 	/// The maximum number of walls that can currently be stored in the buffer.
@@ -333,6 +315,21 @@ typedef struct WallVertexBuffer
 	///  VK_LoadLevelWalls handles this by adding to the wall count accordingly, so that comparing the wall count and
 	///  the max wall count requires no additional arithmetic.
 	uint32_t maxWallCount;
+
+	/// The larger buffer within which the wall vertex buffer reside.
+	Buffer *bufferInfo;
+	/// The offset of the wall vertex buffer into the larger buffer allocation.
+	VkDeviceSize vertexOffset;
+	/// The offset of the index buffer for the wall vertex buffer into the larger buffer allocation.
+	VkDeviceSize indexOffset;
+	VkDeviceSize shadowOffset;
+	VkDeviceSize shadowSize;
+
+	Buffer *stagingBufferInfo;
+	VkDeviceSize shadowStagingOffset;
+	VkDeviceSize shadowStagingSize;
+	ShadowVertex *shadowVertexStaging;
+	ShadowVertex *shadowIndexStaging;
 } WallVertexBuffer;
 
 /// A struct that contains all the data needed to keep track of (but not to draw) all the actors in the current level
@@ -389,6 +386,12 @@ typedef struct WallActorBuffer
 	/// The offset into the shared memory buffer at which the indices are stored.
 	/// @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkDeviceSize.html
 	VkDeviceSize indexStagingOffset;
+	/// The that the vertices take up within the shared memory buffer.
+	/// @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkDeviceSize.html
+	VkDeviceSize vertexStagingSize;
+	/// The that the indices take up within the shared memory buffer.
+	/// @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkDeviceSize.html
+	VkDeviceSize indexStagingSize;
 	/// A pointer to the mapped memory of the shared memory buffer, offset to point to the region used for holding
 	/// the staging copy of the vertices.
 	ActorVertex *vertexStaging;
@@ -452,6 +455,14 @@ typedef struct ActorBuffer
 	/// model and wall actors.
 	/// @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkDeviceSize.html
 	VkDeviceSize drawInfoStagingOffset;
+	/// The size that the instance data takes up within the shared memory buffer. This is the combined size of both the
+	/// wall actors and the model actors.
+	/// @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkDeviceSize.html
+	VkDeviceSize instanceDataStagingSize;
+	/// The size that the drawing information takes up within the shared memory buffer. This is the combined size of
+	/// both the wall actors and the model actors.
+	/// @see https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkDeviceSize.html
+	VkDeviceSize drawInfoStagingSize;
 	/// A pointer to the mapped memory of the shared memory buffer, offset to point to the region used for holding
 	/// the staging copy of the instance data.
 	ActorInstanceData *instanceDataStaging;
@@ -468,7 +479,6 @@ typedef struct Buffers
 
 	UiVertexBuffer ui;
 	WallVertexBuffer walls;
-	TranslationUniformBuffer translation[MAX_FRAMES_IN_FLIGHT];
 	ActorBuffer actors;
 } Buffers;
 
@@ -497,6 +507,18 @@ typedef struct PhysicalDevice
 	VkPhysicalDeviceProperties properties;
 	VkPhysicalDeviceMemoryProperties memoryProperties;
 } PhysicalDevice;
+
+typedef struct PushConstants
+{
+	vec2 position;
+	float yaw;
+	mat4 translationMatrix;
+
+	uint32_t skyVertexCount;
+	uint32_t skyTextureIndex;
+
+	uint32_t shadowTextureIndex;
+} PushConstants;
 #pragma endregion typedefs
 
 #pragma region variables
@@ -573,6 +595,7 @@ extern VkImageView colorImageView;
 extern VkClearColorValue clearColor;
 extern VkSampleCountFlagBits msaaSamples;
 extern uint16_t textureCount;
+extern PushConstants pushConstants;
 #pragma endregion variables
 
 #pragma region helperFunctions
@@ -635,7 +658,10 @@ void LoadActorModels(const Level *level, ActorVertex *vertices, uint32_t *indice
 
 void LoadActorWalls(const Level *level, ActorVertex *vertices, uint32_t *indices);
 
-void LoadActorInstanceData(const Level *level, ActorInstanceData *instanceData);
+void LoadActorInstanceData(const Level *level,
+						   ActorInstanceData *instanceData,
+						   ShadowVertex *shadowVertices,
+						   uint32_t *shadowIndices);
 
 void LoadActorDrawInfo(const Level *level, VkDrawIndexedIndirectCommand *drawInfo);
 
@@ -643,7 +669,7 @@ VkResult CopyBuffers(const Level *level);
 #pragma endregion helperFunctions
 
 #pragma region drawingHelpers
-void UpdateUniformBuffer(const Camera *camera, uint32_t currentFrame);
+void UpdateTranslationMatrix(const Camera *camera);
 
 VkResult BeginRenderPass(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 

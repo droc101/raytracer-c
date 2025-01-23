@@ -6,6 +6,7 @@
 #define GAME_MATHEX_H
 
 #define PI 3.14159265358979323846
+#define PIf 3.14159265358979323846f
 
 /**
  * Returns the minimum of two numbers

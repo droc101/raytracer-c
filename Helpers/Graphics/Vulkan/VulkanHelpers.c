@@ -83,6 +83,7 @@ VkImageView colorImageView = VK_NULL_HANDLE;
 VkClearColorValue clearColor = {{0.0f, 0.0f, 0.0f, 1.0f}};
 VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
 uint16_t textureCount;
+PushConstants pushConstants;
 #pragma endregion variables
 
 bool QuerySwapChainSupport(const VkPhysicalDevice pDevice)
@@ -618,6 +619,7 @@ void LoadWalls(const Level *level,
 		vertices[4 * i + skyVertexCount].u = startUV[0];
 		vertices[4 * i + skyVertexCount].v = startUV[1];
 		vertices[4 * i + skyVertexCount].textureIndex = TextureIndex(wall->tex);
+		vertices[4 * i + skyVertexCount].wallAngle = (float)wall->angle;
 
 		vertices[4 * i + 1 + skyVertexCount].x = endVertex[0];
 		vertices[4 * i + 1 + skyVertexCount].y = halfHeight;
@@ -625,6 +627,7 @@ void LoadWalls(const Level *level,
 		vertices[4 * i + 1 + skyVertexCount].u = endUV[0];
 		vertices[4 * i + 1 + skyVertexCount].v = startUV[1];
 		vertices[4 * i + 1 + skyVertexCount].textureIndex = TextureIndex(wall->tex);
+		vertices[4 * i + 1 + skyVertexCount].wallAngle = (float)wall->angle;
 
 		vertices[4 * i + 2 + skyVertexCount].x = endVertex[0];
 		vertices[4 * i + 2 + skyVertexCount].y = -halfHeight;
@@ -632,6 +635,7 @@ void LoadWalls(const Level *level,
 		vertices[4 * i + 2 + skyVertexCount].u = endUV[0];
 		vertices[4 * i + 2 + skyVertexCount].v = endUV[1];
 		vertices[4 * i + 2 + skyVertexCount].textureIndex = TextureIndex(wall->tex);
+		vertices[4 * i + 2 + skyVertexCount].wallAngle = (float)wall->angle;
 
 		vertices[4 * i + 3 + skyVertexCount].x = startVertex[0];
 		vertices[4 * i + 3 + skyVertexCount].y = -halfHeight;
@@ -639,6 +643,7 @@ void LoadWalls(const Level *level,
 		vertices[4 * i + 3 + skyVertexCount].u = startUV[0];
 		vertices[4 * i + 3 + skyVertexCount].v = endUV[1];
 		vertices[4 * i + 3 + skyVertexCount].textureIndex = TextureIndex(wall->tex);
+		vertices[4 * i + 3 + skyVertexCount].wallAngle = (float)wall->angle;
 
 		indices[6 * i + buffers.walls.skyIndexCount] = i * 4 + buffers.walls.skyIndexCount;
 		indices[6 * i + 1 + buffers.walls.skyIndexCount] = i * 4 + 1 + buffers.walls.skyIndexCount;
@@ -729,10 +734,13 @@ void LoadActorWalls(const Level *level, ActorVertex *vertices, uint32_t *indices
 	}
 }
 
-void LoadActorInstanceData(const Level *level, ActorInstanceData *instanceData)
+void LoadActorInstanceData(const Level *level,
+						   ActorInstanceData *instanceData,
+						   ShadowVertex *shadowVertices,
+						   uint32_t *shadowIndices)
 {
-	mat4 transformMatrix;
 	uint32_t wallCount = 0;
+	uint32_t shadowCount = 0;
 	uint16_t *modelCounts = calloc(buffers.actors.models.loadedModelIds.length, sizeof(uint16_t));
 	uint32_t *offsets = calloc(buffers.actors.models.loadedModelIds.length + 1, sizeof(uint32_t));
 	for (size_t i = 1; i <= buffers.actors.models.loadedModelIds.length; i++)
@@ -746,6 +754,7 @@ void LoadActorInstanceData(const Level *level, ActorInstanceData *instanceData)
 		{
 			continue;
 		}
+		mat4 transformMatrix = GLM_MAT4_IDENTITY_INIT;
 		ActorTransformMatrix(actor, &transformMatrix);
 		if (actor->actorModel)
 		{
@@ -755,6 +764,34 @@ void LoadActorInstanceData(const Level *level, ActorInstanceData *instanceData)
 			memcpy(offsetInstanceData[modelCounts[index]].transform, transformMatrix, sizeof(mat4));
 			offsetInstanceData[modelCounts[index]].textureIndex = TextureIndex(actor->actorModelTexture);
 
+			if (actor->showShadow)
+			{
+				shadowVertices[4 * shadowCount].x = (float)actor->position.x - 0.5f * actor->shadowSize;
+				shadowVertices[4 * shadowCount].y = -0.49f;
+				shadowVertices[4 * shadowCount].z = (float)actor->position.y - 0.5f * actor->shadowSize;
+
+				shadowVertices[4 * shadowCount + 1].x = (float)actor->position.x + 0.5f * actor->shadowSize;
+				shadowVertices[4 * shadowCount + 1].y = -0.49f;
+				shadowVertices[4 * shadowCount + 1].z = (float)actor->position.y - 0.5f * actor->shadowSize;
+
+				shadowVertices[4 * shadowCount + 2].x = (float)actor->position.x + 0.5f * actor->shadowSize;
+				shadowVertices[4 * shadowCount + 2].y = -0.49f;
+				shadowVertices[4 * shadowCount + 2].z = (float)actor->position.y + 0.5f * actor->shadowSize;
+
+				shadowVertices[4 * shadowCount + 3].x = (float)actor->position.x - 0.5f * actor->shadowSize;
+				shadowVertices[4 * shadowCount + 3].y = -0.49f;
+				shadowVertices[4 * shadowCount + 3].z = (float)actor->position.y + 0.5f * actor->shadowSize;
+
+				shadowIndices[6 * shadowCount] = shadowCount * 4;
+				shadowIndices[6 * shadowCount + 1] = shadowCount * 4 + 1;
+				shadowIndices[6 * shadowCount + 2] = shadowCount * 4 + 2;
+				shadowIndices[6 * shadowCount + 3] = shadowCount * 4;
+				shadowIndices[6 * shadowCount + 4] = shadowCount * 4 + 2;
+				shadowIndices[6 * shadowCount + 5] = shadowCount * 4 + 3;
+
+				shadowCount++;
+			}
+
 			modelCounts[index]++;
 		} else if (actor->actorWall)
 		{
@@ -763,6 +800,34 @@ void LoadActorInstanceData(const Level *level, ActorInstanceData *instanceData)
 
 			memcpy(offsetInstanceData[wallCount].transform, transformMatrix, sizeof(mat4));
 			offsetInstanceData[wallCount].textureIndex = TextureIndex(actor->actorWall->tex);
+
+			if (actor->showShadow)
+			{
+				shadowVertices[4 * shadowCount].x = (float)actor->position.x - 0.5f * actor->shadowSize;
+				shadowVertices[4 * shadowCount].y = -0.49f;
+				shadowVertices[4 * shadowCount].z = (float)actor->position.y - 0.5f * actor->shadowSize;
+
+				shadowVertices[4 * shadowCount + 1].x = (float)actor->position.x + 0.5f * actor->shadowSize;
+				shadowVertices[4 * shadowCount + 1].y = -0.49f;
+				shadowVertices[4 * shadowCount + 1].z = (float)actor->position.y - 0.5f * actor->shadowSize;
+
+				shadowVertices[4 * shadowCount + 2].x = (float)actor->position.x + 0.5f * actor->shadowSize;
+				shadowVertices[4 * shadowCount + 2].y = -0.49f;
+				shadowVertices[4 * shadowCount + 2].z = (float)actor->position.y + 0.5f * actor->shadowSize;
+
+				shadowVertices[4 * shadowCount + 3].x = (float)actor->position.x - 0.5f * actor->shadowSize;
+				shadowVertices[4 * shadowCount + 3].y = -0.49f;
+				shadowVertices[4 * shadowCount + 3].z = (float)actor->position.y + 0.5f * actor->shadowSize;
+
+				shadowIndices[6 * shadowCount] = shadowCount * 4;
+				shadowIndices[6 * shadowCount + 1] = shadowCount * 4 + 1;
+				shadowIndices[6 * shadowCount + 2] = shadowCount * 4 + 2;
+				shadowIndices[6 * shadowCount + 3] = shadowCount * 4;
+				shadowIndices[6 * shadowCount + 4] = shadowCount * 4 + 2;
+				shadowIndices[6 * shadowCount + 5] = shadowCount * 4 + 3;
+
+				shadowCount++;
+			}
 
 			wallCount++;
 		}
@@ -808,199 +873,48 @@ VkResult CopyBuffers(const Level *level)
 	memcpy(buffers.ui.indexStaging, buffers.ui.indices, sizeof(uint32_t) * buffers.ui.quadCount * 6);
 
 	if (buffers.actors.models.loadedModelIds.length ||
-		(buffers.actors.walls.vertexSize && buffers.actors.walls.indexSize))
+		(buffers.actors.walls.vertexStagingSize && buffers.actors.walls.indexStagingSize))
 	{
-		ActorVertex *actorVertices = calloc(1, buffers.actors.walls.vertexSize);
-		uint32_t *actorIndices = calloc(1, buffers.actors.walls.indexSize);
+		ActorVertex *actorVertices = calloc(1, buffers.actors.walls.vertexStagingSize);
+		uint32_t *actorIndices = calloc(1, buffers.actors.walls.indexStagingSize);
 		LoadActorWalls(level, actorVertices, actorIndices);
-		memcpy(buffers.actors.walls.vertexStaging, actorVertices, buffers.actors.walls.vertexSize);
-		memcpy(buffers.actors.walls.indexStaging, actorIndices, buffers.actors.walls.indexSize);
+		memcpy(buffers.actors.walls.vertexStaging, actorVertices, buffers.actors.walls.vertexStagingSize);
+		memcpy(buffers.actors.walls.indexStaging, actorIndices, buffers.actors.walls.indexStagingSize);
 		free(actorVertices);
 		free(actorIndices);
 
-		ActorInstanceData *actorInstanceData = calloc(1, buffers.actors.instanceDataSize);
-		LoadActorInstanceData(level, actorInstanceData);
-		memcpy(buffers.actors.instanceDataStaging, actorInstanceData, buffers.actors.instanceDataSize);
+		ActorInstanceData *actorInstanceData = calloc(1, buffers.actors.instanceDataStagingSize);
+		ShadowVertex *shadowVertices = calloc(buffers.walls.shadowCount * 4, sizeof(ShadowVertex));
+		uint32_t *shadowIndices = calloc(buffers.walls.shadowCount * 6, sizeof(uint32_t));
+		LoadActorInstanceData(level, actorInstanceData, shadowVertices, shadowIndices);
+		memcpy(buffers.actors.instanceDataStaging, actorInstanceData, buffers.actors.instanceDataStagingSize);
+		memcpy(buffers.walls.shadowVertexStaging, shadowVertices, sizeof(ShadowVertex) * buffers.walls.shadowCount * 4);
+		memcpy(buffers.walls.shadowIndexStaging, shadowIndices, sizeof(uint32_t) * buffers.walls.shadowCount * 6);
 		free(actorInstanceData);
+		free(shadowVertices);
+		free(shadowIndices);
 
-		VkDrawIndexedIndirectCommand *actorDrawInfo = calloc(1, buffers.actors.drawInfoSize);
+		VkDrawIndexedIndirectCommand *actorDrawInfo = calloc(1, buffers.actors.drawInfoStagingSize);
 		LoadActorDrawInfo(level, actorDrawInfo);
-		memcpy(buffers.actors.drawInfoStaging, actorDrawInfo, buffers.actors.drawInfoSize);
+		memcpy(buffers.actors.drawInfoStaging, actorDrawInfo, buffers.actors.drawInfoStagingSize);
 		free(actorDrawInfo);
 	}
 
 	// TODO: The transfer command buffer should be left open and multiple commands should be submitted, that way it can
 	//  be handled according to if it should be or not. That will allow this function to be broken into multiple more
-	//  manageable functions, as well as increase overall performance.
-	if (buffers.ui.quadCount > 0 || (buffers.actors.models.loadedModelIds.length ||
-									 (buffers.actors.walls.vertexSize && buffers.actors.walls.indexSize)))
+	//  manageable functions, and if submission is done from multiple threads it could increase performance as well.
+	if (buffers.ui.quadCount > 0 ||
+		buffers.walls.shadowCount ||
+		(buffers.actors.models.loadedModelIds.length ||
+		 (buffers.actors.walls.vertexSize && buffers.actors.walls.indexSize)))
 	{
 		const VkCommandBuffer commandBuffer;
 		if (!BeginCommandBuffer(&commandBuffer, transferCommandPool))
 		{
 			return VK_ERROR_UNKNOWN;
 		}
-		if (buffers.ui.quadCount > 0 && (buffers.actors.models.loadedModelIds.length ||
-										 (buffers.actors.walls.vertexSize && buffers.actors.walls.indexSize)))
-		{
-			if (buffers.actors.walls.vertexSize && buffers.actors.walls.indexSize)
-			{
-				if (buffers.ui.stagingBufferInfo == &buffers.shared &&
-					buffers.actors.stagingBufferInfo == &buffers.shared &&
-					buffers.ui.bufferInfo == &buffers.local &&
-					buffers.actors.bufferInfo == &buffers.local)
-				{
-					vkCmdCopyBuffer(commandBuffer,
-									buffers.shared.buffer,
-									buffers.local.buffer,
-									6,
-									(VkBufferCopy[]){
-										{
-											.srcOffset = buffers.ui.vertexStagingOffset,
-											.dstOffset = buffers.ui.vertexOffset,
-											.size = sizeof(UiVertex) * buffers.ui.quadCount * 4,
-										},
-										{
-											.srcOffset = buffers.ui.indexStagingOffset,
-											.dstOffset = buffers.ui.indexOffset,
-											.size = sizeof(uint32_t) * buffers.ui.quadCount * 6,
-										},
-										{
-											.srcOffset = buffers.actors.walls.vertexStagingOffset,
-											.dstOffset = buffers.actors.walls.vertexOffset,
-											.size = buffers.actors.walls.vertexSize,
-										},
-										{
-											.srcOffset = buffers.actors.walls.indexStagingOffset,
-											.dstOffset = buffers.actors.walls.indexOffset,
-											.size = buffers.actors.walls.indexSize,
-										},
-										{
-											.srcOffset = buffers.actors.instanceDataStagingOffset,
-											.dstOffset = buffers.actors.instanceDataOffset,
-											.size = buffers.actors.instanceDataSize,
-										},
-										{
-											.srcOffset = buffers.actors.drawInfoStagingOffset,
-											.dstOffset = buffers.actors.drawInfoOffset,
-											.size = buffers.actors.drawInfoSize,
-										},
-									});
-				} else
-				{
-					vkCmdCopyBuffer(commandBuffer,
-									buffers.ui.stagingBufferInfo->buffer,
-									buffers.ui.bufferInfo->buffer,
-									2,
-									(VkBufferCopy[]){
-										{
-											.srcOffset = buffers.ui.vertexStagingOffset,
-											.dstOffset = buffers.ui.vertexOffset,
-											.size = sizeof(UiVertex) * buffers.ui.quadCount * 4,
-										},
-										{
-											.srcOffset = buffers.ui.indexStagingOffset,
-											.dstOffset = buffers.ui.indexOffset,
-											.size = sizeof(uint32_t) * buffers.ui.quadCount * 6,
-										},
-									});
-					vkCmdCopyBuffer(commandBuffer,
-									buffers.actors.stagingBufferInfo->buffer,
-									buffers.actors.bufferInfo->buffer,
-									4,
-									(VkBufferCopy[]){
-										{
-											.srcOffset = buffers.actors.walls.vertexStagingOffset,
-											.dstOffset = buffers.actors.walls.vertexOffset,
-											.size = buffers.actors.walls.vertexSize,
-										},
-										{
-											.srcOffset = buffers.actors.walls.indexStagingOffset,
-											.dstOffset = buffers.actors.walls.indexOffset,
-											.size = buffers.actors.walls.indexSize,
-										},
-										{
-											.srcOffset = buffers.actors.instanceDataStagingOffset,
-											.dstOffset = buffers.actors.instanceDataOffset,
-											.size = buffers.actors.instanceDataSize,
-										},
-										{
-											.srcOffset = buffers.actors.drawInfoStagingOffset,
-											.dstOffset = buffers.actors.drawInfoOffset,
-											.size = buffers.actors.drawInfoSize,
-										},
-									});
-				}
-			} else
-			{
-				if (buffers.ui.stagingBufferInfo == &buffers.shared &&
-					buffers.actors.stagingBufferInfo == &buffers.shared &&
-					buffers.ui.bufferInfo == &buffers.local &&
-					buffers.actors.bufferInfo == &buffers.local)
-				{
-					vkCmdCopyBuffer(commandBuffer,
-									buffers.shared.buffer,
-									buffers.local.buffer,
-									4,
-									(VkBufferCopy[]){
-										{
-											.srcOffset = buffers.ui.vertexStagingOffset,
-											.dstOffset = buffers.ui.vertexOffset,
-											.size = sizeof(UiVertex) * buffers.ui.quadCount * 4,
-										},
-										{
-											.srcOffset = buffers.ui.indexStagingOffset,
-											.dstOffset = buffers.ui.indexOffset,
-											.size = sizeof(uint32_t) * buffers.ui.quadCount * 6,
-										},
-										{
-											.srcOffset = buffers.actors.instanceDataStagingOffset,
-											.dstOffset = buffers.actors.instanceDataOffset,
-											.size = buffers.actors.instanceDataSize,
-										},
-										{
-											.srcOffset = buffers.actors.drawInfoStagingOffset,
-											.dstOffset = buffers.actors.drawInfoOffset,
-											.size = buffers.actors.drawInfoSize,
-										},
-									});
-				} else
-				{
-					vkCmdCopyBuffer(commandBuffer,
-									buffers.ui.stagingBufferInfo->buffer,
-									buffers.ui.bufferInfo->buffer,
-									2,
-									(VkBufferCopy[]){
-										{
-											.srcOffset = buffers.ui.vertexStagingOffset,
-											.dstOffset = buffers.ui.vertexOffset,
-											.size = sizeof(UiVertex) * buffers.ui.quadCount * 4,
-										},
-										{
-											.srcOffset = buffers.ui.indexStagingOffset,
-											.dstOffset = buffers.ui.indexOffset,
-											.size = sizeof(uint32_t) * buffers.ui.quadCount * 6,
-										},
-									});
-					vkCmdCopyBuffer(commandBuffer,
-									buffers.actors.stagingBufferInfo->buffer,
-									buffers.actors.bufferInfo->buffer,
-									2,
-									(VkBufferCopy[]){
-										{
-											.srcOffset = buffers.actors.instanceDataStagingOffset,
-											.dstOffset = buffers.actors.instanceDataOffset,
-											.size = buffers.actors.instanceDataSize,
-										},
-										{
-											.srcOffset = buffers.actors.drawInfoStagingOffset,
-											.dstOffset = buffers.actors.drawInfoOffset,
-											.size = buffers.actors.drawInfoSize,
-										},
-									});
-				}
-			}
-		} else if (buffers.ui.quadCount > 0)
+
+		if (buffers.ui.quadCount > 0)
 		{
 			vkCmdCopyBuffer(commandBuffer,
 							buffers.ui.stagingBufferInfo->buffer,
@@ -1018,57 +932,68 @@ VkResult CopyBuffers(const Level *level)
 									.size = sizeof(uint32_t) * buffers.ui.quadCount * 6,
 								},
 							});
-		} else
-		{
-			if (buffers.actors.walls.vertexSize && buffers.actors.walls.indexSize)
-			{
-				vkCmdCopyBuffer(commandBuffer,
-								buffers.actors.stagingBufferInfo->buffer,
-								buffers.actors.bufferInfo->buffer,
-								4,
-								(VkBufferCopy[]){
-									{
-										.srcOffset = buffers.actors.walls.vertexStagingOffset,
-										.dstOffset = buffers.actors.walls.vertexOffset,
-										.size = buffers.actors.walls.vertexSize,
-									},
-									{
-										.srcOffset = buffers.actors.walls.indexStagingOffset,
-										.dstOffset = buffers.actors.walls.indexOffset,
-										.size = buffers.actors.walls.indexSize,
-									},
-									{
-										.srcOffset = buffers.actors.instanceDataStagingOffset,
-										.dstOffset = buffers.actors.instanceDataOffset,
-										.size = buffers.actors.instanceDataSize,
-									},
-									{
-										.srcOffset = buffers.actors.drawInfoStagingOffset,
-										.dstOffset = buffers.actors.drawInfoOffset,
-										.size = buffers.actors.drawInfoSize,
-									},
-								});
-			} else
-			{
-				vkCmdCopyBuffer(commandBuffer,
-								buffers.actors.stagingBufferInfo->buffer,
-								buffers.actors.bufferInfo->buffer,
-								2,
-								(VkBufferCopy[]){
-									{
-										.srcOffset = buffers.actors.instanceDataStagingOffset,
-										.dstOffset = buffers.actors.instanceDataOffset,
-										.size = buffers.actors.instanceDataSize,
-									},
-									{
-										.srcOffset = buffers.actors.drawInfoStagingOffset,
-										.dstOffset = buffers.actors.drawInfoOffset,
-										.size = buffers.actors.drawInfoSize,
-									},
-								});
-			}
 		}
-
+		if (buffers.walls.shadowCount)
+		{
+			vkCmdCopyBuffer(commandBuffer,
+							buffers.walls.stagingBufferInfo->buffer,
+							buffers.walls.bufferInfo->buffer,
+							1,
+							(VkBufferCopy[]){
+								{
+									.srcOffset = buffers.walls.shadowStagingOffset,
+									.dstOffset = buffers.walls.shadowOffset,
+									.size = buffers.walls.shadowStagingSize,
+								},
+							});
+		}
+		if (buffers.actors.walls.vertexSize && buffers.actors.walls.indexSize)
+		{
+			vkCmdCopyBuffer(commandBuffer,
+							buffers.actors.stagingBufferInfo->buffer,
+							buffers.actors.bufferInfo->buffer,
+							4,
+							(VkBufferCopy[]){
+								{
+									.srcOffset = buffers.actors.walls.vertexStagingOffset,
+									.dstOffset = buffers.actors.walls.vertexOffset,
+									.size = buffers.actors.walls.vertexStagingSize,
+								},
+								{
+									.srcOffset = buffers.actors.walls.indexStagingOffset,
+									.dstOffset = buffers.actors.walls.indexOffset,
+									.size = buffers.actors.walls.indexStagingSize,
+								},
+								{
+									.srcOffset = buffers.actors.instanceDataStagingOffset,
+									.dstOffset = buffers.actors.instanceDataOffset,
+									.size = buffers.actors.instanceDataStagingSize,
+								},
+								{
+									.srcOffset = buffers.actors.drawInfoStagingOffset,
+									.dstOffset = buffers.actors.drawInfoOffset,
+									.size = buffers.actors.drawInfoStagingSize,
+								},
+							});
+		} else if (buffers.actors.models.loadedModelIds.length)
+		{
+			vkCmdCopyBuffer(commandBuffer,
+							buffers.actors.stagingBufferInfo->buffer,
+							buffers.actors.bufferInfo->buffer,
+							2,
+							(VkBufferCopy[]){
+								{
+									.srcOffset = buffers.actors.instanceDataStagingOffset,
+									.dstOffset = buffers.actors.instanceDataOffset,
+									.size = buffers.actors.instanceDataStagingSize,
+								},
+								{
+									.srcOffset = buffers.actors.drawInfoStagingOffset,
+									.dstOffset = buffers.actors.drawInfoOffset,
+									.size = buffers.actors.drawInfoStagingSize,
+								},
+							});
+		}
 
 		if (!EndCommandBuffer(commandBuffer, transferCommandPool, transferQueue))
 		{
@@ -1079,7 +1004,7 @@ VkResult CopyBuffers(const Level *level)
 	return VK_SUCCESS;
 }
 
-void UpdateUniformBuffer(const Camera *camera, const uint32_t currentFrame)
+void UpdateTranslationMatrix(const Camera *camera)
 {
 	mat4 perspective;
 	glm_perspective_lh_zo(glm_rad(camera->fov),
@@ -1100,7 +1025,7 @@ void UpdateUniformBuffer(const Camera *camera, const uint32_t currentFrame)
 	mat4 view;
 	glm_lookat_lh_zo(cameraPosition, viewTarget, (vec3){0.0f, -1.0f, 0.0f}, view);
 
-	glm_mat4_mul(perspective, view, *buffers.translation[currentFrame].data);
+	glm_mat4_mul(perspective, view, pushConstants.translationMatrix);
 }
 
 VkResult BeginRenderPass(const VkCommandBuffer commandBuffer, const uint32_t imageIndex)

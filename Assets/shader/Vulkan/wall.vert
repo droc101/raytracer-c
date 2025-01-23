@@ -1,49 +1,66 @@
 #version 460
 
 layout(push_constant) uniform PushConstants {
-    layout(offset = 0) vec2 playerPosition;
-    layout(offset = 8) uint skyVertexCount;
-    layout(offset = 12) uint skyTextureIndex;
+	vec2 playerPosition;
+	float yaw;
+	mat4 translationMatrix;
+
+	uint skyVertexCount;
+	uint skyTextureIndex;
+	uint shadowTextureIndex;
 } pushConstants;
 
-layout(binding = 0) uniform Mat4 {
-    vec4 i;
-    vec4 j;
-    vec4 k;
-    vec4 l;
-} transform;
-
-layout(location = 0) in vec3 inVertex;
-layout(location = 1) in vec2 inUV;
-layout(location = 2) in uint inTextureIndex;
+layout (location = 0) in vec3 inShadowVertex;
+layout (location = 1) in vec3 inWallVertex;
+layout (location = 2) in vec2 inUV;
+layout (location = 3) in uint inTextureIndex;
+layout (location = 4) in float inWallAngle;
 
 layout(location = 0) out vec2 outUV;
 layout(location = 1) flat out uint outTextureIndex;
+layout (location = 2) flat out float outShading;
+
+const vec2 shadowUV[] = vec2[](
+vec2(0.0, 0.0), // 0
+vec2(1.0, 0.0), // 1
+vec2(1.0, 1.0), // 2
+vec2(0.0, 1.0)  // 3
+);
 
 void main() {
-    if (pushConstants.skyVertexCount == 0) {
-        if (gl_VertexIndex < 8) {
-            gl_Position = mat4(transform.i, transform.j, transform.k, transform.l) * (vec4(inVertex, 1.0) + vec4(pushConstants.playerPosition.x, 0, pushConstants.playerPosition.y, 0));
-            outUV = inUV + pushConstants.playerPosition;
-        } else {
-            gl_Position = mat4(transform.i, transform.j, transform.k, transform.l) * vec4(inVertex, 1.0);
-            outUV = inUV;
-        }
-        outTextureIndex = inTextureIndex;
-    } else {
-        if (gl_VertexIndex < pushConstants.skyVertexCount + 4) {
-            gl_Position = mat4(transform.i, transform.j, transform.k, transform.l) * (vec4(inVertex, 1.0) + vec4(pushConstants.playerPosition.x, 0, pushConstants.playerPosition.y, 0));
-            if (pushConstants.skyVertexCount <= gl_VertexIndex) {
-                outUV = inUV + pushConstants.playerPosition;
-                outTextureIndex = inTextureIndex;
-            } else {
-                outUV = inUV;
-                outTextureIndex = pushConstants.skyTextureIndex;
-            }
-        } else {
-            gl_Position = mat4(transform.i, transform.j, transform.k, transform.l) * vec4(inVertex, 1.0);
-            outUV = inUV;
-            outTextureIndex = inTextureIndex;
-        }
-    }
+	if (gl_InstanceIndex == 0x53484457) {
+		// Shadows
+		gl_Position = pushConstants.translationMatrix * vec4(inShadowVertex, 1.0);
+		outUV = shadowUV[gl_VertexIndex % 4];
+		outTextureIndex = pushConstants.shadowTextureIndex;
+		outShading = 1;
+		return;
+	}
+	if ((pushConstants.skyVertexCount == 0 && gl_VertexIndex < 8) ||
+	(gl_VertexIndex < pushConstants.skyVertexCount + 4 && pushConstants.skyVertexCount <= gl_VertexIndex))
+	{
+		// Floor and Ceiling
+		gl_Position = pushConstants.translationMatrix * (vec4(inWallVertex, 1.0) + vec4(pushConstants.playerPosition.x, 0, pushConstants.playerPosition.y, 0));
+		outUV = inUV + pushConstants.playerPosition;
+		outTextureIndex = inTextureIndex;
+		if (pushConstants.skyVertexCount == 0 && gl_VertexIndex < 8 && 4 <= gl_VertexIndex) { // Ceiling
+																							  outShading = 0.8;
+		} else { // Floor
+				 outShading = 1;
+		}
+		return;
+	} else if (gl_VertexIndex < pushConstants.skyVertexCount + 4)
+	{
+		// Sky
+		gl_Position = pushConstants.translationMatrix * (vec4(inWallVertex, 1.0) + vec4(pushConstants.playerPosition.x, 0, pushConstants.playerPosition.y, 0));
+		outUV = inUV;
+		outTextureIndex = pushConstants.skyTextureIndex;
+		outShading = 1;
+		return;
+	}
+	// Walls
+	gl_Position = pushConstants.translationMatrix * vec4(inWallVertex, 1.0);
+	outUV = inUV;
+	outTextureIndex = inTextureIndex;
+	outShading = max(0.6, min(1, abs(cos(pushConstants.yaw - inWallAngle))));
 }

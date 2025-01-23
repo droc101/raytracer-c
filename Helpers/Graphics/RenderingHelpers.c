@@ -20,7 +20,6 @@ void ActorTransformMatrix(const Actor *Actor, mat4 *transformMatrix)
 	{
 		Error("A NULL transformMatrix must not be passed to ActorTransformMatrix!");
 	}
-	glm_mat4_identity(*transformMatrix);
 	glm_translate(*transformMatrix, (vec3){Actor->position.x, Actor->yPosition, Actor->position.y});
 	glm_rotate(*transformMatrix, -Actor->rotation, (vec3){0, 1, 0});
 }

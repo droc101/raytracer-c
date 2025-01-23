@@ -769,28 +769,16 @@ bool CreateRenderPass()
 
 bool CreateDescriptorSetLayouts()
 {
-	const VkDescriptorSetLayoutBinding bindings[2] = {
-		{
-			.binding = 0,
-			.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-			.descriptorCount = 1,
-			.stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
-			.pImmutableSamplers = NULL,
-		},
-		{
-			.binding = 1,
-			.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-			.descriptorCount = MAX_TEXTURES,
-			.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT,
-			.pImmutableSamplers = NULL,
-		},
+	const VkDescriptorSetLayoutBinding binding = {
+		.binding = 0,
+		.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+		.descriptorCount = MAX_TEXTURES,
+		.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT,
 	};
 	const VkDescriptorSetLayoutCreateInfo layoutInfo = {
 		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-		.pNext = NULL,
-		.flags = 0,
-		.bindingCount = 2,
-		.pBindings = bindings,
+		.bindingCount = 1,
+		.pBindings = &binding,
 	};
 
 	VulkanTest(vkCreateDescriptorSetLayout(device, &layoutInfo, NULL, &descriptorSetLayout),
@@ -915,8 +903,8 @@ bool CreateGraphicsPipelines()
 	};
 
 	VkPushConstantRange pushConstantRange = {
-		.stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
-		.size = 16,
+		.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+		.size = sizeof(PushConstants),
 	};
 	const VkPipelineLayoutCreateInfo pipelineLayoutInfo = {
 		.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
@@ -961,40 +949,57 @@ bool CreateGraphicsPipelines()
 		},
 	};
 
-	const VkVertexInputBindingDescription wallBindingDescriptions[1] = {
+	const VkVertexInputBindingDescription wallBindingDescriptions[2] = {
 		{
 			.binding = 0,
+			.stride = sizeof(ShadowVertex),
+			.inputRate = VK_VERTEX_INPUT_RATE_VERTEX,
+		},
+		{
+			.binding = 1,
 			.stride = sizeof(WallVertex),
 			.inputRate = VK_VERTEX_INPUT_RATE_VERTEX,
 		},
 	};
-	const VkVertexInputAttributeDescription wallVertexDescriptions[3] = {
+	const VkVertexInputAttributeDescription wallVertexDescriptions[5] = {
 		{
 			.location = 0,
 			.binding = 0,
 			.format = VK_FORMAT_R32G32B32_SFLOAT,
-			.offset = offsetof(WallVertex, x),
+			.offset = offsetof(ShadowVertex, x),
 		},
 		{
 			.location = 1,
-			.binding = 0,
+			.binding = 1,
+			.format = VK_FORMAT_R32G32B32_SFLOAT,
+			.offset = offsetof(WallVertex, x),
+		},
+		{
+			.location = 2,
+			.binding = 1,
 			.format = VK_FORMAT_R32G32_SFLOAT,
 			.offset = offsetof(WallVertex, u),
 		},
 		{
-			.location = 2,
-			.binding = 0,
+			.location = 3,
+			.binding = 1,
 			.format = VK_FORMAT_R32_UINT,
 			.offset = offsetof(WallVertex, textureIndex),
+		},
+		{
+			.location = 4,
+			.binding = 1,
+			.format = VK_FORMAT_R32_SFLOAT,
+			.offset = offsetof(WallVertex, wallAngle),
 		},
 	};
 	const VkPipelineVertexInputStateCreateInfo wallVertexInputInfo = {
 		.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
 		.pNext = NULL,
 		.flags = 0,
-		.vertexBindingDescriptionCount = 1,
+		.vertexBindingDescriptionCount = 2,
 		.pVertexBindingDescriptions = wallBindingDescriptions,
-		.vertexAttributeDescriptionCount = 3,
+		.vertexAttributeDescriptionCount = 5,
 		.pVertexAttributeDescriptions = wallVertexDescriptions,
 	};
 
@@ -1739,7 +1744,7 @@ bool CreateDescriptorSets()
 			.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
 			.pNext = NULL,
 			.dstSet = descriptorSets[i],
-			.dstBinding = 1,
+			.dstBinding = 0,
 			.dstArrayElement = 0,
 			.descriptorCount = textures.length,
 			.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
@@ -1749,8 +1754,6 @@ bool CreateDescriptorSets()
 		};
 		vkUpdateDescriptorSets(device, 1, &writeDescriptor, 0, NULL);
 	}
-
-	UpdateUniformBufferDescriptorSets();
 
 	return true;
 }

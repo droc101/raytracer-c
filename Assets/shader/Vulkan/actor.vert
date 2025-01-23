@@ -1,11 +1,8 @@
 #version 460
 
-layout(binding = 0) uniform Mat4 {
-    vec4 i;
-    vec4 j;
-    vec4 k;
-    vec4 l;
-} transform;
+layout (push_constant) uniform PushConstants {
+	layout (offset = 16) mat4 translationMatrix;
+} pushConstants;
 
 layout(location = 0) in vec3 inVertex;
 layout(location = 1) in vec2 inUV;
@@ -18,9 +15,13 @@ layout(location = 7) in uint inTextureIndex;
 
 layout(location = 0) out vec2 outUV;
 layout(location = 1) flat out uint outTextureIndex;
+layout (location = 2) out float outShading;
 
 void main() {
-    gl_Position = mat4(transform.i, transform.j, transform.k, transform.l) * mat4(inTransform0, inTransform1, inTransform2, inTransform3) * vec4(inVertex, 1.0);
-    outUV = inUV;
-    outTextureIndex = inTextureIndex;
+	gl_Position = pushConstants.translationMatrix * mat4(inTransform0, inTransform1, inTransform2, inTransform3) * vec4(inVertex, 1.0);
+	outUV = inUV;
+	outTextureIndex = inTextureIndex;
+
+	float shading = dot(inNormal, vec3(0, 0, 1));
+	outShading = shading == 1 ? 1 : max(0.6, 1 - pow(2, -10 * shading));
 }

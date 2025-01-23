@@ -1001,7 +1001,7 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
 	for (int i = 0; i < l->actors.length; i++)
 	{
 		const Actor *actor = ListGet(l->actors, i);
-		mat4 actor_xfm;
+		mat4 actor_xfm = GLM_MAT4_IDENTITY_INIT;
 		ActorTransformMatrix(actor, &actor_xfm);
 		if (actor->actorModel == NULL)
 		{

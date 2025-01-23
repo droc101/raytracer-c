@@ -3,6 +3,7 @@
 //
 
 #include "VulkanMemory.h"
+
 bool AllocateMemory(MemoryInfo *memoryInfo, const uint32_t memoryTypeBits)
 {
 	for (uint32_t i = 0; i < physicalDevice.memoryProperties.memoryTypeCount; i++)
@@ -55,12 +56,13 @@ inline bool CreateLocalMemory()
 
 void SetSharedMemoryMappingInfo()
 {
-	for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-	{
-		buffers.translation[i].data = memoryPools.sharedMemory.mappedMemory +
-									  buffers.shared.memoryAllocationInfo.offset +
-									  buffers.translation[i].offset;
-	}
+	buffers.walls.shadowVertexStaging = memoryPools.sharedMemory.mappedMemory +
+										buffers.shared.memoryAllocationInfo.offset +
+										buffers.walls.shadowStagingOffset;
+	buffers.walls.shadowIndexStaging = memoryPools.sharedMemory.mappedMemory +
+									   buffers.shared.memoryAllocationInfo.offset +
+									   buffers.walls.shadowStagingOffset +
+									   sizeof(ShadowVertex) * buffers.walls.shadowCount * 4;
 
 	buffers.ui.vertexStaging = memoryPools.sharedMemory.mappedMemory +
 							   buffers.shared.memoryAllocationInfo.offset +

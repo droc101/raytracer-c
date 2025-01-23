@@ -38,8 +38,6 @@ VkResult ResizeUiBuffer();
 
 bool ResizeActorBuffer();
 
-void UpdateUniformBufferDescriptorSets();
-
 bool LoadTexture(const char *textureName);
 
 #endif //VULKANRESOURCES_H
