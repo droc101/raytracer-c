@@ -28,7 +28,12 @@ bool VK_Init(SDL_Window *window)
 	}
 	// clang-format on
 
-	return VK_Cleanup();
+	if (!VK_Cleanup())
+	{
+		VulkanLogError("Cleanup failed!");
+	}
+
+	return false;
 }
 
 VkResult VK_FrameStart()
@@ -120,8 +125,7 @@ VkResult VK_FrameEnd()
 							   0,
 							   2,
 							   (VkBuffer[]){buffers.walls.bufferInfo->buffer, buffers.walls.bufferInfo->buffer},
-							   (VkDeviceSize[]){buffers.walls.shadowOffset,
-												buffers.walls.vertexOffset});
+							   (VkDeviceSize[]){buffers.walls.shadowOffset, buffers.walls.vertexOffset});
 
 		vkCmdBindIndexBuffer(commandBuffers[currentFrame],
 							 buffers.walls.bufferInfo->buffer,
@@ -333,12 +337,6 @@ bool VK_Cleanup()
 	}
 
 	vkDestroyInstance(instance, NULL);
-
-	free(swapChainSupport.formats);
-	free(swapChainSupport.presentMode);
-	free(swapChainImages);
-	free(swapChainImageViews);
-	free(swapChainFramebuffers);
 
 	return true;
 }

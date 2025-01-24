@@ -20,7 +20,7 @@ VkInstance instance = VK_NULL_HANDLE;
 VkSurfaceKHR surface;
 PhysicalDevice physicalDevice;
 QueueFamilyIndices queueFamilyIndices;
-SwapChainSupportDetails swapChainSupport;
+SwapChainSupportDetails swapChainSupport = {0};
 VkDevice device = NULL;
 VkQueue graphicsQueue;
 VkQueue presentQueue;
@@ -88,38 +88,35 @@ PushConstants pushConstants;
 
 bool QuerySwapChainSupport(const VkPhysicalDevice pDevice)
 {
-	SwapChainSupportDetails details = {
-		.formatCount = 0,
-		.presentModeCount = 0,
-		.formats = NULL,
-		.presentMode = NULL,
-		.capabilities = {0},
-	};
-
-	VulkanTest(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(pDevice, surface, &details.capabilities),
+	VulkanTest(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(pDevice, surface, &swapChainSupport.capabilities),
 			   "Failed to query Vulkan surface capabilities!");
 
-	VulkanTest(vkGetPhysicalDeviceSurfaceFormatsKHR(pDevice, surface, &details.formatCount, NULL),
+	VulkanTest(vkGetPhysicalDeviceSurfaceFormatsKHR(pDevice, surface, &swapChainSupport.formatCount, NULL),
 			   "Failed to query Vulkan surface color formats!");
-	if (details.formatCount != 0)
+	if (swapChainSupport.formatCount != 0)
 	{
-		details.formats = malloc(sizeof(*details.formats) * details.formatCount);
-		VulkanTest(vkGetPhysicalDeviceSurfaceFormatsKHR(pDevice, surface, &details.formatCount, details.formats),
+		free(swapChainSupport.formats);
+		swapChainSupport.formats = malloc(sizeof(*swapChainSupport.formats) * swapChainSupport.formatCount);
+		VulkanTest(vkGetPhysicalDeviceSurfaceFormatsKHR(pDevice,
+														surface,
+														&swapChainSupport.formatCount,
+														swapChainSupport.formats),
 				   "Failed to query Vulkan surface color formats!");
 	}
 
-	VulkanTest(vkGetPhysicalDeviceSurfacePresentModesKHR(pDevice, surface, &details.presentModeCount, NULL),
+	VulkanTest(vkGetPhysicalDeviceSurfacePresentModesKHR(pDevice, surface, &swapChainSupport.presentModeCount, NULL),
 			   "Failed to query Vulkan surface presentation modes!");
-	if (details.presentModeCount != 0)
+	if (swapChainSupport.presentModeCount != 0)
 	{
-		details.presentMode = malloc(sizeof(*details.presentMode) * details.presentModeCount);
+		free(swapChainSupport.presentMode);
+		swapChainSupport.presentMode = malloc(sizeof(*swapChainSupport.presentMode) *
+											  swapChainSupport.presentModeCount);
 		VulkanTest(vkGetPhysicalDeviceSurfacePresentModesKHR(pDevice,
 															 surface,
-															 &details.presentModeCount,
-															 details.presentMode),
+															 &swapChainSupport.presentModeCount,
+															 swapChainSupport.presentMode),
 				   "Failed to query Vulkan surface presentation modes!");
 	}
-	swapChainSupport = details;
 
 	return true;
 }
@@ -450,6 +447,18 @@ void CleanupSwapChain()
 		}
 	}
 	vkDestroySwapchainKHR(device, swapChain, NULL);
+
+	free(swapChainSupport.formats);
+	free(swapChainSupport.presentMode);
+	free(swapChainImages);
+	free(swapChainImageViews);
+	free(swapChainFramebuffers);
+
+	swapChainSupport.formats = NULL;
+	swapChainSupport.presentMode = NULL;
+	swapChainImages = NULL;
+	swapChainImageViews = NULL;
+	swapChainFramebuffers = NULL;
 }
 
 void CleanupColorImage()
@@ -511,7 +520,10 @@ bool DestroyBuffer(Buffer *buffer)
 	vkDestroyBuffer(device, buffer->buffer, NULL);
 	buffer->buffer = VK_NULL_HANDLE;
 
-	vkFreeMemory(device, buffer->memoryAllocationInfo.memoryInfo->memory, NULL);
+	if (buffer->memoryAllocationInfo.memoryInfo)
+	{
+		vkFreeMemory(device, buffer->memoryAllocationInfo.memoryInfo->memory, NULL);
+	}
 	buffer->memoryAllocationInfo = (MemoryAllocationInfo){0};
 
 	return true;
