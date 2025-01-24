@@ -518,6 +518,10 @@ typedef struct PushConstants
 	uint32_t skyTextureIndex;
 
 	uint32_t shadowTextureIndex;
+
+	float fogStart;
+	float fogEnd;
+	uint fogColor;
 } PushConstants;
 #pragma endregion typedefs
 

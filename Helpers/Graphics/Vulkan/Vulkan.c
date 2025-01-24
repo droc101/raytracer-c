@@ -579,6 +579,9 @@ bool VK_LoadLevelWalls(const Level *level)
 	pushConstants.skyVertexCount = loadedLevel->hasCeiling ? 0 : skyModel->packedVertsUvsNormalCount;
 	pushConstants.skyTextureIndex = TextureIndex(loadedLevel->ceilOrSkyTex);
 	pushConstants.shadowTextureIndex = TextureIndex(TEXTURE("vfx_shadow"));
+	pushConstants.fogStart = loadedLevel->fogStart;
+	pushConstants.fogEnd = loadedLevel->fogEnd;
+	pushConstants.fogColor = loadedLevel->fogColor;
 
 	free(wallVertices);
 	free(wallIndices);
