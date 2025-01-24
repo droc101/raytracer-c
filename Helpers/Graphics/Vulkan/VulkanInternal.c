@@ -132,9 +132,9 @@ bool CreateInstance()
 	createInfo.ppEnabledLayerNames = (const char *const[1]){"VK_LAYER_MESA_overlay"};
 #endif
 
-	VulkanTest(vkCreateInstance(&createInfo, NULL, &instance), "Failed to create Vulkan instance!")
+	VulkanTest(vkCreateInstance(&createInfo, NULL, &instance), "Failed to create Vulkan instance!");
 
-			return true;
+	return true;
 }
 
 bool CreateSurface()

@@ -43,29 +43,52 @@ VkResult VK_FrameStart()
 		return VK_NOT_READY;
 	}
 
-	VulkanTestReturnResult(vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX),
-						   "Failed to wait for Vulkan fences!");
-
-	VulkanTestReturnResult(vkResetFences(device, 1, &inFlightFences[currentFrame]), "Failed to reset Vulkan fences!");
-
-	const VkResult acquireNextImageResult = vkAcquireNextImageKHR(device,
-																  swapChain,
-																  UINT64_MAX,
-																  imageAvailableSemaphores[currentFrame],
-																  VK_NULL_HANDLE,
-																  &swapchainImageIndex);
-
-	if (acquireNextImageResult == VK_ERROR_OUT_OF_DATE_KHR || acquireNextImageResult == VK_SUBOPTIMAL_KHR)
+	if (textureCacheMiss && swapchainImageIndex != -1)
 	{
-		if (RecreateSwapChain())
+		textureCacheMiss = false;
+	} else
+	{
+		VulkanTestReturnResult(vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX),
+							   "Failed to wait for Vulkan fences!");
+
+		VulkanTestReturnResult(vkResetFences(device, 1, &inFlightFences[currentFrame]),
+							   "Failed to reset Vulkan fences!");
+
+		const VkResult acquireNextImageResult = vkAcquireNextImageKHR(device,
+																	  swapChain,
+																	  UINT64_MAX,
+																	  imageAvailableSemaphores[currentFrame],
+																	  VK_NULL_HANDLE,
+																	  &swapchainImageIndex);
+		if (acquireNextImageResult == VK_ERROR_OUT_OF_DATE_KHR || acquireNextImageResult == VK_SUBOPTIMAL_KHR)
 		{
-			return acquireNextImageResult;
+			if (RecreateSwapChain())
+			{
+				return acquireNextImageResult;
+			}
 		}
+		VulkanTestReturnResult(acquireNextImageResult, "Failed to acquire next Vulkan image index!");
 	}
-	VulkanTestReturnResult(acquireNextImageResult, "Failed to acquire next Vulkan image index!");
 
 	VulkanTestReturnResult(vkResetCommandBuffer(commandBuffers[currentFrame], 0),
 						   "Failed to reset Vulkan command buffer!");
+
+	VulkanTestReturnResult(BeginRenderPass(commandBuffers[currentFrame], swapchainImageIndex),
+						   "Failed to begin render pass!");
+
+	vkCmdBindDescriptorSets(commandBuffers[currentFrame],
+							VK_PIPELINE_BIND_POINT_GRAPHICS,
+							pipelineLayout,
+							0,
+							1,
+							&descriptorSets[currentFrame],
+							0,
+							NULL);
+
+	if (!BeginCommandBuffer(&transferCommandBuffer, transferCommandPool))
+	{
+		return VK_ERROR_UNKNOWN;
+	}
 
 	buffers.ui.quadCount = 0;
 
@@ -95,107 +118,42 @@ VkResult VK_FrameEnd()
 		buffers.ui.shouldResize = false;
 	}
 
-	VulkanTestReturnResult(CopyBuffers(loadedLevel), "Failed to copy buffers!");
-
-	VulkanTestReturnResult(BeginRenderPass(commandBuffers[currentFrame], swapchainImageIndex),
-						   "Failed to begin render pass!");
-
-	const GlobalState *g = GetState();
-	if ((g->currentState == MAIN_STATE || g->currentState == PAUSE_STATE) && buffers.walls.wallCount > 0)
+	if (buffers.ui.quadCount > 0)
 	{
-		vkCmdPushConstants(commandBuffers[currentFrame],
-						   pipelineLayout,
-						   VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-						   0,
-						   sizeof(PushConstants),
-						   &pushConstants);
+		memcpy(buffers.ui.vertexStaging, buffers.ui.vertices, sizeof(UiVertex) * buffers.ui.quadCount * 4);
+		memcpy(buffers.ui.indexStaging, buffers.ui.indices, sizeof(uint32_t) * buffers.ui.quadCount * 6);
+		vkCmdCopyBuffer(transferCommandBuffer,
+						buffers.ui.stagingBufferInfo->buffer,
+						buffers.ui.bufferInfo->buffer,
+						2,
+						(VkBufferCopy[]){
+							{
+								.srcOffset = buffers.ui.vertexStagingOffset,
+								.dstOffset = buffers.ui.vertexOffset,
+								.size = sizeof(UiVertex) * buffers.ui.quadCount * 4,
+							},
+							{
+								.srcOffset = buffers.ui.indexStagingOffset,
+								.dstOffset = buffers.ui.indexOffset,
+								.size = sizeof(uint32_t) * buffers.ui.quadCount * 6,
+							},
+						});
+	}
 
-		vkCmdBindPipeline(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.walls);
+	if (!EndCommandBuffer(transferCommandBuffer, transferCommandPool, transferQueue))
+	{
+		return VK_ERROR_UNKNOWN;
+	}
 
-		vkCmdBindDescriptorSets(commandBuffers[currentFrame],
-								VK_PIPELINE_BIND_POINT_GRAPHICS,
-								pipelineLayout,
-								0,
-								1,
-								&descriptorSets[currentFrame],
-								0,
-								NULL);
+	if (textureCacheMiss)
+	{
+		vkCmdNextSubpass(commandBuffers[currentFrame], VK_SUBPASS_CONTENTS_INLINE);
+		VulkanTestReturnResult(EndRenderPass(commandBuffers[currentFrame]), "Failed to end render pass!");
 
-		vkCmdBindVertexBuffers(commandBuffers[currentFrame],
-							   0,
-							   2,
-							   (VkBuffer[]){buffers.walls.bufferInfo->buffer, buffers.walls.bufferInfo->buffer},
-							   (VkDeviceSize[]){buffers.walls.shadowOffset, buffers.walls.vertexOffset});
-
-		vkCmdBindIndexBuffer(commandBuffers[currentFrame],
-							 buffers.walls.bufferInfo->buffer,
-							 buffers.walls.indexOffset,
-							 VK_INDEX_TYPE_UINT32);
-
-		vkCmdDrawIndexed(commandBuffers[currentFrame],
-						 6 + (loadedLevel->hasCeiling ? 6 : buffers.walls.skyIndexCount),
-						 1,
-						 0,
-						 0,
-						 0);
-
-		vkCmdBindIndexBuffer(commandBuffers[currentFrame],
-							 buffers.walls.bufferInfo->buffer,
-							 buffers.walls.shadowOffset + sizeof(ShadowVertex) * buffers.walls.shadowCount * 4,
-							 VK_INDEX_TYPE_UINT32);
-
-		vkCmdDrawIndexed(commandBuffers[currentFrame],
-						 buffers.walls.shadowCount * 6,
-						 1,
-						 0,
-						 0,
-						 0x53484457); // 0x53484457 is "SHDW", to encode that we are drawing the shadows
-
-		vkCmdBindIndexBuffer(commandBuffers[currentFrame],
-							 buffers.walls.bufferInfo->buffer,
-							 buffers.walls.indexOffset +
-									 sizeof(uint32_t) *
-											 (6 + (loadedLevel->hasCeiling ? 6 : buffers.walls.skyIndexCount)),
-							 VK_INDEX_TYPE_UINT32);
-
-		vkCmdDrawIndexed(commandBuffers[currentFrame],
-						 buffers.walls.wallCount * 6 - (loadedLevel->hasCeiling ? 12 : 6),
-						 1,
-						 0,
-						 0,
-						 0x57414C4C); // 0x57414C4C is "WALL", to encode that we are drawing the walls
-
-		vkCmdBindPipeline(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.actors);
-
-		vkCmdBindVertexBuffers(commandBuffers[currentFrame],
-							   0,
-							   2,
-							   (VkBuffer[]){buffers.actors.bufferInfo->buffer, buffers.actors.bufferInfo->buffer},
-							   (VkDeviceSize[]){buffers.actors.vertexOffset, buffers.actors.instanceDataOffset});
-
-		vkCmdBindIndexBuffer(commandBuffers[currentFrame],
-							 buffers.actors.bufferInfo->buffer,
-							 buffers.actors.indexOffset,
-							 VK_INDEX_TYPE_UINT32);
-
-		vkCmdBindDescriptorSets(commandBuffers[currentFrame],
-								VK_PIPELINE_BIND_POINT_GRAPHICS,
-								pipelineLayout,
-								0,
-								1,
-								&descriptorSets[currentFrame],
-								0,
-								NULL);
-
-		vkCmdDrawIndexedIndirect(commandBuffers[currentFrame],
-								 buffers.actors.bufferInfo->buffer,
-								 buffers.actors.drawInfoOffset,
-								 buffers.actors.models.loadedModelIds.length + buffers.actors.walls.count,
-								 sizeof(VkDrawIndexedIndirectCommand));
+		return VK_INCOMPLETE;
 	}
 
 	vkCmdNextSubpass(commandBuffers[currentFrame], VK_SUBPASS_CONTENTS_INLINE);
-
 	if (buffers.ui.quadCount > 0)
 	{
 		vkCmdBindPipeline(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.ui);
@@ -210,15 +168,6 @@ VkResult VK_FrameEnd()
 							 buffers.ui.bufferInfo->buffer,
 							 buffers.ui.indexOffset,
 							 VK_INDEX_TYPE_UINT32);
-
-		vkCmdBindDescriptorSets(commandBuffers[currentFrame],
-								VK_PIPELINE_BIND_POINT_GRAPHICS,
-								pipelineLayout,
-								0,
-								1,
-								&descriptorSets[currentFrame],
-								0,
-								NULL);
 
 		vkCmdDrawIndexed(commandBuffers[currentFrame], buffers.ui.quadCount * 6, 1, 0, 0, 0);
 	}
@@ -236,7 +185,6 @@ VkResult VK_FrameEnd()
 		.signalSemaphoreCount = 1,
 		.pSignalSemaphores = &renderFinishedSemaphores[currentFrame],
 	};
-
 	VulkanTestReturnResult(vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]),
 						   "Failed to submit Vulkan draw command buffer!");
 
@@ -251,9 +199,7 @@ VkResult VK_FrameEnd()
 		.pImageIndices = &swapchainImageIndex,
 		.pResults = NULL,
 	};
-
 	const VkResult queuePresentResult = vkQueuePresentKHR(presentQueue, &presentInfo);
-
 	if (queuePresentResult == VK_ERROR_OUT_OF_DATE_KHR || queuePresentResult == VK_SUBOPTIMAL_KHR)
 	{
 		if (RecreateSwapChain())
@@ -281,6 +227,85 @@ VkResult VK_RenderLevel(const Level *level, const Camera *camera)
 	pushConstants.position[1] = (float)loadedLevel->player.pos.y;
 	pushConstants.yaw = camera->yaw + 1.5f * PIf;
 	UpdateTranslationMatrix(camera);
+
+	VulkanTestReturnResult(CopyBuffers(loadedLevel), "Failed to copy buffers!");
+
+	if (textureCacheMiss)
+	{
+		return VK_INCOMPLETE;
+	}
+
+	vkCmdPushConstants(commandBuffers[currentFrame],
+					   pipelineLayout,
+					   VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+					   0,
+					   sizeof(PushConstants),
+					   &pushConstants);
+
+	vkCmdBindPipeline(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.walls);
+
+	vkCmdBindVertexBuffers(commandBuffers[currentFrame],
+						   0,
+						   2,
+						   (VkBuffer[]){buffers.walls.bufferInfo->buffer, buffers.walls.bufferInfo->buffer},
+						   (VkDeviceSize[]){buffers.walls.shadowOffset, buffers.walls.vertexOffset});
+
+	vkCmdBindIndexBuffer(commandBuffers[currentFrame],
+						 buffers.walls.bufferInfo->buffer,
+						 buffers.walls.indexOffset,
+						 VK_INDEX_TYPE_UINT32);
+
+	vkCmdDrawIndexed(commandBuffers[currentFrame],
+					 6 + (loadedLevel->hasCeiling ? 6 : buffers.walls.skyIndexCount),
+					 1,
+					 0,
+					 0,
+					 0);
+
+	vkCmdBindIndexBuffer(commandBuffers[currentFrame],
+						 buffers.walls.bufferInfo->buffer,
+						 buffers.walls.shadowOffset + sizeof(ShadowVertex) * buffers.walls.shadowCount * 4,
+						 VK_INDEX_TYPE_UINT32);
+
+	vkCmdDrawIndexed(commandBuffers[currentFrame],
+					 buffers.walls.shadowCount * 6,
+					 1,
+					 0,
+					 0,
+					 0x53484457); // 0x53484457 is "SHDW", to encode that we are drawing the shadows
+
+	vkCmdBindIndexBuffer(commandBuffers[currentFrame],
+						 buffers.walls.bufferInfo->buffer,
+						 buffers.walls.indexOffset +
+								 sizeof(uint32_t) * (6 + (loadedLevel->hasCeiling ? 6 : buffers.walls.skyIndexCount)),
+						 VK_INDEX_TYPE_UINT32);
+
+	vkCmdDrawIndexed(commandBuffers[currentFrame],
+					 buffers.walls.wallCount * 6 - (loadedLevel->hasCeiling ? 12 : 6),
+					 1,
+					 0,
+					 0,
+					 0x57414C4C); // 0x57414C4C is "WALL", to encode that we are drawing the walls
+
+	vkCmdBindPipeline(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.actors);
+
+	vkCmdBindVertexBuffers(commandBuffers[currentFrame],
+						   0,
+						   2,
+						   (VkBuffer[]){buffers.actors.bufferInfo->buffer, buffers.actors.bufferInfo->buffer},
+						   (VkDeviceSize[]){buffers.actors.vertexOffset, buffers.actors.instanceDataOffset});
+
+	vkCmdBindIndexBuffer(commandBuffers[currentFrame],
+						 buffers.actors.bufferInfo->buffer,
+						 buffers.actors.indexOffset,
+						 VK_INDEX_TYPE_UINT32);
+
+	vkCmdDrawIndexedIndirect(commandBuffers[currentFrame],
+							 buffers.actors.bufferInfo->buffer,
+							 buffers.actors.drawInfoOffset,
+							 buffers.actors.models.loadedModelIds.length + buffers.actors.walls.count,
+							 sizeof(VkDrawIndexedIndirectCommand));
+
 	return VK_SUCCESS;
 }
 

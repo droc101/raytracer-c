@@ -600,6 +600,8 @@ extern VkClearColorValue clearColor;
 extern VkSampleCountFlagBits msaaSamples;
 extern uint16_t textureCount;
 extern PushConstants pushConstants;
+extern VkCommandBuffer transferCommandBuffer;
+extern bool textureCacheMiss;
 #pragma endregion variables
 
 #pragma region helperFunctions

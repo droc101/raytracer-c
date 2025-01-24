@@ -45,7 +45,7 @@ VkSemaphore renderFinishedSemaphores[MAX_FRAMES_IN_FLIGHT];
 VkFence inFlightFences[MAX_FRAMES_IN_FLIGHT];
 bool framebufferResized = false;
 uint8_t currentFrame = 0;
-uint32_t swapchainImageIndex;
+uint32_t swapchainImageIndex = -1;
 MemoryPools memoryPools = {
 	{
 		.size = 0,
@@ -84,6 +84,8 @@ VkClearColorValue clearColor = {{0.0f, 0.0f, 0.0f, 1.0f}};
 VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
 uint16_t textureCount;
 PushConstants pushConstants;
+VkCommandBuffer transferCommandBuffer;
+bool textureCacheMiss;
 #pragma endregion variables
 
 bool QuerySwapChainSupport(const VkPhysicalDevice pDevice)
@@ -421,6 +423,7 @@ inline uint32_t TextureIndex(const char *texture)
 	const uint32_t index = imageAssetIdToIndexMap[LoadImage(texture)->id];
 	if (index == -1)
 	{
+		textureCacheMiss = true;
 		if (!LoadTexture(texture))
 		{
 			Error("Failed to load texture!");
@@ -882,9 +885,6 @@ void LoadActorDrawInfo(const Level *level, VkDrawIndexedIndirectCommand *drawInf
 
 VkResult CopyBuffers(const Level *level)
 {
-	memcpy(buffers.ui.vertexStaging, buffers.ui.vertices, sizeof(UiVertex) * buffers.ui.quadCount * 4);
-	memcpy(buffers.ui.indexStaging, buffers.ui.indices, sizeof(uint32_t) * buffers.ui.quadCount * 6);
-
 	if (buffers.actors.models.loadedModelIds.length ||
 		(buffers.actors.walls.vertexStagingSize && buffers.actors.walls.indexStagingSize))
 	{
@@ -921,34 +921,11 @@ VkResult CopyBuffers(const Level *level)
 		(buffers.actors.models.loadedModelIds.length ||
 		 (buffers.actors.walls.vertexSize && buffers.actors.walls.indexSize)))
 	{
-		const VkCommandBuffer commandBuffer;
-		if (!BeginCommandBuffer(&commandBuffer, transferCommandPool))
-		{
-			return VK_ERROR_UNKNOWN;
-		}
 
-		if (buffers.ui.quadCount > 0)
-		{
-			vkCmdCopyBuffer(commandBuffer,
-							buffers.ui.stagingBufferInfo->buffer,
-							buffers.ui.bufferInfo->buffer,
-							2,
-							(VkBufferCopy[]){
-								{
-									.srcOffset = buffers.ui.vertexStagingOffset,
-									.dstOffset = buffers.ui.vertexOffset,
-									.size = sizeof(UiVertex) * buffers.ui.quadCount * 4,
-								},
-								{
-									.srcOffset = buffers.ui.indexStagingOffset,
-									.dstOffset = buffers.ui.indexOffset,
-									.size = sizeof(uint32_t) * buffers.ui.quadCount * 6,
-								},
-							});
-		}
+
 		if (buffers.walls.shadowCount)
 		{
-			vkCmdCopyBuffer(commandBuffer,
+			vkCmdCopyBuffer(transferCommandBuffer,
 							buffers.walls.stagingBufferInfo->buffer,
 							buffers.walls.bufferInfo->buffer,
 							1,
@@ -962,7 +939,7 @@ VkResult CopyBuffers(const Level *level)
 		}
 		if (buffers.actors.walls.vertexSize && buffers.actors.walls.indexSize)
 		{
-			vkCmdCopyBuffer(commandBuffer,
+			vkCmdCopyBuffer(transferCommandBuffer,
 							buffers.actors.stagingBufferInfo->buffer,
 							buffers.actors.bufferInfo->buffer,
 							4,
@@ -990,7 +967,7 @@ VkResult CopyBuffers(const Level *level)
 							});
 		} else if (buffers.actors.models.loadedModelIds.length)
 		{
-			vkCmdCopyBuffer(commandBuffer,
+			vkCmdCopyBuffer(transferCommandBuffer,
 							buffers.actors.stagingBufferInfo->buffer,
 							buffers.actors.bufferInfo->buffer,
 							2,
@@ -1006,11 +983,6 @@ VkResult CopyBuffers(const Level *level)
 									.size = buffers.actors.drawInfoStagingSize,
 								},
 							});
-		}
-
-		if (!EndCommandBuffer(commandBuffer, transferCommandPool, transferQueue))
-		{
-			return VK_ERROR_UNKNOWN;
 		}
 	}
 

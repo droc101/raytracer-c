@@ -15,7 +15,7 @@ char loadStateLevelname[32];
 
 void GLoadingStateUpdate(GlobalState *state)
 {
-	if (state->physicsFrame == 15)
+	if (state->physicsFrame >= 15)
 	{
 		if (ChangeLevelByName((char *)&loadStateLevelname))
 		{
