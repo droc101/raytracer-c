@@ -242,69 +242,82 @@ VkResult VK_RenderLevel(const Level *level, const Camera *camera)
 					   sizeof(PushConstants),
 					   &pushConstants);
 
-	vkCmdBindPipeline(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.walls);
+	if (buffers.walls.wallCount || buffers.walls.shadowCount)
+	{
+		vkCmdBindPipeline(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.walls);
 
-	vkCmdBindVertexBuffers(commandBuffers[currentFrame],
-						   0,
-						   2,
-						   (VkBuffer[]){buffers.walls.bufferInfo->buffer, buffers.walls.bufferInfo->buffer},
-						   (VkDeviceSize[]){buffers.walls.shadowOffset, buffers.walls.vertexOffset});
+		vkCmdBindVertexBuffers(commandBuffers[currentFrame],
+							   0,
+							   2,
+							   (VkBuffer[]){buffers.walls.bufferInfo->buffer, buffers.walls.bufferInfo->buffer},
+							   (VkDeviceSize[]){buffers.walls.shadowOffset, buffers.walls.vertexOffset});
+	}
+	if (buffers.walls.wallCount)
+	{
+		vkCmdBindIndexBuffer(commandBuffers[currentFrame],
+							 buffers.walls.bufferInfo->buffer,
+							 buffers.walls.indexOffset,
+							 VK_INDEX_TYPE_UINT32);
 
-	vkCmdBindIndexBuffer(commandBuffers[currentFrame],
-						 buffers.walls.bufferInfo->buffer,
-						 buffers.walls.indexOffset,
-						 VK_INDEX_TYPE_UINT32);
+		vkCmdDrawIndexed(commandBuffers[currentFrame],
+						 6 + (loadedLevel->hasCeiling ? 6 : buffers.walls.skyIndexCount),
+						 1,
+						 0,
+						 0,
+						 0);
+	}
+	if (buffers.walls.shadowCount)
+	{
+		vkCmdBindIndexBuffer(commandBuffers[currentFrame],
+							 buffers.walls.bufferInfo->buffer,
+							 buffers.walls.shadowOffset + sizeof(ShadowVertex) * buffers.walls.shadowCount * 4,
+							 VK_INDEX_TYPE_UINT32);
 
-	vkCmdDrawIndexed(commandBuffers[currentFrame],
-					 6 + (loadedLevel->hasCeiling ? 6 : buffers.walls.skyIndexCount),
-					 1,
-					 0,
-					 0,
-					 0);
+		vkCmdDrawIndexed(commandBuffers[currentFrame],
+						 buffers.walls.shadowCount * 6,
+						 1,
+						 0,
+						 0,
+						 0x53484457); // 0x53484457 is "SHDW", to encode that we are drawing the shadows
+	}
+	if (buffers.walls.wallCount > loadedLevel->hasCeiling + 1)
+	{
+		vkCmdBindIndexBuffer(commandBuffers[currentFrame],
+							 buffers.walls.bufferInfo->buffer,
+							 buffers.walls.indexOffset +
+									 sizeof(uint32_t) *
+											 (6 + (loadedLevel->hasCeiling ? 6 : buffers.walls.skyIndexCount)),
+							 VK_INDEX_TYPE_UINT32);
 
-	vkCmdBindIndexBuffer(commandBuffers[currentFrame],
-						 buffers.walls.bufferInfo->buffer,
-						 buffers.walls.shadowOffset + sizeof(ShadowVertex) * buffers.walls.shadowCount * 4,
-						 VK_INDEX_TYPE_UINT32);
+		vkCmdDrawIndexed(commandBuffers[currentFrame],
+						 buffers.walls.wallCount * 6 - (loadedLevel->hasCeiling ? 12 : 6),
+						 1,
+						 0,
+						 0,
+						 0x57414C4C); // 0x57414C4C is "WALL", to encode that we are drawing the walls
+	}
 
-	vkCmdDrawIndexed(commandBuffers[currentFrame],
-					 buffers.walls.shadowCount * 6,
-					 1,
-					 0,
-					 0,
-					 0x53484457); // 0x53484457 is "SHDW", to encode that we are drawing the shadows
+	if (buffers.actors.drawInfoSize)
+	{
+		vkCmdBindPipeline(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.actors);
 
-	vkCmdBindIndexBuffer(commandBuffers[currentFrame],
-						 buffers.walls.bufferInfo->buffer,
-						 buffers.walls.indexOffset +
-								 sizeof(uint32_t) * (6 + (loadedLevel->hasCeiling ? 6 : buffers.walls.skyIndexCount)),
-						 VK_INDEX_TYPE_UINT32);
+		vkCmdBindVertexBuffers(commandBuffers[currentFrame],
+							   0,
+							   2,
+							   (VkBuffer[]){buffers.actors.bufferInfo->buffer, buffers.actors.bufferInfo->buffer},
+							   (VkDeviceSize[]){buffers.actors.vertexOffset, buffers.actors.instanceDataOffset});
 
-	vkCmdDrawIndexed(commandBuffers[currentFrame],
-					 buffers.walls.wallCount * 6 - (loadedLevel->hasCeiling ? 12 : 6),
-					 1,
-					 0,
-					 0,
-					 0x57414C4C); // 0x57414C4C is "WALL", to encode that we are drawing the walls
-
-	vkCmdBindPipeline(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.actors);
-
-	vkCmdBindVertexBuffers(commandBuffers[currentFrame],
-						   0,
-						   2,
-						   (VkBuffer[]){buffers.actors.bufferInfo->buffer, buffers.actors.bufferInfo->buffer},
-						   (VkDeviceSize[]){buffers.actors.vertexOffset, buffers.actors.instanceDataOffset});
-
-	vkCmdBindIndexBuffer(commandBuffers[currentFrame],
-						 buffers.actors.bufferInfo->buffer,
-						 buffers.actors.indexOffset,
-						 VK_INDEX_TYPE_UINT32);
-
-	vkCmdDrawIndexedIndirect(commandBuffers[currentFrame],
+		vkCmdBindIndexBuffer(commandBuffers[currentFrame],
 							 buffers.actors.bufferInfo->buffer,
-							 buffers.actors.drawInfoOffset,
-							 buffers.actors.models.loadedModelIds.length + buffers.actors.walls.count,
-							 sizeof(VkDrawIndexedIndirectCommand));
+							 buffers.actors.indexOffset,
+							 VK_INDEX_TYPE_UINT32);
+
+		vkCmdDrawIndexedIndirect(commandBuffers[currentFrame],
+								 buffers.actors.bufferInfo->buffer,
+								 buffers.actors.drawInfoOffset,
+								 buffers.actors.models.loadedModelIds.length + buffers.actors.walls.count,
+								 sizeof(VkDrawIndexedIndirectCommand));
+	}
 
 	return VK_SUCCESS;
 }
