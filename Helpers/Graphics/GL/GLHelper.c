@@ -973,6 +973,23 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
 
 	GL_DrawFloor(floor_start, floor_end, WORLD_VIEW_MATRIX, l, l->floorTex, -0.5, 1.0);
 
+	glDisable(GL_DEPTH_TEST);
+	for (int i = 0; i < l->actors->size; i++)
+	{
+		Actor *actor = ListGet(l->actors, i);
+		if (actor->showShadow)
+		{
+			mat4 *actor_xfm = ActorTransformMatrix(actor);
+			// remove the rotation and y position from the actor matrix so the shadow draws correctly
+			glm_rotate(*actor_xfm, actor->rotation, (vec3){0, 1, 0});
+			glm_translate(*actor_xfm, (vec3){0, -actor->yPosition, 0});
+
+			GL_DrawShadow(v2s(-0.5 * actor->shadowSize), v2s(0.5 * actor->shadowSize), WORLD_VIEW_MATRIX, actor_xfm, l);
+			free(actor_xfm);
+		}
+	}
+	glEnable(GL_DEPTH_TEST);
+
 	for (int i = 0; i < l->walls->size; i++)
 	{
 		GL_DrawWall(ListGet(l->walls, i), IDENTITY, cam, l);
@@ -998,14 +1015,7 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
 			GL_RenderModel(actor->actorModel, actor_xfm, actor->actorModelTexture, SHADER_SHADED);
 		}
 
-		if (actor->showShadow)
-		{
-			// remove the rotation and y position from the actor matrix so the shadow draws correctly
-			glm_rotate(*actor_xfm, actor->rotation, (vec3){0, 1, 0});
-			glm_translate(*actor_xfm, (vec3){0, -actor->yPosition, 0});
 
-			GL_DrawShadow(v2s(-0.5 * actor->shadowSize), v2s(0.5 * actor->shadowSize), WORLD_VIEW_MATRIX, actor_xfm, l);
-		}
 
 		free(actor_xfm);
 	}

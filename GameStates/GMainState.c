@@ -20,6 +20,7 @@
 #include "../Structs/Trigger.h"
 #include "../Structs/Vector2.h"
 #include "GPauseState.h"
+#include "../Structs/Actor.h"
 
 void GMainStateUpdate(GlobalState *State)
 {
@@ -62,6 +63,12 @@ void GMainStateUpdate(GlobalState *State)
 	}
 
 	State->level->player.angle += GetMouseRel().x * (State->options.mouseSpeed / 120.0);
+
+	if (IsKeyJustPressed(SDL_SCANCODE_L))
+    {
+        Actor *leaf = CreateActor(State->level->player.pos, 0, 1, 0, 0, 0, 0);
+        AddActor(leaf);
+    }
 }
 
 void GMainStateFixedUpdate(GlobalState *state, double delta)
