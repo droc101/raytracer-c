@@ -73,8 +73,7 @@ void InitSDL()
 		SDL_SetHint(SDL_HINT_VIDEODRIVER, "wayland,x11"); // required to fix an nvidia bug with glCopyTexImage2D
 	} else
 	{
-		// TODO: Message boxes are a "it works on my machine"
-		SDL_SetHint(SDL_HINT_VIDEODRIVER, "x11"); // faster
+		SDL_SetHint(SDL_HINT_VIDEODRIVER, "x11,wayland"); // faster
 	}
 #endif
 
