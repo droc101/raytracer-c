@@ -5,7 +5,6 @@
 #ifndef GAME_VULKAN_H
 #define GAME_VULKAN_H
 
-#include <simd/sse2/mat4.h>
 #include <vulkan/vulkan.h>
 #include "../Drawing.h"
 
@@ -41,6 +40,8 @@ void VK_Restore();
 uint8_t VK_GetSampleCountFlags();
 
 bool VK_LoadLevelWalls(const Level *level);
+
+bool VK_LoadNewActor();
 
 bool VK_DrawColoredQuad(int x, int y, int w, int h, uint32_t color);
 

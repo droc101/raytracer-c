@@ -106,6 +106,19 @@ void LoadLevelWalls(const Level *l)
 	}
 }
 
+void LoadNewActor()
+{
+	switch (currentRenderer)
+	{
+		case RENDERER_VULKAN:
+			VK_LoadNewActor();
+			break;
+		case RENDERER_OPENGL:
+		default:
+			break;
+	}
+}
+
 void RenderLevel3D(const Level *l, const Camera *cam)
 {
 	switch (currentRenderer)

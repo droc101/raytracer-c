@@ -921,8 +921,6 @@ VkResult CopyBuffers(const Level *level)
 		(buffers.actors.models.loadedModelIds.length ||
 		 (buffers.actors.walls.vertexSize && buffers.actors.walls.indexSize)))
 	{
-
-
 		if (buffers.walls.shadowCount)
 		{
 			vkCmdCopyBuffer(transferCommandBuffer,

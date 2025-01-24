@@ -504,16 +504,12 @@ bool VK_LoadLevelWalls(const Level *level)
 	{
 		if (currentFrame == 0)
 		{
-			VulkanTestReturnResult(vkWaitForFences(device,
-												   1,
-												   &inFlightFences[MAX_FRAMES_IN_FLIGHT - 1],
-												   VK_TRUE,
-												   UINT64_MAX),
-								   "Failed to wait for Vulkan fences!");
+			VulkanTest(vkWaitForFences(device, 1, &inFlightFences[MAX_FRAMES_IN_FLIGHT - 1], VK_TRUE, UINT64_MAX),
+					   "Failed to wait for Vulkan fences!");
 		} else
 		{
-			VulkanTestReturnResult(vkWaitForFences(device, 1, &inFlightFences[currentFrame - 1], VK_TRUE, UINT64_MAX),
-								   "Failed to wait for Vulkan fences!");
+			VulkanTest(vkWaitForFences(device, 1, &inFlightFences[currentFrame - 1], VK_TRUE, UINT64_MAX),
+					   "Failed to wait for Vulkan fences!");
 		}
 		if (!ResizeActorBuffer())
 		{
@@ -557,7 +553,7 @@ bool VK_LoadLevelWalls(const Level *level)
 	}
 
 	VulkanTest(vkMapMemory(device, memoryInfo.memory, 0, stagingBuffer.size, 0, &data),
-			   "Failed to map wall staging buffer memory!");
+			   "Failed to map staging buffer memory!");
 
 	memcpy(data, wallVertices, sizeof(WallVertex) * (buffers.walls.wallCount * 4 + skyVertexCount));
 	memcpy(data + wallVertexSize,
@@ -608,6 +604,107 @@ bool VK_LoadLevelWalls(const Level *level)
 
 	free(wallVertices);
 	free(wallIndices);
+	free(actorVertices);
+	free(actorIndices);
+
+	return DestroyBuffer(&stagingBuffer);
+}
+
+bool VK_LoadNewActor()
+{
+	const Actor *actor = ListGet(loadedLevel->actors, loadedLevel->actors.length - 1);
+	if (!actor->actorModel)
+	{
+		if (!actor->actorWall)
+		{
+			return true;
+		}
+		buffers.actors.walls.count++;
+	} else
+	{
+		size_t index = ListFind(buffers.actors.models.loadedModelIds, (void *)actor->actorModel->id);
+		if (index == -1)
+		{
+			index = buffers.actors.models.loadedModelIds.length;
+			ListAdd(&buffers.actors.models.loadedModelIds, (void *)actor->actorModel->id);
+			buffers.actors.models.vertexCount += actor->actorModel->packedVertsUvsNormalCount;
+			buffers.actors.models.indexCount += actor->actorModel->packedIndicesCount;
+		}
+		if (index < buffers.actors.models.modelCounts.length)
+		{
+			buffers.actors.models.modelCounts.data[index]++;
+		} else
+		{
+			ListAdd(&buffers.actors.models.modelCounts, (void *)1);
+		}
+	}
+	if (actor->showShadow)
+	{
+		buffers.walls.shadowCount++;
+	}
+
+	if (currentFrame == 0)
+	{
+		VulkanTest(vkWaitForFences(device, 1, &inFlightFences[MAX_FRAMES_IN_FLIGHT - 1], VK_TRUE, UINT64_MAX),
+				   "Failed to wait for Vulkan fences!");
+	} else
+	{
+		VulkanTest(vkWaitForFences(device, 1, &inFlightFences[currentFrame - 1], VK_TRUE, UINT64_MAX),
+				   "Failed to wait for Vulkan fences!");
+	}
+	if (!ResizeActorBuffer())
+	{
+		return false;
+	}
+
+	ActorVertex *actorVertices = calloc(buffers.actors.models.vertexCount, sizeof(ActorVertex));
+	uint32_t *actorIndices = calloc(buffers.actors.models.indexCount, sizeof(uint32_t));
+	LoadActorModels(loadedLevel, actorVertices, actorIndices);
+
+	MemoryInfo memoryInfo = {
+		.type = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+	};
+	const MemoryAllocationInfo allocationInfo = {
+		.memoryInfo = &memoryInfo,
+		.usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+	};
+	Buffer stagingBuffer = {
+		.memoryAllocationInfo = allocationInfo,
+		.size = buffers.actors.models.vertexSize + buffers.actors.models.indexSize,
+	};
+	if (!CreateBuffer(&stagingBuffer, true))
+	{
+		free(actorVertices);
+		free(actorIndices);
+
+		return false;
+	}
+
+	void *data;
+	VulkanTest(vkMapMemory(device, memoryInfo.memory, 0, stagingBuffer.size, 0, &data),
+			   "Failed to map actor model staging buffer memory!");
+
+	memcpy(data, actorVertices, sizeof(ActorVertex) * buffers.actors.models.vertexCount);
+	memcpy(data + buffers.actors.models.vertexSize, actorIndices, sizeof(uint32_t) * buffers.actors.models.indexCount);
+	vkUnmapMemory(device, memoryInfo.memory);
+
+	const VkBufferCopy regions[] = {
+		{
+			.srcOffset = 0,
+			.dstOffset = buffers.actors.vertexOffset,
+			.size = buffers.actors.models.vertexSize,
+		},
+		{
+			.srcOffset = buffers.actors.models.vertexSize,
+			.dstOffset = buffers.actors.indexOffset,
+			.size = buffers.actors.models.indexSize,
+		},
+	};
+	if (!CopyBuffer(stagingBuffer.buffer, buffers.local.buffer, 2, regions))
+	{
+		return false;
+	}
+
 	free(actorVertices);
 	free(actorIndices);
 

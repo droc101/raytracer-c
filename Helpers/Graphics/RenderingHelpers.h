@@ -60,6 +60,11 @@ void FrameEnd();
 void LoadLevelWalls(const Level *l);
 
 /**
+ * An abstraction to allow the rendering code to have an indicator of when a new actor is added to the level.
+ */
+void LoadNewActor();
+
+/**
  * Render the 3D portion of a level
  * @param l The level to render
  * @param cam The camera to render with
