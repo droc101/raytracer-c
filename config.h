@@ -59,7 +59,7 @@
  * This will only work if the Vulkan SDK is installed on the device running the program.
  * @warning NOT FOR RELEASE BUILDS
  * @see https://docs.vulkan.org/guide/latest/validation_overview.html
- * @see https://vulkan.lunarg.com/doc/sdk/1.3.283.0/windows/khronos_validation_layer.html
+ * @see https://vulkan.lunarg.com/doc/sdk/latest/windows/khronos_validation_layer.html
  */
 #define VK_ENABLE_VALIDATION_LAYER
 #endif

@@ -9,7 +9,7 @@ def glsl_to_spv(glsl_path):
 	# check if windows or linux
 	glslc = "glslc"
 	if os.name == 'nt':
-		glslc = "C:\\VulkanSDK\\1.3.283.0\\Bin\\glslc.exe"
+		glslc = "glslc.exe"
 	args = [glslc, glsl_path, "-o", tmpf]
 
 	try:
