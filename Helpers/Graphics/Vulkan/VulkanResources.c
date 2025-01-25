@@ -580,19 +580,17 @@ bool LoadTexture(const char *textureName)
 	}
 
 	vkGetImageMemoryRequirements(device, texture->image, &texture->allocationInfo.memoryRequirements);
-	const size_t index = textures.length - 1;
-	if (index == 0)
+	if (textures.length == 1)
 	{
 		texture->allocationInfo.offset = 0;
 	} else
 	{
-		const MemoryAllocationInfo previousAllocation = ((Texture *)ListGet(textures, index - 1))->allocationInfo;
-		const VkDeviceSize previousAlignment = previousAllocation.memoryRequirements.alignment;
-		const VkDeviceSize previousAlignedSize = previousAlignment *
-												 (VkDeviceSize)ceil((double)previousAllocation.memoryRequirements.size /
-																	(double)previousAlignment);
+		const Texture *previousTexture = (Texture *)ListGet(textures, textures.length - 2);
+		const VkDeviceSize alignment = texture->allocationInfo.memoryRequirements.alignment;
+		const double previousSizeAligned = (double)(previousTexture->allocationInfo.offset +
+													previousTexture->allocationInfo.memoryRequirements.size);
 
-		texture->allocationInfo.offset = previousAllocation.offset + previousAlignedSize;
+		texture->allocationInfo.offset = alignment * (VkDeviceSize)ceil(previousSizeAligned / (double)alignment);
 	}
 	imageAssetIdToIndexMap[image->id] = textures.length - 1;
 
@@ -880,7 +878,7 @@ bool LoadTexture(const char *textureName)
 			.pNext = NULL,
 			.dstSet = descriptorSets[i],
 			.dstBinding = 0,
-			.dstArrayElement = index,
+			.dstArrayElement = textures.length - 1,
 			.descriptorCount = 1,
 			.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 			.pImageInfo = &imageInfo,

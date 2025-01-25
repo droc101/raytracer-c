@@ -50,9 +50,6 @@ bool VK_Init(SDL_Window *window)
 			case KAZAN:
 				strncpy(vendor, "Kazan", 32);
 				break;
-			case KHRONOS:
-				strncpy(vendor, "Khronos", 32);
-				break;
 			case MESA:
 				strncpy(vendor, "Mesa", 32);
 				break;
@@ -405,6 +402,8 @@ bool VK_Cleanup()
 			vkDestroyImageView(device, *(VkImageView *)ListGet(texturesImageView, textureIndex), NULL);
 			vkDestroyImage(device, ((Texture *)ListGet(textures, textureIndex))->image, NULL);
 		}
+		ListAndContentsFree(&texturesImageView, false);
+		ListAndContentsFree(&textures, false);
 		vkFreeMemory(device, textureMemory.memory, NULL);
 
 		CleanupColorImage();
