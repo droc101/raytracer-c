@@ -902,6 +902,10 @@ bool CreateGraphicsPipelines()
 		.pDynamicStates = NULL,
 	};
 
+	if (sizeof(PushConstants) > physicalDevice.properties.limits.maxPushConstantsSize)
+	{
+		Error("Go support core 1.0 then get back to me. (Max push constant size exceeded)");
+	}
 	VkPushConstantRange pushConstantRange = {
 		.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
 		.size = sizeof(PushConstants),
