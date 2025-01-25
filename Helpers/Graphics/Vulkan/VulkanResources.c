@@ -271,7 +271,7 @@ bool ResizeBufferRegion(Buffer *buffer,
 			return false;
 		}
 
-		const VkBufferCopy regions[] = {
+		VkBufferCopy regions[2] = {
 			{
 				.size = offset,
 			},
@@ -281,9 +281,25 @@ bool ResizeBufferRegion(Buffer *buffer,
 				.size = bufferSize - offset - oldSize,
 			},
 		};
-		if (!CopyBuffer(buffer->buffer, stagingBuffer.buffer, offset + oldSize == buffer->size ? 1 : 2, regions))
+		if (offset == 0)
 		{
-			return false;
+			regions[0] = regions[1];
+			if (!CopyBuffer(buffer->buffer, stagingBuffer.buffer, 1, regions))
+			{
+				return false;
+			}
+		} else if (offset + oldSize == buffer->size)
+		{
+			if (!CopyBuffer(buffer->buffer, stagingBuffer.buffer, 1, regions))
+			{
+				return false;
+			}
+		} else
+		{
+			if (!CopyBuffer(buffer->buffer, stagingBuffer.buffer, 2, regions))
+			{
+				return false;
+			}
 		}
 	}
 
@@ -311,7 +327,7 @@ bool ResizeBufferRegion(Buffer *buffer,
 		free(otherBufferData);
 	} else
 	{
-		const VkBufferCopy regions[] = {
+		VkBufferCopy regions[2] = {
 			{
 				.size = offset,
 			},
@@ -321,9 +337,25 @@ bool ResizeBufferRegion(Buffer *buffer,
 				.size = bufferSize - offset - oldSize,
 			},
 		};
-		if (!CopyBuffer(stagingBuffer.buffer, buffer->buffer, offset + newSize == buffer->size ? 1 : 2, regions))
+		if (offset == 0)
 		{
-			return false;
+			regions[0] = regions[1];
+			if (!CopyBuffer(stagingBuffer.buffer, buffer->buffer, 1, regions))
+			{
+				return false;
+			}
+		} else if (offset + newSize == buffer->size)
+		{
+			if (!CopyBuffer(stagingBuffer.buffer, buffer->buffer, 1, regions))
+			{
+				return false;
+			}
+		} else
+		{
+			if (!CopyBuffer(stagingBuffer.buffer, buffer->buffer, 2, regions))
+			{
+				return false;
+			}
 		}
 
 		if (!DestroyBuffer(&stagingBuffer))

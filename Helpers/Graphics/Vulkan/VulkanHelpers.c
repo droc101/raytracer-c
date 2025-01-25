@@ -614,14 +614,14 @@ void LoadWalls(const Level *level,
 		for (uint32_t i = 0; i < skyModel->packedVertsUvsNormalCount; i++)
 		{
 			memcpy(&vertices[i], &skyModel->packedVertsUvsNormal[i * 8], sizeof(float) * 5);
-			vertices[i].textureIndex = TextureIndex(TEXTURE("level_sky"));
+			vertices[i].textureIndex = pushConstants.skyTextureIndex;
 		}
 		memcpy(indices, skyModel->packedIndices, sizeof(uint32_t) * skyModel->packedIndicesCount);
 	}
 
-	for (uint32_t i = !skyVertexCount ? 2 : 1; i < buffers.walls.wallCount; i++)
+	for (uint32_t i = level->hasCeiling ? 2 : 1; i < buffers.walls.wallCount; i++)
 	{
-		const Wall *wall = ListGet(level->walls, i - (!skyVertexCount ? 2 : 1));
+		const Wall *wall = ListGet(level->walls, i - (level->hasCeiling ? 2 : 1));
 		const float halfHeight = wall->height / 2.0f;
 		const vec2 startVertex = {(float)wall->a.x, (float)wall->a.y};
 		const vec2 endVertex = {(float)wall->b.x, (float)wall->b.y};

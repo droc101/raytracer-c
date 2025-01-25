@@ -49,9 +49,14 @@ void main() {
 		outTextureIndex = pushConstants.shadowTextureIndex;
 		return;
 	}
-	if ((pushConstants.skyVertexCount == 0 && gl_VertexIndex < 8) ||
-	(gl_VertexIndex < pushConstants.skyVertexCount + 4 && pushConstants.skyVertexCount <= gl_VertexIndex))
+	if (inTextureIndex == pushConstants.skyTextureIndex)
 	{
+		// Sky
+		gl_Position = pushConstants.translationMatrix * (vec4(inWallVertex, 1.0) + vec4(pushConstants.playerPosition.x, 0, pushConstants.playerPosition.y, 0));
+		outUV = inUV;
+		outTextureIndex = inTextureIndex;
+		return;
+	} else {
 		// Floor and Ceiling
 		gl_Position = pushConstants.translationMatrix * (vec4(inWallVertex, 1.0) + vec4(pushConstants.playerPosition.x, 0, pushConstants.playerPosition.y, 0));
 		outUV = inUV + pushConstants.playerPosition;
@@ -60,13 +65,6 @@ void main() {
 			// Ceiling
 			outColor.a = 0.8;
 		}
-		return;
-	} else if (gl_VertexIndex < pushConstants.skyVertexCount + 4)
-	{
-		// Sky
-		gl_Position = pushConstants.translationMatrix * (vec4(inWallVertex, 1.0) + vec4(pushConstants.playerPosition.x, 0, pushConstants.playerPosition.y, 0));
-		outUV = inUV;
-		outTextureIndex = pushConstants.skyTextureIndex;
 		return;
 	}
 }

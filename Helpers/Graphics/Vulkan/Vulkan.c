@@ -470,6 +470,30 @@ bool VK_LoadLevelWalls(const Level *level)
 				return false;
 			}
 		}
+
+		buffers.walls.shadowSize = sizeof(ShadowVertex) * buffers.walls.shadowCount * 4 +
+								   sizeof(uint32_t) * buffers.walls.shadowCount * 6;
+
+		buffers.ui.vertexSize = sizeof(UiVertex) * buffers.ui.maxQuads * 4;
+		buffers.ui.indexSize = sizeof(uint32_t) * buffers.ui.maxQuads * 6;
+
+		buffers.actors.instanceDataSize = sizeof(ActorInstanceData) * buffers.actors.walls.count;
+		if (buffers.actors.models.modelCounts.length && buffers.actors.models.loadedModelIds.length)
+		{
+			for (size_t i = 0; i < buffers.actors.models.loadedModelIds.length; i++)
+			{
+				buffers.actors.instanceDataSize += sizeof(ActorInstanceData) *
+												   (size_t)ListGet(buffers.actors.models.modelCounts, i);
+			}
+		}
+		buffers.actors.drawInfoSize = sizeof(VkDrawIndexedIndirectCommand) * buffers.actors.models.loadedModelIds.length +
+									  sizeof(VkDrawIndexedIndirectCommand) * buffers.actors.walls.count;
+
+		buffers.actors.models.vertexSize = sizeof(ActorVertex) * buffers.actors.models.vertexCount;
+		buffers.actors.models.indexSize = sizeof(uint32_t) * buffers.actors.models.indexCount;
+		buffers.actors.walls.vertexSize = sizeof(ActorVertex) * buffers.actors.walls.count * 4;
+		buffers.actors.walls.indexSize = sizeof(uint32_t) * buffers.actors.walls.count * 6;
+		SetLocalBufferAliasingInfo();
 	}
 
 	ListClear(&buffers.actors.models.loadedModelIds);
