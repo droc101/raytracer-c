@@ -35,7 +35,7 @@ bool CreateInstance()
 		.applicationVersion = VULKAN_VERSION,
 		.pEngineName = GAME_TITLE,
 		.engineVersion = VULKAN_VERSION,
-		.apiVersion = VK_API_VERSION_1_3,
+		.apiVersion = VK_API_VERSION_1_2,
 	};
 	VkInstanceCreateInfo createInfo = {
 		.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,

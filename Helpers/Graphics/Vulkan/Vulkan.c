@@ -24,9 +24,75 @@ bool VK_Init(SDL_Window *window)
 		CreateBuffers() && AllocateMemoryPools() && CreateDescriptorPool() && CreateDescriptorSets() &&
 		CreateCommandBuffers() && CreateSyncObjects())
 	{
+		// clang-format on
+
+		char *vendor = calloc(32, sizeof(char));
+		switch (physicalDevice.properties.vendorID)
+		{
+			case AMD:
+				strncpy(vendor, "AMD", 32);
+				break;
+			case APPLE:
+				strncpy(vendor, "Apple", 32);
+				break;
+			case ARM:
+				strncpy(vendor, "ARM", 32);
+				break;
+			case CODEPLAY:
+				strncpy(vendor, "Codeplay", 32);
+				break;
+			case IMG_TEC:
+				strncpy(vendor, "ImgTec", 32);
+				break;
+			case INTEL:
+				strncpy(vendor, "Intel", 32);
+				break;
+			case KAZAN:
+				strncpy(vendor, "Kazan", 32);
+				break;
+			case KHRONOS:
+				strncpy(vendor, "Khronos", 32);
+				break;
+			case MESA:
+				strncpy(vendor, "Mesa", 32);
+				break;
+			case MICROSOFT:
+				strncpy(vendor, "Microsoft", 32);
+				break;
+			case MOBILEYE:
+				strncpy(vendor, "Mobileye", 32);
+				break;
+			case NVIDIA:
+				strncpy(vendor, "NVIDIA", 32);
+				break;
+			case POCL:
+				strncpy(vendor, "PoCL", 32);
+				break;
+			case QUALCOMM:
+				strncpy(vendor, "Qualcomm", 32);
+				break;
+			case VIV:
+				strncpy(vendor, "VIV", 32);
+				break;
+			case VSI:
+				strncpy(vendor, "VSI", 32);
+				break;
+			default:
+				strncpy(vendor, "Unknown", 32);
+				break;
+		}
+		LogInfo("Vulkan Initialized\n");
+		LogInfo("Vulkan Vendor: %s\n", vendor);
+		LogInfo("Vulkan Device: %s\n", physicalDevice.properties.deviceName);
+		LogInfo("Vulkan Version: %u.%u.%u\n",
+				VK_API_VERSION_MAJOR(physicalDevice.properties.apiVersion),
+				VK_API_VERSION_MINOR(physicalDevice.properties.apiVersion),
+				VK_API_VERSION_PATCH(physicalDevice.properties.apiVersion));
+
+		free(vendor);
+
 		return true;
 	}
-	// clang-format on
 
 	if (!VK_Cleanup())
 	{

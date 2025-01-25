@@ -62,6 +62,26 @@ typedef enum QueueFamily
 	QUEUE_FAMILY_TRANSFER = 4,
 } QueueFamily;
 
+typedef enum VendorIDs
+{
+	AMD = 0x1002,
+	APPLE = 0x106B,
+	ARM = 0x13B5,
+	CODEPLAY = VK_VENDOR_ID_CODEPLAY,
+	IMG_TEC = 0x1010,
+	INTEL = 0x8086,
+	KAZAN = VK_VENDOR_ID_KAZAN,
+	KHRONOS = VK_VENDOR_ID_KHRONOS,
+	MESA = VK_VENDOR_ID_MESA,
+	MICROSOFT = 0x1414,
+	MOBILEYE = VK_VENDOR_ID_MOBILEYE,
+	NVIDIA = 0x10DE,
+	POCL = VK_VENDOR_ID_POCL,
+	QUALCOMM = 0x5143,
+	VIV = VK_VENDOR_ID_VIV,
+	VSI = VK_VENDOR_ID_VSI,
+} VendorIDs;
+
 /**
  * A struct to hold the indicies of the queue families for graphics, presentation, and transfer.
  * This is used to find and store the indices, which allows for picking between unique and non-unique indices.
