@@ -51,49 +51,6 @@ int ActorHealths[] = {
 	1,
 };
 
-char *ActorNames[] = {
-	"NullActor",
-	"TestActor",
-	"Coin",
-	"Goal",
-	"Door",
-};
-
-// Array of actor parameter names
-// Each actor type has 4 parameters
-char ActorParamNames[][4][16] = {
-	{"N/A", "N/A", "N/A", "N/A"},
-	{"N/A", "N/A", "N/A", "N/A"},
-	{"Anim Frame", "Blue Coin?", "N/A", "N/A"},
-	{"N/A", "N/A", "N/A", "N/A"},
-	{"N/A", "N/A", "N/A", "N/A"},
-};
-
-char *GetActorName(const int actor)
-{
-	const int actorNameCount = sizeof(ActorNames) / sizeof(char *);
-	if (actor > actorNameCount - 1)
-	{
-		return "Invalid Actor!";
-	}
-	return ActorNames[actor];
-}
-
-char *GetActorParamName(const int actor, const byte param)
-{
-	const int actorNameCount = sizeof(ActorNames) / sizeof(char *);
-	if (actor > actorNameCount - 1)
-	{
-		return "Invalid Actor!";
-	}
-	return ActorParamNames[actor][param];
-}
-
-int GetActorTypeCount()
-{
-	return sizeof(ActorInitFuncs) / sizeof(ActorInitFunction);
-}
-
 Actor *CreateActor(const Vector2 position,
 				   const double rotation,
 				   const int actorType,

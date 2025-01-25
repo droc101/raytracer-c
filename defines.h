@@ -79,6 +79,12 @@ typedef void (*ActorSignalHandlerFunction)(Actor *self, const Actor *sender, int
 #define CONTROLLER_CANCEL \
 	(GetState()->options.controllerSwapOkCancel ? SDL_CONTROLLER_BUTTON_A : SDL_CONTROLLER_BUTTON_B)
 
+#ifdef WIN32
+#define EXPORT_SYM __declspec(dllexport)
+#else
+#define EXPORT_SYM __attribute__((visibility("default")))
+#endif
+
 #pragma endregion
 
 #pragma region Enum definitions

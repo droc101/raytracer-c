@@ -3,7 +3,7 @@ project(game C)
 
 set(CMAKE_C_STANDARD 11)
 
-set(CMAKE_C_FLAGS "-Wall -Wno-discarded-qualifiers") # shut.
+set(CMAKE_C_FLAGS "-Wall -Wno-discarded-qualifiers -rdynamic -fvisibility=hidden")
 
 set(CMAKE_C_FLAGS_DEBUG "-g -O0 -DBUILDSTYLE_DEBUG")
 set(CMAKE_C_FLAGS_RELEASE "-g0 -O3 -s -DNDEBUG -Wl,--gc-sections -fdata-sections -ffunction-sections -DBUILDSTYLE_RELEASE")
@@ -184,3 +184,16 @@ add_custom_target( # Python script for generating assets code
 )
 
 add_dependencies(game genassets)
+
+if (UNIX)
+    add_library(
+            actor
+            SHARED
+            defines.h
+            libactor/libactor.c
+    )
+
+    target_compile_options(actor PRIVATE -shared -fpie -fPIC)
+
+    add_dependencies(game actor)
+endif ()
