@@ -5,6 +5,7 @@
 #include "VulkanResources.h"
 #include "../../../Structs/GlobalState.h"
 #include "../../CommonAssets.h"
+#include "../../Core/Error.h"
 #include "../../Core/MathEx.h"
 #include "VulkanMemory.h"
 
@@ -131,21 +132,12 @@ bool CreateSharedBuffer()
 	if (!buffers.ui.vertices)
 	{
 		buffers.ui.vertices = malloc(sizeof(UiVertex) * buffers.ui.maxQuads * 4);
-		if (!buffers.ui.vertices)
-		{
-			VulkanLogError("malloc of UI vertex buffer data pointer failed!\n");
-			return false;
-		}
+		CheckAlloc(buffers.ui.vertices);
 	}
 	if (!buffers.ui.indices)
 	{
 		buffers.ui.indices = malloc(sizeof(uint32_t) * buffers.ui.maxQuads * 6);
-		if (!buffers.ui.indices)
-		{
-			VulkanLogError("malloc of UI index buffer data pointer failed!\n");
-
-			return false;
-		}
+		CheckAlloc(buffers.ui.vertices);
 	}
 
 
@@ -245,6 +237,7 @@ bool ResizeBufferRegion(Buffer *buffer,
 	if (buffer->memoryAllocationInfo.memoryInfo->mappedMemory)
 	{
 		otherBufferData = malloc(bufferSize - oldSize);
+		CheckAlloc(otherBufferData);
 
 		memcpy(otherBufferData, buffer->memoryAllocationInfo.memoryInfo->mappedMemory, offset);
 		memcpy(otherBufferData + offset,
@@ -254,6 +247,7 @@ bool ResizeBufferRegion(Buffer *buffer,
 		if (!lossy)
 		{
 			resizedBufferData = malloc(oldSize);
+			CheckAlloc(resizedBufferData);
 			memcpy(resizedBufferData, buffer->memoryAllocationInfo.memoryInfo->mappedMemory + offset, oldSize);
 		}
 	} else
@@ -558,6 +552,7 @@ bool LoadTexture(const char *textureName)
 {
 	const Image *image = LoadImage(textureName);
 	Texture *texture = calloc(1, sizeof(Texture));
+	CheckAlloc(texture);
 	ListAdd(&textures, texture);
 	texture->imageInfo = image;
 
@@ -849,6 +844,7 @@ bool LoadTexture(const char *textureName)
 	}
 
 	VkImageView *textureImageView = malloc(sizeof(VkImageView *));
+	CheckAlloc(textureImageView);
 	ListAdd(&texturesImageView, textureImageView);
 	if (!CreateImageView(textureImageView,
 						 texture->image,

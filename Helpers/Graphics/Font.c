@@ -31,9 +31,9 @@ Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, cons
 {
 	const ulong stringLength = strlen(str);
 	float *verts = calloc(stringLength, sizeof(float[4][4]));
-	chk_malloc(verts);
+	CheckAlloc(verts);
 	uint *indices = calloc(stringLength, sizeof(uint[6]));
-	chk_malloc(indices);
+	CheckAlloc(indices);
 
 	int x = (int)pos.x;
 	int y = (int)pos.y;

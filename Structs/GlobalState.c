@@ -263,7 +263,7 @@ bool ChangeLevelByName(const char *name)
 
 	const size_t maxPathLength = 48;
 	char *levelPath = calloc(maxPathLength, sizeof(char));
-	chk_malloc(levelPath);
+	CheckAlloc(levelPath);
 
 	if (snprintf(levelPath, maxPathLength, "level/%s.gmap", name) > maxPathLength)
 	{

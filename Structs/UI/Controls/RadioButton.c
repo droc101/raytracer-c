@@ -26,7 +26,7 @@ Control *CreateRadioButtonControl(const Vector2 position,
 	radio->anchor = anchor;
 
 	radio->ControlData = malloc(sizeof(RadioButtonData));
-	chk_malloc(radio->ControlData);
+	CheckAlloc(radio->ControlData);
 	RadioButtonData *data = radio->ControlData;
 	data->label = label;
 	data->checked = checked;

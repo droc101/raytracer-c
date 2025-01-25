@@ -30,7 +30,7 @@ void ListAdd(List *list, void *data)
 	}
 
 	list->data = GameReallocArray(list->data, list->length + 1, sizeof(void *));
-	chk_malloc(list->data);
+	CheckAlloc(list->data);
 	list->data[list->length] = data;
 	list->length++;
 }
@@ -43,7 +43,7 @@ void ListAddBatched(List *list, const size_t count, ...)
 	}
 
 	list->data = GameReallocArray(list->data, list->length + count, sizeof(void *));
-	chk_malloc(list->data);
+	CheckAlloc(list->data);
 
 	va_list args;
 	va_start(args, count);
@@ -79,7 +79,7 @@ void ListRemoveAt(List *list, const size_t index)
 	}
 	memmove(&list->data[index], &list->data[index + 1], sizeof(void *) * (list->length - index));
 	list->data = GameReallocArray(list->data, list->length, sizeof(void *));
-	chk_malloc(list->data);
+	CheckAlloc(list->data);
 }
 
 void ListInsertAfter(List *list, size_t index, void *data)
@@ -96,7 +96,7 @@ void ListInsertAfter(List *list, size_t index, void *data)
 	index++;
 	list->length++;
 	list->data = GameReallocArray(list->data, list->length, sizeof(void *));
-	chk_malloc(list->data);
+	CheckAlloc(list->data);
 
 	memmove(&list->data[index + 1], &list->data[index], sizeof(void *) * (list->length - index - 1));
 	list->data[index] = data;

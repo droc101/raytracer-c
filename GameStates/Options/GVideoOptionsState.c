@@ -40,7 +40,7 @@ char *SliderLabelMSAA(const Control *slider)
 	char *labels[] = {"Off", "2X", "4X", "8X"};
 	const SliderData *data = (SliderData *)slider->ControlData;
 	char *buf = malloc(64);
-	chk_malloc(buf);
+	CheckAlloc(buf);
 	sprintf(buf, "%s: %s", data->label, labels[(int)data->value]);
 	return buf;
 }

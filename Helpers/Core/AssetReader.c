@@ -24,7 +24,7 @@ FILE *OpenAssetFile(const char *relPath)
 {
 	const size_t maxPathLength = 300;
 	char *path = calloc(maxPathLength, sizeof(char));
-	chk_malloc(path);
+	CheckAlloc(path);
 
 	const size_t pathLen = strlen(GetState()->executableFolder) + strlen("assets/") + strlen(relPath) + 1;
 	if (pathLen >= maxPathLength)
@@ -71,7 +71,7 @@ void LoadTextureSizeTable()
 	}
 
 	tsb = malloc(sizeof(TextureSizeTable));
-	chk_malloc(tsb);
+	CheckAlloc(tsb);
 
 	fread(&tsb->textureCount, sizeof(uint), 1, file);
 	fread(&tsb->assetCount, sizeof(uint), 1, file);
@@ -83,7 +83,7 @@ void LoadTextureSizeTable()
 	}
 
 	tsb->textureNames = calloc(tsb->textureCount, sizeof(char) * 32);
-	chk_malloc(tsb->textureNames);
+	CheckAlloc(tsb->textureNames);
 
 	fread(tsb->textureNames, sizeof(char) * 32, tsb->textureCount, file);
 
@@ -166,14 +166,14 @@ Asset *DecompressAsset(const char *relPath)
 	const size_t fileSize = ftell(file);
 
 	byte *asset = malloc(fileSize);
-	chk_malloc(asset);
+	CheckAlloc(asset);
 	fseek(file, 0, SEEK_SET);
 	fread(asset, 1, fileSize, file);
 
 	fclose(file);
 
 	Asset *assetStruct = malloc(sizeof(Asset));
-	chk_malloc(assetStruct);
+	CheckAlloc(assetStruct);
 
 	size_t offset = 0;
 	// Read the first 4 bytes of the asset to get the size of the compressed data
@@ -191,7 +191,7 @@ Asset *DecompressAsset(const char *relPath)
 
 	// Allocate memory for the decompressed data
 	byte *decompressedData = malloc(decompressedSize);
-	chk_malloc(decompressedData);
+	CheckAlloc(decompressedData);
 
 	z_stream stream = {0};
 
@@ -241,7 +241,7 @@ Asset *DecompressAsset(const char *relPath)
 	// Add the asset to the cache
 	const size_t pathLength = strlen(relPath);
 	char *data = malloc(pathLength + 1);
-	chk_malloc(data);
+	CheckAlloc(data);
 	strncpy(data, relPath, pathLength);
 	ListAdd(&assetCacheNames, data);
 	ListAdd(&assetCacheData, assetStruct);
@@ -255,7 +255,7 @@ void GenFallbackImage(Image *src)
 	src->height = 64;
 	src->pixelDataSize = 64 * 64 * 4;
 	src->pixelData = malloc(src->pixelDataSize);
-	chk_malloc(src->pixelData);
+	CheckAlloc(src->pixelData);
 
 	for (int x = 0; x < 64; x++)
 	{
@@ -294,7 +294,7 @@ Image *LoadImage(const char *asset)
 	}
 
 	Image *img = malloc(sizeof(Image));
-	chk_malloc(img);
+	CheckAlloc(img);
 
 	const Asset *textureAsset = DecompressAsset(asset);
 	if (textureAsset == NULL || textureAsset->type != ASSET_TYPE_TEXTURE)
@@ -312,6 +312,7 @@ Image *LoadImage(const char *asset)
 
 	const size_t nameLength = strlen(asset) + 1;
 	img->name = malloc(nameLength);
+	CheckAlloc(img->name);
 	strncpy(img->name, asset, nameLength);
 
 	images[textureId] = img;
@@ -348,7 +349,7 @@ Model *LoadModel(const char *asset)
 		return NULL;
 	}
 	Model *model = malloc(sizeof(Model));
-	chk_malloc(model);
+	CheckAlloc(model);
 	memcpy(&model->header, assetData->data, sizeof(ModelHeader));
 
 	if (strncmp(model->header.sig, "MSH", 3) != 0)
@@ -371,6 +372,7 @@ Model *LoadModel(const char *asset)
 
 	const size_t nameLength = strlen(asset) + 1;
 	model->name = malloc(nameLength);
+	CheckAlloc(model->name);
 	strncpy(model->name, asset, nameLength);
 
 	const size_t vertsSizeBytes = model->header.indexCount * (sizeof(float) * 8);
@@ -380,9 +382,9 @@ Model *LoadModel(const char *asset)
 	model->packedIndicesCount = model->header.indexCount;
 
 	model->packedVertsUvsNormal = malloc(vertsSizeBytes);
-	chk_malloc(model->packedVertsUvsNormal);
+	CheckAlloc(model->packedVertsUvsNormal);
 	model->packedIndices = malloc(indexSizeBytes);
-	chk_malloc(model->packedIndices);
+	CheckAlloc(model->packedIndices);
 
 	memcpy(model->packedVertsUvsNormal, (byte *)assetData->data + sizeof(ModelHeader), vertsSizeBytes);
 

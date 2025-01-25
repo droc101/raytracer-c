@@ -49,7 +49,7 @@ void DoorInit(Actor *this)
 	this->solid = true;
 	this->actorWall = CreateWall(v2(0, 0), v2(1, 0), TEXTURE("actor_door"), 1, 0.0);
 	this->extra_data = malloc(sizeof(DoorData));
-	chk_malloc(this->extra_data);
+	CheckAlloc(this->extra_data);
 	memset(this->extra_data, 0, sizeof(DoorData));
 	DoorData *data = this->extra_data;
 	data->state = DOOR_CLOSED;

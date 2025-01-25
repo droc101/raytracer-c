@@ -17,7 +17,7 @@ void LogInit()
 	char *folderPath = SDL_GetPrefPath(APPDATA_ORG_NAME, APPDATA_APP_NAME);
 	const char *fileName = "game.log";
 	char *filePath = malloc(strlen(folderPath) + strlen(fileName) + 1);
-	chk_malloc(filePath);
+	CheckAlloc(filePath);
 	strcpy(filePath, folderPath);
 	strcat(filePath, fileName);
 

@@ -5,6 +5,7 @@
 #include "Vulkan.h"
 #include "../../../Structs/GlobalState.h"
 #include "../../CommonAssets.h"
+#include "../../Core/Error.h"
 #include "../../Core/MathEx.h"
 #include "VulkanHelpers.h"
 #include "VulkanInternal.h"
@@ -27,6 +28,7 @@ bool VK_Init(SDL_Window *window)
 		// clang-format on
 
 		char *vendor = calloc(32, sizeof(char));
+		CheckAlloc(vendor);
 		switch (physicalDevice.properties.vendorID)
 		{
 			case AMD:
@@ -635,10 +637,14 @@ bool VK_LoadLevelWalls(const Level *level)
 	pushConstants.fogColor = level->fogColor;
 
 	WallVertex *wallVertices = calloc(buffers.walls.wallCount * 4 + skyVertexCount, sizeof(WallVertex));
+	CheckAlloc(wallVertices);
 	uint32_t *wallIndices = calloc(buffers.walls.wallCount * 6 + buffers.walls.skyIndexCount, sizeof(uint32_t));
+	CheckAlloc(wallIndices);
 
 	ActorVertex *actorVertices = calloc(buffers.actors.models.vertexCount, sizeof(ActorVertex));
+	CheckAlloc(actorVertices);
 	uint32_t *actorIndices = calloc(buffers.actors.models.indexCount, sizeof(uint32_t));
+	CheckAlloc(actorIndices);
 
 	LoadWalls(level, _skyModel, wallVertices, wallIndices, skyVertexCount);
 	LoadActorModels(level, actorVertices, actorIndices);
@@ -769,7 +775,9 @@ bool VK_LoadNewActor()
 	}
 
 	ActorVertex *actorVertices = calloc(buffers.actors.models.vertexCount, sizeof(ActorVertex));
+	CheckAlloc(actorVertices);
 	uint32_t *actorIndices = calloc(buffers.actors.models.indexCount, sizeof(uint32_t));
+	CheckAlloc(actorIndices);
 	LoadActorModels(loadedLevel, actorVertices, actorIndices);
 
 	MemoryInfo memoryInfo = {

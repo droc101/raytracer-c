@@ -17,7 +17,7 @@
  * Check if a pointer is NULL and if it is, call the error handler
  * @param ptr The pointer to check
  */
-#define chk_malloc(ptr) \
+#define CheckAlloc(ptr) \
 	if ((ptr) == NULL) _GameAllocFailure()
 
 /**

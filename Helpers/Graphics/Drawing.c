@@ -65,7 +65,7 @@ inline void SetColorUint(const uint color)
 byte *GetColorUint(const uint color)
 {
 	byte *colorBuf = malloc(4);
-	chk_malloc(colorBuf);
+	CheckAlloc(colorBuf);
 	colorBuf[0] = color >> 16 & 0xFF;
 	colorBuf[1] = color >> 8 & 0xFF;
 	colorBuf[2] = color >> 0 & 0xFF;

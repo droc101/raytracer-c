@@ -99,6 +99,7 @@ bool QuerySwapChainSupport(const VkPhysicalDevice pDevice)
 	{
 		free(swapChainSupport.formats);
 		swapChainSupport.formats = malloc(sizeof(*swapChainSupport.formats) * swapChainSupport.formatCount);
+		CheckAlloc(swapChainSupport.formats);
 		VulkanTest(vkGetPhysicalDeviceSurfaceFormatsKHR(pDevice,
 														surface,
 														&swapChainSupport.formatCount,
@@ -111,8 +112,8 @@ bool QuerySwapChainSupport(const VkPhysicalDevice pDevice)
 	if (swapChainSupport.presentModeCount != 0)
 	{
 		free(swapChainSupport.presentMode);
-		swapChainSupport.presentMode = malloc(sizeof(*swapChainSupport.presentMode) *
-											  swapChainSupport.presentModeCount);
+		swapChainSupport.presentMode = calloc(swapChainSupport.presentModeCount, sizeof(*swapChainSupport.presentMode));
+		CheckAlloc(swapChainSupport.presentMode);
 		VulkanTest(vkGetPhysicalDeviceSurfacePresentModesKHR(pDevice,
 															 surface,
 															 &swapChainSupport.presentModeCount,
@@ -757,7 +758,9 @@ void LoadActorInstanceData(const Level *level,
 	uint32_t wallCount = 0;
 	uint32_t shadowCount = 0;
 	uint16_t *modelCounts = calloc(buffers.actors.models.loadedModelIds.length, sizeof(uint16_t));
+	CheckAlloc(modelCounts);
 	uint32_t *offsets = calloc(buffers.actors.models.loadedModelIds.length + 1, sizeof(uint32_t));
+	CheckAlloc(offsets);
 	for (size_t i = 1; i <= buffers.actors.models.loadedModelIds.length; i++)
 	{
 		offsets[i] = offsets[i - 1] +
@@ -889,7 +892,9 @@ VkResult CopyBuffers(const Level *level)
 		(buffers.actors.walls.vertexStagingSize && buffers.actors.walls.indexStagingSize))
 	{
 		ActorVertex *actorVertices = calloc(1, buffers.actors.walls.vertexStagingSize);
+		CheckAlloc(actorVertices);
 		uint32_t *actorIndices = calloc(1, buffers.actors.walls.indexStagingSize);
+		CheckAlloc(actorIndices);
 		LoadActorWalls(level, actorVertices, actorIndices);
 		memcpy(buffers.actors.walls.vertexStaging, actorVertices, buffers.actors.walls.vertexStagingSize);
 		memcpy(buffers.actors.walls.indexStaging, actorIndices, buffers.actors.walls.indexStagingSize);
@@ -897,8 +902,11 @@ VkResult CopyBuffers(const Level *level)
 		free(actorIndices);
 
 		ActorInstanceData *actorInstanceData = calloc(1, buffers.actors.instanceDataStagingSize);
+		CheckAlloc(actorInstanceData);
 		ShadowVertex *shadowVertices = calloc(buffers.walls.shadowCount * 4, sizeof(ShadowVertex));
+		CheckAlloc(shadowVertices);
 		uint32_t *shadowIndices = calloc(buffers.walls.shadowCount * 6, sizeof(uint32_t));
+		CheckAlloc(shadowIndices);
 		LoadActorInstanceData(level, actorInstanceData, shadowVertices, shadowIndices);
 		memcpy(buffers.actors.instanceDataStaging, actorInstanceData, buffers.actors.instanceDataStagingSize);
 		memcpy(buffers.walls.shadowVertexStaging, shadowVertices, sizeof(ShadowVertex) * buffers.walls.shadowCount * 4);
@@ -908,6 +916,7 @@ VkResult CopyBuffers(const Level *level)
 		free(shadowIndices);
 
 		VkDrawIndexedIndirectCommand *actorDrawInfo = calloc(1, buffers.actors.drawInfoStagingSize);
+		CheckAlloc(actorDrawInfo);
 		LoadActorDrawInfo(level, actorDrawInfo);
 		memcpy(buffers.actors.drawInfoStaging, actorDrawInfo, buffers.actors.drawInfoStagingSize);
 		free(actorDrawInfo);
@@ -1085,31 +1094,11 @@ bool DrawQuadInternal(const mat4 vertices_posXY_uvZW, const uint32_t color, cons
 		buffers.ui.shouldResize = true;
 
 		UiVertex *newVertices = realloc(buffers.ui.vertices, sizeof(UiVertex) * buffers.ui.maxQuads * 4);
-		if (!newVertices)
-		{
-			free(buffers.ui.vertices);
-			buffers.ui.vertices = NULL;
-
-			VulkanLogError("realloc of UI vertex buffer data pointer failed!\n");
-
-			return false;
-		}
+		CheckAlloc(newVertices);
 		buffers.ui.vertices = newVertices;
 
 		uint32_t *newIndices = realloc(buffers.ui.indices, sizeof(uint32_t) * buffers.ui.maxQuads * 6);
-		if (!newIndices)
-		{
-			free(newVertices);
-			free(buffers.ui.vertices);
-			buffers.ui.vertices = NULL;
-
-			free(buffers.ui.indices);
-			buffers.ui.indices = NULL;
-
-			VulkanLogError("realloc of UI index buffer data pointer failed!\n");
-
-			return false;
-		}
+		CheckAlloc(newIndices);
 		buffers.ui.indices = newIndices;
 	}
 

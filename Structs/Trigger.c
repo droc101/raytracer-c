@@ -4,6 +4,7 @@
 
 #include "Trigger.h"
 
+#include "../Helpers/Core/Error.h"
 #include "Vector2.h"
 
 Trigger *CreateTrigger(const Vector2 pos,
@@ -13,6 +14,7 @@ Trigger *CreateTrigger(const Vector2 pos,
 					   const uint flags)
 {
 	Trigger *t = malloc(sizeof(Trigger));
+	CheckAlloc(t);
 	t->position = pos;
 	t->extents = extents;
 	t->rotation = rot;

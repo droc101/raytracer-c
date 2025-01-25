@@ -51,13 +51,13 @@ Control *CreateTextBoxControl(const char *placeholder,
 	c->size = size;
 
 	TextBoxData *data = malloc(sizeof(TextBoxData));
-	chk_malloc(data);
+	CheckAlloc(data);
 	c->ControlData = data;
 	data->cursorPos = 0;
 	data->maxLength = maxLength;
 	data->callback = callback;
 	data->text = calloc(1, maxLength + 1);
-	chk_malloc(data->text);
+	CheckAlloc(data->text);
 	strcpy(data->placeholder, placeholder); // up to caller to ensure placeholder is not too long
 
 

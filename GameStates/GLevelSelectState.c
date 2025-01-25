@@ -101,7 +101,7 @@ void LoadLevelList()
 		if (strstr(ent->d_name, ".gmap") != NULL)
 		{
 			char *levelName = malloc(strlen(ent->d_name) + 1);
-			chk_malloc(levelName);
+			CheckAlloc(levelName);
 			strcpy(levelName, ent->d_name);
 			// Remove the .gmap extension
 			levelName[strlen(levelName) - 5] = '\0';

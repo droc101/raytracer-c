@@ -56,7 +56,7 @@ const ControlUpdateFunc ControlUpdateFuncs[CONTROL_TYPE_COUNT] = {
 UiStack *CreateUiStack()
 {
 	UiStack *stack = malloc(sizeof(UiStack));
-	chk_malloc(stack);
+	CheckAlloc(stack);
 	ListCreate(&stack->Controls);
 	stack->ActiveControl = -1;
 	stack->ActiveControlState = NORMAL;
@@ -256,7 +256,7 @@ Vector2 CalculateControlPosition(const Control *control)
 Control *CreateEmptyControl()
 {
 	Control *c = malloc(sizeof(Control));
-	chk_malloc(c);
+	CheckAlloc(c);
 	c->ControlData = NULL;
 	return c;
 }

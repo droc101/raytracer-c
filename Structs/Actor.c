@@ -103,7 +103,7 @@ Actor *CreateActor(const Vector2 position,
 				   const byte paramD)
 {
 	Actor *actor = malloc(sizeof(Actor));
-	chk_malloc(actor);
+	CheckAlloc(actor);
 	actor->actorWall = NULL;
 	actor->position = position;
 	actor->rotation = rotation;

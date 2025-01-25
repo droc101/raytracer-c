@@ -507,7 +507,8 @@ bool CreateSwapChain()
 	VulkanTest(vkCreateSwapchainKHR(device, &createInfo, NULL, &swapChain), "Failed to create Vulkan swap chain!");
 
 	VulkanTest(vkGetSwapchainImagesKHR(device, swapChain, &imageCount, NULL), "Failed to get Vulkan swapchain images!");
-	swapChainImages = (VkImage *)malloc(sizeof(*swapChainImages) * imageCount);
+	swapChainImages = malloc(sizeof(*swapChainImages) * imageCount);
+	CheckAlloc(swapChainImages);
 	swapChainCount = imageCount;
 	VulkanTest(vkGetSwapchainImagesKHR(device, swapChain, &imageCount, swapChainImages),
 			   "Failed to get Vulkan swapchain images!");
@@ -519,7 +520,8 @@ bool CreateSwapChain()
 
 bool CreateImageViews()
 {
-	swapChainImageViews = (VkImageView *)malloc(sizeof(*swapChainImageViews) * swapChainCount);
+	swapChainImageViews = malloc(sizeof(*swapChainImageViews) * swapChainCount);
+	CheckAlloc(swapChainImageViews);
 
 	for (uint32_t i = 0; i < swapChainCount; i++)
 	{
@@ -1424,7 +1426,8 @@ bool CreateDepthImage()
 
 bool CreateFramebuffers()
 {
-	swapChainFramebuffers = (VkFramebuffer *)malloc(sizeof(*swapChainFramebuffers) * swapChainCount);
+	swapChainFramebuffers = malloc(sizeof(*swapChainFramebuffers) * swapChainCount);
+	CheckAlloc(swapChainFramebuffers);
 
 	for (uint32_t i = 0; i < swapChainCount; i++)
 	{
@@ -1536,6 +1539,7 @@ bool CreateTexturesImageView()
 	{
 		const Texture *texture = ListGet(textures, textureIndex);
 		VkImageView *textureImageView = malloc(sizeof(VkImageView *));
+		CheckAlloc(textureImageView);
 		ListAdd(&texturesImageView, textureImageView);
 		if (!CreateImageView(textureImageView,
 							 texture->image,

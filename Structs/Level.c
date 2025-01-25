@@ -13,7 +13,7 @@
 Level *CreateLevel()
 {
 	Level *l = malloc(sizeof(Level));
-	chk_malloc(l);
+	CheckAlloc(l);
 	ListCreate(&l->actors);
 	ListCreate(&l->walls);
 	ListCreate(&l->triggers);
