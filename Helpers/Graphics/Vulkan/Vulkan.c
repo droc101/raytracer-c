@@ -486,7 +486,8 @@ bool VK_LoadLevelWalls(const Level *level)
 												   (size_t)ListGet(buffers.actors.models.modelCounts, i);
 			}
 		}
-		buffers.actors.drawInfoSize = sizeof(VkDrawIndexedIndirectCommand) * buffers.actors.models.loadedModelIds.length +
+		buffers.actors.drawInfoSize = sizeof(VkDrawIndexedIndirectCommand) *
+											  buffers.actors.models.loadedModelIds.length +
 									  sizeof(VkDrawIndexedIndirectCommand) * buffers.actors.walls.count;
 
 		buffers.actors.models.vertexSize = sizeof(ActorVertex) * buffers.actors.models.vertexCount;
@@ -553,6 +554,20 @@ bool VK_LoadLevelWalls(const Level *level)
 			return false;
 		}
 	}
+
+	if (level->hasCeiling)
+	{
+		pushConstants.skyVertexCount = 0;
+		pushConstants.skyTextureIndex = MAX_TEXTURES;
+	} else
+	{
+		pushConstants.skyVertexCount = skyModel->packedVertsUvsNormalCount;
+		pushConstants.skyTextureIndex = TextureIndex(level->ceilOrSkyTex);
+	}
+	pushConstants.shadowTextureIndex = TextureIndex(TEXTURE("vfx_shadow"));
+	pushConstants.fogStart = level->fogStart;
+	pushConstants.fogEnd = level->fogEnd;
+	pushConstants.fogColor = level->fogColor;
 
 	WallVertex *wallVertices = calloc(buffers.walls.wallCount * 4 + skyVertexCount, sizeof(WallVertex));
 	uint32_t *wallIndices = calloc(buffers.walls.wallCount * 6 + buffers.walls.skyIndexCount, sizeof(uint32_t));
@@ -632,12 +647,6 @@ bool VK_LoadLevelWalls(const Level *level)
 	}
 
 	loadedLevel = level;
-	pushConstants.skyVertexCount = loadedLevel->hasCeiling ? 0 : skyModel->packedVertsUvsNormalCount;
-	pushConstants.skyTextureIndex = TextureIndex(loadedLevel->ceilOrSkyTex);
-	pushConstants.shadowTextureIndex = TextureIndex(TEXTURE("vfx_shadow"));
-	pushConstants.fogStart = loadedLevel->fogStart;
-	pushConstants.fogEnd = loadedLevel->fogEnd;
-	pushConstants.fogColor = loadedLevel->fogColor;
 
 	free(wallVertices);
 	free(wallIndices);
