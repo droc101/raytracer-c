@@ -43,7 +43,6 @@ typedef struct Actor Actor;
 typedef struct ModelHeader ModelHeader;
 typedef struct Options Options;
 typedef struct Asset Asset;
-typedef struct TextureSizeTable TextureSizeTable;
 typedef struct Image Image;
 typedef struct Trigger Trigger;
 
@@ -498,25 +497,11 @@ struct Asset
 	uint compressedSize;
 	/// The decompressed size of the asset
 	uint size;
-	/// The ID of the asset.
-	/// @deprecated This is being phased out, and should not be used.
-	uint assetId;
 	/// The type of the asset
 	AssetType type;
 	/// The data of the asset
 	byte *data;
 };
-
-/// @deprecated This is being phased out, and should not be used.
-struct TextureSizeTable
-{
-	/// The total number of textures in the table
-	uint textureCount;
-	/// The total number of assets in the game
-	uint assetCount;
-	/// The names of the textures in the table. You can load them with @code DecompressAsset(TEXTURE(assetName)) @endcode
-	char (*textureNames)[32];
-} __attribute__((packed));
 
 struct Image
 {

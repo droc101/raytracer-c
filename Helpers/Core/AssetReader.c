@@ -14,7 +14,6 @@
 
 List *assetCacheNames;
 List *assetCacheData;
-TextureSizeTable *tsb;
 uint textureId;
 Image *images[MAX_TEXTURES];
 
@@ -51,53 +50,10 @@ FILE *OpenAssetFile(const char *relPath)
 	return file;
 }
 
-void LoadTextureSizeTable()
-{
-	FILE *file = OpenAssetFile("tsizetable.gtsb");
-	if (file == NULL)
-	{
-		Error("Failed to open texture size table file!");
-	}
-	fseek(file, 0, SEEK_END);
-	const size_t fileSize = ftell(file);
-	fseek(file, 0, SEEK_SET);
-
-	if (fileSize < sizeof(uint) * 2)
-	{
-		LogError("Failed to read texture size table, file was too small [a]! (%d bytes)", fileSize);
-		Error("Failed to read texture size table, file was too small!");
-	}
-
-	tsb = malloc(sizeof(TextureSizeTable));
-	chk_malloc(tsb);
-
-	fread(&tsb->textureCount, sizeof(uint), 1, file);
-	fread(&tsb->assetCount, sizeof(uint), 1, file);
-
-	if (fileSize < (sizeof(uint) * 2) + (tsb->textureCount * (sizeof(char) * 32)))
-	{
-		LogError("Failed to read texture size table, file was too small [b]! (%d bytes)", fileSize);
-		Error("Failed to read texture size table, file was too small!");
-	}
-
-	tsb->textureNames = calloc(tsb->textureCount, sizeof(char) * 32);
-	chk_malloc(tsb->textureNames);
-
-	fread(tsb->textureNames, sizeof(char) * 32, tsb->textureCount, file);
-
-	fclose(file);
-}
-
-const TextureSizeTable *GetTextureSizeTable()
-{
-	return tsb;
-}
-
 void AssetCacheInit()
 {
 	assetCacheNames = CreateList();
 	assetCacheData = CreateList();
-	LoadTextureSizeTable();
 }
 
 void DestroyAssetCache()
@@ -120,8 +76,6 @@ void DestroyAssetCache()
 	}
 
 	ListFreeWithData(assetCacheNames);
-	free(tsb->textureNames);
-	free(tsb);
 }
 
 Asset *DecompressAsset(const char *relPath)
@@ -159,12 +113,11 @@ Asset *DecompressAsset(const char *relPath)
 	// Read the first 4 bytes of the asset to get the size of the compressed data
 	const uint compressedSize = ReadUint(asset, &offset);
 	const uint decompressedSize = ReadUint(asset, &offset);
-	const uint assetId = ReadUint(asset, &offset);
+	ReadUint(asset, &offset); // Asset ID was deprecated, this value is no longer used
 	const uint assetType = ReadUint(asset, &offset);
 
 	assetStruct->compressedSize = compressedSize;
 	assetStruct->size = decompressedSize;
-	assetStruct->assetId = assetId;
 	assetStruct->type = assetType;
 
 	asset += offset; // skip header

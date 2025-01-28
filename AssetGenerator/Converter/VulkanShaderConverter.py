@@ -31,7 +31,7 @@ def ConvertVulkanFrag(path):
 	data += util.IntToBytes(len(data))
 	data += util.IntToBytes(0)
 	data += util.IntToBytes(0)
-	data += util.IntToBytes(util.aid)
+	data += util.IntToBytes(0)
 
 	util.WriteAsset(path, "gfrg", "vkshader", util.EncloseData(data, 5))
 
@@ -41,6 +41,6 @@ def ConvertVulkanVert(path):
 	data += util.IntToBytes(len(data))
 	data += util.IntToBytes(0)
 	data += util.IntToBytes(0)
-	data += util.IntToBytes(util.aid)
+	data += util.IntToBytes(0)
 	
 	util.WriteAsset(path, "gvrt", "vkshader", util.EncloseData(data, 6))

@@ -1,8 +1,6 @@
 import os
 import sys
-import struct
 import shutil
-import json
 import util
 
 # Converters
@@ -21,9 +19,6 @@ if (len(sys.argv) != 3):
 util.input_path = sys.argv[1]
 util.output_path = sys.argv[2]
 
-TSIZETABLE_NAME_LENGTH = 32
-LDATATABLE_STR_LENGTH = 32
-
 # Recreate the assets folder and subfolders
 def SetupDirs(out_path):
 	# Delete the old assets folder
@@ -38,22 +33,6 @@ def SetupDirs(out_path):
 	os.makedirs(out_path + "vkshader/")
 	os.makedirs(out_path + "model/")
 
-# Build the texture size table based on the converted assets
-def BuildTextureSizeTable():
-	tsizetable = bytearray()
-	tsizetable.extend(struct.pack('I', Converter.TextureConverter.texture_asset_count))
-	tsizetable.extend(struct.pack('I', util.aid))
-
-	for name in Converter.TextureConverter.texture_asset_names:
-		try:
-			name = util.CString(name, TSIZETABLE_NAME_LENGTH)
-		except ValueError:
-			print("Error: Texture asset name is too long: " + name)
-			sys.exit(1)
-		tsizetable.extend(name.encode('utf-8'))
-	
-	util.Write("", "tsizetable.gtsb", tsizetable)
-
 # Recursively search for files in the input folder and convert them
 def RecursiveSearch(in_path, out_path):
 	files = os.listdir(in_path)
@@ -66,9 +45,7 @@ def RecursiveSearch(in_path, out_path):
 			RecursiveSearch(in_path + file + "/", out_path)
 		else:
 			path_from_assets = in_path.split("Assets/")[1]
-			if file.endswith("ldatatable.json"):
-				pass # We'll handle this later
-			elif file.endswith(".png"):
+			if file.endswith(".png"):
 				print("Converting " + path_from_assets + file)
 				Converter.TextureConverter.ConvertPNG(in_path + file)
 			elif file.endswith(".mp3"):
@@ -97,4 +74,3 @@ def RecursiveSearch(in_path, out_path):
 
 SetupDirs(util.output_path)
 RecursiveSearch(util.input_path, util.output_path)
-BuildTextureSizeTable()

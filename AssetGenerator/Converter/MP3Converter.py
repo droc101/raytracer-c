@@ -7,6 +7,6 @@ def ConvertMP3(path):
 	data += util.IntToBytes(len(data))
 	data += util.IntToBytes(0)
 	data += util.IntToBytes(0)
-	data += util.IntToBytes(util.aid)
+	data += util.IntToBytes(0)
 
 	util.WriteAsset(path, "gmus", "audio", util.EncloseData(data, 1))

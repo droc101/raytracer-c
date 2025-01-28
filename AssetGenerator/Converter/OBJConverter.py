@@ -2,6 +2,8 @@ import struct
 import util
 from dataclasses import dataclass
 
+#region Types & Helpers
+
 @dataclass
 class Vector3:
 	x : float
@@ -46,6 +48,13 @@ class Vertex:
 
 	def __hash__(self):
 		return hash((self.pos, self.norm, self.uv))
+	
+	def pack(self):
+		ba = bytearray()
+		ba += self.pos.pack()
+		ba += self.uv.pack()
+		ba += self.norm.pack()
+		return ba
 
 @dataclass
 class ObjModel:
@@ -67,12 +76,14 @@ class ObjModel:
 		self.inds = []
 		self.vertex_index_map = {}
 
-# Create a Vector3 from a list of floats
-def v3l(floats : list[float]):
+# Create a Vector3 from a string
+def v3l(line : str):
+	floats = list(map(float, line.split()[1:]))
 	return Vector3(floats[0], floats[1], floats[2])
 
-# Create a Vector2 from a list of floats
-def v2l(floats : list[float]):
+# Create a Vector2 from a string
+def v2l(line : str):
+	floats = list(map(float, line.split()[1:]))
 	return Vector2(floats[0], floats[1])
 
 # Find the index of a vertex in the vertex list (or add it if it doesn't exist)
@@ -84,7 +95,13 @@ def find_vtx_index(obj : ObjModel, vtx : Vertex):
 		obj.verts.append(vtx)
 		return len(obj.verts) - 1
 
+#endregion
 
+# Parse an OBJ model into a binary format
+# This parser only supports the following OBJ features:
+# - Vertex positions
+# - Vertex normals
+# - Vertex UVs
 def ParseOBJ(file_path):
 	obj : ObjModel = ObjModel()
 	
@@ -92,11 +109,11 @@ def ParseOBJ(file_path):
 	with open(file_path, 'r') as f:
 		for line in f:
 			if line.startswith('v '):
-				obj.positions.append(v3l(list(map(float, line.split()[1:]))))
+				obj.positions.append(v3l(line))
 			elif line.startswith('vt '):
-				obj.uvs.append(v2l(list(map(float, line.split()[1:]))))
+				obj.uvs.append(v2l(line))
 			elif line.startswith('vn '):
-				obj.normals.append(v3l(list(map(float, line.split()[1:]))))
+				obj.normals.append(v3l(line))
 
 	# Loop through the file a second time to get the face index data
 	with open(file_path, 'r') as f:
@@ -119,9 +136,7 @@ def ParseOBJ(file_path):
 	# Pack vertex data into a binary format
 	vtx_bin_data = bytearray()
 	for vertex in obj.verts:
-		vtx_bin_data += vertex.pos.pack()
-		vtx_bin_data += vertex.uv.pack()
-		vtx_bin_data += vertex.norm.pack()
+		vtx_bin_data += vertex.pack()
 	
 	# Pack index data into a binary format
 	idx_bin_data = bytearray()
@@ -145,6 +160,6 @@ def ConvertOBJ(path):
 	data += util.IntToBytes(len(data))
 	data += util.IntToBytes(0)
 	data += util.IntToBytes(0)
-	data += util.IntToBytes(util.aid)
+	data += util.IntToBytes(0)
 
 	util.WriteAsset(path, "gmdl", "model", util.EncloseData(data, 7))
