@@ -324,7 +324,7 @@ struct Model
 
 	uint vertexCount;
 	uint indexCount;
-	float *vertexData; // X Y Z U V, use for rendering
+	float *vertexData; // X Y Z U V NX NY NZ, use for rendering
 	uint *indexData; // Just the vert index, use for rendering
 };
 
