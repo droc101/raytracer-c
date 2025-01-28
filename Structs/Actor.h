@@ -7,16 +7,6 @@
 
 #include "../defines.h"
 
-char *GetActorName(int actor);
-
-char *GetActorParamName(int actor, byte param);
-
-/**
- * Get the number of Actor types
- * @return Actor type count
- */
-int GetActorTypeCount();
-
 /**
  * Create an Actor
  * @param position Actor position

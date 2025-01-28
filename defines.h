@@ -78,6 +78,12 @@ typedef void (*ActorSignalHandlerFunction)(Actor *self, const Actor *sender, int
 #define CONTROLLER_CANCEL \
 	(GetState()->options.controllerSwapOkCancel ? SDL_CONTROLLER_BUTTON_A : SDL_CONTROLLER_BUTTON_B)
 
+#ifdef WIN32
+#define EXPORT_SYM __declspec(dllexport)
+#else
+#define EXPORT_SYM __attribute__((visibility("default")))
+#endif
+
 #pragma endregion
 
 #pragma region Enum definitions
@@ -308,6 +314,7 @@ struct ModelHeader
 {
 	char sig[4]; // "MSH"
 	uint indexCount;
+	uint vertexCount;
 	char dataSig[4]; // "DAT"
 } __attribute__((packed));
 
@@ -317,10 +324,10 @@ struct Model
 	size_t id;
 	char *name;
 
-	uint packedVertsUvsNormalCount;
-	uint packedIndicesCount;
-	float *packedVertsUvsNormal; // X Y Z U V NX NY NZ, use for rendering
-	uint *packedIndices; // Just the vert index, use for rendering
+	uint vertexCount;
+	uint indexCount;
+	float *vertexData; // X Y Z U V NX NY NZ, use for rendering
+	uint *indexData; // Just the vert index, use for rendering
 };
 
 // Global state of the game

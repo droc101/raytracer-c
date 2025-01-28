@@ -993,6 +993,23 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
 
 	GL_DrawFloor(floor_start, floor_end, WORLD_VIEW_MATRIX, l, l->floorTex, -0.5, 1.0);
 
+	glDisable(GL_DEPTH_TEST);
+	for (int i = 0; i < l->actors.length; i++)
+	{
+		Actor *actor = ListGet(l->actors, i);
+		if (actor->showShadow)
+		{
+			mat4 actor_xfm;
+			ActorTransformMatrix(actor, &actor_xfm);
+			// remove the rotation and y position from the actor matrix so the shadow draws correctly
+			glm_rotate(actor_xfm, actor->rotation, (vec3){0, 1, 0});
+			glm_translate(actor_xfm, (vec3){0, -actor->yPosition, 0});
+
+			GL_DrawShadow(v2s(-0.5 * actor->shadowSize), v2s(0.5 * actor->shadowSize), WORLD_VIEW_MATRIX, actor_xfm, l);
+		}
+	}
+	glEnable(GL_DEPTH_TEST);
+
 	for (int i = 0; i < l->walls.length; i++)
 	{
 		GL_DrawWall(ListGet(l->walls, i), IDENTITY, cam, l);
@@ -1017,15 +1034,6 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
 		} else
 		{
 			GL_RenderModel(actor->actorModel, actor_xfm, actor->actorModelTexture, SHADER_SHADED);
-		}
-
-		if (actor->showShadow)
-		{
-			// remove the rotation and y position from the actor matrix so the shadow draws correctly
-			glm_rotate(actor_xfm, actor->rotation, (vec3){0, 1, 0});
-			glm_translate(actor_xfm, (vec3){0, -actor->yPosition, 0});
-
-			GL_DrawShadow(v2s(-0.5 * actor->shadowSize), v2s(0.5 * actor->shadowSize), WORLD_VIEW_MATRIX, actor_xfm, l);
 		}
 	}
 
@@ -1066,14 +1074,14 @@ void GL_RenderModel(const Model *model, const mat4 modelWorldMatrix, const char 
 
 	glBindBuffer(GL_ARRAY_BUFFER, glBuffer->vbo);
 	glBufferData(GL_ARRAY_BUFFER,
-				 model->packedVertsUvsNormalCount * sizeof(float) * 8,
-				 model->packedVertsUvsNormal,
+				 model->vertexCount * sizeof(float) * 8,
+				 model->vertexData,
 				 GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glBuffer->ebo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-				 model->packedIndicesCount * sizeof(uint),
-				 model->packedIndices,
+				 model->indexCount * sizeof(uint),
+				 model->indexData,
 				 GL_STATIC_DRAW);
 
 	const GLint posAttrLoc = glGetAttribLocation(shd->program, "VERTEX");
@@ -1091,5 +1099,5 @@ void GL_RenderModel(const Model *model, const mat4 modelWorldMatrix, const char 
 		glEnableVertexAttribArray(normAttrLoc);
 	}
 
-	glDrawElements(GL_TRIANGLES, model->packedIndicesCount, GL_UNSIGNED_INT, NULL);
+	glDrawElements(GL_TRIANGLES, model->indexCount, GL_UNSIGNED_INT, NULL);
 }

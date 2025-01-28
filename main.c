@@ -342,7 +342,6 @@ int main(const int argc, char *argv[])
 }
 
 // Exporting these symbols tells GPU drivers to use the dedicated GPU on hybrid systems
-#ifdef WIN32
-__declspec(dllexport) uint NvOptimusEnablement = 0x00000001;
-__declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
-#endif
+// I do not know if these do anything on Linux, but they are here just in case.
+EXPORT_SYM uint NvOptimusEnablement = 0x00000001;
+EXPORT_SYM int AmdPowerXpressRequestHighPerformance = 1;

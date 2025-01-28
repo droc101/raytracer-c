@@ -375,23 +375,20 @@ Model *LoadModel(const char *asset)
 	CheckAlloc(model->name);
 	strncpy(model->name, asset, nameLength);
 
-	const size_t vertsSizeBytes = model->header.indexCount * (sizeof(float) * 8);
+	const size_t vertsSizeBytes = model->header.vertexCount * (sizeof(float) * 8);
 	const size_t indexSizeBytes = model->header.indexCount * sizeof(uint);
 
-	model->packedVertsUvsNormalCount = model->header.indexCount;
-	model->packedIndicesCount = model->header.indexCount;
+	model->vertexCount = model->header.vertexCount;
+	model->indexCount = model->header.indexCount;
 
-	model->packedVertsUvsNormal = malloc(vertsSizeBytes);
-	CheckAlloc(model->packedVertsUvsNormal);
-	model->packedIndices = malloc(indexSizeBytes);
-	CheckAlloc(model->packedIndices);
+	model->vertexData = malloc(vertsSizeBytes);
+	CheckAlloc(model->vertexData);
+	model->indexData = malloc(indexSizeBytes);
+	CheckAlloc(model->indexData);
 
-	memcpy(model->packedVertsUvsNormal, (byte *)assetData->data + sizeof(ModelHeader), vertsSizeBytes);
-
-	for (int i = 0; i < model->header.indexCount; i++)
-	{
-		model->packedIndices[i] = i;
-	}
+	// Copy the index data, then the vertex data
+	memcpy(model->indexData, assetData->data + sizeof(ModelHeader), indexSizeBytes);
+	memcpy(model->vertexData, assetData->data + sizeof(ModelHeader) + indexSizeBytes, vertsSizeBytes);
 
 	return model;
 }
