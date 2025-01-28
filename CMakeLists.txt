@@ -21,9 +21,9 @@ if (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDeb
     check_ipo_supported(RESULT result)
     if (result)
         set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
-        message(STATUS "IPO is supported")
+        message(STATUS "IPO/LTO is supported")
     else ()
-        message(WARNING "IPO is not supported: ${result}")
+        message(WARNING "IPO/LTO is not supported")
     endif ()
 endif ()
 
@@ -186,6 +186,8 @@ add_custom_target( # Python script for generating assets code
 add_dependencies(game genassets)
 
 if (UNIX)
+    # Libactor is a shared library that is used by the level editor to get information about actor types
+
     add_library(
             actor
             SHARED

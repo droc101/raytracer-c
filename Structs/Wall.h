@@ -7,7 +7,7 @@
 
 #include "../defines.h"
 
-// How far out the hitbox of the wall extends from the actual wall (on both sides)
+/// How far out the hitbox of the wall extends from the actual wall (on both sides)
 #define WALL_HITBOX_EXTENTS 0.2
 
 /**

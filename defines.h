@@ -27,6 +27,7 @@ typedef enum OptionsMsaa OptionsMsaa;
 typedef enum ModelShader ModelShader;
 typedef enum ImageDataOffsets ImageDataOffsets;
 typedef enum AssetType AssetType;
+typedef enum TriggerFlag TriggerFlag;
 
 // Struct forward declarations
 typedef struct GlobalState GlobalState;
@@ -75,13 +76,17 @@ typedef void (*ActorSignalHandlerFunction)(Actor *self, const Actor *sender, int
 #define PHYSICS_TARGET_NS (1000000000 / PHYSICS_TARGET_TPS) // nanoseconds because precision
 #define PHYSICS_TARGET_NS_D (1000000000.0 / PHYSICS_TARGET_TPS)
 
+/// Use this for the "OK/Accept" button in place of hardcoding controller A or B buttons
 #define CONTROLLER_OK (GetState()->options.controllerSwapOkCancel ? SDL_CONTROLLER_BUTTON_B : SDL_CONTROLLER_BUTTON_A)
+/// Use this for the "Cancel" button in place of hardcoding controller A or B buttons
 #define CONTROLLER_CANCEL \
 	(GetState()->options.controllerSwapOkCancel ? SDL_CONTROLLER_BUTTON_A : SDL_CONTROLLER_BUTTON_B)
 
 #ifdef WIN32
+/// Make this symbol exported (in the symbol table)
 #define EXPORT_SYM __declspec(dllexport)
 #else
+/// Make this symbol exported (in the symbol table)
 #define EXPORT_SYM __attribute__((visibility("default")))
 #endif
 
@@ -155,8 +160,11 @@ enum OptionsMsaa
  */
 enum ModelShader
 {
+	/// The sky shader. Do not use on in-level models.
 	SHADER_SKY,
+	/// A basic shader with no lighting
 	SHADER_UNSHADED,
+	/// A shader with basic lighting based on the vertex normals.
 	SHADER_SHADED
 };
 
@@ -165,6 +173,7 @@ enum ModelShader
  */
 enum TriggerFlag
 {
+	/// The trigger will be removed after it is triggered
 	TRIGGER_FLAG_ONE_SHOT = 1
 };
 
@@ -181,20 +190,29 @@ struct Vector2
 
 struct Camera
 {
+	/// The X position of the camera
 	float x;
+	/// The Y position of the camera
 	float y;
+	/// The Z position of the camera
 	float z;
 
+	/// The pitch of the camera
 	float pitch;
+	/// The yaw of the camera
 	float yaw;
+	/// The roll of the camera
 	float roll;
 
+	/// The field of view of the camera
 	float fov;
 };
 
 struct Player
 {
+	/// The player's position
 	Vector2 pos;
+	/// The player's rotation
 	double angle;
 };
 
@@ -264,172 +282,269 @@ struct Level
 // Utility functions are in Structs/ray.h
 struct RayCastResult
 {
-	Vector2 collisionPoint; // The point of collision
-	double distance; // The distance to the collision
-	bool collided; // Whether the ray collided with anything
-	Wall *collisionWall; // The wall that was collided with
+	/// The point of collision
+	Vector2 collisionPoint;
+	/// The distance to the collision
+	double distance;
+	/// Whether the ray collided with anything
+	bool collided;
+	/// The wall that was collided with
+	Wall *collisionWall;
 };
 
 struct TextBox
 {
-	char *text; // The text to display
-	int rows; // The number of rows to display
-	int cols; // The number of columns to display
-	int x; // The x position of the text box
-	int y; // The y position of the text box
+	/// The text to display
+	char *text;
+	/// The number of rows per page
+	int rows;
+	/// The number of columns to display
+	int cols;
+	/// The X position of the text box
+	int x;
+	/// The Y position of the text box
+	int y;
 
-	int hAlign; // The horizontal alignment of the text box
-	int vAlign; // The vertical alignment of the text box
+	/// The horizontal alignment of the text box
+	int hAlign;
+	/// The vertical alignment of the text box
+	int vAlign;
+	/// The text box theme
+	int theme;
 
-	int theme; // The theme of the text box
-
-	TextBoxCloseFunction Close; // The function to call when the text box is closed
+	/// The function to call when the text box is closed
+	TextBoxCloseFunction Close;
 };
 
 struct Options
 {
-	ushort checksum; // Checksum of the options struct (helps prevent corruption)
+	/// Checksum of the options struct (helps prevent corruption)
+	ushort checksum;
 
-	// Controls
-	bool controllerMode; // Whether the game is in controller mode
-	double mouseSpeed; // The look speed (it affects controller speed too)
-	float rumbleStrength; // The strength of the rumble
-	bool cameraInvertX; // Whether to invert the camera X axis (controller only)
-	bool controllerSwapOkCancel; // Whether to swap the controller A and B buttons
+	/* Controls */
 
-	// Video
-	Renderer renderer; // The renderer to use
-	bool fullscreen; // Whether the game is fullscreen
-	bool vsync; // Whether vsync is enabled
+	/// Whether the game is in controller mode
+	bool controllerMode;
+	/// The look speed (it affects controller speed too)
+	double mouseSpeed;
+	/// The strength of the rumble
+	float rumbleStrength;
+	/// Whether to invert the camera X axis (controller only)
+	bool cameraInvertX;
+	/// Whether to swap the controller A and B buttons
+	bool controllerSwapOkCancel;
+
+	/* Video */
+
+	/// The renderer to use
+	Renderer renderer;
+	/// Whether the game is fullscreen
+	bool fullscreen;
+	/// Whether vsync is enabled
+	bool vsync;
+	/// The MSAA level
 	OptionsMsaa msaa;
+	/// Whether to use mipmaps
 	bool mipmaps;
 
-	// Sound
-	double musicVolume; // The volume of the music
-	double sfxVolume; // The volume of the sound effects
-	double masterVolume; // The master volume
+	/* Audio */
+
+	/// The volume of the music
+	double musicVolume;
+	/// The volume of the sound effects
+	double sfxVolume;
+	/// The master volume
+	double masterVolume;
 } __attribute__((packed)); // This is packed because it is saved to disk
 
 struct ModelHeader
 {
-	char sig[4]; // "MSH"
+	/// The "magic" for the header, should be "MSH"
+	char sig[4];
+	/// The number of indices in the model
 	uint indexCount;
+	/// The number of vertices in the model
 	uint vertexCount;
-	char dataSig[4]; // "DAT"
+	/// The "magic" for the data, should be "DAT"
+	char dataSig[4];
 } __attribute__((packed));
 
 struct Model
 {
 	ModelHeader header;
 
+	/// The number of vertices in the model
 	uint vertexCount;
+	/// The number of indices in the model
 	uint indexCount;
-	float *vertexData; // X Y Z U V NX NY NZ, use for rendering
-	uint *indexData; // Just the vert index, use for rendering
+	/// Packed vertex data, (X Y Z) (U V) (NX NY NZ)
+	float *vertexData;
+	/// Index data
+	uint *indexData;
 };
 
 // Global state of the game
 struct GlobalState
 {
-	Level *level; // Current level
-	FrameUpdateFunction UpdateGame; // State update function
-	FrameRenderFunction RenderGame; // State render function
-	CurrentState currentState; // The current state of the game
-	int hp; // Player health
-	int maxHp; // Player max health
-	int ammo; // Player ammo
-	int maxAmmo; // Player max ammo
-	int coins; // The number of coins the player has
-	int blueCoins; // The number of blue coins the player has
-	ulong physicsFrame; // The number of physics frames that have passed since the last game state change
-	bool requestExit; // Request to exit the game
-	Mix_Music *music; // background music
-	Mix_Chunk *channels[SFX_CHANNEL_COUNT]; // sound effects
-	double cameraY; // The Y position of the camera
+	/// Current level
+	Level *level;
 
-	bool textBoxActive; // Whether the text box is active
-	TextBox textBox; // The text box
-	int textBoxPage; // The current page of the text box
+	/// State update function
+	FrameUpdateFunction UpdateGame;
+	/// State render function
+	FrameRenderFunction RenderGame;
+	/// The current state of the game
+	CurrentState currentState;
+	/// The number of physics frames that have passed since the last game state change
+	ulong physicsFrame;
 
-	Camera *cam; // The camera
+	/// Player health
+	int hp;
+	/// Player max health
+	int maxHp;
+	/// Player ammo
+	int ammo;
+	/// Player max ammo
+	int maxAmmo;
+	/// The number of coins the player has
+	int coins;
+	/// The number of blue coins the player has
+	int blueCoins;
 
-	Options options; // Game options
+	/// Whether the text box is active
+	bool textBoxActive;
+	/// The text box
+	TextBox textBox;
+	/// The current page of the text box
+	int textBoxPage;
 
-	char executablePath[261]; // The path to the executable
+	/// The camera
+	Camera *cam;
+	/// The Y position of the camera
+	double cameraY;
+	/// The scale of the UI.
+	double uiScale;
+
+	/// Game options
+	Options options;
+	// Whether the audio system has been started successfully
+	bool isAudioStarted;
+	/// background music
+	Mix_Music *music;
+	/// sound effects
+	Mix_Chunk *channels[SFX_CHANNEL_COUNT];
+
+	// The path to the executable
+	char executablePath[261];
+	/// The path to the executable folder
 	char executableFolder[261];
-
-	double uiScale; // The scale of the UI.
-	bool freezeEvents; // Whether to freeze the event loop. This should only be used for debugging.
-	bool isAudioStarted; // Whether the audio system has been started successfully
+	/// Whether to freeze the event loop. This should only be used for debugging.
+	bool freezeEvents;
+	/// Request to exit the game
+	bool requestExit;
 };
 
 // Actor (interactable/moving wall) struct
 struct Actor
 {
-	Vector2 position; // The position of the actor
-	double rotation; // The rotation of the actor
-	Wall *actorWall; // (0,0) in this wall is the actor's position (also transformed by rotation)
-	bool solid; // can the player walk through this actor?
-	int health; // health. may be unused for some actors
-	void *extra_data; // extra data for the actor
+	/// The position of the actor
+	Vector2 position;
+	/// The rotation of the actor
+	double rotation;
+	/// y position for rendering. Does not affect collision
+	float yPosition;
+	/// should the actor cast a shadow?
+	bool showShadow;
+	/// size of the shadow
+	float shadowSize;
+	// Optional model for the actor, if not NULL, will be rendered instead of the wall
+	Model *actorModel;
+	/// Texture for the model
+	char *actorModelTexture;
+
+	/// (0,0) in this wall is the actor's position (also transformed by rotation)
+	Wall *actorWall;
+	/// can the player walk through this actor? Only applies to the wall
+	bool solid;
+
+	/// type of actor. do not change this after creation.
+	int actorType;
+	/// The function to call when the actor is initialized. This should only be called once, when the actor is created.
 	ActorInitFunction Init;
+	/// The function to call when the actor is updated. This should be called every tick.
 	ActorUpdateFunction Update;
+	/// The function to call when the actor is destroyed. This should only be called once, when the actor is destroyed.
 	ActorDestroyFunction Destroy;
+	/// The function to call when the actor receives a signal.
 	ActorSignalHandlerFunction SignalHandler;
-	int actorType; // type of actor. do not change this after creation.
-	byte paramA; // extra parameters for the actor. saved in level data, so can be used during Init
+	/// List of signals the actor is listening for
+	List *listeningFor;
+
+	// extra parameters for the actor. saved in level data, so can be used during Init
+	byte paramA;
 	byte paramB;
 	byte paramC;
 	byte paramD;
-	float yPosition; // y position for rendering. Does not affect collision
-	bool showShadow; // should the actor cast a shadow?
-	float shadowSize; // size of the shadow
-	Model *actorModel; // Optional model for the actor, if not NULL, will be rendered instead of the wall
-	char *actorModelTexture; // Texture for the model
-	List *listeningFor; // List of signals the actor is listening for
+
+	// health. may be unused for some actors
+	int health;
+	/// extra data for the actor
+	void *extra_data;
 };
 
 struct Asset
 {
+	/// The compressed size of the asset, excluding the header
 	uint compressedSize;
+	/// The decompressed size of the asset
 	uint size;
+	/// The ID of the asset.
+	/// @deprecated This is being phased out, and should not be used.
 	uint assetId;
+	/// The type of the asset
 	AssetType type;
+	/// The data of the asset
 	byte *data;
 };
 
+/// @deprecated This is being phased out, and should not be used.
 struct TextureSizeTable
 {
-	/**
-	* The total number of textures in the table
-	*/
+	/// The total number of textures in the table
 	uint textureCount;
-	/**
-	 * The total number of assets in the game
-	 */
+	/// The total number of assets in the game
 	uint assetCount;
-	/**
-	* The names of the textures in the table. You can load them with @code DecompressAsset(TEXTURE(assetName)) @endcode
-	*/
+	/// The names of the textures in the table. You can load them with @code DecompressAsset(TEXTURE(assetName)) @endcode
 	char (*textureNames)[32];
 } __attribute__((packed));
 
 struct Image
 {
+	/// The size of the pixel data (width * height * 4)
 	uint pixelDataSize;
+	/// The width of the image
 	uint width;
+	/// The height of the image
 	uint height;
+	/// The ID of the image. This is generated at runtime and not consistent between runs.
 	uint id;
+	/// The name of the image
 	char *name;
+	/// The pixel data of the image
 	byte *pixelData;
 };
 
 struct Trigger
 {
+	/// The center position of the trigger
 	Vector2 position;
+	/// The rotation of the trigger
 	double rotation;
+	/// The size of the trigger
 	Vector2 extents;
+	/// The command to execute when this trigger is triggered
 	char command[64];
+	/// The flags set on this trigger
 	uint flags;
 };
 

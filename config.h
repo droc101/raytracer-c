@@ -23,9 +23,10 @@
 
 #pragma region Movement
 
-#define MOVE_SPEED 0.1 // Player movement speed
-#define SLOW_MOVE_SPEED 0.01 // Player movement speed when shift is held
-#define MOUSE_SENSITIVITY 0.01 // higher is less sensitive
+/// Player movement speed
+#define MOVE_SPEED 0.1
+/// Player movement speed when shift is held
+#define SLOW_MOVE_SPEED 0.01
 
 #pragma endregion
 
@@ -68,21 +69,24 @@
 #define APPDATA_ORG_NAME "Droc101 Development"
 #define APPDATA_APP_NAME "Game"
 
-// The level to load when pause exiting
+/// The level to load when pause exiting
 #define PAUSE_EXIT_LEVEL "leveldata_fromeditor"
 
-// The level to start on when the game loads
+/// The level to start on when the game loads
 #define STARTING_LEVEL "leveldata_fromeditor"
 
-// Number of sound effect channels
-// (sound effects that can play at the same time)
+/// Number of sound effect channels
+/// (sound effects that can play at the same time)
 #define SFX_CHANNEL_COUNT 16
 
-// Target physics updates per second (be careful with this)
+/// Target physics updates per second (be careful with this)
 #define PHYSICS_TARGET_TPS 60
 
-#define FOV 90 // Field of view
-#define NEAR_Z 0.01 // Near clipping plane
-#define FAR_Z 1000 // Far clipping plane
+/// Field of view
+#define FOV 90
+/// Near clipping plane
+#define NEAR_Z 0.01
+/// Far clipping plane
+#define FAR_Z 1000
 
 #endif //GAME_CONFIG_H

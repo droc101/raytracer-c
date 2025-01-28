@@ -8,8 +8,10 @@
 #include "../../config.h"
 
 #if defined BUILDSTYLE_RELEASE || defined ERROR_TRACE_IN_RELEASE
+/// Throw a fatal error
 #define Error(error) _ErrorInternal(error, __FILE_NAME__, __LINE__, __func__)
 #else
+/// Throw a fatal error (no source reference)
 #define Error(error) _ErrorInternal(error, "none", 0, "none")
 #endif
 
