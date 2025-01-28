@@ -331,23 +331,20 @@ Model *LoadModel(const char *asset)
 		return NULL;
 	}
 
-	const size_t vertsSizeBytes = model->header.indexCount * (sizeof(float) * 8);
+	const size_t vertsSizeBytes = model->header.vertexCount * (sizeof(float) * 8);
 	const size_t indexSizeBytes = model->header.indexCount * sizeof(uint);
 
-	model->packedVertsUvsCount = model->header.indexCount;
-	model->packedIndicesCount = model->header.indexCount;
+	model->vertexCount = model->header.vertexCount;
+	model->indexCount = model->header.indexCount;
 
-	model->packedVertsUvs = malloc(vertsSizeBytes);
-	chk_malloc(model->packedVertsUvs);
-	model->packedIndices = malloc(indexSizeBytes);
-	chk_malloc(model->packedIndices);
+	model->vertexData = malloc(vertsSizeBytes);
+	chk_malloc(model->vertexData);
+	model->indexData = malloc(indexSizeBytes);
+	chk_malloc(model->indexData);
 
-	memcpy(model->packedVertsUvs, (byte *)assetData->data + sizeof(ModelHeader), vertsSizeBytes);
-
-	for (int i = 0; i < model->header.indexCount; i++)
-	{
-		model->packedIndices[i] = i;
-	}
+	// Copy the index data, then the vertex data
+	memcpy(model->indexData, assetData->data + sizeof(ModelHeader), indexSizeBytes);
+	memcpy(model->vertexData, assetData->data + sizeof(ModelHeader) + indexSizeBytes, vertsSizeBytes);
 
 	return model;
 }
@@ -359,8 +356,8 @@ void FreeModel(Model *model)
 		LogWarning("Tried to free NULL model!");
 		return;
 	}
-	free(model->packedVertsUvs);
-	free(model->packedIndices);
+	free(model->vertexData);
+	free(model->indexData);
 	free(model);
 	model = NULL;
 }

@@ -1,73 +1,129 @@
 import struct
 import util
+from dataclasses import dataclass
+
+@dataclass
+class Vector3:
+	x : float
+	y : float
+	z : float
+
+	def __eq__(self, value):
+		return self.x == value.x and self.y == value.y and self.z == value.z
+	
+	def pack(self):
+		ba = bytearray()
+		ba += struct.pack("fff", *[self.x,self.y,self.z])
+		return ba
+
+@dataclass	
+class Vector2:
+	x : float
+	y : float
+
+	def __eq__(self, value):
+		return self.x == value.x and self.y == value.y
+	
+	def pack(self):
+		ba = bytearray()
+		ba += struct.pack("ff", *[self.x,self.y])
+		return ba
+
+@dataclass
+class Vertex:
+	pos : Vector3
+	norm : Vector3
+	uv : Vector2
+
+	def __eq__(self, value):
+		return self.pos == value.pos and self.norm == value.norm and self.uv == value.uv
+
+@dataclass
+class ObjModel:
+	# Working Data
+	positions : list[Vector3]
+	normals : list[Vector3]
+	uvs : list[Vector2]
+
+	# Final Data
+	verts : list[Vertex]
+	inds : list[int]
+
+	def __init__(self):
+		self.positions = []
+		self.normals = []
+		self.uvs = []
+		self.verts = []
+		self.inds = []
+
+# Create a Vector3 from a list of floats
+def v3l(floats : list[float]):
+	return Vector3(floats[0], floats[1], floats[2])
+
+# Create a Vector2 from a list of floats
+def v2l(floats : list[float]):
+	return Vector2(floats[0], floats[1])
+
+# Find the index of a vertex in the vertex list (or add it if it doesn't exist)
+def find_vtx_index(obj : ObjModel, vtx : Vertex):
+	try:
+		idx = obj.verts.index(vtx)
+		return idx
+	except ValueError:
+		obj.verts.append(vtx)
+		return len(obj.verts) - 1
+
 
 def ParseOBJ(file_path):
-	verts = []
-	uvs = []
-	norms = []
+	obj = ObjModel()
 	
+	# Loop through the file once to get the vertex data
 	with open(file_path, 'r') as f:
 		for line in f:
 			if line.startswith('v '):
-				verts.append(list(map(float, line.split()[1:])))
+				obj.positions.append(v3l(list(map(float, line.split()[1:]))))
 			elif line.startswith('vt '):
-				uvs.append(list(map(float, line.split()[1:])))
+				obj.uvs.append(v2l(list(map(float, line.split()[1:]))))
 			elif line.startswith('vn '):
-				norms.append(list(map(float, line.split()[1:])))
-	
-	# Create a bytearray to store the vertex data as a list of doubles
-	vertex_data = bytearray()
-	for v in verts:
-		vertex_data += struct.pack('3d', *v)
-  
-	# Create a bytearray to store the uv data as a list of doubles
-	uv_data = bytearray()
-	for uv in uvs:
-		uv_data += struct.pack('2d', *uv)
-  
-	# Create a bytearray to store the normal data as a list of doubles
-	normal_data = bytearray()
-	for n in norms:
-		normal_data += struct.pack('3d', *n)
+				obj.normals.append(v3l(list(map(float, line.split()[1:]))))
 
-	vert_data = []
-	idx_val = 0
-	# Loop through the file a second time to get the face data
+	# Loop through the file a second time to get the face index data
 	with open(file_path, 'r') as f:
 		for line in f:
 			if line.startswith('f '):
-				# Get the vertex and uv indices for each face
 				face = line.split()[1:]
 	
 				for v in face:
-					# Add the vertex and uv data into the face data array as X Y Z U V (double)
 					v_idx, vt_idx, vn_idx = v.split('/')
-					vertex = verts[int(v_idx) - 1]
-					uv = uvs[int(vt_idx) - 1]
-					norm = norms[int(vn_idx) - 1]
-					vert_data.extend(vertex)
-					vert_data.extend(uv)
-					vert_data.extend(norm)
 
-					idx_val += 1
+					# one based indexing 😀
+					v_idx = int(v_idx) - 1
+					vt_idx = int(vt_idx) - 1
+					vn_idx = int(vn_idx) - 1
+
+					unique_vertex = Vertex(obj.positions[v_idx], obj.normals[vn_idx], obj.uvs[vt_idx])
+					idx = find_vtx_index(obj, unique_vertex)
+					obj.inds.append(idx)
 	
-	# Pack the vertex and index data into a bytearray with the format: X Y Z U V (double)
+	# Pack vertex data into a binary format
 	vtx_bin_data = bytearray()
-	for v in vert_data:
-		vtx_bin_data += struct.pack('f', v)
+	for vertex in obj.verts:
+		vtx_bin_data += vertex.pos.pack()
+		vtx_bin_data += vertex.uv.pack()
+		vtx_bin_data += vertex.norm.pack()
 	
-  
-	# Pack the vertex and index data into a bytearray with the format:
-	# signature (4 bytes, "MESH")
- 	# vertex count
-	# separator (4 bytes, "DATA")
-	# vertex data
-	# index data
+	# Pack index data into a binary format
+	idx_bin_data = bytearray()
+	for idx in obj.inds:
+		idx_bin_data += util.IntToBytes(idx)
  
+	# Make the header and add the data
 	bin_data = bytearray()
 	bin_data += struct.pack('4s', b'MSH\0')
-	bin_data.extend(util.IntToBytes(idx_val))
+	bin_data.extend(util.IntToBytes(len(obj.inds)))
+	bin_data.extend(util.IntToBytes(len(obj.verts)))
 	bin_data += struct.pack('4s', b'DAT\0')
+	bin_data += idx_bin_data
 	bin_data += vtx_bin_data
  
 	return bin_data

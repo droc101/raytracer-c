@@ -1057,10 +1057,10 @@ void GL_RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const char *
 	glBindVertexArray(glBuffer->vao);
 
 	glBindBuffer(GL_ARRAY_BUFFER, glBuffer->vbo);
-	glBufferData(GL_ARRAY_BUFFER, m->packedVertsUvsCount * sizeof(float) * 8, m->packedVertsUvs, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, m->vertexCount * sizeof(float) * 8, m->vertexData, GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glBuffer->ebo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, m->packedIndicesCount * sizeof(uint), m->packedIndices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, m->indexCount * sizeof(uint), m->indexData, GL_STATIC_DRAW);
 
 	const GLint posAttrLoc = glGetAttribLocation(shd->program, "VERTEX");
 	glVertexAttribPointer(posAttrLoc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void *)0);
@@ -1077,5 +1077,5 @@ void GL_RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const char *
 		glEnableVertexAttribArray(normAttrLoc);
 	}
 
-	glDrawElements(GL_TRIANGLES, m->packedIndicesCount, GL_UNSIGNED_INT, NULL);
+	glDrawElements(GL_TRIANGLES, m->indexCount, GL_UNSIGNED_INT, NULL);
 }

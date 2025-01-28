@@ -312,19 +312,20 @@ struct Options
 
 struct ModelHeader
 {
-	char sig[4]; // "MESH"
+	char sig[4]; // "MSH"
 	uint indexCount;
-	char dataSig[4]; // "DATA"
+	uint vertexCount;
+	char dataSig[4]; // "DAT"
 } __attribute__((packed));
 
 struct Model
 {
 	ModelHeader header;
 
-	uint packedVertsUvsCount;
-	uint packedIndicesCount;
-	float *packedVertsUvs; // X Y Z U V, use for rendering
-	uint *packedIndices; // Just the vert index, use for rendering
+	uint vertexCount;
+	uint indexCount;
+	float *vertexData; // X Y Z U V, use for rendering
+	uint *indexData; // Just the vert index, use for rendering
 };
 
 // Global state of the game
