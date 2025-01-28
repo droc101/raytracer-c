@@ -11,6 +11,9 @@ class Vector3:
 	def __eq__(self, value):
 		return self.x == value.x and self.y == value.y and self.z == value.z
 	
+	def __hash__(self):
+		return hash((self.x, self.y, self.z))
+
 	def pack(self):
 		ba = bytearray()
 		ba += struct.pack("fff", *[self.x,self.y,self.z])
@@ -23,6 +26,9 @@ class Vector2:
 
 	def __eq__(self, value):
 		return self.x == value.x and self.y == value.y
+	
+	def __hash__(self):
+		return hash((self.x, self.y))
 	
 	def pack(self):
 		ba = bytearray()
@@ -38,12 +44,16 @@ class Vertex:
 	def __eq__(self, value):
 		return self.pos == value.pos and self.norm == value.norm and self.uv == value.uv
 
+	def __hash__(self):
+		return hash((self.pos, self.norm, self.uv))
+
 @dataclass
 class ObjModel:
 	# Working Data
 	positions : list[Vector3]
 	normals : list[Vector3]
 	uvs : list[Vector2]
+	vertex_index_map : dict[str, int]
 
 	# Final Data
 	verts : list[Vertex]
@@ -55,6 +65,7 @@ class ObjModel:
 		self.uvs = []
 		self.verts = []
 		self.inds = []
+		self.vertex_index_map = {}
 
 # Create a Vector3 from a list of floats
 def v3l(floats : list[float]):
@@ -66,16 +77,16 @@ def v2l(floats : list[float]):
 
 # Find the index of a vertex in the vertex list (or add it if it doesn't exist)
 def find_vtx_index(obj : ObjModel, vtx : Vertex):
-	try:
-		idx = obj.verts.index(vtx)
-		return idx
-	except ValueError:
+	if vtx in obj.vertex_index_map:
+		return obj.vertex_index_map[vtx]
+	else:
+		obj.vertex_index_map[vtx] = len(obj.verts)
 		obj.verts.append(vtx)
 		return len(obj.verts) - 1
 
 
 def ParseOBJ(file_path):
-	obj = ObjModel()
+	obj : ObjModel = ObjModel()
 	
 	# Loop through the file once to get the vertex data
 	with open(file_path, 'r') as f:
