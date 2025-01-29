@@ -567,12 +567,12 @@ void LoadWalls(const Level *level,
 	vertices[3 + skyVertexCount].v = 100;
 	vertices[3 + skyVertexCount].textureIndex = TextureIndex(level->floorTex);
 
-	indices[0 + buffers.walls.skyIndexCount] = 0 + buffers.walls.skyIndexCount;
-	indices[1 + buffers.walls.skyIndexCount] = 1 + buffers.walls.skyIndexCount;
-	indices[2 + buffers.walls.skyIndexCount] = 2 + buffers.walls.skyIndexCount;
-	indices[3 + buffers.walls.skyIndexCount] = 0 + buffers.walls.skyIndexCount;
-	indices[4 + buffers.walls.skyIndexCount] = 2 + buffers.walls.skyIndexCount;
-	indices[5 + buffers.walls.skyIndexCount] = 3 + buffers.walls.skyIndexCount;
+	indices[0 + buffers.walls.skyIndexCount] = 0 + skyVertexCount;
+	indices[1 + buffers.walls.skyIndexCount] = 1 + skyVertexCount;
+	indices[2 + buffers.walls.skyIndexCount] = 2 + skyVertexCount;
+	indices[3 + buffers.walls.skyIndexCount] = 0 + skyVertexCount;
+	indices[4 + buffers.walls.skyIndexCount] = 2 + skyVertexCount;
+	indices[5 + buffers.walls.skyIndexCount] = 3 + skyVertexCount;
 
 	if (level->hasCeiling)
 	{
@@ -612,12 +612,12 @@ void LoadWalls(const Level *level,
 		indices[11] = 7;
 	} else
 	{
-		for (uint32_t i = 0; i < skyModel->packedVertsUvsNormalCount; i++)
+		for (uint32_t i = 0; i < skyModel->vertexCount; i++)
 		{
-			memcpy(&vertices[i], &skyModel->packedVertsUvsNormal[i * 8], sizeof(float) * 5);
+			memcpy(&vertices[i], &skyModel->vertexData[i * 8], sizeof(float) * 5);
 			vertices[i].textureIndex = pushConstants.skyTextureIndex;
 		}
-		memcpy(indices, skyModel->packedIndices, sizeof(uint32_t) * skyModel->packedIndicesCount);
+		memcpy(indices, skyModel->indexData, sizeof(uint32_t) * skyModel->indexCount);
 	}
 
 	for (uint32_t i = level->hasCeiling ? 2 : 1; i < buffers.walls.wallCount; i++)
@@ -661,12 +661,12 @@ void LoadWalls(const Level *level,
 		vertices[4 * i + 3 + skyVertexCount].textureIndex = TextureIndex(wall->tex);
 		vertices[4 * i + 3 + skyVertexCount].wallAngle = (float)wall->angle;
 
-		indices[6 * i + buffers.walls.skyIndexCount] = i * 4 + buffers.walls.skyIndexCount;
-		indices[6 * i + 1 + buffers.walls.skyIndexCount] = i * 4 + 1 + buffers.walls.skyIndexCount;
-		indices[6 * i + 2 + buffers.walls.skyIndexCount] = i * 4 + 2 + buffers.walls.skyIndexCount;
-		indices[6 * i + 3 + buffers.walls.skyIndexCount] = i * 4 + buffers.walls.skyIndexCount;
-		indices[6 * i + 4 + buffers.walls.skyIndexCount] = i * 4 + 2 + buffers.walls.skyIndexCount;
-		indices[6 * i + 5 + buffers.walls.skyIndexCount] = i * 4 + 3 + buffers.walls.skyIndexCount;
+		indices[6 * i + buffers.walls.skyIndexCount] = i * 4 + skyVertexCount;
+		indices[6 * i + 1 + buffers.walls.skyIndexCount] = i * 4 + 1 + skyVertexCount;
+		indices[6 * i + 2 + buffers.walls.skyIndexCount] = i * 4 + 2 + skyVertexCount;
+		indices[6 * i + 3 + buffers.walls.skyIndexCount] = i * 4 + skyVertexCount;
+		indices[6 * i + 4 + buffers.walls.skyIndexCount] = i * 4 + 2 + skyVertexCount;
+		indices[6 * i + 5 + buffers.walls.skyIndexCount] = i * 4 + 3 + skyVertexCount;
 	}
 }
 
@@ -685,10 +685,10 @@ void LoadActorModels(const Level *level, ActorVertex *vertices, uint32_t *indice
 		if (ListFind(buffers.actors.models.loadedModelIds, (void *)actor->actorModel->id) == -1)
 		{
 			ListAdd(&buffers.actors.models.loadedModelIds, (void *)actor->actorModel->id);
-			const size_t vertexSize = sizeof(*vertices) * actor->actorModel->packedVertsUvsNormalCount;
-			const size_t indexSize = sizeof(*indices) * actor->actorModel->packedIndicesCount;
-			memcpy(&vertices[vertexOffset], actor->actorModel->packedVertsUvsNormal, vertexSize);
-			memcpy(&indices[vertexOffset], actor->actorModel->packedIndices, indexSize);
+			const size_t vertexSize = sizeof(*vertices) * actor->actorModel->vertexCount;
+			const size_t indexSize = sizeof(*indices) * actor->actorModel->indexCount;
+			memcpy(&vertices[vertexOffset], actor->actorModel->vertexData, vertexSize);
+			memcpy(&indices[vertexOffset], actor->actorModel->indexData, indexSize);
 			vertexOffset += vertexSize;
 			indexOffset += indexSize;
 		}
@@ -861,8 +861,7 @@ void LoadActorDrawInfo(const Level *level, VkDrawIndexedIndirectCommand *drawInf
 	uint32_t wallCount = 0;
 	for (size_t i = 0; i < buffers.actors.models.loadedModelIds.length; i++)
 	{
-		drawInfo[i].indexCount = GetModelFromId((size_t)ListGet(buffers.actors.models.loadedModelIds, i))
-										 ->packedIndicesCount;
+		drawInfo[i].indexCount = GetModelFromId((size_t)ListGet(buffers.actors.models.loadedModelIds, i))->indexCount;
 		drawInfo[i].instanceCount = (size_t)ListGet(buffers.actors.models.modelCounts, i);
 		modelCount += (size_t)ListGet(buffers.actors.models.modelCounts, i);
 	}

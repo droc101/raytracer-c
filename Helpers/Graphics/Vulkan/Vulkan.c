@@ -474,17 +474,16 @@ bool VK_LoadLevelWalls(const Level *level)
 		buffers.walls.wallCount = level->walls.length + 2;
 	} else
 	{
-		skyVertexCount = _skyModel->packedVertsUvsNormalCount;
-		buffers.walls.skyIndexCount = _skyModel->packedIndicesCount;
+		skyVertexCount = _skyModel->vertexCount;
+		buffers.walls.skyIndexCount = _skyModel->indexCount;
 		buffers.walls.wallCount = level->walls.length + 1;
 	}
 
 	if (buffers.walls.wallCount > buffers.walls.maxWallCount)
 	{
 		const VkDeviceSize wallVertexSize = sizeof(WallVertex) *
-											(buffers.walls.maxWallCount * 4 + _skyModel->packedVertsUvsNormalCount);
-		const VkDeviceSize wallIndexSize = sizeof(uint32_t) *
-										   (buffers.walls.maxWallCount * 6 + _skyModel->packedIndicesCount);
+											(buffers.walls.maxWallCount * 4 + _skyModel->vertexCount);
+		const VkDeviceSize wallIndexSize = sizeof(uint32_t) * (buffers.walls.maxWallCount * 6 + _skyModel->indexCount);
 
 		buffers.walls.maxWallCount = buffers.walls.wallCount;
 
@@ -494,10 +493,10 @@ bool VK_LoadLevelWalls(const Level *level)
 			if (!ResizeBufferRegion(&buffers.local,
 									buffers.walls.vertexOffset,
 									wallVertexSize + wallIndexSize,
-									sizeof(UiVertex) * buffers.walls.maxWallCount * 4 +
+									sizeof(WallVertex) * buffers.walls.maxWallCount * 4 +
 											sizeof(uint32_t) * buffers.walls.maxWallCount * 6 +
-											sizeof(UiVertex) * _skyModel->packedVertsUvsNormalCount +
-											sizeof(uint32_t) * _skyModel->packedIndicesCount,
+											sizeof(WallVertex) * _skyModel->vertexCount +
+											sizeof(uint32_t) * _skyModel->indexCount,
 									true))
 			{
 				return false;
@@ -508,10 +507,10 @@ bool VK_LoadLevelWalls(const Level *level)
 			if (!ResizeBufferRegion(&buffers.local,
 									buffers.walls.indexOffset,
 									wallIndexSize + wallVertexSize,
-									sizeof(UiVertex) * buffers.walls.maxWallCount * 4 +
+									sizeof(WallVertex) * buffers.walls.maxWallCount * 4 +
 											sizeof(uint32_t) * buffers.walls.maxWallCount * 6 +
-											sizeof(UiVertex) * _skyModel->packedVertsUvsNormalCount +
-											sizeof(uint32_t) * _skyModel->packedIndicesCount,
+											sizeof(WallVertex) * _skyModel->vertexCount +
+											sizeof(uint32_t) * _skyModel->indexCount,
 									true))
 			{
 				return false;
@@ -521,8 +520,8 @@ bool VK_LoadLevelWalls(const Level *level)
 			if (!ResizeBufferRegion(&buffers.local,
 									buffers.walls.vertexOffset,
 									wallVertexSize,
-									sizeof(UiVertex) * buffers.walls.maxWallCount * 4 +
-											sizeof(UiVertex) * _skyModel->packedVertsUvsNormalCount,
+									sizeof(WallVertex) * buffers.walls.maxWallCount * 4 +
+											sizeof(WallVertex) * _skyModel->vertexCount,
 									true))
 			{
 				return false;
@@ -531,7 +530,7 @@ bool VK_LoadLevelWalls(const Level *level)
 									buffers.walls.indexOffset,
 									wallIndexSize,
 									sizeof(uint32_t) * buffers.walls.maxWallCount * 6 +
-											sizeof(uint32_t) * _skyModel->packedIndicesCount,
+											sizeof(uint32_t) * _skyModel->indexCount,
 									true))
 			{
 				return false;
@@ -585,8 +584,8 @@ bool VK_LoadLevelWalls(const Level *level)
 			{
 				index = buffers.actors.models.loadedModelIds.length;
 				ListAdd(&buffers.actors.models.loadedModelIds, (void *)actor->actorModel->id);
-				buffers.actors.models.vertexCount += actor->actorModel->packedVertsUvsNormalCount;
-				buffers.actors.models.indexCount += actor->actorModel->packedIndicesCount;
+				buffers.actors.models.vertexCount += actor->actorModel->vertexCount;
+				buffers.actors.models.indexCount += actor->actorModel->indexCount;
 			}
 			if (index < buffers.actors.models.modelCounts.length)
 			{
@@ -628,7 +627,7 @@ bool VK_LoadLevelWalls(const Level *level)
 		pushConstants.skyTextureIndex = MAX_TEXTURES;
 	} else
 	{
-		pushConstants.skyVertexCount = skyModel->packedVertsUvsNormalCount;
+		pushConstants.skyVertexCount = skyModel->vertexCount;
 		pushConstants.skyTextureIndex = TextureIndex(level->ceilOrSkyTex);
 	}
 	pushConstants.shadowTextureIndex = TextureIndex(TEXTURE("vfx_shadow"));
@@ -649,10 +648,8 @@ bool VK_LoadLevelWalls(const Level *level)
 	LoadWalls(level, _skyModel, wallVertices, wallIndices, skyVertexCount);
 	LoadActorModels(level, actorVertices, actorIndices);
 
-	const VkDeviceSize wallVertexSize = sizeof(WallVertex) *
-										(buffers.walls.maxWallCount * 4 + _skyModel->packedVertsUvsNormalCount);
-	const VkDeviceSize wallIndexSize = sizeof(uint32_t) *
-									   (buffers.walls.maxWallCount * 6 + _skyModel->packedIndicesCount);
+	const VkDeviceSize wallVertexSize = sizeof(WallVertex) * (buffers.walls.maxWallCount * 4 + _skyModel->vertexCount);
+	const VkDeviceSize wallIndexSize = sizeof(uint32_t) * (buffers.walls.maxWallCount * 6 + _skyModel->indexCount);
 
 	MemoryInfo memoryInfo = {
 		.type = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -744,8 +741,8 @@ bool VK_LoadNewActor()
 		{
 			index = buffers.actors.models.loadedModelIds.length;
 			ListAdd(&buffers.actors.models.loadedModelIds, (void *)actor->actorModel->id);
-			buffers.actors.models.vertexCount += actor->actorModel->packedVertsUvsNormalCount;
-			buffers.actors.models.indexCount += actor->actorModel->packedIndicesCount;
+			buffers.actors.models.vertexCount += actor->actorModel->vertexCount;
+			buffers.actors.models.indexCount += actor->actorModel->indexCount;
 		}
 		if (index < buffers.actors.models.modelCounts.length)
 		{

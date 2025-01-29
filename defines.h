@@ -479,7 +479,7 @@ struct Actor
 	/// The function to call when the actor receives a signal.
 	ActorSignalHandlerFunction SignalHandler;
 	/// List of signals the actor is listening for
-	List *listeningFor;
+	List listeningFor;
 
 	// extra parameters for the actor. saved in level data, so can be used during Init
 	byte paramA;
