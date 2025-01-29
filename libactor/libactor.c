@@ -1,6 +1,8 @@
 //
 // Created by droc101 on 1/24/25.
 //
+// This file is a library for the level editor to get information about actors.
+//
 
 #include "../defines.h"
 

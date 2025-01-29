@@ -46,23 +46,33 @@ enum ControlAnchor
 
 struct Control
 {
+	/// The type of the control
 	ControlType type;
+	/// The anchor of the control
 	ControlAnchor anchor;
+	/// The position relative to the anchor
 	Vector2 position;
+	/// The size of the control
 	Vector2 size;
 
+	/// The absolute position of the control, calculated automatically
 	Vector2 anchoredPosition;
 
+	/// Extra data for the control
 	void *ControlData;
 };
 
 struct UiStack
 {
+	/// The controls in the UiStack
 	List Controls;
 
+	/// The control that is currently being hovered or pressed
 	int ActiveControl;
+	/// The state of the active control
 	ControlState ActiveControlState;
 
+	/// The control that has keyboard focus
 	int focusedControl;
 };
 

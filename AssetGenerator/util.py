@@ -1,8 +1,6 @@
 import gzip
 import struct
 
-aid = 0
-
 input_path = ""
 output_path = ""
 
@@ -24,8 +22,6 @@ def CString(s, maxlen):
 
 # Pack data into a gzipped asset
 def EncloseData(data, type):
-	global aid
-
 	decompressed_len = len(data)
 
 	data = gzip.compress(bytes(data))
@@ -33,7 +29,7 @@ def EncloseData(data, type):
 	header = bytearray()
 	header.extend(IntToBytes(len(data)))  # Compressed length
 	header.extend(IntToBytes(decompressed_len))  # Decompressed length
-	header.extend(IntToBytes(aid))  # Asset ID
+	header.extend(IntToBytes(0))  # deprecated
 	header.extend(IntToBytes(type))  # Asset Type
 
 	header.extend(data)
@@ -41,8 +37,6 @@ def EncloseData(data, type):
 	header[20] = 2
 	header[21] = 3
 	header[22] = 4
-
-	aid += 1
 
 	return header
 

@@ -2,6 +2,8 @@ import struct
 import util
 from dataclasses import dataclass
 
+#region Types & Helpers
+
 @dataclass
 class Vector3:
 	x : float
@@ -11,6 +13,9 @@ class Vector3:
 	def __eq__(self, value):
 		return self.x == value.x and self.y == value.y and self.z == value.z
 	
+	def __hash__(self):
+		return hash((self.x, self.y, self.z))
+
 	def pack(self):
 		ba = bytearray()
 		ba += struct.pack("fff", *[self.x,self.y,self.z])
@@ -23,6 +28,9 @@ class Vector2:
 
 	def __eq__(self, value):
 		return self.x == value.x and self.y == value.y
+	
+	def __hash__(self):
+		return hash((self.x, self.y))
 	
 	def pack(self):
 		ba = bytearray()
@@ -38,12 +46,23 @@ class Vertex:
 	def __eq__(self, value):
 		return self.pos == value.pos and self.norm == value.norm and self.uv == value.uv
 
+	def __hash__(self):
+		return hash((self.pos, self.norm, self.uv))
+	
+	def pack(self):
+		ba = bytearray()
+		ba += self.pos.pack()
+		ba += self.uv.pack()
+		ba += self.norm.pack()
+		return ba
+
 @dataclass
 class ObjModel:
 	# Working Data
 	positions : list[Vector3]
 	normals : list[Vector3]
 	uvs : list[Vector2]
+	vertex_index_map : dict[str, int]
 
 	# Final Data
 	verts : list[Vertex]
@@ -55,37 +74,46 @@ class ObjModel:
 		self.uvs = []
 		self.verts = []
 		self.inds = []
+		self.vertex_index_map = {}
 
-# Create a Vector3 from a list of floats
-def v3l(floats : list[float]):
+# Create a Vector3 from a string
+def v3l(line : str):
+	floats = list(map(float, line.split()[1:]))
 	return Vector3(floats[0], floats[1], floats[2])
 
-# Create a Vector2 from a list of floats
-def v2l(floats : list[float]):
+# Create a Vector2 from a string
+def v2l(line : str):
+	floats = list(map(float, line.split()[1:]))
 	return Vector2(floats[0], floats[1])
 
 # Find the index of a vertex in the vertex list (or add it if it doesn't exist)
 def find_vtx_index(obj : ObjModel, vtx : Vertex):
-	try:
-		idx = obj.verts.index(vtx)
-		return idx
-	except ValueError:
+	if vtx in obj.vertex_index_map:
+		return obj.vertex_index_map[vtx]
+	else:
+		obj.vertex_index_map[vtx] = len(obj.verts)
 		obj.verts.append(vtx)
 		return len(obj.verts) - 1
 
+#endregion
 
+# Parse an OBJ model into a binary format
+# This parser only supports the following OBJ features:
+# - Vertex positions
+# - Vertex normals
+# - Vertex UVs
 def ParseOBJ(file_path):
-	obj = ObjModel()
+	obj : ObjModel = ObjModel()
 	
 	# Loop through the file once to get the vertex data
 	with open(file_path, 'r') as f:
 		for line in f:
 			if line.startswith('v '):
-				obj.positions.append(v3l(list(map(float, line.split()[1:]))))
+				obj.positions.append(v3l(line))
 			elif line.startswith('vt '):
-				obj.uvs.append(v2l(list(map(float, line.split()[1:]))))
+				obj.uvs.append(v2l(line))
 			elif line.startswith('vn '):
-				obj.normals.append(v3l(list(map(float, line.split()[1:]))))
+				obj.normals.append(v3l(line))
 
 	# Loop through the file a second time to get the face index data
 	with open(file_path, 'r') as f:
@@ -108,9 +136,7 @@ def ParseOBJ(file_path):
 	# Pack vertex data into a binary format
 	vtx_bin_data = bytearray()
 	for vertex in obj.verts:
-		vtx_bin_data += vertex.pos.pack()
-		vtx_bin_data += vertex.uv.pack()
-		vtx_bin_data += vertex.norm.pack()
+		vtx_bin_data += vertex.pack()
 	
 	# Pack index data into a binary format
 	idx_bin_data = bytearray()
@@ -134,6 +160,6 @@ def ConvertOBJ(path):
 	data += util.IntToBytes(len(data))
 	data += util.IntToBytes(0)
 	data += util.IntToBytes(0)
-	data += util.IntToBytes(util.aid)
+	data += util.IntToBytes(0)
 
 	util.WriteAsset(path, "gmdl", "model", util.EncloseData(data, 7))

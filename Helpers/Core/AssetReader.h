@@ -14,12 +14,6 @@
 #define MAX_MODELS 128
 
 /**
- * Get the texture size table
- * @return A pointer to the texture size table
- */
-const TextureSizeTable *GetTextureSizeTable();
-
-/**
  * Initialize the asset cache
  */
 void AssetCacheInit();

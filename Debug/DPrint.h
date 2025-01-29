@@ -13,7 +13,6 @@
  */
 void ResetDPrintYPos();
 
-// Prints a string to the screen and optionally to the console (stdout) (uses printf style formatting)
 /**
  * Prints a string to the screen and optionally to the console (stdout)
  * @param str Format string
