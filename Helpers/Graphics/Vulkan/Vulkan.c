@@ -113,7 +113,7 @@ VkResult VK_FrameStart()
 		textureCacheMiss = false;
 	} else
 	{
-		VulkanTestReturnResult(vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX),
+		VulkanTestReturnResult(vkWaitForFences(device, MAX_FRAMES_IN_FLIGHT, inFlightFences, VK_TRUE, UINT64_MAX),
 							   "Failed to wait for Vulkan fences!");
 
 		VulkanTestReturnResult(vkResetFences(device, 1, &inFlightFences[currentFrame]),
