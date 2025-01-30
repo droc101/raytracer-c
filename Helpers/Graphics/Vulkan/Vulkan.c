@@ -41,17 +41,11 @@ bool VK_Init(SDL_Window *window)
 			case ARM:
 				strncpy(vendor, "ARM", 32);
 				break;
-			case CODEPLAY:
-				strncpy(vendor, "Codeplay", 32);
-				break;
 			case IMG_TEC:
 				strncpy(vendor, "ImgTec", 32);
 				break;
 			case INTEL:
 				strncpy(vendor, "Intel", 32);
-				break;
-			case KAZAN:
-				strncpy(vendor, "Kazan", 32);
 				break;
 			case MESA:
 				strncpy(vendor, "Mesa", 32);
@@ -59,23 +53,11 @@ bool VK_Init(SDL_Window *window)
 			case MICROSOFT:
 				strncpy(vendor, "Microsoft", 32);
 				break;
-			case MOBILEYE:
-				strncpy(vendor, "Mobileye", 32);
-				break;
 			case NVIDIA:
 				strncpy(vendor, "NVIDIA", 32);
 				break;
-			case POCL:
-				strncpy(vendor, "PoCL", 32);
-				break;
 			case QUALCOMM:
 				strncpy(vendor, "Qualcomm", 32);
-				break;
-			case VIV:
-				strncpy(vendor, "VIV", 32);
-				break;
-			case VSI:
-				strncpy(vendor, "VSI", 32);
 				break;
 			default:
 				strncpy(vendor, "Unknown", 32);
