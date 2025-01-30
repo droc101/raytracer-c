@@ -5,7 +5,6 @@ mpi-*,
 bugprone-*,
 -bugprone-switch-missing-default-case,
 -bugprone-signal-handler,
--bugprone-narrowing-conversions,
 -bugprone-casting-through-void,
 -bugprone-exception-escape,
 -bugprone-suspicious-stringview-data-usage,
@@ -101,3 +100,5 @@ readability-*,
 -readability-avoid-unconditional-preprocessor-if,
 -readability-identifier-naming,
 -readability-reference-to-constructed-temporary'
+CheckOptions:
+  bugprone-unused-return-value.CheckedFunctions: '[A-Z].+'

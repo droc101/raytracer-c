@@ -19,7 +19,7 @@
  * Check if a pointer is NULL and if it is, call the error handler
  * @param ptr The pointer to check
  */
-#define chk_malloc(ptr) \
+#define CheckAlloc(ptr) \
 	if ((ptr) == NULL) _GameAllocFailure()
 
 /**
@@ -43,6 +43,13 @@ _Noreturn void _ErrorInternal(char *error, const char *file, int line, const cha
  * @param description Friendly description
  */
 _Noreturn void FriendlyError(const char *title, const char *description);
+
+/**
+ * Non-terminating warning message box
+ * @param title Message box title
+ * @param description Warning text
+ */
+void ShowWarning(const char *title, const char *description);
 
 /**
  * Ask the user if they want to restart the program (or continue running)

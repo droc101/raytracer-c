@@ -131,7 +131,7 @@ void GL_ClearColor(uint color);
  * @param l The level
  * @note This expects 3D mode to be enabled
  */
-void GL_DrawWall(const Wall *w, const mat4 *mdl, const Camera *cam, const Level *l);
+void GL_DrawWall(const Wall *w, const mat4 mdl, const Camera *cam, const Level *l);
 
 /**
  * Draw the floor in 3D
@@ -159,7 +159,7 @@ void GL_DrawFloor(Vector2 vp1,
  * @param mdl The model -> world matrix
  * @param l The level
  */
-void GL_DrawShadow(Vector2 vp1, Vector2 vp2, const mat4 *mvp, const mat4 *mdl, const Level *l);
+void GL_DrawShadow(Vector2 vp1, Vector2 vp2, const mat4 *mvp, const mat4 mdl, const Level *l);
 
 /**
  * Update the viewport size and re-create the framebuffer texture
@@ -190,14 +190,21 @@ void GL_DrawColoredArrays(const float *vertices, const uint *indices, int quad_c
  * @param x X position in pixels
  * @return The NDC position
  */
-float GL_X_TO_NDC(float x);
+#define GL_X_TO_NDC(x) ((float)(x) / WindowWidth() * 2.0f - 1.0f)
 
 /**
  * Convert screen Y to NDC
  * @param y Y position in pixels
  * @return The NDC position
  */
-float GL_Y_TO_NDC(float y);
+#define GL_Y_TO_NDC(y) (1.0f - (float)(y) / WindowHeight() * 2.0f)
+
+/**
+ * Get the transformation matrix for a camera
+ * @param cam The camera
+ * @return A mat4 MODEL_VIEW_PROJECTION matrix of the camera (World space to screen space)
+ */
+mat4 *GL_GetMatrix(const Camera *cam);
 
 /**
  * OpenGL code to render the 3D portion of a level
@@ -210,12 +217,12 @@ void GL_RenderLevel(const Level *l, const Camera *cam);
 
 /**
  * Render a 3D model
- * @param m The model to render
- * @param MODEL_WORLD_MATRIX The model -> world matrix
+ * @param model The model to render
+ * @param modelWorldMatrix The model -> world matrix
  * @param texture The texture name
  * @param shader The shader to use
  */
-void GL_RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const char *texture, ModelShader shader);
+void GL_RenderModel(const Model *model, const mat4 modelWorldMatrix, const char *texture, ModelShader shader);
 
 /**
  * Render a blur-background rectangle

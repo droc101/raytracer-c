@@ -51,13 +51,13 @@ Control *CreateTextBoxControl(const char *placeholder,
 	c->size = size;
 
 	TextBoxData *data = malloc(sizeof(TextBoxData));
-	chk_malloc(data);
+	CheckAlloc(data);
 	c->ControlData = data;
 	data->cursorPos = 0;
 	data->maxLength = maxLength;
 	data->callback = callback;
 	data->text = calloc(1, maxLength + 1);
-	chk_malloc(data->text);
+	CheckAlloc(data->text);
 	strcpy(data->placeholder, placeholder); // up to caller to ensure placeholder is not too long
 
 
@@ -107,7 +107,7 @@ void UpdateTextBox(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlIn
 		ConsumeKey(SDL_SCANCODE_RIGHT);
 		data->cursorPos += 1;
 	}
-	data->cursorPos = clampi(data->cursorPos, 0, strlen(data->text));
+	data->cursorPos = clamp(data->cursorPos, 0, strlen(data->text));
 
 	// handle text input
 	if (IsKeyJustPressed(SDL_SCANCODE_BACKSPACE))

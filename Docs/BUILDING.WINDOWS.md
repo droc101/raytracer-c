@@ -2,7 +2,8 @@
 This is the far more complicated of the two platforms to build on.
 
 ### Setup
-You will need cmake and gcc installed. No other compilers are supported.
+
+You will need cmake and gcc installed. No other compilers are guaranteed to work.
 
 Make sure you have [FindSDL2.cmake](https://github.com/tcbrindle/sdl2-cmake-scripts/blob/master/FindSDL2.cmake) and [FindSDL2_mixer.cmake](https://github.com/tcbrindle/sdl2-cmake-scripts/blob/master/FindSDL2_mixer.cmake) in your CMake modules directory.
 You need Python 3 (as the command `python`) with PIL or Pillow installed to run the asset compression script (required to build)
@@ -14,6 +15,9 @@ Extract the following libraries into the `lib` directory (create it if it doesn'
   and extract it as `SDL2_Mixer`.
 - Download [GLEW 2.2.0 w64](https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0-win32.zip) and extract it as `glew`
 - Download [CGLM 0.9.4](https://github.com/recp/cglm/archive/refs/tags/v0.9.4.zip) and extract it as `cglm`
+
+Install the latest version of the Vulkan SDK. A getting started guide for the Vulkan SDK can be found
+at https://vulkan.lunarg.com/doc/sdk/latest/windows/getting_started.html
 
 ### Building
 This project uses the `cmake` build system.

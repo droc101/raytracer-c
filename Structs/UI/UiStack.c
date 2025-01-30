@@ -56,8 +56,8 @@ const ControlUpdateFunc ControlUpdateFuncs[CONTROL_TYPE_COUNT] = {
 UiStack *CreateUiStack()
 {
 	UiStack *stack = malloc(sizeof(UiStack));
-	chk_malloc(stack);
-	stack->Controls = CreateList();
+	CheckAlloc(stack);
+	ListCreate(&stack->Controls);
 	stack->ActiveControl = -1;
 	stack->ActiveControlState = NORMAL;
 	UiStackResetFocus(stack);
@@ -66,12 +66,12 @@ UiStack *CreateUiStack()
 
 void DestroyUiStack(UiStack *stack)
 {
-	for (int i = 0; i < stack->Controls->size; i++)
+	for (int i = 0; i < stack->Controls.length; i++)
 	{
 		const Control *c = ListGet(stack->Controls, i);
 		ControlDestroyFuncs[c->type](c);
 	}
-	ListFreeWithData(stack->Controls);
+	ListAndContentsFree(&stack->Controls, false);
 	free(stack);
 	stack = NULL;
 }
@@ -98,7 +98,7 @@ bool ProcessUiStack(UiStack *stack)
 	}
 
 
-	for (int i = stack->Controls->size - 1; i >= 0; i--)
+	for (size_t i = 0; i < stack->Controls.length; i++)
 	{
 		Control *c = ListGet(stack->Controls, i);
 
@@ -126,7 +126,7 @@ bool ProcessUiStack(UiStack *stack)
 	} else
 	{
 		// iterate through the controls in reverse order so that the last control is on top and gets priority
-		for (int i = stack->Controls->size - 1; i >= 0; i--)
+		for (int i = stack->Controls.length - 1; i >= 0; i--)
 		{
 			const Control *c = (Control *)ListGet(stack->Controls, i);
 
@@ -162,22 +162,22 @@ bool ProcessUiStack(UiStack *stack)
 			stack->focusedControl = 0;
 		} else
 		{
-			stack->focusedControl = (stack->focusedControl + 1) % stack->Controls->size;
+			stack->focusedControl = (stack->focusedControl + 1) % stack->Controls.length;
 		}
 	} else if ((IsKeyJustPressed(SDL_SCANCODE_TAB) && IsKeyPressed(SDL_SCANCODE_LSHIFT)) ||
 			   IsButtonJustPressed(SDL_CONTROLLER_BUTTON_DPAD_UP))
 	{
 		if (stack->focusedControl == -1)
 		{
-			stack->focusedControl = stack->Controls->size - 1;
+			stack->focusedControl = stack->Controls.length - 1;
 		} else
 		{
-			stack->focusedControl = (stack->focusedControl - 1) % stack->Controls->size;
+			stack->focusedControl = (stack->focusedControl - 1) % stack->Controls.length;
 		}
 		// ensure the index is positive
 		if (stack->focusedControl < 0)
 		{
-			stack->focusedControl += stack->Controls->size;
+			stack->focusedControl += stack->Controls.length;
 		}
 	}
 
@@ -188,7 +188,7 @@ bool ProcessUiStack(UiStack *stack)
 
 void DrawUiStack(const UiStack *stack)
 {
-	for (int i = 0; i < stack->Controls->size; i++)
+	for (int i = 0; i < stack->Controls.length; i++)
 	{
 		const Control *c = ListGet(stack->Controls, i);
 		ControlDrawFuncs[c->type](c,
@@ -256,21 +256,21 @@ Vector2 CalculateControlPosition(const Control *control)
 Control *CreateEmptyControl()
 {
 	Control *c = malloc(sizeof(Control));
-	chk_malloc(c);
+	CheckAlloc(c);
 	c->ControlData = NULL;
 	return c;
 }
 
-void UiStackPush(const UiStack *stack, Control *control)
+void UiStackPush(UiStack *stack, Control *control)
 {
-	ListAdd(stack->Controls, control);
+	ListAdd(&stack->Controls, control);
 }
 
-void UiStackRemove(const UiStack *stack, const Control *control)
+void UiStackRemove(UiStack *stack, const Control *control)
 {
 	ControlDestroyFuncs[control->type](control);
 
-	ListRemoveAt(stack->Controls, ListFind(stack->Controls, control));
+	ListRemoveAt(&stack->Controls, ListFind(stack->Controls, control));
 }
 
 bool IsMouseInRect(const Vector2 pos, const Vector2 size)
@@ -293,7 +293,7 @@ bool HasKeyboardActivation(UiStack * /*stack*/, Control * /*Control*/)
 
 bool HasActivation(UiStack *stack, Control *Control)
 {
-	const int index = ListFind(stack->Controls, Control);
+	const size_t index = ListFind(stack->Controls, Control);
 	bool focus = false;
 	if (index == stack->ActiveControl)
 	{

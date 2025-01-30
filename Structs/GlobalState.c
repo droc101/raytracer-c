@@ -4,10 +4,12 @@
 
 #include "GlobalState.h"
 #include <stdio.h>
+#include <string.h>
 #include "../Helpers/Core/AssetReader.h"
 #include "../Helpers/Core/Error.h"
 #include "../Helpers/Core/Logging.h"
 #include "../Helpers/Core/PhysicsThread.h"
+#include "../Helpers/Graphics/RenderingHelpers.h"
 #include "../Helpers/LevelLoader.h"
 #include "../Structs/Level.h"
 #include "../Structs/Wall.h"
@@ -139,11 +141,13 @@ void ChangeLevel(Level *l)
 		StopMusic();
 	}
 
-	for (int i = 0; i < l->walls->size; i++)
+	for (int i = 0; i < l->walls.length; i++)
 	{
 		Wall *w = ListGet(l->walls, i);
 		WallBake(w);
 	}
+
+	LoadLevelWalls(l);
 }
 
 void ChangeMusic(const char *asset)
@@ -260,7 +264,7 @@ bool ChangeLevelByName(const char *name)
 
 	const size_t maxPathLength = 48;
 	char *levelPath = calloc(maxPathLength, sizeof(char));
-	chk_malloc(levelPath);
+	CheckAlloc(levelPath);
 
 	if (snprintf(levelPath, maxPathLength, "level/%s.gmap", name) > maxPathLength)
 	{
@@ -269,6 +273,7 @@ bool ChangeLevelByName(const char *name)
 		return false;
 	}
 	const Asset *levelData = DecompressAsset(levelPath);
+	free(levelPath);
 	if (levelData == NULL)
 	{
 		LogError("Failed to load level asset.\n");
@@ -280,15 +285,15 @@ bool ChangeLevelByName(const char *name)
 	return true;
 }
 
-void SendSignal(const int signal, const Actor* sender)
+void SendSignal(const int signal, const Actor *sender)
 {
-	//LogDebug("Sending signal %d from actor %p\n", signal, sender);
-	for (int i = 0; i < state.level->actors->size; i++)
+	// LogDebug("Sending signal %d from actor %p\n", signal, sender);
+	for (int i = 0; i < state.level->actors.length; i++)
 	{
 		Actor *a = ListGet(state.level->actors, i);
 		if (a->SignalHandler != NULL)
 		{
-			if (ListFind(a->listeningFor, (void*)((size_t)signal)) != -1)
+			if (ListFind(a->listeningFor, (void *)(size_t)signal) != -1)
 			{
 				a->SignalHandler(a, sender, signal);
 			}
@@ -296,14 +301,11 @@ void SendSignal(const int signal, const Actor* sender)
 	}
 }
 
-void RemoveTrigger(Trigger *t)
+void RemoveTrigger(const size_t index)
 {
-	List *triggers = state.level->triggers;
-	int idx = ListFind(triggers, t);
-	if (idx != -1)
+	if (index != -1)
 	{
-		ListRemoveAt(triggers, idx);
-		free(t);
+		ListRemoveAt(&state.level->triggers, index);
 	} else
 	{
 		LogError("Tried to remove a trigger from a level, but it was not in the level!");

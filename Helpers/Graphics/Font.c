@@ -29,52 +29,52 @@ int FontFindChar(const char target)
 
 Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, const uint color, const bool small)
 {
-	const int stringLength = strlen(str);
-	float *verts = malloc(sizeof(float[4][4]) * stringLength);
-	chk_malloc(verts);
-	uint *indices = malloc(sizeof(uint[6]) * stringLength);
-	chk_malloc(indices);
-	memset(verts, 0, sizeof(float[4][4]) * stringLength);
-	memset(indices, 0, sizeof(uint[6]) * stringLength);
+	const ulong stringLength = strlen(str);
+	float *verts = calloc(stringLength, sizeof(float[4][4]));
+	CheckAlloc(verts);
+	uint *indices = calloc(stringLength, sizeof(uint[6]));
+	CheckAlloc(indices);
 
-	int x = pos.x;
-	int y = pos.y;
+	int x = (int)pos.x;
+	int y = (int)pos.y;
 	int i = 0;
-	const int sizeX = small ? size * 0.75 : size;
+	const int width = (int)(small ? size * 0.75 : size);
+	const double uvPixel = 1.0 / GetTextureSize(small ? TEXTURE("interface_small_fonts") : TEXTURE("interface_font")).x;
 	while (str[i] != '\0')
 	{
 		if (str[i] == ' ')
 		{
 			i++;
-			x += sizeX;
+			x += width;
 			continue;
 		}
 
 		if (str[i] == '\n')
 		{
 			i++;
-			x = pos.x;
-			y += size;
+			x = (int)pos.x;
+			y += (int)size;
 			continue;
 		}
 
-		const float uvPerChar = 1.0f / strlen(fontChars);
-		int index = FontFindChar(tolower(str[i]));
+		const double uvPerChar = 1.0 / strlen(fontChars);
+		// ReSharper disable once CppRedundantCastExpression
+		int index = FontFindChar((char)tolower(str[i]));
 		if (index == -1)
 		{
 			index = FontFindChar('U');
 		}
 
 		const Vector2 ndcPos = v2(X_TO_NDC(x), Y_TO_NDC(y));
-		const Vector2 ndcPosEnd = v2(X_TO_NDC(x + sizeX), Y_TO_NDC(y + size));
-		const float charUV = uvPerChar * index;
-		const float charUVEnd = uvPerChar * (index + 1);
+		const Vector2 ndcPosEnd = v2(X_TO_NDC(x + width), Y_TO_NDC(y + size));
+		const double charUV = uvPerChar * index;
+		const double charUVEnd = uvPerChar * (index + 1) - uvPixel;
 
 		const mat4 quad = {
-			{ndcPos.x, ndcPos.y, charUV, 0},
-			{ndcPos.x, ndcPosEnd.y, charUV, 1},
-			{ndcPosEnd.x, ndcPosEnd.y, charUVEnd, 1},
-			{ndcPosEnd.x, ndcPos.y, charUVEnd, 0},
+			{(float)ndcPos.x, (float)ndcPos.y, (float)charUV, 0},
+			{(float)ndcPos.x, (float)ndcPosEnd.y, (float)charUV, 1},
+			{(float)ndcPosEnd.x, (float)ndcPosEnd.y, (float)charUVEnd, 1},
+			{(float)ndcPosEnd.x, (float)ndcPos.y, (float)charUVEnd, 0},
 		};
 
 		memcpy(verts + i * 16, quad, sizeof(quad));
@@ -87,7 +87,7 @@ Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, cons
 
 		memcpy(indices + i * 6, quadIndices, sizeof(quadIndices));
 
-		x += sizeX;
+		x += width;
 		i++;
 	}
 
@@ -100,7 +100,7 @@ Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, cons
 	free(verts);
 	free(indices);
 
-	return v2(x + sizeX, y + size); // Return the bottom right corner of the text
+	return v2(x + width, y + size); // Return the bottom right corner of the text
 }
 
 Vector2 MeasureText(const char *str, const uint size, const bool small)

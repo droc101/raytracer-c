@@ -12,49 +12,16 @@
 #include "GL/GLHelper.h"
 
 Renderer currentRenderer;
+bool lowFPSMode;
 
-mat4 *GetMatrix(const Camera *cam)
+void ActorTransformMatrix(const Actor *Actor, mat4 *transformMatrix)
 {
-	vec3 cameraPosition = {cam->x, cam->y, cam->z};
-	const float aspectRatio = (float)WindowWidth() / (float)WindowHeight();
-
-	mat4 IDENTITY = GLM_MAT4_IDENTITY_INIT;
-	mat4 PERSPECTIVE = GLM_MAT4_ZERO_INIT;
-	glm_perspective(glm_rad(cam->fov), aspectRatio, NEAR_Z, FAR_Z, PERSPECTIVE);
-
-	vec3 lookAt = {cosf(cam->yaw), 0, sinf(cam->yaw)};
-	vec3 up = {0, 1, 0};
-
-	// TODO: roll and pitch are messed up
-
-	glm_vec3_rotate(lookAt, cam->roll, (vec3){0, 0, 1}); // Roll
-	glm_vec3_rotate(lookAt, cam->pitch, (vec3){1, 0, 0}); // Pitch
-
-	lookAt[0] += cameraPosition[0];
-	lookAt[1] += cameraPosition[1];
-	lookAt[2] += cameraPosition[2];
-
-	mat4 VIEW = GLM_MAT4_ZERO_INIT;
-	glm_lookat(cameraPosition, lookAt, up, VIEW);
-
-	mat4 MODEL_VIEW = GLM_MAT4_ZERO_INIT;
-	glm_mat4_mul(VIEW, IDENTITY, MODEL_VIEW);
-
-	mat4 *MODEL_VIEW_PROJECTION = malloc(sizeof(mat4));
-	chk_malloc(MODEL_VIEW_PROJECTION);
-	glm_mat4_mul(PERSPECTIVE, MODEL_VIEW, *MODEL_VIEW_PROJECTION);
-
-	return MODEL_VIEW_PROJECTION;
-}
-
-mat4 *ActorTransformMatrix(const Actor *Actor)
-{
-	mat4 *MODEL = malloc(sizeof(mat4));
-	chk_malloc(MODEL);
-	glm_mat4_identity(*MODEL);
-	glm_translate(*MODEL, (vec3){Actor->position.x, Actor->yPosition, Actor->position.y});
-	glm_rotate(*MODEL, -Actor->rotation, (vec3){0, 1, 0});
-	return MODEL;
+	if (!transformMatrix)
+	{
+		Error("A NULL transformMatrix must not be passed to ActorTransformMatrix!");
+	}
+	glm_translate(*transformMatrix, (vec3){Actor->position.x, Actor->yPosition, Actor->position.y});
+	glm_rotate(*transformMatrix, -Actor->rotation, (vec3){0, 1, 0});
 }
 
 bool RenderPreInit()
@@ -76,7 +43,7 @@ bool RenderInit()
 	switch (currentRenderer)
 	{
 		case RENDERER_VULKAN:
-			return false;
+			return VK_Init(GetGameWindow());
 		case RENDERER_OPENGL:
 			return GL_Init(GetGameWindow());
 		default:
@@ -89,11 +56,64 @@ void RenderDestroy()
 	switch (currentRenderer)
 	{
 		case RENDERER_VULKAN:
-
+			VK_Cleanup();
 			break;
 		case RENDERER_OPENGL:
 			GL_DestroyGL();
 			break;
+		default:
+			break;
+	}
+}
+
+VkResult FrameStart()
+{
+	switch (currentRenderer)
+	{
+		case RENDERER_VULKAN:
+			return VK_FrameStart();
+		case RENDERER_OPENGL:
+		default:
+			return VK_SUCCESS;
+	}
+}
+
+void FrameEnd()
+{
+	switch (currentRenderer)
+	{
+		case RENDERER_VULKAN:
+			VK_FrameEnd();
+			break;
+		case RENDERER_OPENGL:
+			GL_Swap();
+			break;
+		default:
+			break;
+	}
+}
+
+void LoadLevelWalls(const Level *l)
+{
+	switch (currentRenderer)
+	{
+		case RENDERER_VULKAN:
+			VK_LoadLevelWalls(l);
+			break;
+		case RENDERER_OPENGL:
+		default:
+			break;
+	}
+}
+
+void LoadNewActor()
+{
+	switch (currentRenderer)
+	{
+		case RENDERER_VULKAN:
+			VK_LoadNewActor();
+			break;
+		case RENDERER_OPENGL:
 		default:
 			break;
 	}
@@ -104,7 +124,7 @@ void RenderLevel3D(const Level *l, const Camera *cam)
 	switch (currentRenderer)
 	{
 		case RENDERER_VULKAN:
-
+			VK_RenderLevel(l, cam);
 			break;
 		case RENDERER_OPENGL:
 			GL_RenderLevel(l, cam);
@@ -121,10 +141,11 @@ inline void UpdateViewportSize()
 	float newScale = newScaleX < newScaleY ? newScaleX : newScaleY;
 	newScale = max(newScale, 1.0f);
 	GetState()->uiScale = newScale;
+	UpdateWindowSize();
 	switch (currentRenderer)
 	{
 		case RENDERER_VULKAN:
-
+			// Unused
 			break;
 		case RENDERER_OPENGL:
 			GL_UpdateViewportSize();
@@ -134,12 +155,63 @@ inline void UpdateViewportSize()
 	}
 }
 
+inline void WindowObscured()
+{
+	lowFPSMode = true;
+	switch (currentRenderer)
+	{
+		case RENDERER_VULKAN:
+			VK_Minimize();
+			break;
+		case RENDERER_OPENGL:
+		default:
+			break;
+	}
+}
+
+inline void WindowRestored()
+{
+	lowFPSMode = false;
+	switch (currentRenderer)
+	{
+		case RENDERER_VULKAN:
+			VK_Restore();
+			break;
+		case RENDERER_OPENGL:
+		default:
+			break;
+	}
+}
+
+inline void SetLowFPS(const bool val)
+{
+	lowFPSMode = val;
+}
+
+inline bool IsLowFPSModeEnabled()
+{
+	return lowFPSMode;
+}
+
+inline byte GetSampleCountFlags()
+{
+	switch (currentRenderer)
+	{
+		case RENDERER_VULKAN:
+			return VK_GetSampleCountFlags();
+		case RENDERER_OPENGL:
+			return 0b1111;
+		default:
+			return 1;
+	}
+}
+
 inline void DrawBatchedQuadsTextured(const BatchedQuadArray *batch, const char *texture, const uint color)
 {
 	switch (currentRenderer)
 	{
 		case RENDERER_VULKAN:
-
+			VK_DrawTexturedQuadsBatched(batch->verts, batch->quad_count, texture, color);
 			break;
 		case RENDERER_OPENGL:
 			GL_DrawTexturedArrays(batch->verts, batch->indices, batch->quad_count, texture, color);
@@ -154,7 +226,7 @@ inline void DrawBatchedQuadsColored(const BatchedQuadArray *batch, const uint co
 	switch (currentRenderer)
 	{
 		case RENDERER_VULKAN:
-
+			VK_DrawColoredQuadsBatched(batch->verts, batch->quad_count, color);
 			break;
 		case RENDERER_OPENGL:
 			GL_DrawColoredArrays(batch->verts, batch->indices, batch->quad_count, color);
@@ -168,8 +240,8 @@ inline float X_TO_NDC(const float x)
 {
 	switch (currentRenderer)
 	{
-		case RENDERER_VULKAN:
-			return 0;
+		case RENDERER_VULKAN: // NOLINT(*-branch-clone)
+			return VK_X_TO_NDC(x);
 		case RENDERER_OPENGL:
 			return GL_X_TO_NDC(x);
 		default:
@@ -182,25 +254,11 @@ inline float Y_TO_NDC(const float y)
 	switch (currentRenderer)
 	{
 		case RENDERER_VULKAN:
-			return 0;
+			return VK_Y_TO_NDC(y);
 		case RENDERER_OPENGL:
 			return GL_Y_TO_NDC(y);
 		default:
 			return 0;
-	}
-}
-
-void RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const char *texture, const ModelShader shd)
-{
-	switch (currentRenderer)
-	{
-		case RENDERER_VULKAN:
-
-			break;
-		case RENDERER_OPENGL:
-			GL_RenderModel(m, MODEL_WORLD_MATRIX, texture, shd);
-		default:
-			break;
 	}
 }
 

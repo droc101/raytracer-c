@@ -5,13 +5,16 @@
 #ifndef GAME_MATHEX_H
 #define GAME_MATHEX_H
 
+#define PI 3.14159265358979323846
+#define PIf 3.14159265358979323846f
+
 /**
  * Returns the minimum of two numbers
  * @param a Number 1
  * @param b Number 2
  * @return The smaller of the two numbers
  */
-double min(double a, double b);
+#define min(a, b) ((a) < (b) ? (a) : (b))
 
 /**
  * Returns the maximum of two numbers
@@ -19,16 +22,16 @@ double min(double a, double b);
  * @param b Number 2
  * @return The larger of the two numbers
  */
-double max(double a, double b);
+#define max(a, b) ((a) < (b) ? (b) : (a))
 
 /**
  * Wraps a number between a minimum and maximum value
- * @param n Number to wrap
+ * @param x Number to wrap
  * @param min Minimum value
  * @param max Maximum value
  * @return The wrapped number
  */
-double wrap(double n, double min, double max);
+double wrap(double x, double min, double max);
 
 /**
  * Remap a number from one range to another
@@ -39,7 +42,8 @@ double wrap(double n, double min, double max);
  * @param out_max Output maximum
  * @return Input value remapped to the output range
  */
-double remap(double in, double in_min, double in_max, double out_min, double out_max);
+#define remap(in, in_min, in_max, out_min, out_max) \
+	(((in) - (in_min)) * ((out_max) - (out_min)) / ((in_max) - (in_min)) + (out_min))
 
 /**
  * Linear interpolation between two numbers
@@ -48,36 +52,27 @@ double remap(double in, double in_min, double in_max, double out_min, double out
  * @param f Interpolation factor
  * @return Interpolated value
  */
-float lerp(float a, float b, float f);
+#define lerp(a, b, f) ((a) * (1.0 - (f)) + (b) * (f))
 
 /**
  * Clamp a number between a minimum and maximum value
- * @param x Number to clamp
+ * @param val Number to clamp
  * @param min Minimum value
  * @param max Maximum value
  * @return Clamped number
  */
-double clampf(double x, double min, double max);
-
-/**
- * Clamp a number between a minimum and maximum value
- * @param x Number to clamp
- * @param min Minimum value
- * @param max Maximum value
- * @return Clamped number
- */
-int clampi(const int x, const int min, const int max);
+#define clamp(val, min, max) (val < min ? min : val > max ? max : val)
 
 /**
  * Convert degrees to radians
  * @param d Degrees
  */
-#define degToRad(d) ((d) * 0.017453292519943295)
+#define degToRad(d) ((d) * PI / 180)
 
 /**
  * Convert radians to degrees
  * @param r Radians
  */
-#define radToDeg(r) ((r) * 57.29577951308232)
+#define radToDeg(r) ((r) * 180 / PI)
 
 #endif //GAME_MATHEX_H

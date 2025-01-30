@@ -12,16 +12,18 @@
 #include "Error.h"
 #include "Logging.h"
 
-List *assetCacheNames;
-List *assetCacheData;
+List assetCacheNames;
+List assetCacheData;
 uint textureId;
+uint modelId;
 Image *images[MAX_TEXTURES];
+Model *models[MAX_MODELS];
 
 FILE *OpenAssetFile(const char *relPath)
 {
 	const size_t maxPathLength = 300;
 	char *path = calloc(maxPathLength, sizeof(char));
-	chk_malloc(path);
+	CheckAlloc(path);
 
 	const size_t pathLen = strlen(GetState()->executableFolder) + strlen("assets/") + strlen(relPath) + 1;
 	if (pathLen >= maxPathLength)
@@ -50,21 +52,34 @@ FILE *OpenAssetFile(const char *relPath)
 	return file;
 }
 
+void FreeModel(Model *model)
+{
+	if (model == NULL)
+	{
+		return;
+	}
+	free(model->name);
+	free(model->vertexData);
+	free(model->indexData);
+	free(model);
+	model = NULL;
+}
+
 void AssetCacheInit()
 {
-	assetCacheNames = CreateList();
-	assetCacheData = CreateList();
+	ListCreate(&assetCacheNames);
+	ListCreate(&assetCacheData);
 }
 
 void DestroyAssetCache()
 {
-	for (int i = 0; i < assetCacheData->size; i++)
+	for (int i = 0; i < assetCacheData.length; i++)
 	{
 		Asset *asset = ListGet(assetCacheData, i);
 		free(asset->data);
 		free(asset);
 	}
-	ListFree(assetCacheData);
+	free(assetCacheData.data);
 
 	for (int i = 0; i < MAX_TEXTURES; i++)
 	{
@@ -75,13 +90,18 @@ void DestroyAssetCache()
 		}
 	}
 
-	ListFreeWithData(assetCacheNames);
+	for (int i = 0; i < MAX_MODELS; i++)
+	{
+		FreeModel(models[i]);
+	}
+
+	ListAndContentsFree(&assetCacheNames, false);
 }
 
 Asset *DecompressAsset(const char *relPath)
 {
 	// see if relPath is already in the cache
-	for (int i = 0; i < assetCacheNames->size; i++)
+	for (int i = 0; i < assetCacheNames.length; i++)
 	{
 		if (strncmp(ListGet(assetCacheNames, i), relPath, 48) == 0)
 		{
@@ -100,14 +120,14 @@ Asset *DecompressAsset(const char *relPath)
 	const size_t fileSize = ftell(file);
 
 	byte *asset = malloc(fileSize);
-	chk_malloc(asset);
+	CheckAlloc(asset);
 	fseek(file, 0, SEEK_SET);
 	fread(asset, 1, fileSize, file);
 
 	fclose(file);
 
 	Asset *assetStruct = malloc(sizeof(Asset));
-	chk_malloc(assetStruct);
+	CheckAlloc(assetStruct);
 
 	size_t offset = 0;
 	// Read the first 4 bytes of the asset to get the size of the compressed data
@@ -124,7 +144,7 @@ Asset *DecompressAsset(const char *relPath)
 
 	// Allocate memory for the decompressed data
 	byte *decompressedData = malloc(decompressedSize);
-	chk_malloc(decompressedData);
+	CheckAlloc(decompressedData);
 
 	z_stream stream = {0};
 
@@ -172,11 +192,12 @@ Asset *DecompressAsset(const char *relPath)
 	assetStruct->data = decompressedData;
 
 	// Add the asset to the cache
-	const size_t pathLength = strlen(relPath);
-	char *data = malloc(pathLength + 1);
+	const size_t pathLength = strlen(relPath) + 1;
+	char *data = malloc(pathLength);
+	CheckAlloc(data);
 	strncpy(data, relPath, pathLength);
-	ListAdd(assetCacheNames, data);
-	ListAdd(assetCacheData, assetStruct);
+	ListAdd(&assetCacheNames, data);
+	ListAdd(&assetCacheData, assetStruct);
 
 	return assetStruct;
 }
@@ -187,7 +208,7 @@ void GenFallbackImage(Image *src)
 	src->height = 64;
 	src->pixelDataSize = 64 * 64 * 4;
 	src->pixelData = malloc(src->pixelDataSize);
-	chk_malloc(src->pixelData);
+	CheckAlloc(src->pixelData);
 
 	for (int x = 0; x < 64; x++)
 	{
@@ -226,7 +247,7 @@ Image *LoadImage(const char *asset)
 	}
 
 	Image *img = malloc(sizeof(Image));
-	chk_malloc(img);
+	CheckAlloc(img);
 
 	const Asset *textureAsset = DecompressAsset(asset);
 	if (textureAsset == NULL || textureAsset->type != ASSET_TYPE_TEXTURE)
@@ -242,9 +263,10 @@ Image *LoadImage(const char *asset)
 
 	img->id = textureId;
 
-	const size_t nameLength = strlen(asset);
-	img->name = malloc(nameLength + 1);
-	strncpy(img->name, asset, nameLength + 1);
+	const size_t nameLength = strlen(asset) + 1;
+	img->name = malloc(nameLength);
+	CheckAlloc(img->name);
+	strncpy(img->name, asset, nameLength);
 
 	images[textureId] = img;
 
@@ -255,6 +277,19 @@ Image *LoadImage(const char *asset)
 
 Model *LoadModel(const char *asset)
 {
+	for (int i = 0; i < MAX_MODELS; i++)
+	{
+		Model *model = models[i];
+		if (model == NULL)
+		{
+			break;
+		}
+		if (strcmp(asset, model->name) == 0)
+		{
+			return model;
+		}
+	}
+
 	const Asset *assetData = DecompressAsset(asset);
 	if (assetData == NULL)
 	{
@@ -267,7 +302,7 @@ Model *LoadModel(const char *asset)
 		return NULL;
 	}
 	Model *model = malloc(sizeof(Model));
-	chk_malloc(model);
+	CheckAlloc(model);
 	memcpy(&model->header, assetData->data, sizeof(ModelHeader));
 
 	if (strncmp(model->header.sig, "MSH", 3) != 0)
@@ -284,6 +319,15 @@ Model *LoadModel(const char *asset)
 		return NULL;
 	}
 
+	model->id = modelId;
+	models[modelId] = model;
+	modelId++;
+
+	const size_t nameLength = strlen(asset) + 1;
+	model->name = malloc(nameLength);
+	CheckAlloc(model->name);
+	strncpy(model->name, asset, nameLength);
+
 	const size_t vertsSizeBytes = model->header.vertexCount * (sizeof(float) * 8);
 	const size_t indexSizeBytes = model->header.indexCount * sizeof(uint);
 
@@ -291,9 +335,9 @@ Model *LoadModel(const char *asset)
 	model->indexCount = model->header.indexCount;
 
 	model->vertexData = malloc(vertsSizeBytes);
-	chk_malloc(model->vertexData);
+	CheckAlloc(model->vertexData);
 	model->indexData = malloc(indexSizeBytes);
-	chk_malloc(model->indexData);
+	CheckAlloc(model->indexData);
 
 	// Copy the index data, then the vertex data
 	memcpy(model->indexData, assetData->data + sizeof(ModelHeader), indexSizeBytes);
@@ -302,15 +346,12 @@ Model *LoadModel(const char *asset)
 	return model;
 }
 
-void FreeModel(Model *model)
+Model *GetModelFromId(const uint id)
 {
-	if (model == NULL)
+	if (id >= modelId)
 	{
-		LogWarning("Tried to free NULL model!");
-		return;
+		Error("Invalid model ID!");
 	}
-	free(model->vertexData);
-	free(model->indexData);
-	free(model);
-	model = NULL;
+
+	return models[id];
 }

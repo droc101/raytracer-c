@@ -10,6 +10,9 @@
 /// The maximum number of textures that can be loaded in any one execution of the game
 #define MAX_TEXTURES 512
 
+/// The maximum number of textures that can be loaded in any one execution of the game
+#define MAX_MODELS 128
+
 /**
  * Initialize the asset cache
  */
@@ -44,10 +47,11 @@ Image *LoadImage(const char *asset);
 Model *LoadModel(const char *asset);
 
 /**
- * Free a model
- * @param model The model to free
+ * Fetch a cached model from an ID
+ * @param id The model ID to fetch
+ * @return The model with the given ID
  */
-void FreeModel(Model *model);
+Model *GetModelFromId(uint id);
 
 #define TEXTURE(assetName) ("texture/" assetName ".gtex")
 #define MUSIC(assetName) ("audio/" assetName ".gmus")
@@ -55,7 +59,7 @@ void FreeModel(Model *model);
 #define LEVEL(assetName) ("level/" assetName ".gmap")
 #define OGL_SHADER(assetName) ("glshader/" assetName ".gshd")
 #define VK_FRAG(assetName) ("vkshader/" assetName ".gfrg")
-#define VK_VERT(assetName) ("vkshader/" assetName ".gvert")
+#define VK_VERT(assetName) ("vkshader/" assetName ".gvrt")
 #define MODEL(assetName) ("model/" assetName ".gmdl")
 
 #endif //GAME_ASSETREADER_H

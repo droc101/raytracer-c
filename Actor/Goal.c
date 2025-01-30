@@ -5,6 +5,7 @@
 #include "Goal.h"
 #include <math.h>
 #include "../Helpers/Collision.h"
+#include "../Helpers/Core/MathEx.h"
 #include "../Helpers/TextBox.h"
 #include "../Structs/GlobalState.h"
 #include "../Structs/Level.h"

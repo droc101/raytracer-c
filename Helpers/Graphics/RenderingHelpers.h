@@ -7,14 +7,16 @@
 
 #include "../../defines.h"
 #include "cglm/cglm.h"
+#include "Vulkan/Vulkan.h"
 
 typedef struct BatchedQuadArray BatchedQuadArray;
 
 struct BatchedQuadArray
 {
-	/// float[quad_count][4] with X,Y,U,V for textured quads, float[quad_count][2] with X,Y for untextured quads
+	/// If used in a textured quad, @c verts takes the form of a @c float[quad_count * 16] holding values for X, Y, U, and V for each vertex.
+	/// If used in a colored quad, @c verts takes the form of a @c float[quad_count * 8] holding values for X and Y for each vertex.
 	float *verts;
-	/// uint[6*quad_count] with indices
+	/// uint[quad_count * 6] with indices
 	uint *indices;
 	/// Number of quads in the array
 	int quad_count;
@@ -23,18 +25,11 @@ struct BatchedQuadArray
 extern Renderer currentRenderer;
 
 /**
- * Get the transformation matrix for a camera
- * @param cam The camera
- * @return A mat4 MODEL_VIEW_PROJECTION matrix of the camera (World space to screen space)
- */
-mat4 *GetMatrix(const Camera *cam);
-
-/**
  * Get the transformation matrix for an actor
  * @param Actor The actor
- * @return A mat4 MODEL matrix of the actor (Model space to world space)
+ * @param transformMatrix A mat4 MODEL matrix of the actor (Model space to world space)
  */
-mat4 *ActorTransformMatrix(const Actor *Actor);
+void ActorTransformMatrix(const Actor *Actor, mat4 *transformMatrix);
 
 /**
  * Perform any pre-initialization for the rendering system
@@ -53,6 +48,23 @@ bool RenderInit();
 void RenderDestroy();
 
 /**
+ * Run tasks that need to be run before any drawing can be done
+ */
+VkResult FrameStart();
+
+/**
+ * Run tasks needed to present the frame to the screen, as well as swapping the framebuffers
+ */
+void FrameEnd();
+
+void LoadLevelWalls(const Level *l);
+
+/**
+ * An abstraction to allow the rendering code to have an indicator of when a new actor is added to the level.
+ */
+void LoadNewActor();
+
+/**
  * Render the 3D portion of a level
  * @param l The level to render
  * @param cam The camera to render with
@@ -65,6 +77,34 @@ void RenderLevel3D(const Level *l, const Camera *cam);
  * Update the viewport size
  */
 void UpdateViewportSize();
+
+/**
+ * Handle minimizing the window
+ */
+void WindowObscured();
+
+/**
+ * Handle restoring the window from minimized state
+ */
+void WindowRestored();
+
+/**
+ * Enable or disable low FPS mode
+ * @param val A boolean representing if low FPS mode should be enabled
+ */
+void SetLowFPS(bool val);
+
+/**
+ * Check if low FPS mode is enabled
+ * @return A boolean representing if low FPS is enabled
+ */
+bool IsLowFPSModeEnabled();
+
+/**
+ * Gets the supported MSAA levels
+ * @return A bitmask of supported MSAA levels
+ */
+byte GetSampleCountFlags();
 
 /**
  * Draw a `BatchedQuadArray` to the screen using the textured shader. This is faster than multiple draw calls, but harder to use.
@@ -94,15 +134,6 @@ float X_TO_NDC(float x);
  * @return The NDC position
  */
 float Y_TO_NDC(float y);
-
-/**
- * Render a 3D model
- * @param m The model to render
- * @param MODEL_WORLD_MATRIX The model -> world matrix
- * @param texture The texture name
- * @param shd The shader to use
- */
-void RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const char *texture, ModelShader shd);
 
 /**
  * Render the background of the menu screen (main menu, options, level select, etc.)

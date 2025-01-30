@@ -5,10 +5,9 @@
 #ifndef GAME_LOGGING_H
 #define GAME_LOGGING_H
 
-#include <stdarg.h>
 #include "../../defines.h"
 
-#define FLUSH_ON_INFO false
+#define FLUSH_ON_INFO true
 #define FLUSH_ON_DEBUG true
 #define FLUSH_ON_WARNING true
 #define FLUSH_ON_ERROR true
@@ -23,35 +22,34 @@ void LogInit();
  */
 void LogDestroy();
 
-// ReSharper disable once CppConstParameterInDeclaration
-void LogInternal(const char *type, int color, bool flush, const char *message, va_list args);
+void LogInternal(const char *type, int color, bool flush, const char *message, ...);
 
 /**
  * Log an info message
- * @param message Format string
  * @param ... Format arguments
  */
-void LogInfo(const char *message, ...);
+#define LogInfo(...) LogInternal("INFO", 37, FLUSH_ON_INFO, __VA_ARGS__)
 
+#ifdef BUILDSTYLE_DEBUG
 /**
  * Log an info message, but only in debug builds
- * @param message Format string
  * @param ... Format arguments
  */
-void LogDebug(const char *message, ...);
+#define LogDebug(...) LogInternal("DEBUG", 37, FLUSH_ON_DEBUG, __VA_ARGS__)
+#else
+#define LogDebug(...)
+#endif
 
 /**
  * Log a warning message
- * @param message Format string
  * @param ... Format arguments
  */
-void LogWarning(const char *message, ...);
+#define LogWarning(...) LogInternal("INFO", 33, FLUSH_ON_WARNING, __VA_ARGS__)
 
 /**
  * Log an error message
- * @param message Format string
  * @param ... Format arguments
  */
-void LogError(const char *message, ...);
+#define LogError(...) LogInternal("ERROR", 31, FLUSH_ON_ERROR, __VA_ARGS__)
 
 #endif //GAME_LOGGING_H

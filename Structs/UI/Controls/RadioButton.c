@@ -26,7 +26,7 @@ Control *CreateRadioButtonControl(const Vector2 position,
 	radio->anchor = anchor;
 
 	radio->ControlData = malloc(sizeof(RadioButtonData));
-	chk_malloc(radio->ControlData);
+	CheckAlloc(radio->ControlData);
 	RadioButtonData *data = radio->ControlData;
 	data->label = label;
 	data->checked = checked;
@@ -59,7 +59,7 @@ void UpdateRadioButton(UiStack *stack, Control *c, Vector2 /*localMousePos*/, ui
 		data->checked = true;
 
 		// Find all radio buttons with the same group id and uncheck them
-		for (uint i = 0; i < ListGetSize(stack->Controls); i++)
+		for (uint i = 0; i < stack->Controls.length; i++)
 		{
 			const Control *control = ListGet(stack->Controls, i);
 			if (control->type == RADIO_BUTTON)

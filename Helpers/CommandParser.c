@@ -20,11 +20,12 @@ void ExecuteCommand(const char *command)
 	// need to strdup because strtok_r modifies the string (removing results in sigsegv)
 	// no, passing it as non-const does not work
 	char *rwCommand = strdup(command);
-	List *commandList = CreateList();
-	char *token = strtok(rwCommand, " ");
+	List commandList;
+	ListCreate(&commandList);
+	const char *token = strtok(rwCommand, " ");
 	while (token != NULL)
 	{
-		ListAdd(commandList, strdup(token));
+		ListAdd(&commandList, strdup(token));
 		token = strtok(NULL, " ");
 	}
 	free(rwCommand);
@@ -32,17 +33,17 @@ void ExecuteCommand(const char *command)
 	char *commandName = ListGet(commandList, 0);
 	if (strcmp(commandName, "level") == 0)
 	{
-		if (commandList->size < 2)
+		if (commandList.length < 2)
 		{
 			printf("level command requires a level name\n");
 		} else
 		{
-			GLoadingStateSet((char*)ListGet(commandList, 1));
+			GLoadingStateSet(ListGet(commandList, 1));
 		}
 	}
 	else if (strcmp(commandName, "signal") == 0)
 	{
-		if (commandList->size < 2)
+		if (commandList.length < 2)
         {
             printf("signal command requires a signal number\n");
         } else
@@ -65,5 +66,5 @@ void ExecuteCommand(const char *command)
 		printf("Unknown command: %s\n", commandName);
 	}
 
-	ListFreeWithData(commandList);
+	ListAndContentsFree(&commandList, false);
 }

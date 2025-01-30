@@ -13,8 +13,11 @@
 #include "GL/GLHelper.h"
 #include "RenderingHelpers.h"
 #include "SDL.h"
+#include "Vulkan/Vulkan.h"
 
 SDL_Window *window;
+int windowWidth;
+int windowHeight;
 
 uint drawColor = 0xFFFFFFFF;
 
@@ -30,20 +33,19 @@ inline SDL_Window *GetGameWindow()
 
 inline int WindowWidth()
 {
-	int w;
-	int h;
-	SDL_GetWindowSize(window, &w, &h);
-	w /= GetState()->uiScale;
-	return w;
+	return windowWidth;
 }
 
 inline int WindowHeight()
 {
-	int w;
-	int h;
-	SDL_GetWindowSize(window, &w, &h);
-	h /= GetState()->uiScale;
-	return h;
+	return windowHeight;
+}
+
+inline void UpdateWindowSize()
+{
+	SDL_GetWindowSize(window, &windowWidth, &windowHeight);
+	windowWidth = (int)(windowWidth / GetState()->uiScale);
+	windowHeight = (int)(windowHeight / GetState()->uiScale);
 }
 
 inline Vector2 ActualWindowSize()
@@ -63,7 +65,7 @@ inline void SetColorUint(const uint color)
 byte *GetColorUint(const uint color)
 {
 	byte *colorBuf = malloc(4);
-	chk_malloc(colorBuf);
+	CheckAlloc(colorBuf);
 	colorBuf[0] = color >> 16 & 0xFF;
 	colorBuf[1] = color >> 8 & 0xFF;
 	colorBuf[2] = color >> 0 & 0xFF;
@@ -119,7 +121,7 @@ void SetTexParams(const char *texture, const bool linear, const bool repeat)
 	switch (currentRenderer)
 	{
 		case RENDERER_VULKAN:
-
+			VK_SetTexParams(texture, linear, repeat);
 			break;
 		case RENDERER_OPENGL:
 			GL_SetTexParams(texture, linear, repeat);
@@ -134,7 +136,12 @@ inline void DrawLine(const Vector2 start, const Vector2 end, const float thickne
 	switch (currentRenderer)
 	{
 		case RENDERER_VULKAN:
-
+			VK_DrawLine((int)start.x,
+						(int)start.y,
+						(int)end.x,
+						(int)end.y,
+						thickness * (float)GetState()->uiScale,
+						drawColor);
 			break;
 		case RENDERER_OPENGL:
 			GL_DrawLine(start, end, drawColor, thickness * GetState()->uiScale);
@@ -149,7 +156,12 @@ inline void DrawOutlineRect(const Vector2 pos, const Vector2 size, const float t
 	switch (currentRenderer)
 	{
 		case RENDERER_VULKAN:
-
+			VK_DrawRectOutline((int)pos.x,
+							   (int)pos.y,
+							   (int)size.x,
+							   (int)size.y,
+							   thickness * (float)GetState()->uiScale,
+							   drawColor);
 			break;
 		case RENDERER_OPENGL:
 			GL_DrawRectOutline(pos, size, drawColor, thickness * GetState()->uiScale);
@@ -164,7 +176,7 @@ inline void DrawTexture(const Vector2 pos, const Vector2 size, const char *textu
 	switch (currentRenderer)
 	{
 		case RENDERER_VULKAN:
-
+			VK_DrawTexturedQuad((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, texture);
 			break;
 		case RENDERER_OPENGL:
 			GL_DrawTexture(pos, size, texture);
@@ -179,7 +191,7 @@ inline void DrawTextureMod(const Vector2 pos, const Vector2 size, const char *te
 	switch (currentRenderer)
 	{
 		case RENDERER_VULKAN:
-
+			VK_DrawTexturedQuadMod((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, texture, color);
 			break;
 		case RENDERER_OPENGL:
 			GL_DrawTextureMod(pos, size, texture, color);
@@ -198,7 +210,15 @@ inline void DrawTextureRegion(const Vector2 pos,
 	switch (currentRenderer)
 	{
 		case RENDERER_VULKAN:
-
+			VK_DrawTexturedQuadRegion((int)pos.x,
+									  (int)pos.y,
+									  (int)size.x,
+									  (int)size.y,
+									  (int)region_start.x,
+									  (int)region_start.y,
+									  (int)region_end.x,
+									  (int)region_end.y,
+									  texture);
 			break;
 		case RENDERER_OPENGL:
 			GL_DrawTextureRegion(pos, size, texture, region_start, region_end);
@@ -218,7 +238,16 @@ inline void DrawTextureRegionMod(const Vector2 pos,
 	switch (currentRenderer)
 	{
 		case RENDERER_VULKAN:
-
+			VK_DrawTexturedQuadRegionMod((int)pos.x,
+										 (int)pos.y,
+										 (int)size.x,
+										 (int)size.y,
+										 (int)region_start.x,
+										 (int)region_start.y,
+										 (int)region_end.x,
+										 (int)region_end.y,
+										 texture,
+										 color);
 			break;
 		case RENDERER_OPENGL:
 			GL_DrawTextureRegionMod(pos, size, texture, region_start, region_end, color);
@@ -233,7 +262,7 @@ inline void ClearColor(const uint color)
 	switch (currentRenderer)
 	{
 		case RENDERER_VULKAN:
-
+			VK_ClearColor(color);
 			break;
 		case RENDERER_OPENGL:
 			GL_ClearColor(color);
@@ -248,7 +277,7 @@ inline void ClearScreen()
 	switch (currentRenderer)
 	{
 		case RENDERER_VULKAN:
-
+			// Unused
 			break;
 		case RENDERER_OPENGL:
 			GL_ClearScreen();
@@ -263,25 +292,10 @@ inline void ClearDepthOnly()
 	switch (currentRenderer)
 	{
 		case RENDERER_VULKAN:
-
+			// Unused
 			break;
 		case RENDERER_OPENGL:
 			GL_ClearDepthOnly();
-			break;
-		default:
-			break;
-	}
-}
-
-inline void Swap()
-{
-	switch (currentRenderer)
-	{
-		case RENDERER_VULKAN:
-
-			break;
-		case RENDERER_OPENGL:
-			GL_Swap();
 			break;
 		default:
 			break;
@@ -293,7 +307,7 @@ inline void DrawRect(const int x, const int y, const int w, const int h)
 	switch (currentRenderer)
 	{
 		case RENDERER_VULKAN:
-
+			VK_DrawColoredQuad(x, y, w, h, drawColor);
 			break;
 		case RENDERER_OPENGL:
 			GL_DrawRect(v2(x, y), v2(w, h), drawColor);

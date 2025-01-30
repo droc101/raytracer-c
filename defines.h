@@ -69,7 +69,6 @@ typedef void (*ActorSignalHandlerFunction)(Actor *self, const Actor *sender, int
 
 #define STR(x) #x
 #define TO_STR(x) STR(x)
-#define PI 3.14159265358979323846
 #define PHYSICS_TARGET_MS (1000 / PHYSICS_TARGET_TPS)
 #define PHYSICS_TARGET_MS_D (1000.0 / PHYSICS_TARGET_TPS)
 #define PHYSICS_TARGET_NS (1000000000 / PHYSICS_TARGET_TPS) // nanoseconds because precision
@@ -100,7 +99,8 @@ enum AssetType
 	ASSET_TYPE_WAV = 2,
 	ASSET_TYPE_LEVEL = 3,
 	ASSET_TYPE_GLSL = 4,
-	// ... vulkan branch stuff 5 - 6
+	ASSET_TYPE_SPIRV_FRAG = 5,
+	ASSET_TYPE_SPIRV_VERT = 6,
 	ASSET_TYPE_MODEL = 7,
 };
 
@@ -249,13 +249,13 @@ struct Level
 	short courseNum;
 
 	/// The list of actors in the level
-	List *actors;
+	List actors;
 	/// The list of walls in the level
-	List *walls;
+	List walls;
 	/// The list of triggers in the level
-	List *triggers;
+	List triggers;
 	/// The list of models in the level
-	List *models;
+	List models;
 
 	/// Indicates if the level has a ceiling. If false, the level will use a sky instead
 	bool hasCeiling;
@@ -269,9 +269,9 @@ struct Level
 
 	/// The color of the fog
 	uint fogColor;
-	/// The distance at which the fog begins to fade in
+	/// The distance from the player at which the fog begins to fade in
 	double fogStart;
-	/// The distance at which the fog is fully opaque
+	/// The distance from the player at which the fog is fully opaque
 	double fogEnd;
 
 	/// The player object
@@ -371,6 +371,8 @@ struct ModelHeader
 struct Model
 {
 	ModelHeader header;
+	size_t id;
+	char *name;
 
 	/// The number of vertices in the model
 	uint vertexCount;
@@ -477,7 +479,7 @@ struct Actor
 	/// The function to call when the actor receives a signal.
 	ActorSignalHandlerFunction SignalHandler;
 	/// List of signals the actor is listening for
-	List *listeningFor;
+	List listeningFor;
 
 	// extra parameters for the actor. saved in level data, so can be used during Init
 	byte paramA;

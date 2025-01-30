@@ -14,7 +14,7 @@
 Camera *CreateCamera()
 {
 	Camera *camera = malloc(sizeof(Camera));
-	chk_malloc(camera);
+	CheckAlloc(camera);
 	camera->x = 0;
 	camera->y = 0;
 	camera->z = 0;

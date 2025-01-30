@@ -23,7 +23,7 @@ Control *CreateButtonControl(const Vector2 position,
 	btn->anchor = anchor;
 
 	btn->ControlData = malloc(sizeof(ButtonData));
-	chk_malloc(btn->ControlData);
+	CheckAlloc(btn->ControlData);
 	ButtonData *data = btn->ControlData;
 	data->text = text;
 	data->callback = callback;

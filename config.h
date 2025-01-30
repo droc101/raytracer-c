@@ -54,6 +54,22 @@
 // Enable or disable recording highest and lowest frame times (has a performance impact)
 //#define BENCHMARK_RECORD_HIGH_LOW_TIMES
 
+#ifdef BUILDSTYLE_DEBUG
+/**
+ * Additional validation for Vulkan code
+ * This will only work if the Vulkan SDK is installed on the device running the program.
+ * @warning NOT FOR RELEASE BUILDS
+ * @see https://docs.vulkan.org/guide/latest/validation_overview.html
+ * @see https://vulkan.lunarg.com/doc/sdk/latest/windows/khronos_validation_layer.html
+ */
+#define VK_ENABLE_VALIDATION_LAYER
+#endif
+
+#if defined(__LINUX__) && defined(BUILDSTYLE_DEBUG)
+/// Adds an overlay with FPS information provided by the Mesa Vulkan driver in Linux
+// #define VK_ENABLE_MESA_FPS_OVERLAY
+#endif
+
 #pragma endregion
 
 // Program information

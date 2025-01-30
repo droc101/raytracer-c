@@ -33,6 +33,11 @@ int WindowWidth();
 int WindowHeight();
 
 /**
+ * Updates the variables returned by @c WindowWidth() and @c WindowHeight()
+ */
+void UpdateWindowSize();
+
+/**
  * Get the actual size of the window, ignoring UI scale
  * @return The actual size of the window
  */
@@ -159,11 +164,6 @@ void ClearScreen();
  * Clear the depth buffer
  */
 void ClearDepthOnly();
-
-/**
- * Swap the buffers
- */
-void Swap();
 
 /**
  * Get the size of a texture

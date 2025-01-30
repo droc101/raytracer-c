@@ -170,14 +170,14 @@ void GMainStateFixedUpdate(GlobalState *state, double delta)
 
 	l->player.angle = wrap(l->player.angle, 0, 2 * PI);
 
-	for (int i = 0; i < l->actors->size; i++)
+	for (int i = 0; i < l->actors.length; i++)
 	{
 		Actor *a = ListGet(l->actors, i);
 		a->Update(a, delta);
 	}
 
 	// Check for collisions with triggers
-	for (int i = 0; i < l->triggers->size; i++)
+	for (int i = 0; i < l->triggers.length; i++)
 	{
 		Trigger *t = ListGet(l->triggers, i);
 		if (CheckTriggerCollision(t, &l->player))
@@ -185,7 +185,8 @@ void GMainStateFixedUpdate(GlobalState *state, double delta)
 			ExecuteCommand(t->command);
 			if (t->flags & TRIGGER_FLAG_ONE_SHOT)
 			{
-				RemoveTrigger(t); // goodbye
+				RemoveTrigger(i); // goodbye
+				free(t);
 			}
 			break;
 		}
@@ -226,9 +227,9 @@ void GMainStateRender(GlobalState *State)
 			l->player.angle,
 			radToDeg(l->player.angle));
 
-	DPrintF("Walls: %d", 0xFFFFFFFF, false, l->walls->size);
-	DPrintF("Actors: %d", 0xFFFFFFFF, false, l->actors->size);
-	DPrintF("Triggers: %d", 0xFFFFFFFF, false, l->triggers->size);
+	DPrintF("Walls: %d", 0xFFFFFFFF, false, l->walls.length);
+	DPrintF("Actors: %d", 0xFFFFFFFF, false, l->actors.length);
+	DPrintF("Triggers: %d", 0xFFFFFFFF, false, l->triggers.length);
 }
 
 void GMainStateSet()

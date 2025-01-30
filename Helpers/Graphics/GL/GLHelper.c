@@ -185,7 +185,7 @@ GL_Shader *GL_ConstructShader(const char *fsh, const char *vsh)
 	char errorBuffer[512];
 
 	GL_Shader *shd = malloc(sizeof(GL_Shader));
-	chk_malloc(shd);
+	CheckAlloc(shd);
 
 	shd->vsh = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(shd->vsh, 1, (const GLchar *const *)&vsh, NULL);
@@ -242,7 +242,7 @@ void GL_DestroyShader(GL_Shader *shd)
 GL_Buffer *GL_ConstructBuffer()
 {
 	GL_Buffer *buf = malloc(sizeof(GL_Buffer));
-	chk_malloc(buf);
+	CheckAlloc(buf);
 
 	glGenVertexArrays(1, &buf->vao);
 	glGenBuffers(1, &buf->vbo);
@@ -300,16 +300,6 @@ void GL_DestroyGL()
 	glDisableVertexAttribArray(0);
 	GL_DestroyBuffer(glBuffer);
 	SDL_GL_DeleteContext(ctx);
-}
-
-inline float GL_X_TO_NDC(const float x)
-{
-	return x / WindowWidth() * 2.0f - 1.0f;
-}
-
-inline float GL_Y_TO_NDC(const float y)
-{
-	return 1.0f - y / WindowHeight() * 2.0f;
 }
 
 void GL_DrawRect(const Vector2 pos, const Vector2 size, const uint color)
@@ -682,7 +672,7 @@ void GL_SetLevelParams(const mat4 *mvp, const Level *l)
 					   mvp[0][0]); // world -> screen
 }
 
-void GL_DrawWall(const Wall *w, const mat4 *mdl, const Camera *cam, const Level * /*l*/)
+void GL_DrawWall(const Wall *w, const mat4 mdl, const Camera *cam, const Level * /*l*/)
 {
 	glUseProgram(wall->program);
 
@@ -691,7 +681,7 @@ void GL_DrawWall(const Wall *w, const mat4 *mdl, const Camera *cam, const Level 
 	glUniformMatrix4fv(glGetUniformLocation(wall->program, "MODEL_WORLD_MATRIX"),
 					   1,
 					   GL_FALSE,
-					   mdl[0][0]); // model -> world
+					   mdl[0]); // model -> world
 
 	glUniform1f(glGetUniformLocation(wall->program, "camera_yaw"), cam->yaw);
 	glUniform1f(glGetUniformLocation(wall->program, "wall_angle"), w->angle);
@@ -787,7 +777,7 @@ void GL_DrawFloor(const Vector2 vp1,
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 }
 
-void GL_DrawShadow(const Vector2 vp1, const Vector2 vp2, const mat4 *mvp, const mat4 *mdl, const Level *l)
+void GL_DrawShadow(const Vector2 vp1, const Vector2 vp2, const mat4 *mvp, const mat4 mdl, const Level *l)
 {
 	glUseProgram(shadow->program);
 
@@ -800,7 +790,7 @@ void GL_DrawShadow(const Vector2 vp1, const Vector2 vp2, const mat4 *mvp, const 
 	glUniformMatrix4fv(glGetUniformLocation(shadow->program, "MODEL_WORLD_MATRIX"),
 					   1,
 					   GL_FALSE,
-					   mdl[0][0]); // model -> world
+					   mdl[0]); // model -> world
 
 	const uint color = l->fogColor;
 	const float r = (color >> 16 & 0xFF) / 255.0f;
@@ -941,6 +931,40 @@ void GL_DrawTexturedArrays(const float *vertices,
 	glDrawElements(GL_TRIANGLES, quad_count * 6, GL_UNSIGNED_INT, NULL);
 }
 
+mat4 *GL_GetMatrix(const Camera *cam)
+{
+	vec3 cam_pos = {cam->x, cam->y, cam->z};
+	const float aspect = (float)WindowWidth() / (float)WindowHeight();
+
+	mat4 IDENTITY = GLM_MAT4_IDENTITY_INIT;
+	mat4 PERSPECTIVE = GLM_MAT4_ZERO_INIT;
+	glm_perspective(glm_rad(cam->fov), aspect, NEAR_Z, FAR_Z, PERSPECTIVE);
+
+	vec3 look_at = {cosf(cam->yaw), 0, sinf(cam->yaw)};
+	vec3 up = {0, 1, 0};
+
+	// TODO: roll and pitch are messed up
+
+	glm_vec3_rotate(look_at, cam->roll, (vec3){0, 0, 1}); // Roll
+	glm_vec3_rotate(look_at, cam->pitch, (vec3){1, 0, 0}); // Pitch
+
+	look_at[0] += cam_pos[0];
+	look_at[1] += cam_pos[1];
+	look_at[2] += cam_pos[2];
+
+	mat4 VIEW = GLM_MAT4_ZERO_INIT;
+	glm_lookat(cam_pos, look_at, up, VIEW);
+
+	mat4 MODEL_VIEW = GLM_MAT4_ZERO_INIT;
+	glm_mat4_mul(VIEW, IDENTITY, MODEL_VIEW);
+
+	mat4 *MODEL_VIEW_PROJECTION = malloc(sizeof(mat4));
+	CheckAlloc(MODEL_VIEW_PROJECTION);
+	glm_mat4_mul(PERSPECTIVE, MODEL_VIEW, *MODEL_VIEW_PROJECTION);
+
+	return MODEL_VIEW_PROJECTION;
+}
+
 void GL_RenderLevel(const Level *l, const Camera *cam)
 {
 	GL_Enable3D();
@@ -948,14 +972,10 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
 	//glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 	//glLineWidth(2);
 
-	mat4 *WORLD_VIEW_MATRIX = GetMatrix(cam);
-	mat4 *IDENTITY = malloc(sizeof(mat4));
-	chk_malloc(IDENTITY);
-	glm_mat4_identity(*IDENTITY);
-	mat4 *SKY_MODEL_WORLD = malloc(sizeof(mat4));
-	chk_malloc(SKY_MODEL_WORLD);
-	glm_mat4_identity(*SKY_MODEL_WORLD);
-	glm_translated(*SKY_MODEL_WORLD, (vec3){l->player.pos.x, 0, l->player.pos.y});
+	mat4 *WORLD_VIEW_MATRIX = GL_GetMatrix(cam);
+	const mat4 IDENTITY = GLM_MAT4_IDENTITY_INIT;
+	mat4 SKY_MODEL_WORLD = GLM_MAT4_IDENTITY_INIT;
+	glm_translated(SKY_MODEL_WORLD, (vec3){l->player.pos.x, 0, l->player.pos.y});
 
 	const Vector2 floor_start = v2(l->player.pos.x - 100, l->player.pos.y - 100);
 	const Vector2 floor_end = v2(l->player.pos.x + 100, l->player.pos.y + 100);
@@ -974,31 +994,32 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
 	GL_DrawFloor(floor_start, floor_end, WORLD_VIEW_MATRIX, l, l->floorTex, -0.5, 1.0);
 
 	glDisable(GL_DEPTH_TEST);
-	for (int i = 0; i < l->actors->size; i++)
+	for (int i = 0; i < l->actors.length; i++)
 	{
 		Actor *actor = ListGet(l->actors, i);
 		if (actor->showShadow)
 		{
-			mat4 *actor_xfm = ActorTransformMatrix(actor);
+			mat4 actor_xfm;
+			ActorTransformMatrix(actor, &actor_xfm);
 			// remove the rotation and y position from the actor matrix so the shadow draws correctly
-			glm_rotate(*actor_xfm, actor->rotation, (vec3){0, 1, 0});
-			glm_translate(*actor_xfm, (vec3){0, -actor->yPosition, 0});
+			glm_rotate(actor_xfm, actor->rotation, (vec3){0, 1, 0});
+			glm_translate(actor_xfm, (vec3){0, -actor->yPosition, 0});
 
 			GL_DrawShadow(v2s(-0.5 * actor->shadowSize), v2s(0.5 * actor->shadowSize), WORLD_VIEW_MATRIX, actor_xfm, l);
-			free(actor_xfm);
 		}
 	}
 	glEnable(GL_DEPTH_TEST);
 
-	for (int i = 0; i < l->walls->size; i++)
+	for (int i = 0; i < l->walls.length; i++)
 	{
 		GL_DrawWall(ListGet(l->walls, i), IDENTITY, cam, l);
 	}
 
-	for (int i = 0; i < l->actors->size; i++)
+	for (int i = 0; i < l->actors.length; i++)
 	{
 		const Actor *actor = ListGet(l->actors, i);
-		mat4 *actor_xfm = ActorTransformMatrix(actor);
+		mat4 actor_xfm = GLM_MAT4_IDENTITY_INIT;
+		ActorTransformMatrix(actor, &actor_xfm);
 		if (actor->actorModel == NULL)
 		{
 			if (actor->actorWall == NULL)
@@ -1014,20 +1035,15 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
 		{
 			GL_RenderModel(actor->actorModel, actor_xfm, actor->actorModelTexture, SHADER_SHADED);
 		}
-
-
-
-		free(actor_xfm);
 	}
 
 	free(WORLD_VIEW_MATRIX);
-	free(IDENTITY);
 
 	//glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 	GL_Disable3D();
 }
 
-void GL_RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const char *texture, const ModelShader shader)
+void GL_RenderModel(const Model *model, const mat4 modelWorldMatrix, const char *texture, const ModelShader shader)
 {
 	GL_Shader *shd;
 	switch (shader)
@@ -1052,15 +1068,21 @@ void GL_RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const char *
 	glUniformMatrix4fv(glGetUniformLocation(shd->program, "MODEL_WORLD_MATRIX"),
 					   1,
 					   GL_FALSE,
-					   MODEL_WORLD_MATRIX[0][0]); // model -> world
+					   modelWorldMatrix[0]); // model -> world
 
 	glBindVertexArray(glBuffer->vao);
 
 	glBindBuffer(GL_ARRAY_BUFFER, glBuffer->vbo);
-	glBufferData(GL_ARRAY_BUFFER, m->vertexCount * sizeof(float) * 8, m->vertexData, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER,
+				 model->vertexCount * sizeof(float) * 8,
+				 model->vertexData,
+				 GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glBuffer->ebo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, m->indexCount * sizeof(uint), m->indexData, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+				 model->indexCount * sizeof(uint),
+				 model->indexData,
+				 GL_STATIC_DRAW);
 
 	const GLint posAttrLoc = glGetAttribLocation(shd->program, "VERTEX");
 	glVertexAttribPointer(posAttrLoc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void *)0);
@@ -1077,5 +1099,5 @@ void GL_RenderModel(const Model *m, const mat4 *MODEL_WORLD_MATRIX, const char *
 		glEnableVertexAttribArray(normAttrLoc);
 	}
 
-	glDrawElements(GL_TRIANGLES, m->indexCount, GL_UNSIGNED_INT, NULL);
+	glDrawElements(GL_TRIANGLES, model->indexCount, GL_UNSIGNED_INT, NULL);
 }

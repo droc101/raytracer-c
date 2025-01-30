@@ -21,7 +21,7 @@
 #include "GMenuState.h"
 
 int GLevelSelectState_SelectedLevel = 0;
-List *levelList = NULL;
+List levelList;
 
 void GLevelSelectStateUpdate(GlobalState * /*State*/)
 {
@@ -29,16 +29,16 @@ void GLevelSelectStateUpdate(GlobalState * /*State*/)
 	{
 		GMenuStateSet();
 	}
-	if (levelList->size > 0)
+	if (levelList.length > 0)
 	{
 		if (IsKeyJustPressed(SDL_SCANCODE_DOWN) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_DPAD_DOWN))
 		{
 			GLevelSelectState_SelectedLevel--;
-			GLevelSelectState_SelectedLevel = wrap(GLevelSelectState_SelectedLevel, 0, levelList->size);
+			GLevelSelectState_SelectedLevel = wrap(GLevelSelectState_SelectedLevel, 0, levelList.length);
 		} else if (IsKeyJustPressed(SDL_SCANCODE_UP) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_DPAD_UP))
 		{
 			GLevelSelectState_SelectedLevel++;
-			GLevelSelectState_SelectedLevel = wrap(GLevelSelectState_SelectedLevel, 0, levelList->size);
+			GLevelSelectState_SelectedLevel = wrap(GLevelSelectState_SelectedLevel, 0, levelList.length);
 		} else if (IsKeyJustReleased(SDL_SCANCODE_SPACE) || IsButtonJustReleased(CONTROLLER_OK))
 		{
 			ConsumeKey(SDL_SCANCODE_SPACE);
@@ -61,7 +61,7 @@ void GLevelSelectStateRender(GlobalState * /*State*/)
 
 	char levelNameBuffer[64];
 
-	if (levelList->size > 0)
+	if (levelList.length > 0)
 	{
 		char *levelName = ListGet(levelList, GLevelSelectState_SelectedLevel);
 
@@ -83,7 +83,7 @@ void GLevelSelectStateRender(GlobalState * /*State*/)
 
 void LoadLevelList()
 {
-	levelList = CreateList();
+	ListCreate(&levelList);
 	char levelDataPath[300];
 	sprintf(levelDataPath, "%sassets/level/", GetState()->executableFolder);
 
@@ -101,18 +101,19 @@ void LoadLevelList()
 		if (strstr(ent->d_name, ".gmap") != NULL)
 		{
 			char *levelName = malloc(strlen(ent->d_name) + 1);
-			chk_malloc(levelName);
+			CheckAlloc(levelName);
 			strcpy(levelName, ent->d_name);
 			// Remove the .gmap extension
 			levelName[strlen(levelName) - 5] = '\0';
-			ListAdd(levelList, levelName);
+			ListAdd(&levelList, levelName);
 		}
 	}
+	closedir(dir);
 }
 
 void GLevelSelectStateSet()
 {
-	if (levelList == NULL)
+	if (levelList.length == 0)
 	{
 		LoadLevelList();
 	}

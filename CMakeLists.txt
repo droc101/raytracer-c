@@ -139,6 +139,16 @@ add_executable(
         Structs/Trigger.h
         GameStates/GLoadingState.c
         GameStates/GLoadingState.h
+        Helpers/Graphics/Vulkan/Vulkan.c
+        Helpers/Graphics/Vulkan/Vulkan.h
+        Helpers/Graphics/Vulkan/VulkanInternal.c
+        Helpers/Graphics/Vulkan/VulkanInternal.h
+        Helpers/Graphics/Vulkan/VulkanHelpers.c
+        Helpers/Graphics/Vulkan/VulkanHelpers.h
+        Helpers/Graphics/Vulkan/VulkanMemory.c
+        Helpers/Graphics/Vulkan/VulkanMemory.h
+        Helpers/Graphics/Vulkan/VulkanResources.c
+        Helpers/Graphics/Vulkan/VulkanResources.h
 )
 
 set(SDL2_PATH "${CMAKE_SOURCE_DIR}/lib/SDL2/x86_64-w64-mingw32")
@@ -157,6 +167,9 @@ include_directories(${ZLIB_INCLUDE_DIRS})
 find_package(OpenGL REQUIRED) # Graphics
 include_directories(${OPENGL_INCLUDE_DIR})
 
+find_package(Vulkan REQUIRED) # 3d
+include_directories(${Vulkan_INCLUDE_DIRS})
+
 if (UNIX)
     find_package(GLEW REQUIRED) # OpenGL Extension Wrangler
     include_directories(${GLEW_INCLUDE_DIRS})
@@ -173,9 +186,9 @@ elseif (WIN32) # Thank you Windows, I hate you.
 endif ()
 
 if (UNIX)
-    target_link_libraries(game -lGL -lGLU ${SDL2_LIBRARY} ${ZLIB_LIBRARIES} ${SDL2_MIXER_LIBRARY} m SDL2 SDL2_mixer z ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES}) # extra l* flags are needed on Linux
+    target_link_libraries(game -lGL -lGLU ${SDL2_LIBRARY} ${ZLIB_LIBRARIES} ${SDL2_MIXER_LIBRARY} ${Vulkan_LIBRARIES} m SDL2 SDL2_mixer z ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES}) # extra l* flags are needed on Linux
 elseif (WIN32)
-    target_link_libraries(game PRIVATE ${SDL2_LIBRARY} ${ZLIB_LIBRARIES} ${SDL2_MIXER_LIBRARY} ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} opengl32 dwmapi) # Don't pass extra l* flags on Windows (it isn't happy with them)
+    target_link_libraries(game PRIVATE ${SDL2_LIBRARY} ${ZLIB_LIBRARIES} ${SDL2_MIXER_LIBRARY} ${Vulkan_LIBRARIES} ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} opengl32 dwmapi) # Don't pass extra l* flags on Windows (it isn't happy with them)
 endif ()
 
 add_custom_target( # Python script for generating assets code

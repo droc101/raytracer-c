@@ -60,7 +60,7 @@ Actor *CreateActor(const Vector2 position,
 				   const byte paramD)
 {
 	Actor *actor = malloc(sizeof(Actor));
-	chk_malloc(actor);
+	CheckAlloc(actor);
 	actor->actorWall = NULL;
 	actor->position = position;
 	actor->rotation = rotation;
@@ -75,7 +75,7 @@ Actor *CreateActor(const Vector2 position,
 	actor->shadowSize = 1.0f;
 	actor->actorModel = NULL;
 	actor->actorModelTexture = NULL;
-	actor->listeningFor = CreateList();
+	ListCreate(&actor->listeningFor);
 	actor->SignalHandler = NULL;
 	actor->Init = ActorInitFuncs[actorType];
 	actor->Update = ActorUpdateFuncs[actorType];
@@ -88,7 +88,7 @@ Actor *CreateActor(const Vector2 position,
 void FreeActor(Actor *actor)
 {
 	actor->Destroy(actor);
-	ListFree(actor->listeningFor);
+	ListFree(&actor->listeningFor, false);
 	free(actor);
 	actor = NULL;
 }
@@ -114,7 +114,7 @@ bool GetTransformedWall(const Actor *actor, Wall *wall)
 	return true;
 }
 
-void ActorListenFor(const Actor *actor, const int signal)
+void ActorListenFor(Actor *actor, const int signal)
 {
-	ListAdd(actor->listeningFor, (void *)((size_t)signal));
+	ListAdd(&actor->listeningFor, (void *)(size_t)signal);
 }

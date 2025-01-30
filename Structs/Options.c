@@ -10,7 +10,7 @@
 
 void DefaultOptions(Options *options)
 {
-	options->renderer = RENDERER_OPENGL;
+	options->renderer = RENDERER_VULKAN;
 	options->musicVolume = 1.0;
 	options->sfxVolume = 1.0;
 	options->masterVolume = 1.0;
@@ -66,7 +66,7 @@ char *GetOptionsPath()
 	char *folderPath = SDL_GetPrefPath(APPDATA_ORG_NAME, APPDATA_APP_NAME);
 	const char *fileName = "options.bin";
 	char *filePath = malloc(strlen(folderPath) + strlen(fileName) + 1);
-	chk_malloc(filePath);
+	CheckAlloc(filePath);
 	strcpy(filePath, folderPath);
 	strcat(filePath, fileName);
 

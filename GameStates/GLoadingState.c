@@ -3,7 +3,7 @@
 //
 
 #include "GLoadingState.h"
-
+#include <string.h>
 #include "../Helpers/Core/Logging.h"
 #include "../Helpers/Graphics/Drawing.h"
 #include "../Helpers/Graphics/Font.h"
@@ -15,9 +15,9 @@ char loadStateLevelname[32];
 
 void GLoadingStateUpdate(GlobalState *state)
 {
-	if (state->physicsFrame == 15)
+	if (state->physicsFrame >= 15)
 	{
-		if (ChangeLevelByName((char*)&loadStateLevelname))
+		if (ChangeLevelByName((char *)&loadStateLevelname))
 		{
 			GMainStateSet();
 		} else
@@ -30,16 +30,19 @@ void GLoadingStateUpdate(GlobalState *state)
 void GLoadingStateRender(GlobalState *)
 {
 	ClearColor(0xFF000000);
-	DrawTextAligned("LOADING", 16, -1, v2s(0), v2(WindowWidth(), WindowHeight()), FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
+	DrawTextAligned("LOADING",
+					16,
+					-1,
+					v2s(0),
+					v2(WindowWidth(), WindowHeight()),
+					FONT_HALIGN_CENTER,
+					FONT_VALIGN_MIDDLE,
+					true);
 }
 
 void GLoadingStateSet(const char *levelName)
 {
-	strncpy(loadStateLevelname, levelName, 32);
+	strncpy(loadStateLevelname, levelName, 31);
 	StopMusic();
-	SetStateCallbacks(GLoadingStateUpdate,
-					  NULL,
-					  LOADING_STATE,
-					  GLoadingStateRender);
+	SetStateCallbacks(GLoadingStateUpdate, NULL, LOADING_STATE, GLoadingStateRender);
 }
-

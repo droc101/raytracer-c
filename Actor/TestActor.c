@@ -10,8 +10,6 @@
 #include "../Structs/Vector2.h"
 #include "../Structs/Wall.h"
 
-Model *leafyModel = NULL;
-
 void TestActorSignalHandler(Actor *self, const Actor *sender, int signal)
 {
 	LogDebug("Test actor got signal %d from actor %p\n", signal, sender);
@@ -19,12 +17,8 @@ void TestActorSignalHandler(Actor *self, const Actor *sender, int signal)
 
 void TestActorInit(Actor *this)
 {
-	if (leafyModel == NULL)
-	{
-		leafyModel = LoadModel(MODEL("model_leafy"));
-	}
 	this->solid = true;
-	this->actorModel = leafyModel;
+	this->actorModel = LoadModel(MODEL("model_leafy"));
 	this->actorModelTexture = TEXTURE("actor_BLOB2");
 	this->actorWall = CreateWall(v2(-0.5, 0), v2(0.5, 0), "", 1.0, 0.0);
 	this->SignalHandler = TestActorSignalHandler;

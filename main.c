@@ -2,6 +2,7 @@
 #include <SDL_mixer.h>
 #include <stdio.h>
 #include <string.h>
+#include <vulkan/vulkan_core.h>
 #include "config.h"
 #include "Debug/DPrint.h"
 #include "Debug/FrameBenchmark.h"
@@ -70,7 +71,7 @@ void InitSDL()
 		SDL_SetHint(SDL_HINT_VIDEODRIVER, "wayland,x11"); // required to fix an nvidia bug with glCopyTexImage2D
 	} else
 	{
-		SDL_SetHint(SDL_HINT_VIDEODRIVER, "x11"); // faster
+		SDL_SetHint(SDL_HINT_VIDEODRIVER, "x11,wayland"); // faster
 	}
 #endif
 
@@ -161,9 +162,26 @@ void HandleEvent(const SDL_Event event, bool *shouldQuit)
 			HandleMouseDown(event.button.button);
 			break;
 		case SDL_WINDOWEVENT:
-			if (event.window.event == SDL_WINDOWEVENT_RESIZED)
+			switch (event.window.event)
 			{
-				UpdateViewportSize();
+				case SDL_WINDOWEVENT_RESIZED:
+				case SDL_WINDOWEVENT_SIZE_CHANGED:
+				case SDL_WINDOWEVENT_MAXIMIZED:
+					UpdateViewportSize();
+					break;
+				case SDL_WINDOWEVENT_RESTORED:
+					WindowRestored();
+					break;
+				case SDL_WINDOWEVENT_MINIMIZED:
+					WindowObscured();
+					break;
+				case SDL_WINDOWEVENT_FOCUS_LOST:
+					SetLowFPS(true);
+					break;
+				case SDL_WINDOWEVENT_FOCUS_GAINED:
+					SetLowFPS(false);
+					break;
+				default: break;
 			}
 			break;
 		case SDL_CONTROLLERDEVICEADDED:
@@ -241,18 +259,31 @@ int main(const int argc, char *argv[])
 		{
 			HandleEvent(event, &shouldQuit);
 		}
+		GlobalState *state = GetState();
+
+		if (FrameStart() != VK_SUCCESS)
+		{
+			if (state->UpdateGame)
+			{
+				state->UpdateGame(state);
+			}
+			if (IsLowFPSModeEnabled())
+			{
+				SDL_Delay(33);
+			}
+			continue;
+		}
+
 		ClearDepthOnly();
 
 		ResetDPrintYPos();
-
-		GlobalState *state = GetState();
 
 		SDL_SetRelativeMouseMode(state->currentState == MAIN_STATE ? SDL_TRUE : SDL_FALSE);
 		// warp the mouse to the center of the screen if we are in the main game state
 		if (state->currentState == MAIN_STATE)
 		{
 			const Vector2 realWndSize = ActualWindowSize();
-			SDL_WarpMouseInWindow(GetGameWindow(), realWndSize.x / 2, realWndSize.y / 2);
+			SDL_WarpMouseInWindow(GetGameWindow(), (int)realWndSize.x / 2, (int)realWndSize.y / 2);
 		}
 
 		if (state->UpdateGame)
@@ -276,7 +307,7 @@ int main(const int argc, char *argv[])
 
 		FrameGraphDraw();
 
-		Swap();
+        FrameEnd();
 
 		UpdateInputStates();
 
@@ -289,6 +320,7 @@ int main(const int argc, char *argv[])
 		BenchFrameEnd();
 #endif
 
+		if (IsLowFPSModeEnabled()) SDL_Delay(33);
 		FrameGraphUpdate(GetTimeNs() - frameStart);
 	}
 	LogInfo("Mainloop exited, cleaning up engine...\n");

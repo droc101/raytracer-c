@@ -65,7 +65,7 @@ struct Control
 struct UiStack
 {
 	/// The controls in the UiStack
-	List *Controls;
+	List Controls;
 
 	/// The control that is currently being hovered or pressed
 	int ActiveControl;
@@ -121,14 +121,14 @@ Control *CreateEmptyControl();
  * @param stack The UiStack to add the control to
  * @param control The control to add
  */
-void UiStackPush(const UiStack *stack, Control *control);
+void UiStackPush(UiStack *stack, Control *control);
 
 /**
  * Remove a control from the UiStack
  * @param stack The UiStack to remove the control from
  * @param control The control to remove
  */
-void UiStackRemove(const UiStack *stack, const Control *control);
+void UiStackRemove(UiStack *stack, const Control *control);
 
 /**
  * Check if the mouse is in a rectangle

@@ -17,7 +17,7 @@ char *DefaultSliderLabelCallback(const Control *slider)
 {
 	const SliderData *data = (SliderData *)slider->ControlData;
 	char *buf = malloc(64);
-	chk_malloc(buf);
+	CheckAlloc(buf);
 	sprintf(buf, "%s: %.2f", data->label, data->value);
 	return buf;
 }
@@ -26,7 +26,7 @@ char *SliderLabelPercent(const Control *slider)
 {
 	const SliderData *data = (SliderData *)slider->ControlData;
 	char *buf = malloc(64);
-	chk_malloc(buf);
+	CheckAlloc(buf);
 	sprintf(buf, "%s: %.0f%%", data->label, data->value * 100);
 	return buf;
 }
@@ -35,7 +35,7 @@ char *SliderLabelInteger(const Control *slider)
 {
 	const SliderData *data = (SliderData *)slider->ControlData;
 	char *buf = malloc(64);
-	chk_malloc(buf);
+	CheckAlloc(buf);
 	sprintf(buf, "%s: %.0f", data->label, data->value);
 	return buf;
 }
@@ -64,7 +64,7 @@ Control *CreateSliderControl(const Vector2 position,
 	slider->anchor = anchor;
 
 	slider->ControlData = malloc(sizeof(SliderData));
-	chk_malloc(slider->ControlData);
+	CheckAlloc(slider->ControlData);
 	SliderData *data = slider->ControlData;
 	data->label = label;
 	data->callback = callback;
@@ -75,7 +75,7 @@ Control *CreateSliderControl(const Vector2 position,
 	data->altStep = altStep;
 	data->getLabel = getLabel;
 
-	data->value = clampf(data->value, data->min, data->max);
+	data->value = clamp(data->value, data->min, data->max);
 
 	return slider;
 }
@@ -164,7 +164,7 @@ void UpdateSlider(UiStack *stack, Control *c, Vector2 /*localMousePos*/, uint ct
 		}
 	}
 
-	data->value = clampf(data->value, data->min, data->max);
+	data->value = clamp(data->value, data->min, data->max);
 }
 
 void DrawSlider(const Control *c, const ControlState /*state*/, const Vector2 position)

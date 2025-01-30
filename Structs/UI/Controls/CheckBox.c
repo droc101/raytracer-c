@@ -24,7 +24,7 @@ Control *CreateCheckboxControl(const Vector2 position,
 	checkbox->anchor = anchor;
 
 	checkbox->ControlData = malloc(sizeof(CheckBoxData));
-	chk_malloc(checkbox->ControlData);
+	CheckAlloc(checkbox->ControlData);
 	CheckBoxData *data = checkbox->ControlData;
 	data->label = label;
 	data->checked = checked;
