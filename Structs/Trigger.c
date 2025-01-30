@@ -3,7 +3,7 @@
 //
 
 #include "Trigger.h"
-
+#include <string.h>
 #include "../Helpers/Core/Error.h"
 #include "Vector2.h"
 
@@ -28,6 +28,8 @@ bool CheckTriggerCollision(const Trigger *t, const Player *p)
 {
 	const Vector2 rotatedPlayerPos = Vector2Rotate(Vector2Sub(p->pos, t->position), -t->rotation);
 	const Vector2 halfExtents = Vector2Scale(t->extents, 0.5);
-	return rotatedPlayerPos.x >= -halfExtents.x && rotatedPlayerPos.x <= halfExtents.x &&
-		   rotatedPlayerPos.y >= -halfExtents.y && rotatedPlayerPos.y <= halfExtents.y;
+	return rotatedPlayerPos.x >= -halfExtents.x &&
+		   rotatedPlayerPos.x <= halfExtents.x &&
+		   rotatedPlayerPos.y >= -halfExtents.y &&
+		   rotatedPlayerPos.y <= halfExtents.y;
 }

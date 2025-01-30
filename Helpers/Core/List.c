@@ -3,10 +3,10 @@
 //
 
 #include "List.h"
-
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "../../defines.h"
 #include "Error.h"
 #include "Logging.h"

@@ -3,6 +3,7 @@
 //
 
 #include "DataReader.h"
+#include <string.h>
 
 double ReadDouble(const byte *data, size_t *offset)
 {

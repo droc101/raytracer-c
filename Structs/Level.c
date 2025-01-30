@@ -1,14 +1,15 @@
 //
 // Created by droc101 on 4/21/2024.
 //
+
 #include "Level.h"
+#include <string.h>
 #include "../defines.h"
 #include "../Helpers/Core/Error.h"
 #include "../Helpers/Graphics/RenderingHelpers.h"
 #include "Actor.h"
 #include "GlobalState.h"
 #include "Vector2.h"
-#include "Wall.h"
 
 Level *CreateLevel()
 {

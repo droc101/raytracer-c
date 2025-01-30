@@ -3,7 +3,7 @@
 //
 
 #include "GLoadingState.h"
-
+#include <string.h>
 #include "../Helpers/Core/Logging.h"
 #include "../Helpers/Graphics/Drawing.h"
 #include "../Helpers/Graphics/Font.h"
@@ -44,8 +44,5 @@ void GLoadingStateSet(const char *levelName)
 {
 	strncpy(loadStateLevelname, levelName, 32);
 	StopMusic();
-	SetStateCallbacks(GLoadingStateUpdate,
-					  NULL,
-					  LOADING_STATE,
-					  GLoadingStateRender);
+	SetStateCallbacks(GLoadingStateUpdate, NULL, LOADING_STATE, GLoadingStateRender);
 }

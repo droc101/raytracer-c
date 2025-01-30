@@ -3,13 +3,14 @@
 //
 
 #include "LevelLoader.h"
+#include <stdio.h>
 #include "../Helpers/CommonAssets.h"
 #include "../Structs/Actor.h"
 #include "../Structs/Level.h"
+#include "../Structs/Trigger.h"
 #include "../Structs/Vector2.h"
 #include "../Structs/Wall.h"
 #include "Core/DataReader.h"
-#include "../Structs/Trigger.h"
 
 Level *LoadLevel(const byte *data)
 {

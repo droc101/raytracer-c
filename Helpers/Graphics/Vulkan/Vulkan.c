@@ -3,6 +3,7 @@
 //
 
 #include "Vulkan.h"
+#include <string.h>
 #include "../../../Structs/GlobalState.h"
 #include "../../CommonAssets.h"
 #include "../../Core/Error.h"

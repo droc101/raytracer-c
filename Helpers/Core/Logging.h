@@ -7,7 +7,7 @@
 
 #include "../../defines.h"
 
-#define FLUSH_ON_INFO false
+#define FLUSH_ON_INFO true
 #define FLUSH_ON_DEBUG true
 #define FLUSH_ON_WARNING true
 #define FLUSH_ON_ERROR true

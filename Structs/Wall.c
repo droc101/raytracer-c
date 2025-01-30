@@ -4,8 +4,8 @@
 
 #include "Wall.h"
 #include <math.h>
+#include <string.h>
 #include "../defines.h"
-#include "../Helpers/CommonAssets.h"
 #include "../Helpers/Core/Error.h"
 
 Wall *CreateWall(const Vector2 a, const Vector2 b, const char *texture, const float uvScale, const float uvOffset)
