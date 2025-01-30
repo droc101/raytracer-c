@@ -3,7 +3,7 @@ project(game C)
 
 set(CMAKE_C_STANDARD 11)
 
-set(CMAKE_C_FLAGS "-Wall -Wno-discarded-qualifiers -rdynamic -fvisibility=hidden")
+set(CMAKE_C_FLAGS "-Wall -Wno-discarded-qualifiers -fvisibility=hidden")
 
 set(CMAKE_C_FLAGS_DEBUG "-g -O0 -DBUILDSTYLE_DEBUG")
 set(CMAKE_C_FLAGS_RELEASE "-g0 -O3 -s -DNDEBUG -Wl,--gc-sections -fdata-sections -ffunction-sections -DBUILDSTYLE_RELEASE")
@@ -13,6 +13,8 @@ set(CMAKE_C_FLAGS_RELWITHDEBINFO "-g -O3 -Wl,--gc-sections -fdata-sections -ffun
 if (WIN32)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --static")
     set(CMAKE_AUTO_RCC ON)
+else()
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -rdynamic")
 endif ()
 
 # Enable LTO in release builds
