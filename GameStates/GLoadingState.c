@@ -42,7 +42,7 @@ void GLoadingStateRender(GlobalState *)
 
 void GLoadingStateSet(const char *levelName)
 {
-	strncpy(loadStateLevelname, levelName, 32);
+	strncpy(loadStateLevelname, levelName, 31);
 	StopMusic();
 	SetStateCallbacks(GLoadingStateUpdate, NULL, LOADING_STATE, GLoadingStateRender);
 }

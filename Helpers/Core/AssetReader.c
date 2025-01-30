@@ -192,8 +192,8 @@ Asset *DecompressAsset(const char *relPath)
 	assetStruct->data = decompressedData;
 
 	// Add the asset to the cache
-	const size_t pathLength = strlen(relPath);
-	char *data = malloc(pathLength + 1);
+	const size_t pathLength = strlen(relPath) + 1;
+	char *data = malloc(pathLength);
 	CheckAlloc(data);
 	strncpy(data, relPath, pathLength);
 	ListAdd(&assetCacheNames, data);

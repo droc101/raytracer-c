@@ -19,7 +19,7 @@ Trigger *CreateTrigger(const Vector2 pos,
 	t->extents = extents;
 	t->rotation = rot;
 	t->flags = flags;
-	strncpy(t->command, command, 64);
+	strncpy(t->command, command, 63);
 
 	return t;
 }
