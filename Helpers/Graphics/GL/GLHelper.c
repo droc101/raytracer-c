@@ -34,6 +34,8 @@ int GL_NextFreeSlot = 1; // Slot 0 is reserved for the framebuffer copy
 int GL_AssetTextureMap[MAX_TEXTURES];
 char GL_LastError[512];
 
+GL_Buffer *GL_ModelBuffers[MAX_MODELS];
+
 void GL_Error(const char *error)
 {
 	LogError("OpenGL Error: %s\n", error);
@@ -299,6 +301,20 @@ void GL_DestroyGL()
 	glUseProgram(0);
 	glDisableVertexAttribArray(0);
 	GL_DestroyBuffer(glBuffer);
+	for (int i = 0; i < MAX_TEXTURES; i++)
+	{
+		if (GL_Textures[i] != 0)
+		{
+			glDeleteTextures(1, &GL_Textures[i]);
+		}
+	}
+	for (int i = 0; i < MAX_MODELS; i++)
+	{
+		if (GL_ModelBuffers[i] != NULL)
+		{
+			GL_DestroyBuffer(GL_ModelBuffers[i]);
+		}
+	}
 	SDL_GL_DeleteContext(ctx);
 }
 
@@ -1043,6 +1059,34 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
 	GL_Disable3D();
 }
 
+void GL_LoadModel(const Model *model)
+{
+	if (GL_ModelBuffers[model->id] != NULL)
+	{
+		GL_Buffer *buf = GL_ModelBuffers[model->id];
+		glBindVertexArray(buf->vao);
+		glBindBuffer(GL_ARRAY_BUFFER, buf->vbo);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buf->ebo);
+		return;
+	}
+	GL_Buffer *buf = GL_ConstructBuffer();
+	GL_ModelBuffers[model->id] = buf;
+
+	glBindVertexArray(buf->vao);
+
+	glBindBuffer(GL_ARRAY_BUFFER, buf->vbo);
+	glBufferData(GL_ARRAY_BUFFER,
+				 model->vertexCount * sizeof(float) * 8,
+				 model->vertexData,
+				 GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buf->ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+				 model->indexCount * sizeof(uint),
+				 model->indexData,
+				 GL_STATIC_DRAW);
+}
+
 void GL_RenderModel(const Model *model, const mat4 modelWorldMatrix, const char *texture, const ModelShader shader)
 {
 	GL_Shader *shd;
@@ -1070,19 +1114,7 @@ void GL_RenderModel(const Model *model, const mat4 modelWorldMatrix, const char 
 					   GL_FALSE,
 					   modelWorldMatrix[0]); // model -> world
 
-	glBindVertexArray(glBuffer->vao);
-
-	glBindBuffer(GL_ARRAY_BUFFER, glBuffer->vbo);
-	glBufferData(GL_ARRAY_BUFFER,
-				 model->vertexCount * sizeof(float) * 8,
-				 model->vertexData,
-				 GL_STATIC_DRAW);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glBuffer->ebo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-				 model->indexCount * sizeof(uint),
-				 model->indexData,
-				 GL_STATIC_DRAW);
+	GL_LoadModel(model);
 
 	const GLint posAttrLoc = glGetAttribLocation(shd->program, "VERTEX");
 	glVertexAttribPointer(posAttrLoc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void *)0);
