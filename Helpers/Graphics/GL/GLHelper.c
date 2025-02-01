@@ -34,12 +34,11 @@ GL_Shader *shadow;
 GL_Shader *sky;
 GL_Shader *modelUnshaded;
 GL_Shader *modelShaded;
-GL_Shader *fbBlur;
 
 GL_Buffer *glBuffer;
 
 GLuint GL_Textures[GL_MAX_TEXTURE_SLOTS];
-int GL_NextFreeSlot = 1; // Slot 0 is reserved for the framebuffer copy
+int GL_NextFreeSlot = 0;
 int GL_AssetTextureMap[MAX_TEXTURES];
 char GL_LastError[512];
 
@@ -134,7 +133,6 @@ bool GL_Init(SDL_Window *wnd)
 	sky = GL_ConstructShaderFromAssets(OGL_SHADER("GL_sky_f"), OGL_SHADER("GL_sky_v"));
 	modelShaded = GL_ConstructShaderFromAssets(OGL_SHADER("GL_model_shaded_f"), OGL_SHADER("GL_model_shaded_v"));
 	modelUnshaded = GL_ConstructShaderFromAssets(OGL_SHADER("GL_model_unshaded_f"), OGL_SHADER("GL_model_unshaded_v"));
-	fbBlur = GL_ConstructShaderFromAssets(OGL_SHADER("GL_fb_blur_f"), OGL_SHADER("GL_fb_blur_v"));
 
 	if (!uiTextured ||
 		!uiColored ||
@@ -143,8 +141,7 @@ bool GL_Init(SDL_Window *wnd)
 		!shadow ||
 		!sky ||
 		!modelShaded ||
-		!modelUnshaded ||
-		!fbBlur)
+		!modelUnshaded)
 	{
 		GL_Error("Failed to compile shaders");
 		return false;
@@ -178,18 +175,6 @@ bool GL_Init(SDL_Window *wnd)
 	GL_Disable3D();
 
 	return true;
-}
-
-void GL_UpdateFramebufferTexture()
-{
-	glBindTexture(GL_TEXTURE_2D, GL_Textures[0]);
-	int w;
-	int h;
-	SDL_GL_GetDrawableSize(GetGameWindow(), &w, &h);
-
-	glReadBuffer(GL_BACK);
-
-	glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, w, h, 0);
 }
 
 GL_Shader *GL_ConstructShaderFromAssets(const char *fsh, const char *vsh)
@@ -503,42 +488,6 @@ void GL_SetTexParams(const char *texture, const bool linear, const bool repeat)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, linear ? GL_LINEAR : GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, linear ? GL_LINEAR : GL_NEAREST);
 	}
-}
-
-void GL_DrawBlur(const Vector2 pos, const Vector2 size, const int blurRadius)
-{
-	glUseProgram(fbBlur->program);
-
-	GL_UpdateFramebufferTexture();
-
-	glUniform1i(glGetUniformLocation(fbBlur->program, "blurRadius"), blurRadius);
-
-	const Vector2 ndcPos = v2(GL_X_TO_NDC(pos.x), GL_Y_TO_NDC(pos.y));
-	const Vector2 ndcPosEnd = v2(GL_X_TO_NDC(pos.x + size.x), GL_Y_TO_NDC(pos.y + size.y));
-
-
-	const float vertices[4][2] = {
-		{(float)ndcPos.x, (float)ndcPos.y},
-		{(float)ndcPosEnd.x, (float)ndcPos.y},
-		{(float)ndcPosEnd.x, (float)ndcPosEnd.y},
-		{(float)ndcPos.x, (float)ndcPosEnd.y},
-	};
-
-	const uint indices[] = {0, 1, 2, 0, 2, 3};
-
-	glBindVertexArray(glBuffer->vao);
-
-	glBindBuffer(GL_ARRAY_BUFFER, glBuffer->vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glBuffer->ebo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-	const GLint posAttrLoc = glGetAttribLocation(fbBlur->program, "VERTEX");
-	glVertexAttribPointer(posAttrLoc, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void *)0);
-	glEnableVertexAttribArray(posAttrLoc);
-
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 }
 
 void GL_DrawTexture_Internal(const Vector2 pos,
@@ -865,24 +814,6 @@ inline void GL_UpdateViewportSize()
 	int h;
 	SDL_GL_GetDrawableSize(GetGameWindow(), &w, &h);
 	glViewport(0, 0, w, h);
-
-	if (GL_Textures[0] != -1)
-	{
-		glDeleteTextures(1, &GL_Textures[0]);
-	}
-
-	GLuint frameBufferTexture;
-	glGenTextures(1, &frameBufferTexture);
-	glBindTexture(GL_TEXTURE_2D, frameBufferTexture);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-
-	GL_Textures[0] = frameBufferTexture;
 }
 
 void GL_DrawColoredArrays(const float *vertices, const uint *indices, const uint quad_count, const uint color)

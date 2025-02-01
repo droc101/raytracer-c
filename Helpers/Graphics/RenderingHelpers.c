@@ -281,22 +281,6 @@ void RenderInGameMenuBackground()
 {
 	RenderLevel(GetState());
 
-	DrawBlur(v2(0, 0), v2(WindowWidth(), WindowHeight()), 4);
-
-	SetColorUint(0x80000000);
+	SetColorUint(0xA0000000);
 	DrawRect(0, 0, WindowWidth(), WindowHeight());
-}
-
-void DrawBlur(const Vector2 pos, const Vector2 size, const int blurRadius)
-{
-	switch (currentRenderer)
-	{
-		case RENDERER_VULKAN:
-
-			break;
-		case RENDERER_OPENGL:
-			GL_DrawBlur(pos, size, blurRadius);
-		default:
-			break;
-	}
 }
