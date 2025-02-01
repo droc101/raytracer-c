@@ -26,12 +26,11 @@ layout (location = 0) out vec4 outColor;
 
 void main() {
 	gl_FragDepth = gl_FragCoord.z;
-	float fog_factor = clamp((gl_FragCoord.z / gl_FragCoord.w - pushConstants.fogStart) / (pushConstants.fogEnd - pushConstants.fogStart), 0.0, 1.0);
 	outColor = texture(textureSampler[nonuniformEXT(inTextureIndex)], inUV);
 	outColor *= inColor.a;
-	outColor.rgb = mix(outColor.rgb, inColor.rgb, fog_factor);
 	if (outColor.a < 0.5) discard;
 	outColor.a = 1.0;
+	outColor.rgb = mix(outColor.rgb, inColor.rgb, clamp((gl_FragCoord.z / gl_FragCoord.w - pushConstants.fogStart) / (pushConstants.fogEnd - pushConstants.fogStart), 0.0, 1.0));
 	if (inTextureIndex == pushConstants.shadowTextureIndex) {
 		outColor.a = 0.5;
 		return;
