@@ -10,7 +10,7 @@
 /// The maximum number of textures that can be loaded in any one execution of the game
 #define MAX_TEXTURES 512
 
-/// The maximum number of textures that can be loaded in any one execution of the game
+/// The maximum number of models that can be loaded in any one execution of the game
 #define MAX_MODELS 128
 
 /**
