@@ -879,7 +879,7 @@ void LoadActorDrawInfo(const Level *level, VkDrawIndexedIndirectCommand *drawInf
 			drawInfo[index].instanceCount = 1;
 			drawInfo[index].firstInstance = wallCount + modelCount;
 			drawInfo[index].firstIndex = buffers.actors.models.indexCount + (int32_t)(wallCount * 6);
-			drawInfo[index].vertexOffset = buffers.actors.models.vertexCount;
+			drawInfo[index].vertexOffset = (int32_t)buffers.actors.models.vertexCount;
 			wallCount++;
 		}
 	}
