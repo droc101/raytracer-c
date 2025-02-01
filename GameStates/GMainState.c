@@ -122,7 +122,7 @@ void GMainStateFixedUpdate(GlobalState *state, double delta)
 
 
 	double speed = MOVE_SPEED;
-	if (IsKeyPressed(SDL_SCANCODE_LSHIFT) || GetAxis(SDL_CONTROLLER_AXIS_TRIGGERLEFT) > 0.5)
+	if (IsKeyPressed(SDL_SCANCODE_LCTRL) || GetAxis(SDL_CONTROLLER_AXIS_TRIGGERLEFT) > 0.5)
 	{
 		speed = SLOW_MOVE_SPEED;
 	}
