@@ -948,12 +948,11 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
 		const Actor *actor = ListGet(l->actors, i);
 		if (actor->showShadow)
 		{
-			mat4 actor_xfm;
+			mat4 actor_xfm = GLM_MAT4_IDENTITY_INIT;
 			ActorTransformMatrix(actor, &actor_xfm);
 			// remove the rotation and y position from the actor matrix so the shadow draws correctly
 			glm_rotate(actor_xfm, (float)actor->rotation, (vec3){0, 1, 0});
 			glm_translate(actor_xfm, (vec3){0, -actor->yPosition, 0});
-
 			GL_DrawShadow(v2s(-0.5 * actor->shadowSize), v2s(0.5 * actor->shadowSize), WORLD_VIEW_MATRIX, actor_xfm, l);
 		}
 	}
