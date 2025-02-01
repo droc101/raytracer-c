@@ -673,7 +673,7 @@ void GL_DrawLine(const Vector2 start, const Vector2 end, const uint color, const
 	glDrawElements(GL_LINES, 2, GL_UNSIGNED_INT, NULL);
 }
 
-void GL_SetLevelParams(const mat4 *mvp, const Level *l)
+void GL_SetLevelParams(mat4 *mvp, const Level *l)
 {
 	GL_SharedUniforms uniforms;
 	glm_mat4_copy(mvp[0], uniforms.worldViewMatrix);

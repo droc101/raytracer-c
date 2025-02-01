@@ -122,7 +122,7 @@ void GL_DrawTexture_Internal(Vector2 pos,
  * @param mvp The model -> screen matrix
  * @param l The level
  */
-void GL_SetLevelParams(const mat4 *mvp, const Level *l);
+void GL_SetLevelParams(mat4 *mvp, const Level *l);
 
 /**
  * Enable 3D mode
