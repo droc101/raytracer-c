@@ -20,8 +20,8 @@ void ActorTransformMatrix(const Actor *Actor, mat4 *transformMatrix)
 	{
 		Error("A NULL transformMatrix must not be passed to ActorTransformMatrix!");
 	}
-	glm_translate(*transformMatrix, (vec3){Actor->position.x, Actor->yPosition, Actor->position.y});
-	glm_rotate(*transformMatrix, -Actor->rotation, (vec3){0, 1, 0});
+	glm_translate(*transformMatrix, (vec3){(float)Actor->position.x, Actor->yPosition, (float)Actor->position.y});
+	glm_rotate(*transformMatrix, (float)-Actor->rotation, (vec3){0, 1, 0});
 }
 
 bool RenderPreInit()
@@ -281,7 +281,7 @@ void RenderInGameMenuBackground()
 {
 	RenderLevel(GetState());
 
-	DrawBlur(v2(0, 0), v2(WindowWidth(), WindowHeight()), 4.0f);
+	DrawBlur(v2(0, 0), v2(WindowWidth(), WindowHeight()), 4);
 
 	SetColorUint(0x80000000);
 	DrawRect(0, 0, WindowWidth(), WindowHeight());

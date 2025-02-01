@@ -80,10 +80,10 @@ SDL_Surface *ToSDLSurface(const char *texture, const char *filterMode)
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, filterMode);
 
 	SDL_Surface *surface = SDL_CreateRGBSurfaceFrom(img->pixelData,
-													img->width,
-													img->height,
+													(int)img->width,
+													(int)img->height,
 													32,
-													img->width * 4,
+													(int)img->width * 4,
 													0x00ff0000,
 													0x0000ff00,
 													0x000000ff,
@@ -144,7 +144,7 @@ inline void DrawLine(const Vector2 start, const Vector2 end, const float thickne
 						drawColor);
 			break;
 		case RENDERER_OPENGL:
-			GL_DrawLine(start, end, drawColor, thickness * GetState()->uiScale);
+			GL_DrawLine(start, end, drawColor, (float)(thickness * GetState()->uiScale));
 			break;
 		default:
 			break;
@@ -164,7 +164,7 @@ inline void DrawOutlineRect(const Vector2 pos, const Vector2 size, const float t
 							   drawColor);
 			break;
 		case RENDERER_OPENGL:
-			GL_DrawRectOutline(pos, size, drawColor, thickness * GetState()->uiScale);
+			GL_DrawRectOutline(pos, size, drawColor, (float)(thickness * GetState()->uiScale));
 			break;
 		default:
 			break;

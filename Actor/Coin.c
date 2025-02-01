@@ -18,12 +18,12 @@ void CoinInit(Actor *this)
 	this->actorWall = CreateWall(v2(0, -0.125),
 								 v2(0, 0.125),
 								 this->paramB == 1 ? TEXTURE("actor_bluecoin") : TEXTURE("actor_coin"),
-								 1.0,
-								 0.0);
+								 1.0f,
+								 0.0f);
 	this->paramA = 0;
 	this->actorWall->height = 0.25f;
 	this->yPosition = -0.25f;
-	this->shadowSize = 0.1;
+	this->shadowSize = 0.1f;
 }
 
 void CoinUpdate(Actor *this, double /*delta*/)

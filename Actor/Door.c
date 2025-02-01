@@ -47,7 +47,7 @@ void DoorInit(Actor *this)
 {
 	this->showShadow = false;
 	this->solid = true;
-	this->actorWall = CreateWall(v2(0, 0), v2(1, 0), TEXTURE("actor_door"), 1, 0.0);
+	this->actorWall = CreateWall(v2(0, 0), v2(1, 0), TEXTURE("actor_door"), 1, 0.0f);
 	this->extra_data = malloc(sizeof(DoorData));
 	CheckAlloc(this->extra_data);
 	memset(this->extra_data, 0, sizeof(DoorData));
@@ -82,7 +82,7 @@ void DoorUpdate(Actor *this, double /*delta*/)
 			}
 			break;
 		case DOOR_OPENING:
-			wallPos = data->stateTicks * (1.0 / 60.0);
+			wallPos = (float)data->stateTicks * (1.0 / 60.0);
 			SetDoorWallPos(this, -wallPos);
 			if (data->stateTicks == 60)
 			{
@@ -90,7 +90,7 @@ void DoorUpdate(Actor *this, double /*delta*/)
 			}
 			break;
 		case DOOR_CLOSING:
-			wallPos = data->stateTicks * (1.0 / 60.0);
+			wallPos = (float)data->stateTicks * (1.0 / 60.0);
 			SetDoorWallPos(this, -1.0 + wallPos);
 			if (data->stateTicks == 60)
 			{

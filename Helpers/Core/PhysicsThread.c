@@ -68,7 +68,7 @@ int PhysicsThreadMain(void *)
 		}
 		timeEnd = GetTimeNs();
 		timeElapsed = timeEnd - timeStart;
-		lastFrameTime = timeElapsed;
+		lastFrameTime = (double)timeElapsed;
 	}
 }
 

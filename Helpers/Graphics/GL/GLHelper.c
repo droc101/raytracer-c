@@ -45,7 +45,10 @@ void GL_Error(const char *error)
 bool GL_PreInit()
 {
 	const bool msaaEnabled = GetState()->options.msaa != MSAA_NONE;
-	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, msaaEnabled);
+	if (SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, msaaEnabled) != 0)
+	{
+		LogError("Failed to set MSAA buffers attribute: %s\n", SDL_GetError());
+	}
 	if (msaaEnabled)
 	{
 		int mssaValue = 0;
@@ -64,13 +67,16 @@ bool GL_PreInit()
 				GL_Error("Invalid MSAA value!");
 				return false;
 		}
-		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, mssaValue);
+		if (SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, mssaValue) != 0)
+		{
+			LogError("Failed to set MSAA samples attribute: %s\n", SDL_GetError());
+		}
 	}
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+	TestSDLFunction(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3), "Failed to set OpenGL major version", "Failed to start OpenGL");
+	TestSDLFunction(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3), "Failed to set OpenGL minor version", "Failed to start OpenGL");
+	TestSDLFunction(SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1), "Failed to set OpenGL accelerated visual", "Failed to start OpenGL");
+	TestSDLFunction(SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE), "Failed to set OpenGL profile", "Failed to start OpenGL");
+	TestSDLFunction(SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1), "Failed to set OpenGL double buffer", "Failed to start OpenGL");
 
 	memset(GL_AssetTextureMap, -1, MAX_TEXTURES * sizeof(int));
 	memset(GL_Textures, 0, sizeof(GL_Textures));
@@ -90,7 +96,7 @@ bool GL_Init(SDL_Window *wnd)
 		return false;
 	}
 
-	SDL_GL_SetSwapInterval(GetState()->options.vsync ? 1 : 0);
+	TestSDLFunction_NonFatal(SDL_GL_SetSwapInterval(GetState()->options.vsync ? 1 : 0), "Failed to set VSync");
 
 	// ReSharper disable once CppJoinDeclarationAndAssignment
 	GLenum err;
@@ -268,10 +274,10 @@ inline void GL_ClearScreen()
 
 void GL_ClearColor(const uint color)
 {
-	const float r = (color >> 16 & 0xFF) / 255.0f;
-	const float g = (color >> 8 & 0xFF) / 255.0f;
-	const float b = (color & 0xFF) / 255.0f;
-	const float a = (color >> 24 & 0xFF) / 255.0f;
+	const float r = (float)(color >> 16 & 0xFF) / 255.0f;
+	const float g = (float)(color >> 8 & 0xFF) / 255.0f;
+	const float b = (float)(color & 0xFF) / 255.0f;
+	const float a = (float)(color >> 24 & 0xFF) / 255.0f;
 
 	glClearColor(r, g, b, a);
 
@@ -322,10 +328,10 @@ void GL_DrawRect(const Vector2 pos, const Vector2 size, const uint color)
 {
 	glUseProgram(uiColored->program);
 
-	const float a = (color >> 24 & 0xFF) / 255.0f;
-	const float r = (color >> 16 & 0xFF) / 255.0f;
-	const float g = (color >> 8 & 0xFF) / 255.0f;
-	const float b = (color & 0xFF) / 255.0f;
+	const float a = (float)(color >> 24 & 0xFF) / 255.0f;
+	const float r = (float)(color >> 16 & 0xFF) / 255.0f;
+	const float g = (float)(color >> 8 & 0xFF) / 255.0f;
+	const float b = (float)(color & 0xFF) / 255.0f;
 
 	glUniform4f(glGetUniformLocation(uiColored->program, "col"), r, g, b, a);
 
@@ -334,10 +340,10 @@ void GL_DrawRect(const Vector2 pos, const Vector2 size, const uint color)
 
 
 	const float vertices[4][2] = {
-		{ndcPos.x, ndcPos.y},
-		{ndcPosEnd.x, ndcPos.y},
-		{ndcPosEnd.x, ndcPosEnd.y},
-		{ndcPos.x, ndcPosEnd.y},
+		{(float)ndcPos.x, (float)ndcPos.y},
+		{(float)ndcPosEnd.x, (float)ndcPos.y},
+		{(float)ndcPosEnd.x, (float)ndcPosEnd.y},
+		{(float)ndcPos.x, (float)ndcPosEnd.y},
 	};
 
 	const uint indices[] = {0, 1, 2, 0, 2, 3};
@@ -371,10 +377,10 @@ void GL_DrawRectOutline(const Vector2 pos, const Vector2 size, const uint color,
 
 	glUseProgram(uiColored->program);
 
-	const float a = (color >> 24 & 0xFF) / 255.0f;
-	const float r = (color >> 16 & 0xFF) / 255.0f;
-	const float g = (color >> 8 & 0xFF) / 255.0f;
-	const float b = (color & 0xFF) / 255.0f;
+	const float a = (float)(color >> 24 & 0xFF) / 255.0f;
+	const float r = (float)(color >> 16 & 0xFF) / 255.0f;
+	const float g = (float)(color >> 8 & 0xFF) / 255.0f;
+	const float b = (float)(color & 0xFF) / 255.0f;
 
 	glUniform4f(glGetUniformLocation(uiColored->program, "col"), r, g, b, a);
 
@@ -383,10 +389,10 @@ void GL_DrawRectOutline(const Vector2 pos, const Vector2 size, const uint color,
 
 
 	const float vertices[4][2] = {
-		{ndcPos.x, ndcPos.y},
-		{ndcPosEnd.x, ndcPos.y},
-		{ndcPosEnd.x, ndcPosEnd.y},
-		{ndcPos.x, ndcPosEnd.y},
+		{(float)ndcPos.x, (float)ndcPos.y},
+		{(float)ndcPosEnd.x, (float)ndcPos.y},
+		{(float)ndcPosEnd.x, (float)ndcPosEnd.y},
+		{(float)ndcPos.x, (float)ndcPosEnd.y},
 	};
 
 	const uint indices[] = {0, 1, 2, 3};
@@ -420,7 +426,7 @@ void GL_LoadTextureFromAsset(const char *texture)
 		}
 	}
 
-	const int slot = GL_RegisterTexture(img->pixelData, img->width, img->height);
+	const int slot = GL_RegisterTexture(img->pixelData, (int)img->width, (int)img->height);
 
 	GL_AssetTextureMap[img->id] = slot;
 }
@@ -495,10 +501,10 @@ void GL_DrawBlur(const Vector2 pos, const Vector2 size, const int blurRadius)
 
 
 	const float vertices[4][2] = {
-		{ndcPos.x, ndcPos.y},
-		{ndcPosEnd.x, ndcPos.y},
-		{ndcPosEnd.x, ndcPosEnd.y},
-		{ndcPos.x, ndcPosEnd.y},
+		{(float)ndcPos.x, (float)ndcPos.y},
+		{(float)ndcPosEnd.x, (float)ndcPos.y},
+		{(float)ndcPosEnd.x, (float)ndcPosEnd.y},
+		{(float)ndcPos.x, (float)ndcPosEnd.y},
 	};
 
 	const uint indices[] = {0, 1, 2, 0, 2, 3};
@@ -530,28 +536,28 @@ void GL_DrawTexture_Internal(const Vector2 pos,
 	GL_LoadTextureFromAsset(texture);
 
 
-	const float a = (color >> 24 & 0xFF) / 255.0f;
-	const float r = (color >> 16 & 0xFF) / 255.0f;
-	const float g = (color >> 8 & 0xFF) / 255.0f;
-	const float b = (color & 0xFF) / 255.0f;
+	const float a = (float)(color >> 24 & 0xFF) / 255.0f;
+	const float r = (float)(color >> 16 & 0xFF) / 255.0f;
+	const float g = (float)(color >> 8 & 0xFF) / 255.0f;
+	const float b = (float)(color & 0xFF) / 255.0f;
 
 	glUniform4f(glGetUniformLocation(uiTextured->program, "col"), r, g, b, a);
 
 	glUniform4f(glGetUniformLocation(uiTextured->program, "region"),
-				region_start.x,
-				region_start.y,
-				region_end.x,
-				region_end.y);
+				(GLfloat)region_start.x,
+				(GLfloat)region_start.y,
+				(GLfloat)region_end.x,
+				(GLfloat)region_end.y);
 
 	const Vector2 ndcPos = v2(GL_X_TO_NDC(pos.x), GL_Y_TO_NDC(pos.y));
 	const Vector2 ndcPosEnd = v2(GL_X_TO_NDC(pos.x + size.x), GL_Y_TO_NDC(pos.y + size.y));
 
 
 	const float vertices[4][4] = {
-		{ndcPos.x, ndcPos.y, 0.0f, 0.0f},
-		{ndcPosEnd.x, ndcPos.y, 1.0f, 0.0f},
-		{ndcPosEnd.x, ndcPosEnd.y, 1.0f, 1.0f},
-		{ndcPos.x, ndcPosEnd.y, 0.0f, 1.0f},
+		{(float)ndcPos.x, (float)ndcPos.y, 0.0f, 0.0f},
+		{(float)ndcPosEnd.x, (float)ndcPos.y, 1.0f, 0.0f},
+		{(float)ndcPosEnd.x, (float)ndcPosEnd.y, 1.0f, 1.0f},
+		{(float)ndcPos.x, (float)ndcPosEnd.y, 0.0f, 1.0f},
 	};
 
 	const uint indices[] = {0, 1, 2, 0, 2, 3};
@@ -616,10 +622,10 @@ void GL_DrawLine(const Vector2 start, const Vector2 end, const uint color, const
 
 	glUseProgram(uiColored->program);
 
-	const float a = (color >> 24 & 0xFF) / 255.0f;
-	const float r = (color >> 16 & 0xFF) / 255.0f;
-	const float g = (color >> 8 & 0xFF) / 255.0f;
-	const float b = (color & 0xFF) / 255.0f;
+	const float a = (float)(color >> 24 & 0xFF) / 255.0f;
+	const float r = (float)(color >> 16 & 0xFF) / 255.0f;
+	const float g = (float)(color >> 8 & 0xFF) / 255.0f;
+	const float b = (float)(color & 0xFF) / 255.0f;
 
 	glUniform4f(glGetUniformLocation(uiColored->program, "col"), r, g, b, a);
 
@@ -628,8 +634,8 @@ void GL_DrawLine(const Vector2 start, const Vector2 end, const uint color, const
 
 	// Calculate the 2 corner vertices of each point for a thick line
 	const float vertices[2][2] = {
-		{ndcStart.x, ndcStart.y},
-		{ndcEnd.x, ndcEnd.y},
+		{(float)ndcStart.x, (float)ndcStart.y},
+		{(float)ndcEnd.x, (float)ndcEnd.y},
 	};
 
 	const uint indices[] = {0, 1};
@@ -660,14 +666,14 @@ void GL_SetLevelParams(const mat4 *mvp, const Level *l)
 					   mvp[0][0]); // world -> screen
 
 	const uint color = l->fogColor;
-	const float r = (color >> 16 & 0xFF) / 255.0f;
-	const float g = (color >> 8 & 0xFF) / 255.0f;
-	const float b = (color & 0xFF) / 255.0f;
+	const float r = (float)(color >> 16 & 0xFF) / 255.0f;
+	const float g = (float)(color >> 8 & 0xFF) / 255.0f;
+	const float b = (float)(color & 0xFF) / 255.0f;
 
 	glUniform3f(glGetUniformLocation(wall->program, "fog_color"), r, g, b);
 
-	glUniform1f(glGetUniformLocation(wall->program, "fog_start"), l->fogStart);
-	glUniform1f(glGetUniformLocation(wall->program, "fog_end"), l->fogEnd);
+	glUniform1f(glGetUniformLocation(wall->program, "fog_start"), (float)l->fogStart);
+	glUniform1f(glGetUniformLocation(wall->program, "fog_end"), (float)l->fogEnd);
 
 	glUseProgram(sky->program);
 	glUniformMatrix4fv(glGetUniformLocation(sky->program, "WORLD_VIEW_MATRIX"),
@@ -700,14 +706,14 @@ void GL_DrawWall(const Wall *w, const mat4 mdl, const Camera *cam, const Level *
 					   mdl[0]); // model -> world
 
 	glUniform1f(glGetUniformLocation(wall->program, "camera_yaw"), cam->yaw);
-	glUniform1f(glGetUniformLocation(wall->program, "wall_angle"), w->angle);
+	glUniform1f(glGetUniformLocation(wall->program, "wall_angle"), (float)w->angle);
 
 	float vertices[4][5] = {
 		// X Y Z U V
-		{w->a.x, 0.5f * w->height, w->a.y, 0.0f, 0.0f},
-		{w->b.x, 0.5f * w->height, w->b.y, w->length, 0.0f},
-		{w->b.x, -0.5f * w->height, w->b.y, w->length, 1.0f},
-		{w->a.x, -0.5f * w->height, w->a.y, 0.0f, 1.0f},
+		{(float)w->a.x, 0.5f * w->height, (float)w->a.y, 0.0f, 0.0f},
+		{(float)w->b.x, 0.5f * w->height, (float)w->b.y, (float)w->length, 0.0f},
+		{(float)w->b.x, -0.5f * w->height, (float)w->b.y, (float)w->length, 1.0f},
+		{(float)w->a.x, -0.5f * w->height, (float)w->a.y, 0.0f, 1.0f},
 	};
 
 	const float uvOffset = w->uvOffset;
@@ -756,24 +762,24 @@ void GL_DrawFloor(const Vector2 vp1,
 					   mvp[0][0]); // world -> screen
 
 	const uint color = l->fogColor;
-	const float r = (color >> 16 & 0xFF) / 255.0f;
-	const float g = (color >> 8 & 0xFF) / 255.0f;
-	const float b = (color & 0xFF) / 255.0f;
+	const float r = (float)(color >> 16 & 0xFF) / 255.0f;
+	const float g = (float)(color >> 8 & 0xFF) / 255.0f;
+	const float b = (float)(color & 0xFF) / 255.0f;
 
 	glUniform3f(glGetUniformLocation(floorAndCeiling->program, "fog_color"), r, g, b);
 
-	glUniform1f(glGetUniformLocation(floorAndCeiling->program, "fog_start"), l->fogStart);
-	glUniform1f(glGetUniformLocation(floorAndCeiling->program, "fog_end"), l->fogEnd);
+	glUniform1f(glGetUniformLocation(floorAndCeiling->program, "fog_start"), (float)l->fogStart);
+	glUniform1f(glGetUniformLocation(floorAndCeiling->program, "fog_end"), (float)l->fogEnd);
 
 	glUniform1f(glGetUniformLocation(floorAndCeiling->program, "height"), height);
 	glUniform1f(glGetUniformLocation(floorAndCeiling->program, "shade"), shade);
 
 	const float vertices[4][2] = {
 		// X Z
-		{vp1.x, vp1.y},
-		{vp2.x, vp1.y},
-		{vp2.x, vp2.y},
-		{vp1.x, vp2.y},
+		{(float)vp1.x, (float)vp1.y},
+		{(float)vp2.x, (float)vp1.y},
+		{(float)vp2.x, (float)vp2.y},
+		{(float)vp1.x, (float)vp2.y},
 	};
 
 	const uint indices[] = {0, 1, 2, 0, 2, 3};
@@ -809,21 +815,21 @@ void GL_DrawShadow(const Vector2 vp1, const Vector2 vp2, const mat4 *mvp, const 
 					   mdl[0]); // model -> world
 
 	const uint color = l->fogColor;
-	const float r = (color >> 16 & 0xFF) / 255.0f;
-	const float g = (color >> 8 & 0xFF) / 255.0f;
-	const float b = (color & 0xFF) / 255.0f;
+	const float r = (float)(color >> 16 & 0xFF) / 255.0f;
+	const float g = (float)(color >> 8 & 0xFF) / 255.0f;
+	const float b = (float)(color & 0xFF) / 255.0f;
 
 	glUniform3f(glGetUniformLocation(shadow->program, "fog_color"), r, g, b);
 
-	glUniform1f(glGetUniformLocation(shadow->program, "fog_start"), l->fogStart);
-	glUniform1f(glGetUniformLocation(shadow->program, "fog_end"), l->fogEnd);
+	glUniform1f(glGetUniformLocation(shadow->program, "fog_start"), (float)l->fogStart);
+	glUniform1f(glGetUniformLocation(shadow->program, "fog_end"), (float)l->fogEnd);
 
 	const float vertices[4][2] = {
 		// X Z
-		{vp1.x, vp1.y},
-		{vp2.x, vp1.y},
-		{vp2.x, vp2.y},
-		{vp1.x, vp2.y},
+		{(float)vp1.x, (float)vp1.y},
+		{(float)vp2.x, (float)vp1.y},
+		{(float)vp2.x, (float)vp2.y},
+		{(float)vp1.x, (float)vp2.y},
 	};
 
 	const uint indices[] = {0, 1, 2, 0, 2, 3};
@@ -869,9 +875,9 @@ inline void GL_UpdateViewportSize()
 		glDeleteTextures(1, &GL_Textures[0]);
 	}
 
-	GLuint fbtex;
-	glGenTextures(1, &fbtex);
-	glBindTexture(GL_TEXTURE_2D, fbtex);
+	GLuint frameBufferTexture;
+	glGenTextures(1, &frameBufferTexture);
+	glBindTexture(GL_TEXTURE_2D, frameBufferTexture);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -880,33 +886,33 @@ inline void GL_UpdateViewportSize()
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
-	GL_Textures[0] = fbtex;
+	GL_Textures[0] = frameBufferTexture;
 }
 
-void GL_DrawColoredArrays(const float *vertices, const uint *indices, const int quad_count, const uint color)
+void GL_DrawColoredArrays(const float *vertices, const uint *indices, const uint quad_count, const uint color)
 {
 	glUseProgram(uiColored->program);
 
-	const float a = (color >> 24 & 0xFF) / 255.0f;
-	const float r = (color >> 16 & 0xFF) / 255.0f;
-	const float g = (color >> 8 & 0xFF) / 255.0f;
-	const float b = (color & 0xFF) / 255.0f;
+	const float a = (float)(color >> 24 & 0xFF) / 255.0f;
+	const float r = (float)(color >> 16 & 0xFF) / 255.0f;
+	const float g = (float)(color >> 8 & 0xFF) / 255.0f;
+	const float b = (float)(color & 0xFF) / 255.0f;
 
 	glUniform4f(glGetUniformLocation(uiTextured->program, "col"), r, g, b, a);
 
 	glBindVertexArray(glBuffer->vao);
 
 	glBindBuffer(GL_ARRAY_BUFFER, glBuffer->vbo);
-	glBufferData(GL_ARRAY_BUFFER, quad_count * 16 * sizeof(float), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, (long)(quad_count * 16 * sizeof(float)), vertices, GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glBuffer->ebo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, quad_count * 6 * sizeof(uint), indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, (long)(quad_count * 6 * sizeof(uint)), indices, GL_STATIC_DRAW);
 
 	const GLint posAttrLoc = glGetAttribLocation(uiColored->program, "VERTEX");
 	glVertexAttribPointer(posAttrLoc, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void *)0);
 	glEnableVertexAttribArray(posAttrLoc);
 
-	glDrawElements(GL_TRIANGLES, quad_count * 6, GL_UNSIGNED_INT, NULL);
+	glDrawElements(GL_TRIANGLES, (int)(quad_count * 6), GL_UNSIGNED_INT, NULL);
 }
 
 void GL_DrawTexturedArrays(const float *vertices,
@@ -919,10 +925,10 @@ void GL_DrawTexturedArrays(const float *vertices,
 
 	GL_LoadTextureFromAsset(texture);
 
-	const float a = (color >> 24 & 0xFF) / 255.0f;
-	const float r = (color >> 16 & 0xFF) / 255.0f;
-	const float g = (color >> 8 & 0xFF) / 255.0f;
-	const float b = (color & 0xFF) / 255.0f;
+	const float a = (float)(color >> 24 & 0xFF) / 255.0f;
+	const float r = (float)(color >> 16 & 0xFF) / 255.0f;
+	const float g = (float)(color >> 8 & 0xFF) / 255.0f;
+	const float b = (float)(color & 0xFF) / 255.0f;
 
 	glUniform4f(glGetUniformLocation(uiTextured->program, "col"), r, g, b, a);
 
@@ -931,10 +937,10 @@ void GL_DrawTexturedArrays(const float *vertices,
 	glBindVertexArray(glBuffer->vao);
 
 	glBindBuffer(GL_ARRAY_BUFFER, glBuffer->vbo);
-	glBufferData(GL_ARRAY_BUFFER, quad_count * 16 * sizeof(float), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, (long)(quad_count * 16 * sizeof(float)), vertices, GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glBuffer->ebo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, quad_count * 6 * sizeof(uint), indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, (long)(quad_count * 6 * sizeof(uint)), indices, GL_STATIC_DRAW);
 
 	const GLint posAttrLoc = glGetAttribLocation(uiTextured->program, "VERTEX");
 	glVertexAttribPointer(posAttrLoc, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void *)0);
@@ -991,7 +997,7 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
 	mat4 *WORLD_VIEW_MATRIX = GL_GetMatrix(cam);
 	const mat4 IDENTITY = GLM_MAT4_IDENTITY_INIT;
 	mat4 SKY_MODEL_WORLD = GLM_MAT4_IDENTITY_INIT;
-	glm_translated(SKY_MODEL_WORLD, (vec3){l->player.pos.x, 0, l->player.pos.y});
+	glm_translated(SKY_MODEL_WORLD, (vec3){(float)l->player.pos.x, 0, (float)l->player.pos.y});
 
 	const Vector2 floor_start = v2(l->player.pos.x - 100, l->player.pos.y - 100);
 	const Vector2 floor_end = v2(l->player.pos.x + 100, l->player.pos.y + 100);
@@ -1000,25 +1006,25 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
 
 	if (l->hasCeiling)
 	{
-		GL_DrawFloor(floor_start, floor_end, WORLD_VIEW_MATRIX, l, l->ceilOrSkyTex, 0.5, 0.8);
+		GL_DrawFloor(floor_start, floor_end, WORLD_VIEW_MATRIX, l, l->ceilOrSkyTex, 0.5f, 0.8f);
 	} else
 	{
 		GL_RenderModel(skyModel, SKY_MODEL_WORLD, l->ceilOrSkyTex, SHADER_SKY);
 		GL_ClearDepthOnly(); // prevent sky from clipping into walls
 	}
 
-	GL_DrawFloor(floor_start, floor_end, WORLD_VIEW_MATRIX, l, l->floorTex, -0.5, 1.0);
+	GL_DrawFloor(floor_start, floor_end, WORLD_VIEW_MATRIX, l, l->floorTex, -0.5f, 1.0f);
 
 	glDisable(GL_DEPTH_TEST);
 	for (int i = 0; i < l->actors.length; i++)
 	{
-		Actor *actor = ListGet(l->actors, i);
+		const Actor *actor = ListGet(l->actors, i);
 		if (actor->showShadow)
 		{
 			mat4 actor_xfm;
 			ActorTransformMatrix(actor, &actor_xfm);
 			// remove the rotation and y position from the actor matrix so the shadow draws correctly
-			glm_rotate(actor_xfm, actor->rotation, (vec3){0, 1, 0});
+			glm_rotate(actor_xfm, (float)actor->rotation, (vec3){0, 1, 0});
 			glm_translate(actor_xfm, (vec3){0, -actor->yPosition, 0});
 
 			GL_DrawShadow(v2s(-0.5 * actor->shadowSize), v2s(0.5 * actor->shadowSize), WORLD_VIEW_MATRIX, actor_xfm, l);
@@ -1063,7 +1069,7 @@ void GL_LoadModel(const Model *model)
 {
 	if (GL_ModelBuffers[model->id] != NULL)
 	{
-		GL_Buffer *buf = GL_ModelBuffers[model->id];
+		const GL_Buffer *buf = GL_ModelBuffers[model->id];
 		glBindVertexArray(buf->vao);
 		glBindBuffer(GL_ARRAY_BUFFER, buf->vbo);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buf->ebo);
@@ -1076,13 +1082,13 @@ void GL_LoadModel(const Model *model)
 
 	glBindBuffer(GL_ARRAY_BUFFER, buf->vbo);
 	glBufferData(GL_ARRAY_BUFFER,
-				 model->vertexCount * sizeof(float) * 8,
+				 (long)(model->vertexCount * sizeof(float) * 8),
 				 model->vertexData,
 				 GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buf->ebo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-				 model->indexCount * sizeof(uint),
+				 (long)(model->indexCount * sizeof(uint)),
 				 model->indexData,
 				 GL_STATIC_DRAW);
 }
@@ -1131,5 +1137,5 @@ void GL_RenderModel(const Model *model, const mat4 modelWorldMatrix, const char 
 		glEnableVertexAttribArray(normAttrLoc);
 	}
 
-	glDrawElements(GL_TRIANGLES, model->indexCount, GL_UNSIGNED_INT, NULL);
+	glDrawElements(GL_TRIANGLES, (int)model->indexCount, GL_UNSIGNED_INT, NULL);
 }

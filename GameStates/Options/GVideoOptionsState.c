@@ -87,7 +87,7 @@ void GVideoOptionsStateUpdate(GlobalState * /*State*/)
 	}
 }
 
-void GVideoOptionsStateRender(GlobalState *state)
+void GVideoOptionsStateRender(GlobalState *)
 {
 	if (optionsStateInGame)
 	{
@@ -140,7 +140,7 @@ void GVideoOptionsStateSet()
 										  CbOptionsMipmaps,
 										  TOP_CENTER,
 										  GetState()->options.mipmaps));
-		opY += opSpacing * 1.5;
+		opY += (int)(opSpacing * 1.5);
 
 		UiStackPush(videoOptionsStack,
 					CreateRadioButtonControl(v2(0, opY),
@@ -162,7 +162,7 @@ void GVideoOptionsStateSet()
 											 GetState()->options.renderer == RENDERER_OPENGL,
 											 0,
 											 RENDERER_OPENGL));
-		opY += opSpacing * 1.5;
+		opY += (int)(opSpacing * 1.5);
 		UiStackPush(videoOptionsStack,
 					CreateSliderControl(v2(0, opY),
 										v2(480, 40),

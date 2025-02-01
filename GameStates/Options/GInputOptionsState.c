@@ -37,8 +37,8 @@ void SldOptionsMouseSensitivity(const double value)
 
 void SldOptionsRumbleStrength(const double value)
 {
-	GetState()->options.rumbleStrength = value;
-	Rumble(1.0, 200);
+	GetState()->options.rumbleStrength = (float)value;
+	Rumble(1.0f, 200);
 }
 
 void CbOptionsControllerMode(const bool value)
@@ -56,7 +56,7 @@ void CbOptionsSwapOkCancel(const bool value)
 	GetState()->options.controllerSwapOkCancel = value;
 }
 
-void GInputOptionsStateRender(GlobalState *state)
+void GInputOptionsStateRender(GlobalState *)
 {
 	if (optionsStateInGame)
 	{

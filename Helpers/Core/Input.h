@@ -204,7 +204,7 @@ bool UseController();
  * @param strength The base strength of the rumble (0.0 - 1.0)
  * @param time The time to rumble in milliseconds
  */
-void Rumble(const float strength, const uint time);
+void Rumble(float strength, uint time);
 
 /**
  * Get the name of the connected controller

@@ -22,10 +22,10 @@ struct TextBoxData
 };
 
 Control *CreateTextBoxControl(const char *placeholder,
-							  const Vector2 position,
-							  const Vector2 size,
-							  const ControlAnchor anchor,
-							  const uint maxLength,
+							  Vector2 position,
+							  Vector2 size,
+							  ControlAnchor anchor,
+							  uint maxLength,
 							  TextBoxCallback callback);
 
 void DrawTextBox(const Control *c, ControlState state, Vector2 position);

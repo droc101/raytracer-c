@@ -152,7 +152,7 @@ void GMainStateFixedUpdate(GlobalState *state, double delta)
 	{
 		if (isMoving)
 		{
-			state->cameraY = sin(state->physicsFrame / 7.0) * 0.005 - 0.1;
+			state->cameraY = sin((double)state->physicsFrame / 7.0) * 0.005 - 0.1;
 		} else
 		{
 			state->cameraY = lerp(state->cameraY, -0.1, 0.1);
@@ -161,7 +161,7 @@ void GMainStateFixedUpdate(GlobalState *state, double delta)
 	{
 		if (isMoving)
 		{
-			state->cameraY = sin(state->physicsFrame / 7.0) * 0.04;
+			state->cameraY = sin((double)state->physicsFrame / 7.0) * 0.04;
 		} else
 		{
 			state->cameraY = lerp(state->cameraY, 0, 0.1);

@@ -31,8 +31,8 @@ void FrameGraphUpdate(const ulong ns)
 		return;
 	}
 
-	FG_PushIntoArray(ns == 0 ? 1 : ns);
-	framegraphLastUpdateTime = GetTimeMs();
+	FG_PushIntoArray(ns == 0 ? 1 : (double)ns);
+	framegraphLastUpdateTime = (long)GetTimeMs();
 }
 
 void FrameGraphDraw()

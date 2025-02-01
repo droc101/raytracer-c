@@ -65,8 +65,8 @@ Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, cons
 			index = FontFindChar('U');
 		}
 
-		const Vector2 ndcPos = v2(X_TO_NDC(x), Y_TO_NDC(y));
-		const Vector2 ndcPosEnd = v2(X_TO_NDC(x + width), Y_TO_NDC(y + size));
+		const Vector2 ndcPos = v2(X_TO_NDC((float)x), Y_TO_NDC((float)y));
+		const Vector2 ndcPosEnd = v2(X_TO_NDC((float)(x + width)), Y_TO_NDC((float)(y + size)));
 		const double charUV = uvPerChar * index;
 		const double charUVEnd = uvPerChar * (index + 1) - uvPixel;
 
@@ -94,7 +94,7 @@ Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, cons
 	BatchedQuadArray quads;
 	quads.verts = verts;
 	quads.indices = indices;
-	quads.quad_count = stringLength;
+	quads.quad_count = (int)stringLength;
 	DrawBatchedQuadsTextured(&quads, small ? TEXTURE("interface_small_fonts") : TEXTURE("interface_font"), color);
 
 	free(verts);
@@ -106,9 +106,9 @@ Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, cons
 Vector2 MeasureText(const char *str, const uint size, const bool small)
 {
 	int textWidth = 0;
-	int textHeight = size;
+	int textHeight = (int)size;
 	int tempWidth = 0;
-	const int sizeX = small ? size * 0.75 : size;
+	const int sizeX = (int)(small ? size * 0.75 : size);
 	for (int j = 0; j < strlen(str); j++)
 	{
 		tempWidth += sizeX;
@@ -117,7 +117,7 @@ Vector2 MeasureText(const char *str, const uint size, const bool small)
 			tempWidth -= sizeX;
 			textWidth = max(textWidth, tempWidth);
 			tempWidth = 0;
-			textHeight += size;
+			textHeight += (int)size;
 		}
 	}
 
@@ -192,13 +192,13 @@ void DrawTextAligned(const char *str,
 {
 	const int lines = StringLineCount(str);
 	int x;
-	int y = rect_pos.y;
+	int y = (int)rect_pos.y;
 	if (v_align == FONT_VALIGN_MIDDLE)
 	{
-		y += (rect_size.y - lines * size) / 2;
+		y += (int)(rect_size.y - lines * size) / 2;
 	} else if (v_align == FONT_VALIGN_BOTTOM)
 	{
-		y += rect_size.y - lines * size;
+		y += (int)(rect_size.y - lines * size);
 	}
 
 	for (int i = 0; i < lines; i++)
@@ -208,15 +208,15 @@ void DrawTextAligned(const char *str,
 		const Vector2 textSize = MeasureText(line, size, small);
 		if (h_align == FONT_HALIGN_CENTER)
 		{
-			x = rect_pos.x + (rect_size.x - textSize.x) / 2;
+			x = (int)(rect_pos.x + (rect_size.x - textSize.x) / 2);
 		} else if (h_align == FONT_HALIGN_RIGHT)
 		{
-			x = rect_pos.x + rect_size.x - textSize.x;
+			x = (int)(rect_pos.x + rect_size.x - textSize.x);
 		} else
 		{
-			x = rect_pos.x;
+			x = (int)rect_pos.x;
 		}
 		FontDrawString(v2(x, y), line, size, color, small);
-		y += size;
+		y += (int)size;
 	}
 }

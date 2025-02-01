@@ -68,12 +68,12 @@ void TextBoxRender(const TextBox *box, const int page)
 	topLeft.y += box->y;
 
 	SetColorUint(boxColor);
-	DrawRect(topLeft.x,
-			 topLeft.y,
+	DrawRect((int)topLeft.x,
+			 (int)topLeft.y,
 			 box->cols * TEXT_BOX_FONT_WIDTH + BOX_OUTER_PADDING * 2,
 			 box->rows * TEXT_BOX_FONT_SIZE + BOX_OUTER_PADDING * 2);
 
-	int txtY = topLeft.y + BOX_OUTER_PADDING;
+	int txtY = (int)topLeft.y + BOX_OUTER_PADDING;
 	for (int i = startLine; i < endLine; i++)
 	{
 		char line[256];

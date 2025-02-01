@@ -39,7 +39,7 @@ void GOptionsStateUpdate(GlobalState * /*State*/)
 	}
 }
 
-void GOptionsStateRender(GlobalState *state)
+void GOptionsStateRender(GlobalState *)
 {
 	if (optionsStateInGame)
 	{
@@ -62,7 +62,7 @@ void GOptionsStateRender(GlobalState *state)
 	DrawUiStack(optionsStack);
 }
 
-void GOptionsStateSet(bool inGame)
+void GOptionsStateSet(const bool inGame)
 {
 	optionsStateInGame = inGame;
 	if (optionsStack == NULL)

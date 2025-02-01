@@ -61,7 +61,7 @@ double wrap(double x, double min, double max);
  * @param max Maximum value
  * @return Clamped number
  */
-#define clamp(val, min, max) (val < min ? min : val > max ? max : val)
+#define clamp(val, min, max) ((val) < (min) ? (min) : (val) > (max) ? (max) : (val))
 
 /**
  * Convert degrees to radians

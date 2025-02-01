@@ -46,6 +46,6 @@ bool GetTransformedWall(const Actor *actor, Wall *wall);
  * @param actor The actor that will listen
  * @param signal The signal to listen for
  */
-void ActorListenFor(Actor *actor, const int signal);
+void ActorListenFor(Actor *actor, int signal);
 
 #endif //GAME_ACTOR_H

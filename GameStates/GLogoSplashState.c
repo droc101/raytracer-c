@@ -49,14 +49,14 @@ void GLogoSplashStateRender(GlobalState *State)
 	const SDL_Rect destRect = {WindowWidth() / 2 - 150, WindowHeight() / 2 - 150, 300, 300};
 
 	// HIGH EFFORT FANCY ANIMATION
-	float alpha = 1.0;
+	float alpha = 1.0f;
 	if (State->physicsFrame < 40)
 	{
-		alpha = (State->physicsFrame - 20) / 20.0;
+		alpha = (float)(State->physicsFrame - 20) / 20.0f;
 	}
 	else if (State->physicsFrame > 80)
 	{
-		alpha = 1.0 - ((State->physicsFrame - 80) / 20.0);
+		alpha = 1.0f - ((float)(State->physicsFrame - 80) / 20.0f);
 	}
 	const uint color = (uint)(alpha * 255) << 24 | 0xFFFFFF;
 

@@ -50,13 +50,13 @@ void ExecuteCommand(const char *command)
         {
 			errno = 0;
         	char *end;
-        	const int signal = strtol(ListGet(commandList, 1), &end, 10);
+        	const long signal = strtol(ListGet(commandList, 1), &end, 10);
         	if (errno != 0 || *end != '\0')
         	{
         		printf("Invalid signal number: %s\n", (char*)ListGet(commandList, 1));
         	} else
         	{
-        		SendSignal(signal, NULL);
+        		SendSignal((int)signal, NULL);
         	}
         }
 	}

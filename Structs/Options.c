@@ -86,7 +86,7 @@ void LoadOptions(Options *options)
 	} else
 	{
 		fseek(file, 0, SEEK_END);
-		const int fileLen = ftell(file);
+		const size_t fileLen = ftell(file);
 
 		// if the file is the wrong size, just use the default options
 		if (fileLen != sizeof(Options))

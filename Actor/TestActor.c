@@ -20,7 +20,7 @@ void TestActorInit(Actor *this)
 	this->solid = true;
 	this->actorModel = LoadModel(MODEL("model_leafy"));
 	this->actorModelTexture = TEXTURE("actor_BLOB2");
-	this->actorWall = CreateWall(v2(-0.5, 0), v2(0.5, 0), "", 1.0, 0.0);
+	this->actorWall = CreateWall(v2(-0.5, 0), v2(0.5, 0), "", 1.0f, 0.0f);
 	this->SignalHandler = TestActorSignalHandler;
 	ActorListenFor(this, 0);
 }

@@ -64,7 +64,7 @@ Control *CreateTextBoxControl(const char *placeholder,
 	return c;
 }
 
-void DrawTextBox(const Control *c, ControlState state, Vector2 position)
+void DrawTextBox(const Control *c, ControlState, Vector2 position)
 {
 	DrawNinePatchTexture(c->anchoredPosition, c->size, 8, 8, TEXTURE("interface_slider"));
 
@@ -89,7 +89,7 @@ void DrawTextBox(const Control *c, ControlState state, Vector2 position)
 					true);
 }
 
-void UpdateTextBox(UiStack *stack, Control *c, Vector2 localMousePos, uint ctlIndex)
+void UpdateTextBox(UiStack *stack, Control *c, Vector2, uint ctlIndex)
 {
 	if (stack->ActiveControl != ctlIndex)
 	{

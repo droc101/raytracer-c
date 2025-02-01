@@ -126,7 +126,7 @@ bool ProcessUiStack(UiStack *stack)
 	} else
 	{
 		// iterate through the controls in reverse order so that the last control is on top and gets priority
-		for (int i = stack->Controls.length - 1; i >= 0; i--)
+		for (int i = (int)stack->Controls.length - 1; i >= 0; i--)
 		{
 			const Control *c = (Control *)ListGet(stack->Controls, i);
 
@@ -162,22 +162,22 @@ bool ProcessUiStack(UiStack *stack)
 			stack->focusedControl = 0;
 		} else
 		{
-			stack->focusedControl = (stack->focusedControl + 1) % stack->Controls.length;
+			stack->focusedControl = (int)((stack->focusedControl + 1) % stack->Controls.length);
 		}
 	} else if ((IsKeyJustPressed(SDL_SCANCODE_TAB) && IsKeyPressed(SDL_SCANCODE_LSHIFT)) ||
 			   IsButtonJustPressed(SDL_CONTROLLER_BUTTON_DPAD_UP))
 	{
 		if (stack->focusedControl == -1)
 		{
-			stack->focusedControl = stack->Controls.length - 1;
+			stack->focusedControl = (int)stack->Controls.length - 1;
 		} else
 		{
-			stack->focusedControl = (stack->focusedControl - 1) % stack->Controls.length;
+			stack->focusedControl = (int)((stack->focusedControl - 1) % stack->Controls.length);
 		}
 		// ensure the index is positive
 		if (stack->focusedControl < 0)
 		{
-			stack->focusedControl += stack->Controls.length;
+			stack->focusedControl += (int)stack->Controls.length;
 		}
 	}
 

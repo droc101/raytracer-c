@@ -23,7 +23,7 @@ RayCastResult Intersect(const Wall *wall, const Vector2 from, const double direc
 				rr.collided = true;
 				rr.distance = distance;
 				rr.collisionPoint = v2(wall->a.x, y);
-				rr.collisionWall = wall;
+				rr.collisionWall = (Wall*)wall;
 				return rr;
 			}
 		}
@@ -39,7 +39,7 @@ RayCastResult Intersect(const Wall *wall, const Vector2 from, const double direc
 			rr.collided = true;
 			rr.distance = distance;
 			rr.collisionPoint = v2(x, wall->dy * (x - wall->a.x) / wall->dx + wall->a.y);
-			rr.collisionWall = wall;
+			rr.collisionWall = (Wall*)wall;
 			return rr;
 		}
 	}

@@ -47,7 +47,7 @@ void GSoundOptionsStateUpdate(GlobalState * /*State*/)
 	}
 }
 
-void GSoundOptionsStateRender(GlobalState *state)
+void GSoundOptionsStateRender(GlobalState *)
 {
 	if (optionsStateInGame)
 	{

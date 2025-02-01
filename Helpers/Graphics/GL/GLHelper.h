@@ -183,7 +183,7 @@ void GL_DrawTexturedArrays(const float *vertices, const uint *indices, int quad_
  * @param quad_count The number of quads to draw
  * @param color The color to draw
  */
-void GL_DrawColoredArrays(const float *vertices, const uint *indices, int quad_count, uint color);
+void GL_DrawColoredArrays(const float *vertices, const uint *indices, uint quad_count, uint color);
 
 /**
  * Convert screen X to NDC

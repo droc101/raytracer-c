@@ -32,6 +32,6 @@ Camera *CreateCamera()
  */
 void CameraLookAt(Camera *camera, const Vector2 target)
 {
-	camera->yaw = atan2(target.x - camera->x, target.y - camera->z);
+	camera->yaw = (float)atan2(target.x - camera->x, target.y - camera->z);
 	camera->pitch = 0;
 }

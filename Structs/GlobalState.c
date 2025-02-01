@@ -172,7 +172,7 @@ void ChangeMusic(const char *asset)
 	}
 
 	const uint mp3Size = mp3->size;
-	Mix_Music *mus = Mix_LoadMUS_RW(SDL_RWFromConstMem(mp3->data, mp3Size), 1);
+	Mix_Music *mus = Mix_LoadMUS_RW(SDL_RWFromConstMem(mp3->data, (int)mp3Size), 1);
 	if (mus == NULL)
 	{
 		printf("Mix_LoadMUS_RW Error: %s\n", Mix_GetError());
@@ -216,7 +216,7 @@ void PlaySoundEffect(const char *asset)
 		return;
 	}
 	const uint wavSize = wav->size;
-	Mix_Chunk *chunk = Mix_LoadWAV_RW(SDL_RWFromConstMem(wav->data, wavSize), 1);
+	Mix_Chunk *chunk = Mix_LoadWAV_RW(SDL_RWFromConstMem(wav->data, (int)wavSize), 1);
 	if (chunk == NULL)
 	{
 		LogError("Mix_LoadWAV_RW Error: %s\n", Mix_GetError());

@@ -261,3 +261,20 @@ void ErrorHandlerInit()
 	signal(SIGFPE, SignalHandler);
 #endif
 }
+
+inline void TestSDLFunction_NonFatal(const int result, const char *message)
+{
+	if (result != 0)
+	{
+		LogError("%s: %s\n", message, SDL_GetError());
+	}
+}
+
+inline void TestSDLFunction(const int result, const char *message, const char *userMessage)
+{
+	if (result != 0)
+	{
+		LogError("%s: %s\n", message, SDL_GetError());
+		Error((char*)userMessage);
+	}
+}
