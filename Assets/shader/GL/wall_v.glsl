@@ -7,17 +7,24 @@ out vec2 UV; // Output UV coordinates for fragment shader
 flat out float SHADE; // Output shade value for fragment shader
 
 uniform mat4 MODEL_WORLD_MATRIX; // Model to world matrix
-uniform mat4 WORLD_VIEW_MATRIX; // World to screen matrix
 
-uniform float camera_yaw; // Camera yaw angle
+layout(std140, binding = 2) uniform SharedUniforms
+{
+    mat4 worldViewMatrix;
+    vec3 fogColor;
+    float fogStart;
+    float fogEnd;
+    float cameraYaw;
+} uniforms;
+
 uniform float wall_angle; // Wall angle
 
 const float PI = 3.14159265359; // yummy
 
 void main() {
     UV = VERTEX_UV;
-    gl_Position = WORLD_VIEW_MATRIX * MODEL_WORLD_MATRIX * vec4(VERTEX, 1.0);
+    gl_Position = uniforms.worldViewMatrix * MODEL_WORLD_MATRIX * vec4(VERTEX, 1.0);
 
-    SHADE = abs(cos((camera_yaw + (1.5 * PI)) - wall_angle));
+    SHADE = abs(cos((uniforms.cameraYaw + (1.5 * PI)) - wall_angle));
     SHADE = max(0.6, min(1, SHADE));
 }

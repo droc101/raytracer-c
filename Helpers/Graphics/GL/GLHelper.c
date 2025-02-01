@@ -15,6 +15,15 @@
 #include "../RenderingHelpers.h"
 #include "GLInternal.h"
 
+typedef struct __attribute__((aligned(16))) GL_SharedUniforms
+{
+	mat4 worldViewMatrix;
+	vec3 fogColor;
+	float fogStart;
+	float fogEnd;
+	float cameraYaw;
+} GL_SharedUniforms;
+
 SDL_GLContext ctx;
 
 GL_Shader *uiTextured;
@@ -35,6 +44,8 @@ int GL_AssetTextureMap[MAX_TEXTURES];
 char GL_LastError[512];
 
 GL_Buffer *GL_ModelBuffers[MAX_MODELS];
+
+GLuint sharedUniformBuffer;
 
 void GL_Error(const char *error)
 {
@@ -140,6 +151,11 @@ bool GL_Init(SDL_Window *wnd)
 	}
 
 	glBuffer = GL_ConstructBuffer();
+
+	glGenBuffers(1, &sharedUniformBuffer);
+	glBindBuffer(GL_UNIFORM_BUFFER, sharedUniformBuffer);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(GL_SharedUniforms), NULL, GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -307,6 +323,7 @@ void GL_DestroyGL()
 	glUseProgram(0);
 	glDisableVertexAttribArray(0);
 	GL_DestroyBuffer(glBuffer);
+	glDeleteBuffers(1, &sharedUniformBuffer);
 	for (int i = 0; i < MAX_TEXTURES; i++)
 	{
 		if (GL_Textures[i] != 0)
@@ -658,22 +675,19 @@ void GL_DrawLine(const Vector2 start, const Vector2 end, const uint color, const
 
 void GL_SetLevelParams(const mat4 *mvp, const Level *l)
 {
-	glUseProgram(wall->program);
+	GL_SharedUniforms uniforms;
+	glm_mat4_copy(mvp[0], uniforms.worldViewMatrix);
+	glm_vec3_copy((vec3){(float)(l->fogColor >> 16 & 0xFF) / 255.0f,
+                         (float)(l->fogColor >> 8 & 0xFF) / 255.0f,
+                         (float)(l->fogColor & 0xFF) / 255.0f},
+                  uniforms.fogColor);
+	uniforms.cameraYaw = GetState()->cam->yaw;
+	uniforms.fogStart = (float)l->fogStart;
+	uniforms.fogEnd = (float)l->fogEnd;
 
-	glUniformMatrix4fv(glGetUniformLocation(wall->program, "WORLD_VIEW_MATRIX"),
-					   1,
-					   GL_FALSE,
-					   mvp[0][0]); // world -> screen
-
-	const uint color = l->fogColor;
-	const float r = (float)(color >> 16 & 0xFF) / 255.0f;
-	const float g = (float)(color >> 8 & 0xFF) / 255.0f;
-	const float b = (float)(color & 0xFF) / 255.0f;
-
-	glUniform3f(glGetUniformLocation(wall->program, "fog_color"), r, g, b);
-
-	glUniform1f(glGetUniformLocation(wall->program, "fog_start"), (float)l->fogStart);
-	glUniform1f(glGetUniformLocation(wall->program, "fog_end"), (float)l->fogEnd);
+	glBindBuffer(GL_UNIFORM_BUFFER, sharedUniformBuffer);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(GL_SharedUniforms), &uniforms, GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 	glUseProgram(sky->program);
 	glUniformMatrix4fv(glGetUniformLocation(sky->program, "WORLD_VIEW_MATRIX"),
@@ -694,9 +708,11 @@ void GL_SetLevelParams(const mat4 *mvp, const Level *l)
 					   mvp[0][0]); // world -> screen
 }
 
-void GL_DrawWall(const Wall *w, const mat4 mdl, const Camera *cam, const Level * /*l*/)
+void GL_DrawWall(const Wall *w, const mat4 mdl, const Camera *, const Level *)
 {
 	glUseProgram(wall->program);
+
+	glBindBufferBase(GL_UNIFORM_BUFFER, 2, sharedUniformBuffer);
 
 	GL_LoadTextureFromAsset(w->tex);
 
@@ -705,7 +721,6 @@ void GL_DrawWall(const Wall *w, const mat4 mdl, const Camera *cam, const Level *
 					   GL_FALSE,
 					   mdl[0]); // model -> world
 
-	glUniform1f(glGetUniformLocation(wall->program, "camera_yaw"), cam->yaw);
 	glUniform1f(glGetUniformLocation(wall->program, "wall_angle"), (float)w->angle);
 
 	float vertices[4][5] = {
@@ -744,32 +759,13 @@ void GL_DrawWall(const Wall *w, const mat4 mdl, const Camera *cam, const Level *
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 }
 
-void GL_DrawFloor(const Vector2 vp1,
-				  const Vector2 vp2,
-				  const mat4 *mvp,
-				  const Level *l,
-				  const char *texture,
-				  const float height,
-				  const float shade)
+void GL_DrawFloor(const Vector2 vp1, const Vector2 vp2, const char *texture, const float height, const float shade)
 {
 	glUseProgram(floorAndCeiling->program);
 
+	glBindBufferBase(GL_UNIFORM_BUFFER, 2, sharedUniformBuffer);
+
 	GL_LoadTextureFromAsset(texture);
-
-	glUniformMatrix4fv(glGetUniformLocation(floorAndCeiling->program, "WORLD_VIEW_MATRIX"),
-					   1,
-					   GL_FALSE,
-					   mvp[0][0]); // world -> screen
-
-	const uint color = l->fogColor;
-	const float r = (float)(color >> 16 & 0xFF) / 255.0f;
-	const float g = (float)(color >> 8 & 0xFF) / 255.0f;
-	const float b = (float)(color & 0xFF) / 255.0f;
-
-	glUniform3f(glGetUniformLocation(floorAndCeiling->program, "fog_color"), r, g, b);
-
-	glUniform1f(glGetUniformLocation(floorAndCeiling->program, "fog_start"), (float)l->fogStart);
-	glUniform1f(glGetUniformLocation(floorAndCeiling->program, "fog_end"), (float)l->fogEnd);
 
 	glUniform1f(glGetUniformLocation(floorAndCeiling->program, "height"), height);
 	glUniform1f(glGetUniformLocation(floorAndCeiling->program, "shade"), shade);
@@ -1006,14 +1002,14 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
 
 	if (l->hasCeiling)
 	{
-		GL_DrawFloor(floor_start, floor_end, WORLD_VIEW_MATRIX, l, l->ceilOrSkyTex, 0.5f, 0.8f);
+		GL_DrawFloor(floor_start, floor_end, l->ceilOrSkyTex, 0.5f, 0.8f);
 	} else
 	{
 		GL_RenderModel(skyModel, SKY_MODEL_WORLD, l->ceilOrSkyTex, SHADER_SKY);
 		GL_ClearDepthOnly(); // prevent sky from clipping into walls
 	}
 
-	GL_DrawFloor(floor_start, floor_end, WORLD_VIEW_MATRIX, l, l->floorTex, -0.5f, 1.0f);
+	GL_DrawFloor(floor_start, floor_end, l->floorTex, -0.5f, 1.0f);
 
 	glDisable(GL_DEPTH_TEST);
 	for (int i = 0; i < l->actors.length; i++)

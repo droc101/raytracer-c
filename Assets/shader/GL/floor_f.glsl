@@ -5,14 +5,20 @@ in vec2 UV; // UV coordinates of the fragment
 out vec4 COLOR; // Output color of the fragment
 
 uniform sampler2D alb; // Albedo texture of the floor
-uniform vec3 fog_color; // Color of the fog
-uniform float fog_start; // Start distance of the fog
-uniform float fog_end; // End distance of the fog
 uniform float shade; // Shading color of the floor
+
+layout(std140, binding = 2) uniform SharedUniforms
+{
+    mat4 worldViewMatrix;
+    vec3 fogColor;
+    float fogStart;
+    float fogEnd;
+    float cameraYaw;
+} uniforms;
 
 void main() {
     COLOR = vec4(texture(alb, UV).rgb * vec3(shade), 1.0);
 
-    float fog_factor = clamp((gl_FragCoord.z / gl_FragCoord.w - fog_start) / (fog_end - fog_start), 0.0, 1.0);
-    COLOR.rgb = mix(COLOR.rgb, fog_color, fog_factor);
+    float fog_factor = clamp((gl_FragCoord.z / gl_FragCoord.w - uniforms.fogStart) / (uniforms.fogEnd - uniforms.fogStart), 0.0, 1.0);
+    COLOR.rgb = mix(COLOR.rgb, uniforms.fogColor, fog_factor);
 }

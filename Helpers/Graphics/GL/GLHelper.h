@@ -137,19 +137,11 @@ void GL_DrawWall(const Wall *w, const mat4 mdl, const Camera *cam, const Level *
  * Draw the floor in 3D
  * @param vp1 The start of the floor
  * @param vp2 The end of the floor
- * @param mvp The world -> screen matrix
- * @param l The level
  * @param texture The texture name
  * @param height The height of the floor
  * @param shade The shade of the floor
  */
-void GL_DrawFloor(Vector2 vp1,
-				  Vector2 vp2,
-				  const mat4 *mvp,
-				  const Level *l,
-				  const char *texture,
-				  float height,
-				  float shade);
+void GL_DrawFloor(Vector2 vp1, Vector2 vp2, const char *texture, float height, float shade);
 
 /**
  * Draw a shadow sprite
