@@ -72,6 +72,13 @@ void CbOptionsMipmaps(const bool value)
 	// Mipmaps change will happen on next restart
 }
 
+void CbOptionsPreferWayland(const bool value)
+{
+	GetState()->options.preferWayland = value;
+	hasChangedVideoOptions = true;
+	// Change will happen next restart
+}
+
 void SldOptionsMsaa(const double value)
 {
 	GetState()->options.msaa = value;
@@ -175,6 +182,16 @@ void GVideoOptionsStateSet()
 										1,
 										1,
 										SliderLabelMSAA));
+#ifdef __LINUX__
+		opY += (int)(opSpacing * 1.5);
+		UiStackPush(videoOptionsStack,
+					CreateCheckboxControl(v2(0, opY),
+										  v2(480, 40),
+										  "Prefer Wayland over X11",
+										  CbOptionsPreferWayland,
+										  TOP_CENTER,
+										  GetState()->options.preferWayland));
+#endif
 		opY += opSpacing;
 
 

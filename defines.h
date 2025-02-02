@@ -345,6 +345,8 @@ struct Options
 	OptionsMsaa msaa;
 	/// Whether to use mipmaps
 	bool mipmaps;
+	/* Whether to prefer Wayland over X11 */
+	bool preferWayland;
 
 	/* Audio */
 
