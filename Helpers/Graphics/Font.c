@@ -111,7 +111,7 @@ Vector2 MeasureText(const char *str, const uint size, const bool small)
 	int textWidth = 0;
 	int textHeight = (int)size;
 	int tempWidth = 0;
-	const int sizeX = (int)(small ? size * 0.75 : size);
+	const int sizeX = (int)(small ? size * SMALL_FONT_WIDTH_MULTIPLER : size);
 	for (int j = 0; j < strlen(str); j++)
 	{
 		tempWidth += sizeX;
