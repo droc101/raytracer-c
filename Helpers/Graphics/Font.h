@@ -9,8 +9,9 @@
 
 // Texture sizes of the font
 #define FONT_CHAR_WIDTH 16
-#define FONT_CHAR_HEIGHT 16
+#define FONT_CHAR_HEIGHT 24
 #define SMALL_FONT_CHAR_WIDTH 12
+#define FONT_BASELINE_HEIGHT 16
 
 // Font alignment
 #define FONT_HALIGN_LEFT 0

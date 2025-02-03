@@ -38,7 +38,10 @@ Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, cons
 	int x = (int)pos.x;
 	int y = (int)pos.y;
 	int i = 0;
-	const int width = (int)(small ? size * 0.75 : size);
+	const double sizeMultiplier = (double)size / FONT_CHAR_WIDTH;
+	const int width = (int)((small ? SMALL_FONT_CHAR_WIDTH : FONT_CHAR_WIDTH) * sizeMultiplier);
+	const int quadHeight = FONT_CHAR_HEIGHT * sizeMultiplier;
+	const int baselineHeight = FONT_BASELINE_HEIGHT * sizeMultiplier;
 	const double uvPixel = 1.0 / GetTextureSize(small ? TEXTURE("interface_small_fonts") : TEXTURE("interface_font")).x;
 	while (str[i] != '\0')
 	{
@@ -53,7 +56,7 @@ Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, cons
 		{
 			i++;
 			x = (int)pos.x;
-			y += (int)size;
+			y += (int)baselineHeight;
 			continue;
 		}
 
@@ -66,7 +69,7 @@ Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, cons
 		}
 
 		const Vector2 ndcPos = v2(X_TO_NDC((float)x), Y_TO_NDC((float)y));
-		const Vector2 ndcPosEnd = v2(X_TO_NDC((float)(x + width)), Y_TO_NDC((float)(y + size)));
+		const Vector2 ndcPosEnd = v2(X_TO_NDC((float)(x + width)), Y_TO_NDC((float)(y + quadHeight)));
 		const double charUV = uvPerChar * index;
 		const double charUVEnd = uvPerChar * (index + 1) - uvPixel;
 
