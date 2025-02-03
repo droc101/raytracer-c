@@ -11,7 +11,7 @@
 #include "../Core/MathEx.h"
 #include "RenderingHelpers.h"
 
-const char fontChars[] = "abcdefghijklmnopqrstuvwxyz0123456789.:-,/\\|[]{}();'\"<>`~!@#$%^*_=+?";
+const char fontChars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.:-,/\\|[]{}();'\"<>`~!@#$%^*_=+?abcdefghijklmnopqrstuvwxyz";
 
 int FontFindChar(const char target)
 {
@@ -59,7 +59,7 @@ Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, cons
 
 		const double uvPerChar = 1.0 / strlen(fontChars);
 		// ReSharper disable once CppRedundantCastExpression
-		int index = FontFindChar((char)tolower(str[i]));
+		int index = FontFindChar((char)str[i]);
 		if (index == -1)
 		{
 			index = FontFindChar('U');
