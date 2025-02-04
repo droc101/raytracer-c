@@ -15,7 +15,6 @@
 
 void GoalInit(Actor *this, b2WorldId /*worldId*/)
 {
-	this->solid = false;
 	this->actorWall = CreateWall(v2(0, -0.5), v2(0, 0.5), TEXTURE("actor_goal0"), 1, 0.0f, GetState()->level->worldId);
 }
 

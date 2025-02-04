@@ -58,7 +58,6 @@ void DoorInit(Actor *this, const b2WorldId worldId)
 	b2CreateSegmentShape(this->bodyId, &shapeDef, &shape);
 
 	this->showShadow = false;
-	this->solid = true;
 	this->extra_data = malloc(sizeof(DoorData));
 	CheckAlloc(this->extra_data);
 	memset(this->extra_data, 0, sizeof(DoorData));

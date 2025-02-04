@@ -471,10 +471,8 @@ struct Actor
 	/// Texture for the model
 	char *actorModelTexture;
 
-	/// (0,0) in this wall is the actor's position (also transformed by rotation)
+	/// The actor's wall, in global space
 	Wall *actorWall;
-	/// can the player walk through this actor? Only applies to the wall
-	bool solid;
 
 	/// type of actor. do not change this after creation.
 	int actorType;

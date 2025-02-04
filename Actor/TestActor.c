@@ -33,7 +33,6 @@ void TestActorInit(Actor *this, const b2WorldId worldId)
 	b2CreateCircleShape(this->bodyId, &shapeDef, &shape);
 
 
-	this->solid = true;
 	this->actorModel = LoadModel(MODEL("model_leafy"));
 	this->actorModelTexture = TEXTURE("actor_BLOB2");
 	this->SignalHandler = TestActorSignalHandler;

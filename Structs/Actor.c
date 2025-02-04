@@ -113,7 +113,6 @@ Actor *CreateActor(const Vector2 position,
 	actor->actorWall = NULL;
 	actor->position = position;
 	actor->rotation = rotation;
-	actor->solid = false;
 	actor->health = ActorHealths[actorType];
 	actor->paramA = paramA;
 	actor->paramB = paramB;
@@ -131,6 +130,7 @@ Actor *CreateActor(const Vector2 position,
 	actor->Destroy = ActorDestroyFuncs[actorType];
 	actor->Init(actor, worldId); // kindly allow the Actor to initialize itself
 	actor->actorType = actorType;
+	actor->bodyId = b2_nullBodyId;
 	return actor;
 }
 

@@ -14,7 +14,6 @@
 
 void CoinInit(Actor *this, b2WorldId /*worldId*/)
 {
-	this->solid = false;
 	this->actorWall = CreateWall(v2(0, -0.125),
 								 v2(0, 0.125),
 								 this->paramB == 1 ? TEXTURE("actor_bluecoin") : TEXTURE("actor_coin"),
