@@ -10,6 +10,7 @@
 #include "../Helpers/Graphics/Drawing.h"
 #include "../Helpers/Graphics/Font.h"
 #include "../Structs/Vector2.h"
+#include "../Helpers/CommonAssets.h"
 
 double framerates[FRAMEGRAPH_HISTORY_SIZE] = {0};
 long framegraphLastUpdateTime = LONG_MIN;
@@ -60,7 +61,7 @@ void FrameGraphDraw()
 				   "Target",
 				   12,
 				   0xff00ffff,
-				   true);
+				   smallFont);
 
 	uint lineColor = 0;
 	// Draw a line graph of all the frame rates/times
@@ -153,8 +154,8 @@ void FrameGraphDraw()
 	SetColorUint(0xffffffff);
 	char fps[40];
 	sprintf(fps, "FPS: %.2f\nMS: %2.2f", currentF, currentMs);
-	FontDrawString(v2(12, WindowHeight() - 8 - 38), fps, 16, 0xff000000, true);
-	FontDrawString(v2(10, WindowHeight() - 10 - 38), fps, 16, lineColor, true);
+	FontDrawString(v2(12, WindowHeight() - 8 - 38), fps, 16, 0xff000000, smallFont);
+	FontDrawString(v2(10, WindowHeight() - 10 - 38), fps, 16, lineColor, smallFont);
 
 #endif
 }

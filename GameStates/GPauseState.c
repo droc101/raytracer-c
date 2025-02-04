@@ -4,6 +4,7 @@
 
 #include "GPauseState.h"
 #include <stdio.h>
+#include "../Helpers/CommonAssets.h"
 #include "../Helpers/Core/AssetReader.h"
 #include "../Helpers/Core/Input.h"
 #include "../Helpers/Graphics/Drawing.h"
@@ -41,7 +42,7 @@ void GPauseStateRender(GlobalState *State)
 					v2(WindowWidth(), 250),
 					FONT_HALIGN_CENTER,
 					FONT_VALIGN_MIDDLE,
-					false);
+					largeFont);
 
 	const char *levelID = State->level->name;
 	const int cNum = State->level->courseNum;
@@ -57,7 +58,7 @@ void GPauseStateRender(GlobalState *State)
 						v2(WindowWidth(), 40),
 						FONT_HALIGN_CENTER,
 						FONT_VALIGN_MIDDLE,
-						true);
+						smallFont);
 		DrawTextAligned(buf,
 						16,
 						0xFFFFFFFF,
@@ -65,7 +66,7 @@ void GPauseStateRender(GlobalState *State)
 						v2(WindowWidth(), 40),
 						FONT_HALIGN_CENTER,
 						FONT_VALIGN_MIDDLE,
-						true);
+						smallFont);
 	}
 
 	DrawTextAligned(levelID,
@@ -75,7 +76,7 @@ void GPauseStateRender(GlobalState *State)
 					v2(WindowWidth(), 40),
 					FONT_HALIGN_CENTER,
 					FONT_VALIGN_MIDDLE,
-					true);
+					smallFont);
 	DrawTextAligned(levelID,
 					32,
 					0xFFFFFFFF,
@@ -83,7 +84,7 @@ void GPauseStateRender(GlobalState *State)
 					v2(WindowWidth(), 40),
 					FONT_HALIGN_CENTER,
 					FONT_VALIGN_MIDDLE,
-					true);
+					smallFont);
 
 	ProcessUiStack(pauseStack);
 	DrawUiStack(pauseStack);

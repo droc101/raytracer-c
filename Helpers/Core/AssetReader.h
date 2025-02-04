@@ -53,6 +53,14 @@ Model *LoadModel(const char *asset);
  */
 Model *GetModelFromId(uint id);
 
+/**
+ * Load a font from an asset
+ * @param asset The asset to load the font from
+ * @return The loaded font, or NULL if it failed
+ * @note This pointer is not tracked and must be freed manually.
+ */
+Font *LoadFont(const char *asset);
+
 #define TEXTURE(assetName) ("texture/" assetName ".gtex")
 #define MUSIC(assetName) ("audio/" assetName ".gmus")
 #define SOUND(assetName) ("audio/" assetName ".gsnd")
@@ -61,5 +69,6 @@ Model *GetModelFromId(uint id);
 #define VK_FRAG(assetName) ("vkshader/" assetName ".gfrg")
 #define VK_VERT(assetName) ("vkshader/" assetName ".gvrt")
 #define MODEL(assetName) ("model/" assetName ".gmdl")
+#define FONT(assetName) ("font/" assetName ".gfon")
 
 #endif //GAME_ASSETREADER_H

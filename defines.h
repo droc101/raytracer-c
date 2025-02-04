@@ -45,6 +45,7 @@ typedef struct Options Options;
 typedef struct Asset Asset;
 typedef struct Image Image;
 typedef struct Trigger Trigger;
+typedef struct Font Font;
 
 // Function signatures
 typedef void (*FixedUpdateFunction)(GlobalState *state, double delta);
@@ -102,6 +103,7 @@ enum AssetType
 	ASSET_TYPE_SPIRV_FRAG = 5,
 	ASSET_TYPE_SPIRV_VERT = 6,
 	ASSET_TYPE_MODEL = 7,
+	ASSET_TYPE_FONT = 8
 };
 
 /**
@@ -535,6 +537,36 @@ struct Trigger
 	char command[64];
 	/// The flags set on this trigger
 	uint flags;
+};
+
+struct Font
+{
+	/// The texture width of one character
+	uint width;
+	/// The texture height (including below baseline)
+	uint texture_height;
+	/// The pixel coordinate of the baseline
+	uint baseline;
+	/// The pixels between characters
+	uint char_spacing;
+	/// The pixels between lines
+	uint line_spacing;
+	/// The width of a space character
+	uint space_width;
+	/// The default size of the font, used for calculating scale
+	uint default_size;
+	/// The number of characters in the font
+	uint char_count;
+
+	/// The texture this font uses (fully qualified)
+	char texture[48];
+	/// The characters in the font
+	char chars[128];
+	/// The width of each character, index directly by the character
+	byte char_widths[128];
+
+	/// The image loaded from the texture
+	Image *image;
 };
 
 #pragma endregion

@@ -6,6 +6,7 @@
 #include <dirent.h>
 #include <stdio.h>
 
+#include "../Helpers/CommonAssets.h"
 #include "../Helpers/Core/AssetReader.h"
 #include "../Helpers/Core/Error.h"
 #include "../Helpers/Core/Input.h"
@@ -56,8 +57,8 @@ void GLevelSelectStateRender(GlobalState * /*State*/)
 
 	RenderMenuBackground();
 
-	FontDrawString(v2(20, 20), GAME_TITLE, 128, 0xFFFFFFFF, false);
-	FontDrawString(v2(20, 150), "Press Space to start.", 32, 0xFFa0a0a0, false);
+	FontDrawString(v2(20, 20), GAME_TITLE, 128, 0xFFFFFFFF, largeFont);
+	FontDrawString(v2(20, 150), "Press Space to start.", 32, 0xFFa0a0a0, largeFont);
 
 	char levelNameBuffer[64];
 
@@ -78,7 +79,7 @@ void GLevelSelectStateRender(GlobalState * /*State*/)
 					v2(WindowWidth() - 50, 300),
 					FONT_HALIGN_LEFT,
 					FONT_VALIGN_MIDDLE,
-					false);
+					largeFont);
 }
 
 void LoadLevelList()

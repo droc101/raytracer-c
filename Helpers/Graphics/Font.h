@@ -7,13 +7,6 @@
 
 #include "../../defines.h"
 
-// Texture sizes of the font
-#define FONT_CHAR_WIDTH 16
-#define FONT_CHAR_HEIGHT 24
-#define SMALL_FONT_CHAR_WIDTH 12
-#define FONT_BASELINE_HEIGHT 16
-#define SMALL_FONT_WIDTH_MULTIPLER 0.75
-
 // Font alignment
 #define FONT_HALIGN_LEFT 0
 #define FONT_HALIGN_CENTER 1
@@ -29,10 +22,10 @@
  * @param str String to draw
  * @param size Size of the font
  * @param color Color of the font
- * @param small Whether to use the small font or not
+ * @param font The font to use
  * @return Bottom right position of the text
  */
-Vector2 FontDrawString(Vector2 pos, const char *str, uint size, uint color, bool small);
+Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, const uint color, const Font *font);
 
 /**
  * Count the number of lines in a string
@@ -48,7 +41,7 @@ int StringLineCount(const char *str);
  * @param small Whether to use the small font or not
  * @return Size of the text
  */
-Vector2 MeasureText(const char *str, uint size, bool small);
+Vector2 MeasureText(const char *str, uint size, const Font *font);
 
 /**
  * Get a line of text from a string
@@ -67,15 +60,15 @@ void TextGetLine(const char *str, int line, char *out);
  * @param rect_size Size of the rectangle
  * @param h_align Horizontal alignment of text within the rectangle
  * @param v_align Vertical alignment of text within the rectangle
- * @param small Whether to use the small font or not
+ * @param font The font to use
  */
 void DrawTextAligned(const char *str,
-					 uint size,
-					 uint color,
-					 Vector2 rect_pos,
-					 Vector2 rect_size,
-					 byte h_align,
-					 byte v_align,
-					 bool small);
+					 const uint size,
+					 const uint color,
+					 const Vector2 rect_pos,
+					 const Vector2 rect_size,
+					 const byte h_align,
+					 const byte v_align,
+					 const Font *font);
 
 #endif //GAME_FONT_H

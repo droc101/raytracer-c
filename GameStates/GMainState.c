@@ -8,6 +8,7 @@
 #include "../Debug/DPrint.h"
 #include "../Helpers/Collision.h"
 #include "../Helpers/CommandParser.h"
+#include "../Helpers/CommonAssets.h"
 #include "../Helpers/Core/AssetReader.h"
 #include "../Helpers/Core/Error.h"
 #include "../Helpers/Core/Input.h"
@@ -15,12 +16,12 @@
 #include "../Helpers/Graphics/Drawing.h"
 #include "../Helpers/Graphics/Font.h"
 #include "../Helpers/TextBox.h"
+#include "../Structs/Actor.h"
 #include "../Structs/GlobalState.h"
 #include "../Structs/Level.h"
 #include "../Structs/Trigger.h"
 #include "../Structs/Vector2.h"
 #include "GPauseState.h"
-#include "../Structs/Actor.h"
 
 void GMainStateUpdate(GlobalState *State)
 {
@@ -205,7 +206,7 @@ void GMainStateRender(GlobalState *State)
 
 	char coinStr[16];
 	sprintf(coinStr, "%d", State->coins);
-	FontDrawString(v2(WindowWidth() - 210, 16), coinStr, 40, 0xFFFFFFFF, false);
+	FontDrawString(v2(WindowWidth() - 210, 16), coinStr, 40, 0xFFFFFFFF, largeFont);
 
 	coinIconRect.y = 64;
 

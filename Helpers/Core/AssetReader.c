@@ -355,3 +355,27 @@ Model *GetModelFromId(const uint id)
 
 	return models[id];
 }
+
+Font *LoadFont(const char *asset)
+{
+	const Asset *assetData = DecompressAsset(asset);
+	if (assetData == NULL)
+	{
+		LogError("Failed to load font from asset, asset was NULL!");
+		Error("Failed to load model!");
+	}
+	if (assetData->size < sizeof(Font) - sizeof(Image*))
+	{
+		LogError("Failed to load font from asset, size was too small!");
+		return NULL;
+	}
+	Font *font = malloc(sizeof(Font));
+	CheckAlloc(font);
+	memcpy(font, assetData->data, sizeof(Font));
+	char temp[48];
+	strncpy(temp, font->texture, 48);
+	sprintf(font->texture, "texture/%s.gtex", temp);
+	font->image = LoadImage(font->texture);
+
+	return font;
+}

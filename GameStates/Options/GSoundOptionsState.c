@@ -3,6 +3,7 @@
 //
 
 #include "GSoundOptionsState.h"
+#include "../../Helpers/CommonAssets.h"
 #include "../../Helpers/Core/Input.h"
 #include "../../Helpers/Graphics/Drawing.h"
 #include "../../Helpers/Graphics/Font.h"
@@ -64,7 +65,7 @@ void GSoundOptionsStateRender(GlobalState *)
 					v2(WindowWidth(), 100),
 					FONT_HALIGN_CENTER,
 					FONT_VALIGN_MIDDLE,
-					false);
+					largeFont);
 
 	ProcessUiStack(soundOptionsStack);
 	DrawUiStack(soundOptionsStack);

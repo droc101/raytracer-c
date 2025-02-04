@@ -4,6 +4,7 @@
 
 #include "TextBox.h"
 #include <string.h>
+#include "../../../Helpers/CommonAssets.h"
 #include "../../../Helpers/Core/AssetReader.h"
 #include "../../../Helpers/Core/Error.h"
 #include "../../../Helpers/Core/Input.h"
@@ -77,7 +78,7 @@ void DrawTextBox(const Control *c, ControlState, Vector2 position)
 					v2(c->size.x - 8, c->size.y - 8),
 					FONT_HALIGN_LEFT,
 					FONT_VALIGN_MIDDLE,
-					true);
+					smallFont);
 
 	DrawTextAligned("_",
 					16,
@@ -86,7 +87,7 @@ void DrawTextBox(const Control *c, ControlState, Vector2 position)
 					v2(12, c->size.y - 8),
 					FONT_HALIGN_LEFT,
 					FONT_VALIGN_MIDDLE,
-					true);
+					smallFont);
 }
 
 void UpdateTextBox(UiStack *stack, Control *c, Vector2, uint ctlIndex)

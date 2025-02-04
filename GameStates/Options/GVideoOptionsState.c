@@ -4,6 +4,7 @@
 
 #include "GVideoOptionsState.h"
 #include <stdio.h>
+#include "../../Helpers/CommonAssets.h"
 #include "../../Helpers/Core/Error.h"
 #include "../../Helpers/Core/Input.h"
 #include "../../Helpers/Graphics/Drawing.h"
@@ -111,7 +112,7 @@ void GVideoOptionsStateRender(GlobalState *)
 					v2(WindowWidth(), 100),
 					FONT_HALIGN_CENTER,
 					FONT_VALIGN_MIDDLE,
-					false);
+					largeFont);
 
 	ProcessUiStack(videoOptionsStack);
 	DrawUiStack(videoOptionsStack);

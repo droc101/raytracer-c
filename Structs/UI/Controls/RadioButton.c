@@ -3,6 +3,7 @@
 //
 
 #include "RadioButton.h"
+#include "../../../Helpers/CommonAssets.h"
 #include "../../../Helpers/Core/AssetReader.h"
 #include "../../../Helpers/Core/Error.h"
 #include "../../../Helpers/Core/Input.h"
@@ -96,7 +97,7 @@ void DrawRadioButton(const Control *c, ControlState /*state*/, const Vector2 pos
 					v2(c->size.x - 40, c->size.y),
 					FONT_HALIGN_LEFT,
 					FONT_VALIGN_MIDDLE,
-					true);
+					smallFont);
 
 	SetColorUint(0xFF0000ff);
 
