@@ -980,7 +980,7 @@ bool VK_DrawLine(const int32_t startX,
 				 const int32_t startY,
 				 const int32_t endX,
 				 const int32_t endY,
-				 const float thickness,
+				 const int32_t thickness,
 				 const uint32_t color)
 {
 	const float dx = (float)endX - (float)startX;
@@ -1019,7 +1019,7 @@ bool VK_DrawLine(const int32_t startX,
 		return DrawQuadInternal(matrix, color, -1);
 	}
 
-	const float size = thickness / 2;
+	const float size = (float)thickness / 2.0f;
 
 	const mat4 matrix = {
 		{
@@ -1055,7 +1055,7 @@ bool VK_DrawRectOutline(const int32_t x,
 						const int32_t y,
 						const int32_t w,
 						const int32_t h,
-						const float thickness,
+						const int32_t thickness,
 						const uint32_t color)
 {
 	if (!VK_DrawLine(x, y, x + w, y, thickness, color))
