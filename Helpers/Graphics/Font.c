@@ -63,7 +63,7 @@ Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, cons
 		int index = FontFindChar((char)str[i], font);
 		if (index == -1)
 		{
-			index = FontFindChar('U', font);
+			index = FontFindChar('?');
 		}
 
 		const Vector2 ndcPos = v2(X_TO_NDC((float)x), Y_TO_NDC((float)y));

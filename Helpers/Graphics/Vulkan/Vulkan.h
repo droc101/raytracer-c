@@ -74,9 +74,9 @@ bool VK_DrawTexturedQuadRegionMod(int x,
 
 bool VK_DrawTexturedQuadsBatched(const float *vertices, int quadCount, const char *texture, uint32_t color);
 
-bool VK_DrawLine(int startX, int startY, int endX, int endY, float thickness, uint32_t color);
+bool VK_DrawLine(int startX, int startY, int endX, int endY, int thickness, uint32_t color);
 
-bool VK_DrawRectOutline(int x, int y, int w, int h, float thickness, uint32_t color);
+bool VK_DrawRectOutline(int x, int y, int w, int h, int thickness, uint32_t color);
 
 void VK_ClearColor(uint32_t color);
 
