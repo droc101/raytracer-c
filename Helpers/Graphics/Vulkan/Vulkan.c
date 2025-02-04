@@ -548,6 +548,7 @@ bool VK_LoadLevelWalls(const Level *level)
 
 	ListClear(&buffers.actors.models.loadedModelIds);
 	ListClear(&buffers.actors.models.modelCounts);
+	buffers.walls.shadowCount = 0;
 	memset(&buffers.actors.models, 0, sizeof(ModelActorBuffer));
 	memset(&buffers.actors.walls, 0, sizeof(WallActorBuffer));
 	for (size_t i = 0; i < level->actors.length; i++)
