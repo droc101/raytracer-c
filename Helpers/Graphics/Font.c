@@ -11,7 +11,8 @@
 #include "../Core/MathEx.h"
 #include "RenderingHelpers.h"
 
-const char fontChars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.:-,/\\|[]{}();'\"<>`~!@#$%^*_=+?abcdefghijklmnopqrstuvwxyz";
+const char fontChars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.:-,/"
+						 "\\|[]{}();'\"<>`~!@#$%^*_=+?abcdefghijklmnopqrstuvwxyz";
 
 int FontFindChar(const char target)
 {
@@ -65,7 +66,7 @@ Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, cons
 		int index = FontFindChar((char)str[i]);
 		if (index == -1)
 		{
-			index = FontFindChar('U');
+			index = FontFindChar('?');
 		}
 
 		const Vector2 ndcPos = v2(X_TO_NDC((float)x), Y_TO_NDC((float)y));

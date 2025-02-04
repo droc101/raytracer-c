@@ -189,7 +189,7 @@ PenaltyBreakBeforeFirstCallParameter: 5000
 #PenaltyBreakFirstLessLess:
 PenaltyBreakOpenParenthesis: 700
 #PenaltyBreakScopeResolution:
-#PenaltyBreakString:
+PenaltyBreakString: 100
 #PenaltyBreakTemplateDeclaration:
 #PenaltyExcessCharacter:
 #PenaltyIndentedWhitespace:
