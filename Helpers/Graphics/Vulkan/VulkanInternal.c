@@ -1082,7 +1082,7 @@ bool CreateGraphicsPipelines()
 			.inputRate = VK_VERTEX_INPUT_RATE_INSTANCE,
 		},
 	};
-	const VkVertexInputAttributeDescription actorVertexDescriptions[8] = {
+	const VkVertexInputAttributeDescription actorVertexDescriptions[9] = {
 		{
 			.location = 0,
 			.binding = 0,
@@ -1131,6 +1131,12 @@ bool CreateGraphicsPipelines()
 			.format = VK_FORMAT_R32_UINT,
 			.offset = offsetof(ActorInstanceData, textureIndex),
 		},
+		{
+			.location = 8,
+			.binding = 1,
+			.format = VK_FORMAT_R32_SFLOAT,
+			.offset = offsetof(ActorInstanceData, wallAngle),
+		},
 	};
 	const VkPipelineVertexInputStateCreateInfo actorVertexInputInfo = {
 		.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
@@ -1138,7 +1144,7 @@ bool CreateGraphicsPipelines()
 		.flags = 0,
 		.vertexBindingDescriptionCount = 2,
 		.pVertexBindingDescriptions = actorBindingDescriptions,
-		.vertexAttributeDescriptionCount = 8,
+		.vertexAttributeDescriptionCount = 9,
 		.pVertexAttributeDescriptions = actorVertexDescriptions,
 	};
 

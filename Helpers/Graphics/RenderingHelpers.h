@@ -26,10 +26,10 @@ extern Renderer currentRenderer;
 
 /**
  * Get the transformation matrix for an actor
- * @param Actor The actor
+ * @param actor The actor
  * @param transformMatrix A mat4 MODEL matrix of the actor (Model space to world space)
  */
-void ActorTransformMatrix(const Actor *Actor, mat4 *transformMatrix);
+void ActorTransformMatrix(const Actor *actor, mat4 *transformMatrix);
 
 /**
  * Perform any pre-initialization for the rendering system
