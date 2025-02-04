@@ -32,6 +32,7 @@ def ConvertFont(path):
 	data += struct.pack("I", font["space_width"])
 	data += struct.pack("I", font["default_size"])
 	data += struct.pack("I", len(font["chars"]))
+	data += struct.pack("B", font["uppercase_only"])
 	data += texnam.encode("ascii")
 	data += chars.encode("ascii")
 	for width in widths:

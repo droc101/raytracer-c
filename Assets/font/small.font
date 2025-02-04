@@ -9,6 +9,7 @@
     "default_char_width": 10,
     "default_size": 16,
     "texture": "interface_small_fonts",
+    "uppercase_only": false,
     "char_widths": {
         "K": 9,
         "Q": 11,

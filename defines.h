@@ -559,6 +559,8 @@ struct Font
 	uint default_size;
 	/// The number of characters in the font
 	uint char_count;
+	/// Whether this font only contains uppercase characters
+	bool uppercase_only;
 
 	/// The texture this font uses (fully qualified)
 	char texture[48];
@@ -569,7 +571,7 @@ struct Font
 
 	/// The image loaded from the texture
 	Image *image;
-};
+} __attribute__((packed));
 
 #pragma endregion
 

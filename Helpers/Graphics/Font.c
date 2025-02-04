@@ -9,8 +9,12 @@
 #include "../Core/MathEx.h"
 #include "RenderingHelpers.h"
 
-int FontFindChar(const char target, const Font *font)
+int FontFindChar(char target, const Font *font)
 {
+	if (font->uppercase_only)
+	{
+		target = (char)toupper(target);
+	}
 	int i = 0;
 	while (font->chars[i] != 0)
 	{

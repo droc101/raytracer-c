@@ -918,7 +918,7 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
 {
 	GL_Enable3D();
 
-	//glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+	glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 	//glLineWidth(2);
 
 	mat4 *WORLD_VIEW_MATRIX = GL_GetMatrix(cam);
