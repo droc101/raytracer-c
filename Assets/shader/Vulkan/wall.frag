@@ -30,13 +30,13 @@ void main() {
 	outColor *= inColor.a;
 	if (outColor.a < 0.5) discard;
 	outColor.a = 1.0;
+	if (inTextureIndex == pushConstants.skyTextureIndex) {
+		gl_FragDepth = 0.9999999;
+		return;
+	}
 	outColor.rgb = mix(outColor.rgb, inColor.rgb, clamp((gl_FragCoord.z / gl_FragCoord.w - pushConstants.fogStart) / (pushConstants.fogEnd - pushConstants.fogStart), 0.0, 1.0));
 	if (inTextureIndex == pushConstants.shadowTextureIndex) {
 		outColor.a = 0.5;
-		return;
-	}
-	if (inTextureIndex == pushConstants.skyTextureIndex) {
-		gl_FragDepth = 0.9999999;
 		return;
 	}
 }
