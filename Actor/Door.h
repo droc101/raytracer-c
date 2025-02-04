@@ -7,9 +7,9 @@
 
 #include "../Structs/Actor.h"
 
-void DoorInit(Actor *this, b2WorldId /*worldId*/);
+void DoorInit(Actor *this, b2WorldId worldId);
 
-void DoorUpdate(Actor *this, double /*delta*/);
+void DoorUpdate(Actor *this, double delta);
 
 void DoorDestroy(Actor *this);
 

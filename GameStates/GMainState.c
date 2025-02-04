@@ -196,7 +196,7 @@ void GMainStateFixedUpdate(GlobalState *state, double delta)
 			break;
 		}
 	}
-	b2World_Step(l->worldId, (float)delta / 60.0f, 4);
+	b2World_Step(l->worldId, (float)delta / PHYSICS_TARGET_TPS, 4);
 	l->player.pos = b2Body_GetPosition(l->player.bodyId);
 }
 

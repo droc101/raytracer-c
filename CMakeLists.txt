@@ -41,8 +41,6 @@ add_executable(
         Structs/Vector2.c
         Helpers/Core/MathEx.h
         Helpers/Core/MathEx.c
-        Structs/Ray.h
-        Structs/Ray.c
         Structs/Wall.h
         Structs/Wall.c
         Helpers/Core/List.h

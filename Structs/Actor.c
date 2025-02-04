@@ -15,19 +15,20 @@
 /* Here's some code for the creation of a wall only actor
  *	this->actorWall = malloc(sizeof(Wall));
  *	CheckAlloc(this->actorWall);
- *	this->actorWall->a = v2(-0.5, 0);
- *	this->actorWall->b = v2(0.5, 0);
- *	strncpy(this->actorWall->tex, TEXTURE("actor_BLOB2"), 32);
+ *	this->actorWall->a = v2(0, 0);
+ *	this->actorWall->b = v2(0, 0);
+ *	strncpy(this->actorWall->tex, TEXTURE("actorTexture"), 32);
  *	this->actorWall->uvScale = 1.0f;
  *	this->actorWall->uvOffset = 0.0f;
  *	this->actorWall->height = 1.0f;
  *
  *	b2BodyDef bodyDef = b2DefaultBodyDef();
- *	bodyDef.type = b2_dynamicBody;
+ *	bodyDef.type = bodyType;
  *	bodyDef.position = this->position;
- *	bodyDef.fixedRotation = true;
- *	bodyDef.linearDamping = 1;
- *	this->actorWall->bodyId = b2CreateBody(worldId, &bodyDef);
+*	bodyDef.fixedRotation = true; // Unknown if needed for non-dynamic bodies
+ *	bodyDef.linearDamping = 1; // Only for dynamic bodies
+ *	this->bodyId = b2CreateBody(worldId, &bodyDef);
+ *	this->actorWall->bodyId = this->bodyId;
  *	const float dx = this->actorWall->b.x - this->actorWall->a.x;
  *	const float dy = this->actorWall->b.y - this->actorWall->a.y;
  *	if (dx != 0 || dy != 0)
@@ -53,7 +54,8 @@
  *		};
  *		const b2Hull hull = b2ComputeHull(points, 4);
  *		const b2Polygon shape = b2MakePolygon(&hull, 0);
- *		const b2ShapeDef shapeDef = b2DefaultShapeDef();
+ *		b2ShapeDef shapeDef = b2DefaultShapeDef();
+ *		shapeDef.friction = 0;
  *		b2CreatePolygonShape(this->actorWall->bodyId, &shapeDef, &shape);
  *	}
  */

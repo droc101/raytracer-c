@@ -6,28 +6,22 @@
 #include <math.h>
 #include "../defines.h"
 
-Vector2 v2(const float x, const float y) // Create a Vector2
+inline Vector2 v2(const float x, const float y) // Create a Vector2
 {
-	Vector2 v;
-	v.x = x;
-	v.y = y;
-	return v;
+	return (Vector2){x, y};
 }
 
-Vector2 v2s(const float xy) // Create a Vector2 with x and y set the same
+inline Vector2 v2s(const float xy) // Create a Vector2 with x and y set the same
 {
-	Vector2 v;
-	v.x = xy;
-	v.y = xy;
-	return v;
+	return (Vector2){xy, xy};
 }
 
-Vector2 Vector2FromAngle(const float angle)
+inline Vector2 Vector2FromAngle(const float angle)
 {
 	return v2(cosf(angle), sinf(angle));
 }
 
-float Vector2Angle(const Vector2 a, const Vector2 b)
+inline float Vector2Angle(const Vector2 a, const Vector2 b)
 {
 	return acosf(Vector2Dot(a, b) / (Vector2Length(a) * Vector2Length(b)));
 }

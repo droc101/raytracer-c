@@ -224,9 +224,9 @@ struct Wall
 	/// The fully qualified texture name (texture/level_uvtest.gtex instead of level_uvtest)
 	const char tex[48];
 	/// The length of the wall (Call @c WallBake to update)
-	double length;
+	float length;
 	/// The angle of the wall (Call @c WallBake to update)
-	double angle;
+	float angle;
 	/// The change in x over the length of the wall, calculated with @code Wall.b.x - Wall.a.x@endcode
 	double dx;
 	/// The change in y over the length of the wall, calculated with @code Wall.b.y - Wall.a.y@endcode
@@ -459,7 +459,7 @@ struct Actor
 	/// The position of the actor
 	Vector2 position;
 	/// The rotation of the actor
-	double rotation;
+	float rotation;
 	/// y position for rendering. Does not affect collision
 	float yPosition;
 	/// should the actor cast a shadow?

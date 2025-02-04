@@ -707,12 +707,12 @@ void LoadActorWalls(const Level *level, ActorVertex *vertices, uint32_t *indices
 		}
 		const Wall *wall = actor->actorWall;
 		const float halfHeight = wall->height / 2.0f;
-		const vec2 startVertex = {(float)wall->a.x, (float)wall->a.y};
-		const vec2 endVertex = {(float)wall->b.x, (float)wall->b.y};
-		const vec2 startUV = {wall->uvOffset, 0};
-		const float dx = (float)wall->b.x - (float)wall->a.x;
-		const float dy = (float)wall->b.y - (float)wall->a.y;
+		const float dx = wall->b.x - wall->a.x;
+		const float dy = wall->b.y - wall->a.y;
 		const float length = sqrtf(dx * dx + dy * dy);
+		const vec2 startVertex = {actor->position.x, actor->position.y};
+		const vec2 endVertex = {startVertex[0] + dx, startVertex[1] + dy};
+		const vec2 startUV = {wall->uvOffset, 0};
 		const vec2 endUV = {wall->uvScale * length + wall->uvOffset, 1};
 
 		vertices[4 * wallCount].x = startVertex[0];
@@ -773,10 +773,12 @@ void LoadActorInstanceData(const Level *level,
 		{
 			continue;
 		}
-		mat4 transformMatrix = GLM_MAT4_IDENTITY_INIT;
-		ActorTransformMatrix(actor, &transformMatrix);
+
 		if (actor->actorModel)
 		{
+			mat4 transformMatrix = GLM_MAT4_IDENTITY_INIT;
+			glm_translate(transformMatrix, (vec3){actor->position.x, actor->yPosition, actor->position.y});
+			glm_rotate(transformMatrix, -actor->rotation, (vec3){0, 1, 0});
 			const size_t index = ListFind(buffers.actors.models.loadedModelIds, (void *)actor->actorModel->id);
 			ActorInstanceData *offsetInstanceData = (void *)instanceData + offsets[index];
 
@@ -785,21 +787,21 @@ void LoadActorInstanceData(const Level *level,
 
 			if (actor->showShadow)
 			{
-				shadowVertices[4 * shadowCount].x = (float)actor->position.x - 0.5f * actor->shadowSize;
+				shadowVertices[4 * shadowCount].x = actor->position.x - 0.5f * actor->shadowSize;
 				shadowVertices[4 * shadowCount].y = -0.49f;
-				shadowVertices[4 * shadowCount].z = (float)actor->position.y - 0.5f * actor->shadowSize;
+				shadowVertices[4 * shadowCount].z = actor->position.y - 0.5f * actor->shadowSize;
 
-				shadowVertices[4 * shadowCount + 1].x = (float)actor->position.x + 0.5f * actor->shadowSize;
+				shadowVertices[4 * shadowCount + 1].x = actor->position.x + 0.5f * actor->shadowSize;
 				shadowVertices[4 * shadowCount + 1].y = -0.49f;
-				shadowVertices[4 * shadowCount + 1].z = (float)actor->position.y - 0.5f * actor->shadowSize;
+				shadowVertices[4 * shadowCount + 1].z = actor->position.y - 0.5f * actor->shadowSize;
 
-				shadowVertices[4 * shadowCount + 2].x = (float)actor->position.x + 0.5f * actor->shadowSize;
+				shadowVertices[4 * shadowCount + 2].x = actor->position.x + 0.5f * actor->shadowSize;
 				shadowVertices[4 * shadowCount + 2].y = -0.49f;
-				shadowVertices[4 * shadowCount + 2].z = (float)actor->position.y + 0.5f * actor->shadowSize;
+				shadowVertices[4 * shadowCount + 2].z = actor->position.y + 0.5f * actor->shadowSize;
 
-				shadowVertices[4 * shadowCount + 3].x = (float)actor->position.x - 0.5f * actor->shadowSize;
+				shadowVertices[4 * shadowCount + 3].x = actor->position.x - 0.5f * actor->shadowSize;
 				shadowVertices[4 * shadowCount + 3].y = -0.49f;
-				shadowVertices[4 * shadowCount + 3].z = (float)actor->position.y + 0.5f * actor->shadowSize;
+				shadowVertices[4 * shadowCount + 3].z = actor->position.y + 0.5f * actor->shadowSize;
 
 				shadowIndices[6 * shadowCount] = shadowCount * 4;
 				shadowIndices[6 * shadowCount + 1] = shadowCount * 4 + 1;
@@ -818,27 +820,27 @@ void LoadActorInstanceData(const Level *level,
 			ActorInstanceData *offsetInstanceData = (void *)instanceData +
 													offsets[buffers.actors.models.loadedModelIds.length];
 
-			memcpy(offsetInstanceData[wallCount].transform, transformMatrix, sizeof(mat4));
+			memcpy(offsetInstanceData[wallCount].transform, GLM_MAT4_IDENTITY, sizeof(mat4));
 			offsetInstanceData[wallCount].textureIndex = TextureIndex(wall->tex);
-			offsetInstanceData[wallCount].wallAngle = (float)actor->rotation;
+			offsetInstanceData[wallCount].wallAngle = actor->rotation;
 
 			if (actor->showShadow)
 			{
-				shadowVertices[4 * shadowCount].x = (float)actor->position.x - 0.5f * actor->shadowSize;
+				shadowVertices[4 * shadowCount].x = actor->position.x - 0.5f * actor->shadowSize;
 				shadowVertices[4 * shadowCount].y = -0.49f;
-				shadowVertices[4 * shadowCount].z = (float)actor->position.y - 0.5f * actor->shadowSize;
+				shadowVertices[4 * shadowCount].z = actor->position.y - 0.5f * actor->shadowSize;
 
-				shadowVertices[4 * shadowCount + 1].x = (float)actor->position.x + 0.5f * actor->shadowSize;
+				shadowVertices[4 * shadowCount + 1].x = actor->position.x + 0.5f * actor->shadowSize;
 				shadowVertices[4 * shadowCount + 1].y = -0.49f;
-				shadowVertices[4 * shadowCount + 1].z = (float)actor->position.y - 0.5f * actor->shadowSize;
+				shadowVertices[4 * shadowCount + 1].z = actor->position.y - 0.5f * actor->shadowSize;
 
-				shadowVertices[4 * shadowCount + 2].x = (float)actor->position.x + 0.5f * actor->shadowSize;
+				shadowVertices[4 * shadowCount + 2].x = actor->position.x + 0.5f * actor->shadowSize;
 				shadowVertices[4 * shadowCount + 2].y = -0.49f;
-				shadowVertices[4 * shadowCount + 2].z = (float)actor->position.y + 0.5f * actor->shadowSize;
+				shadowVertices[4 * shadowCount + 2].z = actor->position.y + 0.5f * actor->shadowSize;
 
-				shadowVertices[4 * shadowCount + 3].x = (float)actor->position.x - 0.5f * actor->shadowSize;
+				shadowVertices[4 * shadowCount + 3].x = actor->position.x - 0.5f * actor->shadowSize;
 				shadowVertices[4 * shadowCount + 3].y = -0.49f;
-				shadowVertices[4 * shadowCount + 3].z = (float)actor->position.y + 0.5f * actor->shadowSize;
+				shadowVertices[4 * shadowCount + 3].z = actor->position.y + 0.5f * actor->shadowSize;
 
 				shadowIndices[6 * shadowCount] = shadowCount * 4;
 				shadowIndices[6 * shadowCount + 1] = shadowCount * 4 + 1;

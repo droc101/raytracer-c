@@ -48,20 +48,10 @@ Wall *CreateWall(const Vector2 a,
 	return w;
 }
 
-double WallGetLength(const Wall w)
-{
-	return sqrt(pow(w.b.x - w.a.x, 2) + pow(w.b.y - w.a.y, 2));
-}
-
-double WallGetAngle(const Wall w)
-{
-	return atan2(w.b.y - w.a.y, w.b.x - w.a.x);
-}
-
 void WallBake(Wall *w)
 {
-	w->length = WallGetLength(*w);
-	w->angle = WallGetAngle(*w);
-	w->dx = w->a.x - w->b.x;
-	w->dy = w->a.y - w->b.y;
+	const float dx = w->b.x - w->a.x;
+	const float dy = w->b.y - w->a.y;
+	w->length = sqrtf(dx * dx + dy * dy);
+	w->angle = atan2f(w->b.y - w->a.y, w->b.x - w->a.x);
 }
