@@ -347,8 +347,10 @@ struct Options
 	OptionsMsaa msaa;
 	/// Whether to use mipmaps
 	bool mipmaps;
-	/* Whether to prefer Wayland over X11 */
+	/// Whether to prefer Wayland over X11
 	bool preferWayland;
+	/// Whether to drop to 30 fps when the window is not focused
+	bool limitFpsWhenUnfocused;
 
 	/* Audio */
 

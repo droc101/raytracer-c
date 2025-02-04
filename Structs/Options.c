@@ -24,6 +24,7 @@ void DefaultOptions(Options *options)
 	options->cameraInvertX = true;
 	options->controllerSwapOkCancel = false;
 	options->preferWayland = false;
+	options->limitFpsWhenUnfocused = true;
 }
 
 bool ValidateOptions(const Options *options)

@@ -190,7 +190,7 @@ inline void SetLowFPS(const bool val)
 
 inline bool IsLowFPSModeEnabled()
 {
-	return lowFPSMode;
+	return lowFPSMode && GetState()->options.limitFpsWhenUnfocused;
 }
 
 inline byte GetSampleCountFlags()

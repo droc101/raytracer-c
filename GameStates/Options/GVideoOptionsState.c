@@ -66,6 +66,11 @@ void CbOptionsVsync(const bool value)
 	// VSync change will happen on next restart
 }
 
+void CbOptionsLimitFpsWhenUnfocused(const bool value)
+{
+	GetState()->options.limitFpsWhenUnfocused = value;
+}
+
 void CbOptionsMipmaps(const bool value)
 {
 	GetState()->options.mipmaps = value;
@@ -140,6 +145,14 @@ void GVideoOptionsStateSet()
 										  CbOptionsVsync,
 										  TOP_CENTER,
 										  GetState()->options.vsync));
+		opY += opSpacing;
+		UiStackPush(videoOptionsStack,
+					CreateCheckboxControl(v2(0, opY),
+										  v2(480, 40),
+										  "Limit FPS when in background",
+										  CbOptionsLimitFpsWhenUnfocused,
+										  TOP_CENTER,
+										  GetState()->options.limitFpsWhenUnfocused));
 		opY += opSpacing;
 		UiStackPush(videoOptionsStack,
 					CreateCheckboxControl(v2(0, opY),
