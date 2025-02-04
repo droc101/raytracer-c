@@ -4,12 +4,12 @@
 
 #include "Door.h"
 #include "../Helpers/Collision.h"
+#include "../Helpers/Core/AssetReader.h"
 #include "../Helpers/Core/Error.h"
 #include "../Helpers/Core/Logging.h"
 #include "../Structs/GlobalState.h"
 #include "../Structs/Vector2.h"
 #include "../Structs/Wall.h"
-#include "../Helpers/Core/AssetReader.h"
 
 typedef enum
 {
@@ -43,11 +43,11 @@ void SetDoorWallPos(const Actor *door, const double pos)
 	door->actorWall->b.x = pos + 1.0;
 }
 
-void DoorInit(Actor *this)
+void DoorInit(Actor *this, b2WorldId /*worldId*/)
 {
 	this->showShadow = false;
 	this->solid = true;
-	this->actorWall = CreateWall(v2(0, 0), v2(1, 0), TEXTURE("actor_door"), 1, 0.0f);
+	this->actorWall = CreateWall(v2(0, 0), v2(1, 0), TEXTURE("actor_door"), 1, 0.0f, GetState()->level->worldId);
 	this->extra_data = malloc(sizeof(DoorData));
 	CheckAlloc(this->extra_data);
 	memset(this->extra_data, 0, sizeof(DoorData));

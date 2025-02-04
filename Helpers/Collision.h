@@ -8,15 +8,6 @@
 #include "../defines.h"
 
 /**
- * Move around in the world, accounting for solid walls
- * @param position Start position
- * @param moveVec Movement vector
- * @param ignore Wall or actor to ignore
- * @return new position
- */
-Vector2 Move(Vector2 position, Vector2 moveVec, const void *ignore);
-
-/**
  * Check if a point is inside a cylinder
  * @param cylOrigin Center of the cylinder
  * @param cylRadius Radius of the cylinder

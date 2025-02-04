@@ -16,6 +16,7 @@
  * @param paramB Initial parameter B
  * @param paramC Initial parameter C
  * @param paramD Initial parameter D
+ * @param worldId
  * @return Initialized Actor struct
  */
 Actor *CreateActor(Vector2 position,
@@ -24,7 +25,8 @@ Actor *CreateActor(Vector2 position,
 				   byte paramA,
 				   byte paramB,
 				   byte paramC,
-				   byte paramD);
+				   byte paramD,
+				   b2WorldId worldId);
 
 /**
  * Destroy an Actor

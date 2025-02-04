@@ -3,6 +3,7 @@
 //
 
 #include "GMainState.h"
+#include <box2d/box2d.h>
 #include <math.h>
 #include <stdio.h>
 #include "../Debug/DPrint.h"
@@ -15,12 +16,12 @@
 #include "../Helpers/Graphics/Drawing.h"
 #include "../Helpers/Graphics/Font.h"
 #include "../Helpers/TextBox.h"
+#include "../Structs/Actor.h"
 #include "../Structs/GlobalState.h"
 #include "../Structs/Level.h"
 #include "../Structs/Trigger.h"
 #include "../Structs/Vector2.h"
 #include "GPauseState.h"
-#include "../Structs/Actor.h"
 
 void GMainStateUpdate(GlobalState *State)
 {
@@ -65,10 +66,10 @@ void GMainStateUpdate(GlobalState *State)
 	State->level->player.angle += GetMouseRel().x * (State->options.mouseSpeed / 120.0);
 
 	if (IsKeyJustPressed(SDL_SCANCODE_L))
-    {
-        Actor *leaf = CreateActor(State->level->player.pos, 0, 1, 0, 0, 0, 0);
-        AddActor(leaf);
-    }
+	{
+		Actor *leaf = CreateActor(State->level->player.pos, 0, 1, 0, 0, 0, 0, State->level->worldId);
+		AddActor(leaf);
+	}
 }
 
 void GMainStateFixedUpdate(GlobalState *state, double delta)
@@ -132,7 +133,10 @@ void GMainStateFixedUpdate(GlobalState *state, double delta)
 	moveVec = Vector2Scale(moveVec, speed);
 	moveVec = Vector2Rotate(moveVec, l->player.angle);
 
-	l->player.pos = Move(l->player.pos, moveVec, NULL);
+	if (isMoving)
+	{
+		b2Body_ApplyLinearImpulseToCenter(l->player.bodyId, moveVec, true);
+	}
 
 	if (UseController())
 	{
@@ -191,6 +195,8 @@ void GMainStateFixedUpdate(GlobalState *state, double delta)
 			break;
 		}
 	}
+	b2World_Step(l->worldId, (float)delta / 60.0f, 4);
+	l->player.pos = b2Body_GetPosition(l->player.bodyId);
 }
 
 // ReSharper disable once CppParameterMayBeConstPtrOrRef

@@ -128,7 +128,10 @@ void SetStateCallbacks(const FrameUpdateFunction UpdateGame,
 
 void ChangeLevel(Level *l)
 {
-	DestroyLevel(state.level);
+	if (state.level)
+	{
+		DestroyLevel(state.level);
+	}
 	state.level = l;
 	state.textBoxActive = false;
 	if (strncmp(l->music, "none", 4) != 0)

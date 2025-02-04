@@ -12,8 +12,54 @@
 #include "../Actor/Goal.h"
 #include "../Actor/TestActor.h"
 
+/* Here's some code for the creation of a wall only actor
+ *	this->actorWall = malloc(sizeof(Wall));
+ *	CheckAlloc(this->actorWall);
+ *	this->actorWall->a = v2(-0.5, 0);
+ *	this->actorWall->b = v2(0.5, 0);
+ *	strncpy(this->actorWall->tex, TEXTURE("actor_BLOB2"), 32);
+ *	this->actorWall->uvScale = 1.0f;
+ *	this->actorWall->uvOffset = 0.0f;
+ *	this->actorWall->height = 1.0f;
+ *
+ *	b2BodyDef bodyDef = b2DefaultBodyDef();
+ *	bodyDef.type = b2_dynamicBody;
+ *	bodyDef.position = this->position;
+ *	bodyDef.fixedRotation = true;
+ *	bodyDef.linearDamping = 1;
+ *	this->actorWall->bodyId = b2CreateBody(worldId, &bodyDef);
+ *	const float dx = this->actorWall->b.x - this->actorWall->a.x;
+ *	const float dy = this->actorWall->b.y - this->actorWall->a.y;
+ *	if (dx != 0 || dy != 0)
+ *	{
+ *		const float invDistance = 1 / sqrtf(dx * dx + dy * dy);
+ *		const Vector2 points[4] = {
+ *			{
+ *				(dy - dx / 2) * WALL_HITBOX_EXTENTS * invDistance,
+ *				(-dx - dy / 2) * WALL_HITBOX_EXTENTS * invDistance,
+ *			},
+ *			{
+ *				(-dy - dx / 2) * WALL_HITBOX_EXTENTS * invDistance,
+ *				(dx - dy / 2) * WALL_HITBOX_EXTENTS * invDistance,
+ *			},
+ *			{
+ *				dx + (dy + dx / 2) * WALL_HITBOX_EXTENTS * invDistance,
+ *				dy + (-dx + dy / 2) * WALL_HITBOX_EXTENTS * invDistance,
+ *			},
+ *			{
+ *				dx + (-dy + dx / 2) * WALL_HITBOX_EXTENTS * invDistance,
+ *				dy + (dx + dy / 2) * WALL_HITBOX_EXTENTS * invDistance,
+ *			},
+ *		};
+ *		const b2Hull hull = b2ComputeHull(points, 4);
+ *		const b2Polygon shape = b2MakePolygon(&hull, 0);
+ *		const b2ShapeDef shapeDef = b2DefaultShapeDef();
+ *		b2CreatePolygonShape(this->actorWall->bodyId, &shapeDef, &shape);
+ *	}
+ */
+
 // Empty template functions
-void ActorInit(Actor * /*this*/) {}
+void ActorInit(Actor * /*this*/, b2WorldId /*worldId*/) {}
 
 void ActorUpdate(Actor * /*this*/, double /*delta*/) {}
 
@@ -57,7 +103,8 @@ Actor *CreateActor(const Vector2 position,
 				   const byte paramA,
 				   const byte paramB,
 				   const byte paramC,
-				   const byte paramD)
+				   const byte paramD,
+				   const b2WorldId worldId)
 {
 	Actor *actor = malloc(sizeof(Actor));
 	CheckAlloc(actor);
@@ -80,7 +127,7 @@ Actor *CreateActor(const Vector2 position,
 	actor->Init = ActorInitFuncs[actorType];
 	actor->Update = ActorUpdateFuncs[actorType];
 	actor->Destroy = ActorDestroyFuncs[actorType];
-	actor->Init(actor); // kindly allow the Actor to initialize itself
+	actor->Init(actor, worldId); // kindly allow the Actor to initialize itself
 	actor->actorType = actorType;
 	return actor;
 }

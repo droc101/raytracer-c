@@ -9,6 +9,7 @@
 #include "Debug/FrameGrapher.h"
 #include "defines.h"
 #include "GameStates/GLogoSplashState.h"
+#include "GameStates/GMainState.h"
 #include "Helpers/CommonAssets.h"
 #include "Helpers/Core/AssetReader.h"
 #include "Helpers/Core/Error.h"
@@ -18,6 +19,7 @@
 #include "Helpers/Core/Timing.h"
 #include "Helpers/Graphics/Drawing.h"
 #include "Helpers/Graphics/RenderingHelpers.h"
+#include "Helpers/LevelLoader.h"
 #include "Helpers/PlatformHelpers.h"
 #include "Structs/GlobalState.h"
 #include "Structs/Level.h"
@@ -234,9 +236,9 @@ int main(const int argc, char *argv[])
 
 	InitCommonAssets();
 
-	ChangeLevel(CreateLevel());
+	ChangeLevelByName("leveldata_physicstest");
 
-	GLogoSplashStateSet();
+	GMainStateSet();
 
 	InitTimers();
 

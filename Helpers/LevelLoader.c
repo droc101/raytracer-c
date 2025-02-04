@@ -3,7 +3,9 @@
 //
 
 #include "LevelLoader.h"
+#include <box2d/box2d.h>
 #include <stdio.h>
+
 #include "../Helpers/CommonAssets.h"
 #include "../Structs/Actor.h"
 #include "../Structs/Level.h"
@@ -36,9 +38,12 @@ Level *LoadLevel(const byte *data)
 	l->fogColor = ReadUint(data, &offset);
 	l->fogStart = ReadDouble(data, &offset);
 	l->fogEnd = ReadDouble(data, &offset);
-	l->player.pos.x = ReadDouble(data, &offset);
-	l->player.pos.y = ReadDouble(data, &offset);
+
+	l->player.pos.x = (float)ReadDouble(data, &offset);
+	l->player.pos.y = (float)ReadDouble(data, &offset);
 	l->player.angle = ReadDouble(data, &offset);
+
+	b2Body_SetTransform(l->player.bodyId, l->player.pos, b2MakeRot(l->player.angle));
 
 	const uint actorCount = ReadUint(data, &offset);
 	for (int i = 0; i < actorCount; i++)
@@ -57,7 +62,8 @@ Level *LoadLevel(const byte *data)
 							   actorParamA,
 							   actorParamB,
 							   actorParamC,
-							   actorParamD);
+							   actorParamD,
+							   l->worldId);
 		ListAdd(&l->actors, a);
 	}
 
@@ -74,7 +80,7 @@ Level *LoadLevel(const byte *data)
 		snprintf(wallTex, 48, "texture/%s.gtex", lDataWallTex);
 		const float wallUVScale = ReadFloat(data, &offset);
 		const float wallUVOffset = ReadFloat(data, &offset);
-		Wall *w = CreateWall(v2(wallAX, wallAY), v2(wallBX, wallBY), wallTex, wallUVScale, wallUVOffset);
+		Wall *w = CreateWall(v2(wallAX, wallAY), v2(wallBX, wallBY), wallTex, wallUVScale, wallUVOffset, l->worldId);
 		ListAdd(&l->walls, w);
 	}
 

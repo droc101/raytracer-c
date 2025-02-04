@@ -5,6 +5,8 @@
 #ifndef GAME_DEFINES_H
 #define GAME_DEFINES_H
 
+#include <box2d/id.h>
+#include <box2d/math_functions.h>
 #include <SDL.h>
 #include <SDL_mixer.h>
 #include <stdbool.h>
@@ -31,7 +33,7 @@ typedef enum TriggerFlag TriggerFlag;
 
 // Struct forward declarations
 typedef struct GlobalState GlobalState;
-typedef struct Vector2 Vector2;
+typedef b2Vec2 Vector2;
 typedef struct Camera Camera;
 typedef struct Player Player;
 typedef struct Wall Wall;
@@ -55,7 +57,7 @@ typedef void (*FrameRenderFunction)(GlobalState *state);
 
 typedef void (*TextBoxCloseFunction)(TextBox *textBox);
 
-typedef void (*ActorInitFunction)(Actor *self);
+typedef void (*ActorInitFunction)(Actor *self, b2WorldId worldId);
 
 typedef void (*ActorUpdateFunction)(Actor *self, double delta);
 
@@ -180,13 +182,6 @@ enum TriggerFlag
 
 #pragma region Struct definitions
 
-// Utility functions are in Structs/Vector2.h
-struct Vector2
-{
-	double x;
-	double y;
-};
-
 struct Camera
 {
 	/// The X position of the camera
@@ -213,6 +208,8 @@ struct Player
 	Vector2 pos;
 	/// The player's rotation
 	double angle;
+	/// The player's box2d body ID
+	b2BodyId bodyId;
 };
 
 // Utility functions are in Structs/wall.h
@@ -238,6 +235,8 @@ struct Wall
 	float uvOffset;
 	/// height of the wall for rendering. Does not affect collision
 	float height;
+	/// The wall's box2d body ID
+	b2BodyId bodyId;
 };
 
 // Utility functions are in Structs/level.h
@@ -273,6 +272,9 @@ struct Level
 	double fogStart;
 	/// The distance from the player at which the fog is fully opaque
 	double fogEnd;
+
+	/// The ID of the box2d world
+	b2WorldId worldId;
 
 	/// The player object
 	Player player;
@@ -491,6 +493,9 @@ struct Actor
 	int health;
 	/// extra data for the actor
 	void *extra_data;
+
+	/// The actor's box2d body ID
+	b2BodyId bodyId;
 };
 
 struct Asset

@@ -8,7 +8,7 @@
 #include "../defines.h"
 
 /// How far out the hitbox of the wall extends from the actual wall (on both sides)
-#define WALL_HITBOX_EXTENTS 0.2
+#define WALL_HITBOX_EXTENTS 0.2f
 
 /**
  * Create a wall
@@ -17,9 +17,10 @@
  * @param texture Wall texture name
  * @param uvScale Wall texture scale
  * @param uvOffset Wall texture offset
+ * @param worldId
  * @return Wall pointer
  */
-Wall *CreateWall(Vector2 a, Vector2 b, const char *texture, float uvScale, float uvOffset);
+Wall *CreateWall(Vector2 a, Vector2 b, const char *texture, float uvScale, float uvOffset, b2WorldId worldId);
 
 /**
  * Bake a wall's information

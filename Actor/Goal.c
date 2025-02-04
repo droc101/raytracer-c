@@ -5,18 +5,18 @@
 #include "Goal.h"
 #include <math.h>
 #include "../Helpers/Collision.h"
+#include "../Helpers/Core/AssetReader.h"
 #include "../Helpers/Core/MathEx.h"
 #include "../Helpers/TextBox.h"
 #include "../Structs/GlobalState.h"
 #include "../Structs/Level.h"
 #include "../Structs/Vector2.h"
 #include "../Structs/Wall.h"
-#include "../Helpers/Core/AssetReader.h"
 
-void GoalInit(Actor *this)
+void GoalInit(Actor *this, b2WorldId /*worldId*/)
 {
 	this->solid = false;
-	this->actorWall = CreateWall(v2(0, -0.5), v2(0, 0.5), TEXTURE("actor_goal0"), 1, 0.0f);
+	this->actorWall = CreateWall(v2(0, -0.5), v2(0, 0.5), TEXTURE("actor_goal0"), 1, 0.0f, GetState()->level->worldId);
 }
 
 void GoalUpdate(Actor *this, double /*delta*/)
