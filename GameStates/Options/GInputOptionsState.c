@@ -3,6 +3,7 @@
 //
 
 #include "GInputOptionsState.h"
+#include "../../Helpers/CommonAssets.h"
 #include "../../Helpers/Core/Input.h"
 #include "../../Helpers/Graphics/Drawing.h"
 #include "../../Helpers/Graphics/Font.h"
@@ -73,7 +74,7 @@ void GInputOptionsStateRender(GlobalState *)
 					v2(WindowWidth(), 100),
 					FONT_HALIGN_CENTER,
 					FONT_VALIGN_MIDDLE,
-					false);
+					largeFont);
 
 	ProcessUiStack(inputOptionsStack);
 	DrawUiStack(inputOptionsStack);
@@ -85,7 +86,7 @@ void GInputOptionsStateRender(GlobalState *)
 					v2(WindowWidth(), 40),
 					FONT_HALIGN_CENTER,
 					FONT_VALIGN_MIDDLE,
-					true);
+					smallFont);
 
 	if (GetState()->options.controllerMode)
 	{
@@ -96,7 +97,7 @@ void GInputOptionsStateRender(GlobalState *)
 						v2(WindowWidth(), 40),
 						FONT_HALIGN_CENTER,
 						FONT_VALIGN_MIDDLE,
-						true);
+						smallFont);
 		const char *controllerName = GetControllerName();
 		if (!controllerName)
 		{
@@ -109,7 +110,7 @@ void GInputOptionsStateRender(GlobalState *)
 						v2(WindowWidth(), 40),
 						FONT_HALIGN_CENTER,
 						FONT_VALIGN_MIDDLE,
-						true);
+						smallFont);
 	}
 }
 

@@ -186,6 +186,8 @@ typedef struct ActorInstanceData
 	mat4 transform;
 	/// The instance's texture index.
 	uint32_t textureIndex;
+	/// The instance's rotation, if it is a wall, otherwise undefined.
+	float wallAngle;
 } ActorInstanceData;
 
 typedef struct UiVertex

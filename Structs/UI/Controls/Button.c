@@ -9,6 +9,7 @@
 #include "../../../Helpers/Graphics/Drawing.h"
 #include "../../../Helpers/Graphics/Font.h"
 #include "../../GlobalState.h"
+#include "../../../Helpers/CommonAssets.h"
 
 Control *CreateButtonControl(const Vector2 position,
 							 const Vector2 size,
@@ -68,5 +69,5 @@ void DrawButton(const Control *c, const ControlState state, const Vector2 positi
 
 	const ButtonData *data = (ButtonData *)c->ControlData;
 
-	DrawTextAligned(data->text, 16, 0xFF000000, position, c->size, FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
+	DrawTextAligned(data->text, 16, 0xFF000000, position, c->size, FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, smallFont);
 }

@@ -5,6 +5,7 @@
 #include "TextBox.h"
 #include "Graphics/Drawing.h"
 #include "Graphics/Font.h"
+#include "CommonAssets.h"
 
 #define BOX_OUTER_PADDING 14
 #define TEXT_BOX_FONT_SIZE 24
@@ -79,7 +80,7 @@ void TextBoxRender(const TextBox *box, const int page)
 		char line[256];
 		TextGetLine(box->text, i, line);
 		const Vector2 pos = {topLeft.x + BOX_OUTER_PADDING, txtY};
-		FontDrawString(pos, line, TEXT_BOX_FONT_SIZE, textColor, true);
+		FontDrawString(pos, line, TEXT_BOX_FONT_SIZE, textColor, smallFont);
 		txtY += TEXT_BOX_FONT_SIZE;
 	}
 }

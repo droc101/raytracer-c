@@ -23,6 +23,8 @@ void DefaultOptions(Options *options)
 	options->rumbleStrength = 1.0f;
 	options->cameraInvertX = true;
 	options->controllerSwapOkCancel = false;
+	options->preferWayland = false;
+	options->limitFpsWhenUnfocused = true;
 }
 
 bool ValidateOptions(const Options *options)

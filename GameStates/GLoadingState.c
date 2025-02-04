@@ -10,6 +10,7 @@
 #include "../Structs/GlobalState.h"
 #include "../Structs/Vector2.h"
 #include "GMainState.h"
+#include "../../../Helpers/CommonAssets.h"
 
 char loadStateLevelname[32];
 
@@ -37,7 +38,7 @@ void GLoadingStateRender(GlobalState *)
 					v2(WindowWidth(), WindowHeight()),
 					FONT_HALIGN_CENTER,
 					FONT_VALIGN_MIDDLE,
-					true);
+					smallFont);
 }
 
 void GLoadingStateSet(const char *levelName)

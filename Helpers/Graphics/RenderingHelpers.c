@@ -14,14 +14,14 @@
 Renderer currentRenderer;
 bool lowFPSMode;
 
-void ActorTransformMatrix(const Actor *Actor, mat4 *transformMatrix)
+void ActorTransformMatrix(const Actor *actor, mat4 *transformMatrix)
 {
 	if (!transformMatrix)
 	{
 		Error("A NULL transformMatrix must not be passed to ActorTransformMatrix!");
 	}
-	glm_translate(*transformMatrix, (vec3){(float)Actor->position.x, Actor->yPosition, (float)Actor->position.y});
-	glm_rotate(*transformMatrix, (float)-Actor->rotation, (vec3){0, 1, 0});
+	glm_translate(*transformMatrix, (vec3){(float)actor->position.x, actor->yPosition, (float)actor->position.y});
+	glm_rotate(*transformMatrix, (float)-actor->rotation, (vec3){0, 1, 0});
 }
 
 bool RenderPreInit()
@@ -190,7 +190,7 @@ inline void SetLowFPS(const bool val)
 
 inline bool IsLowFPSModeEnabled()
 {
-	return lowFPSMode;
+	return lowFPSMode && GetState()->options.limitFpsWhenUnfocused;
 }
 
 inline byte GetSampleCountFlags()

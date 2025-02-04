@@ -1,7 +1,18 @@
 #version 460
 
 layout (push_constant) uniform PushConstants {
-	layout (offset = 16) mat4 translationMatrix;
+	vec2 playerPosition;
+	float yaw;
+	mat4 translationMatrix;
+
+	uint skyVertexCount;
+	uint skyTextureIndex;
+
+	uint shadowTextureIndex;
+
+	float fogStart;
+	float fogEnd;
+	uint fogColor;
 } pushConstants;
 
 layout(location = 0) in vec3 inVertex;
@@ -12,6 +23,7 @@ layout(location = 4) in vec4 inTransform1;
 layout(location = 5) in vec4 inTransform2;
 layout(location = 6) in vec4 inTransform3;
 layout(location = 7) in uint inTextureIndex;
+layout(location = 8) in float inWallAngle;
 
 layout(location = 0) out vec2 outUV;
 layout(location = 1) flat out uint outTextureIndex;
@@ -23,5 +35,5 @@ void main() {
 	outTextureIndex = inTextureIndex;
 
 	float shading = dot(inNormal, vec3(0, 0, 1));
-	outShading = shading == 1 ? 1 : max(0.6, 1 - pow(2, -10 * shading));
+	outShading = shading == 0 ? max(0.6, min(1, abs(cos(pushConstants.yaw - inWallAngle)))) : max(0.6, 1 - pow(2, -10 * shading));
 }

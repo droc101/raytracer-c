@@ -4,6 +4,7 @@
 
 #include "GMenuState.h"
 #include <stdio.h>
+#include "../Helpers/CommonAssets.h"
 #include "../Helpers/Core/AssetReader.h"
 #include "../Helpers/Core/Input.h"
 #include "../Helpers/Graphics/Drawing.h"
@@ -51,7 +52,7 @@ void GMenuStateRender(GlobalState * /*State*/)
 	DrawTexture(v2(logoRect.x, logoRect.y), v2(logoRect.w, logoRect.h), TEXTURE("interface_menu_logo"));
 
 #ifdef BUILDSTYLE_DEBUG
-	FontDrawString(v2(20, 200), "DEBUG BUILD", 16, 0xFF00FF00, true);
+	FontDrawString(v2(20, 200), "DEBUG BUILD", 16, 0xFF00FF00, smallFont);
 #endif
 
 	// draw version and copyright info
@@ -64,7 +65,7 @@ void GMenuStateRender(GlobalState * /*State*/)
 					v2(200, 200),
 					FONT_HALIGN_RIGHT,
 					FONT_VALIGN_BOTTOM,
-					true);
+					smallFont);
 	DrawTextAligned(buffer,
 					16,
 					0xFFa0a0a0,
@@ -72,7 +73,7 @@ void GMenuStateRender(GlobalState * /*State*/)
 					v2(200, 200),
 					FONT_HALIGN_RIGHT,
 					FONT_VALIGN_BOTTOM,
-					true);
+					smallFont);
 
 	ProcessUiStack(menuStack);
 	DrawUiStack(menuStack);

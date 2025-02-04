@@ -68,12 +68,12 @@ void InitSDL()
 {
 	SDL_SetHint(SDL_HINT_APP_NAME, GAME_TITLE);
 #ifdef __LINUX__
-	if (GetState()->options.renderer == RENDERER_OPENGL)
+	if (GetState()->options.preferWayland)
 	{
-		SDL_SetHint(SDL_HINT_VIDEODRIVER, "wayland,x11"); // required to fix an nvidia bug with glCopyTexImage2D
+		SDL_SetHint(SDL_HINT_VIDEODRIVER, "wayland,x11");
 	} else
 	{
-		SDL_SetHint(SDL_HINT_VIDEODRIVER, "x11,wayland"); // faster
+		SDL_SetHint(SDL_HINT_VIDEODRIVER, "x11,wayland");
 	}
 #endif
 

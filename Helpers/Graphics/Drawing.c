@@ -140,7 +140,7 @@ inline void DrawLine(const Vector2 start, const Vector2 end, const float thickne
 						(int)start.y,
 						(int)end.x,
 						(int)end.y,
-						thickness * (float)GetState()->uiScale,
+						(int)(thickness * GetState()->uiScale),
 						drawColor);
 			break;
 		case RENDERER_OPENGL:
@@ -160,7 +160,7 @@ inline void DrawOutlineRect(const Vector2 pos, const Vector2 size, const float t
 							   (int)pos.y,
 							   (int)size.x,
 							   (int)size.y,
-							   thickness * (float)GetState()->uiScale,
+							   (int)(thickness * GetState()->uiScale),
 							   drawColor);
 			break;
 		case RENDERER_OPENGL:

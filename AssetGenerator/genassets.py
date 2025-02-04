@@ -11,6 +11,7 @@ import Converter.OBJConverter
 import Converter.VulkanShaderConverter
 import Converter.WAVConverter
 import Converter.GLShaderConverter
+import Converter.FontConverter
 
 if (len(sys.argv) != 3):
 	print("Usage: python genassets.py <input_path> <output_path>")
@@ -32,6 +33,7 @@ def SetupDirs(out_path):
 	os.makedirs(out_path + "glshader/")
 	os.makedirs(out_path + "vkshader/")
 	os.makedirs(out_path + "model/")
+	os.makedirs(out_path + "font/")
 
 # Recursively search for files in the input folder and convert them
 def RecursiveSearch(in_path, out_path):
@@ -69,6 +71,9 @@ def RecursiveSearch(in_path, out_path):
 			elif file.endswith(".glsl"):
 				print("Converting " + path_from_assets + file)
 				Converter.GLShaderConverter.ConvertGLShader(in_path + file)
+			elif file.endswith(".font"):
+				print("Converting " + path_from_assets + file)
+				Converter.FontConverter.ConvertFont(in_path + file)
 			else:
 				print("Unrecognized file type: " + file)
 

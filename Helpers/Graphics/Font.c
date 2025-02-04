@@ -3,22 +3,18 @@
 //
 
 #include "Font.h"
-#include <ctype.h>
 #include <string.h>
 #include "../../Structs/Vector2.h"
-#include "../Core/AssetReader.h"
 #include "../Core/Error.h"
 #include "../Core/MathEx.h"
 #include "RenderingHelpers.h"
 
-const char fontChars[] = "abcdefghijklmnopqrstuvwxyz0123456789.:-,/\\|[]{}();'\"<>`~!@#$%^*_=+?";
-
-int FontFindChar(const char target)
+int FontFindChar(const char target, const Font *font)
 {
 	int i = 0;
-	while (fontChars[i] != 0)
+	while (font->chars[i] != 0)
 	{
-		if (fontChars[i] == target)
+		if (font->chars[i] == target)
 		{
 			return i;
 		}
@@ -27,7 +23,7 @@ int FontFindChar(const char target)
 	return -1; // Character not found
 }
 
-Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, const uint color, const bool small)
+Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, const uint color, const Font *font)
 {
 	const ulong stringLength = strlen(str);
 	float *verts = calloc(stringLength, sizeof(float[4][4]));
@@ -38,14 +34,19 @@ Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, cons
 	int x = (int)pos.x;
 	int y = (int)pos.y;
 	int i = 0;
-	const int width = (int)(small ? size * 0.75 : size);
-	const double uvPixel = 1.0 / GetTextureSize(small ? TEXTURE("interface_small_fonts") : TEXTURE("interface_font")).x;
+	const double sizeMultiplier = (double)size / font->default_size;
+	const int width = (int)(font->width * sizeMultiplier);
+	const int quadHeight = (int)(font->texture_height * sizeMultiplier);
+	const int baselineHeight = (int)(font->baseline * sizeMultiplier);
+	const double uvPixel = 1.0 / font->image->width;
 	while (str[i] != '\0')
 	{
+		const int fSize = (int)((font->char_widths[(int)str[i]] + font->char_spacing) * sizeMultiplier);
+
 		if (str[i] == ' ')
 		{
 			i++;
-			x += width;
+			x += (int)((font->space_width + font->char_spacing) * sizeMultiplier);
 			continue;
 		}
 
@@ -53,20 +54,20 @@ Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, cons
 		{
 			i++;
 			x = (int)pos.x;
-			y += (int)size;
+			y += (int)((baselineHeight + font->line_spacing) * sizeMultiplier);
 			continue;
 		}
 
-		const double uvPerChar = 1.0 / strlen(fontChars);
+		const double uvPerChar = 1.0 / (double)strlen(font->chars);
 		// ReSharper disable once CppRedundantCastExpression
-		int index = FontFindChar((char)tolower(str[i]));
+		int index = FontFindChar((char)str[i], font);
 		if (index == -1)
 		{
-			index = FontFindChar('U');
+			index = FontFindChar('?', font);
 		}
 
 		const Vector2 ndcPos = v2(X_TO_NDC((float)x), Y_TO_NDC((float)y));
-		const Vector2 ndcPosEnd = v2(X_TO_NDC((float)(x + width)), Y_TO_NDC((float)(y + size)));
+		const Vector2 ndcPosEnd = v2(X_TO_NDC((float)(x + width)), Y_TO_NDC((float)(y + quadHeight)));
 		const double charUV = uvPerChar * index;
 		const double charUVEnd = uvPerChar * (index + 1) - uvPixel;
 
@@ -87,7 +88,7 @@ Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, cons
 
 		memcpy(indices + i * 6, quadIndices, sizeof(quadIndices));
 
-		x += width;
+		x += fSize;
 		i++;
 	}
 
@@ -95,7 +96,7 @@ Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, cons
 	quads.verts = verts;
 	quads.indices = indices;
 	quads.quad_count = (int)stringLength;
-	DrawBatchedQuadsTextured(&quads, small ? TEXTURE("interface_small_fonts") : TEXTURE("interface_font"), color);
+	DrawBatchedQuadsTextured(&quads, font->texture, color);
 
 	free(verts);
 	free(indices);
@@ -103,21 +104,27 @@ Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, cons
 	return v2(x + width, y + size); // Return the bottom right corner of the text
 }
 
-Vector2 MeasureText(const char *str, const uint size, const bool small)
+Vector2 MeasureText(const char *str, const uint size, const Font *font)
 {
 	int textWidth = 0;
 	int textHeight = (int)size;
 	int tempWidth = 0;
-	const int sizeX = (int)(small ? size * 0.75 : size);
+	const double sizeMultiplier = (double)size / font->default_size;
 	for (int j = 0; j < strlen(str); j++)
 	{
-		tempWidth += sizeX;
-		if (str[j] == '\n')
+		const int fSize = (int)((font->char_widths[(int)str[j]] + font->char_spacing) * sizeMultiplier);
+		tempWidth += fSize;
+		if (str[j] == ' ')
 		{
-			tempWidth -= sizeX;
+			tempWidth -= fSize;
+			tempWidth += (int)(font->space_width * sizeMultiplier);
+		}
+		else if (str[j] == '\n')
+		{
+			tempWidth -= fSize;
 			textWidth = max(textWidth, tempWidth);
 			tempWidth = 0;
-			textHeight += (int)size;
+			textHeight += (int)((size + font->line_spacing) * sizeMultiplier);
 		}
 	}
 
@@ -188,7 +195,7 @@ void DrawTextAligned(const char *str,
 					 const Vector2 rect_size,
 					 const byte h_align,
 					 const byte v_align,
-					 const bool small)
+					 const Font *font)
 {
 	const int lines = StringLineCount(str);
 	int x;
@@ -205,7 +212,7 @@ void DrawTextAligned(const char *str,
 	{
 		char line[256];
 		TextGetLine(str, i, line);
-		const Vector2 textSize = MeasureText(line, size, small);
+		const Vector2 textSize = MeasureText(line, size, font);
 		if (h_align == FONT_HALIGN_CENTER)
 		{
 			x = (int)(rect_pos.x + (rect_size.x - textSize.x) / 2);
@@ -216,7 +223,7 @@ void DrawTextAligned(const char *str,
 		{
 			x = (int)rect_pos.x;
 		}
-		FontDrawString(v2(x, y), line, size, color, small);
-		y += (int)size;
+		FontDrawString(v2(x, y), line, size, color, font);
+		y += (uint)size + font->line_spacing;
 	}
 }

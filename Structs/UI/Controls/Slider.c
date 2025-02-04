@@ -5,6 +5,7 @@
 #include "Slider.h"
 #include <math.h>
 #include <stdio.h>
+#include "../../../Helpers/CommonAssets.h"
 #include "../../../Helpers/Core/AssetReader.h"
 #include "../../../Helpers/Core/Error.h"
 #include "../../../Helpers/Core/Input.h"
@@ -186,7 +187,7 @@ void DrawSlider(const Control *c, const ControlState /*state*/, const Vector2 po
 					c->size,
 					FONT_HALIGN_CENTER,
 					FONT_VALIGN_MIDDLE,
-					true);
-	DrawTextAligned(buf, 16, 0xFFFFFFFF, position, c->size, FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, true);
+					smallFont);
+	DrawTextAligned(buf, 16, 0xFFFFFFFF, position, c->size, FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, smallFont);
 	free(buf);
 }

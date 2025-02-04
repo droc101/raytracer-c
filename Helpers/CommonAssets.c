@@ -8,6 +8,9 @@
 
 Model *skyModel;
 
+Font *smallFont;
+Font *largeFont;
+
 void InitCommonAssets()
 {
 	SetTexParams(TEXTURE("interface_menu_bg_tile"), true, true);
@@ -28,8 +31,12 @@ void InitCommonAssets()
 	SetTexParams(TEXTURE("vfx_shadow"), false, false);
 
 	skyModel = LoadModel(MODEL("model_sky"));
+
+	smallFont = LoadFont(FONT("font_small"));
+	largeFont = LoadFont(FONT("font_large"));
 }
 
 void DestroyCommonAssets()
 {
+	free(smallFont);
 }

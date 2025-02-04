@@ -8,6 +8,8 @@
 #include "../defines.h"
 
 extern Model *skyModel;
+extern Font *smallFont;
+extern Font *largeFont;
 
 /**
  * Initialize common assets

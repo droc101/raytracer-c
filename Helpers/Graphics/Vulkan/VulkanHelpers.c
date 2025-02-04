@@ -814,11 +814,13 @@ void LoadActorInstanceData(const Level *level,
 			modelCounts[index]++;
 		} else if (actor->actorWall)
 		{
+			const Wall *wall = actor->actorWall;
 			ActorInstanceData *offsetInstanceData = (void *)instanceData +
 													offsets[buffers.actors.models.loadedModelIds.length];
 
 			memcpy(offsetInstanceData[wallCount].transform, transformMatrix, sizeof(mat4));
-			offsetInstanceData[wallCount].textureIndex = TextureIndex(actor->actorWall->tex);
+			offsetInstanceData[wallCount].textureIndex = TextureIndex(wall->tex);
+			offsetInstanceData[wallCount].wallAngle = (float)actor->rotation;
 
 			if (actor->showShadow)
 			{
