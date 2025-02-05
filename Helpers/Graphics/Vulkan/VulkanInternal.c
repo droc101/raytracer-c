@@ -1516,7 +1516,6 @@ bool InitTextures()
 						 (VkDeviceSize)ceil((double)(MAX_TEXTURE_SIZE * MAX_TEXTURE_SIZE * 4) /
 											(double)memoryRequirements.alignment) *
 						 textureCount;
-	printf("%lu %lu %d", textureMemory.size, memoryRequirements.alignment, MAX_TEXTURE_SIZE * MAX_TEXTURE_SIZE * 4 * textureCount);
 	for (uint32_t i = 0; i < physicalDevice.memoryProperties.memoryTypeCount; i++)
 	{
 		if (memoryRequirements.memoryTypeBits & 1 << i &&
