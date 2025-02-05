@@ -5,7 +5,6 @@
 #include "GLevelSelectState.h"
 #include <dirent.h>
 #include <stdio.h>
-
 #include "../Helpers/CommonAssets.h"
 #include "../Helpers/Core/AssetReader.h"
 #include "../Helpers/Core/Error.h"
@@ -17,7 +16,6 @@
 #include "../Helpers/Graphics/RenderingHelpers.h"
 #include "../Structs/GlobalState.h"
 #include "../Structs/Vector2.h"
-#include "GLoadingState.h"
 #include "GMainState.h"
 #include "GMenuState.h"
 
@@ -44,8 +42,10 @@ void GLevelSelectStateUpdate(GlobalState * /*State*/)
 		{
 			ConsumeKey(SDL_SCANCODE_SPACE);
 			ConsumeButton(CONTROLLER_OK);
-			ChangeLevelByName(ListGet(levelList, GLevelSelectState_SelectedLevel));
-			GMainStateSet();
+			if (ChangeLevelByName(ListGet(levelList, GLevelSelectState_SelectedLevel)))
+			{
+				GMainStateSet();
+			}
 		}
 	}
 }
@@ -69,14 +69,14 @@ void GLevelSelectStateRender(GlobalState * /*State*/)
 		sprintf(levelNameBuffer, "%02d %s", GLevelSelectState_SelectedLevel + 1, levelName);
 	} else
 	{
-		strcpy((char*)&levelNameBuffer, "No levels found");
+		strcpy((char *)&levelNameBuffer, "No levels found");
 	}
 
 	DrawTextAligned(levelNameBuffer,
 					32,
 					0xFFFFFFFF,
 					v2(50, 300),
-					v2(WindowWidth() - 50, 300),
+					v2(WindowWidthFloat() - 50, 300),
 					FONT_HALIGN_LEFT,
 					FONT_VALIGN_MIDDLE,
 					largeFont);

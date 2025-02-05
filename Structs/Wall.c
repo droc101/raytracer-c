@@ -7,11 +7,8 @@
 #include <box2d/types.h>
 #include <math.h>
 #include <string.h>
-
 #include "../defines.h"
 #include "../Helpers/Core/Error.h"
-#include "GlobalState.h"
-#include "Vector2.h"
 
 Wall *CreateWall(const Vector2 a,
 				 const Vector2 b,

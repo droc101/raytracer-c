@@ -100,7 +100,7 @@ int ActorHealths[] = {
 };
 
 Actor *CreateActor(const Vector2 position,
-				   const double rotation,
+				   const float rotation,
 				   const int actorType,
 				   const byte paramA,
 				   const byte paramB,
@@ -123,6 +123,7 @@ Actor *CreateActor(const Vector2 position,
 	actor->shadowSize = 1.0f;
 	actor->actorModel = NULL;
 	actor->actorModelTexture = NULL;
+	actor->bodyId = b2_nullBodyId;
 	ListCreate(&actor->listeningFor);
 	actor->SignalHandler = NULL;
 	actor->Init = ActorInitFuncs[actorType];
@@ -130,7 +131,6 @@ Actor *CreateActor(const Vector2 position,
 	actor->Destroy = ActorDestroyFuncs[actorType];
 	actor->Init(actor, worldId); // kindly allow the Actor to initialize itself
 	actor->actorType = actorType;
-	actor->bodyId = b2_nullBodyId;
 	return actor;
 }
 

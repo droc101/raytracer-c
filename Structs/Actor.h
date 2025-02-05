@@ -20,7 +20,7 @@
  * @return Initialized Actor struct
  */
 Actor *CreateActor(Vector2 position,
-				   double rotation,
+				   float rotation,
 				   int actorType,
 				   byte paramA,
 				   byte paramB,

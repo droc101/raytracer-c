@@ -164,7 +164,7 @@ void SetSharedBufferAliasingInfo()
 }
 
 // TODO: lossless
-bool ResizeBuffer(Buffer *buffer, bool lossy)
+bool ResizeBuffer(Buffer *buffer, bool /*lossy*/)
 {
 	vkDestroyBuffer(device, buffer->buffer, NULL);
 	buffer->buffer = VK_NULL_HANDLE;
@@ -308,6 +308,7 @@ bool ResizeBufferRegion(Buffer *buffer,
 	{
 		memcpy(buffer->memoryAllocationInfo.memoryInfo->mappedMemory, otherBufferData, offset);
 		memcpy(buffer->memoryAllocationInfo.memoryInfo->mappedMemory + offset + newSize,
+			   // ReSharper disable once CppDFANullDereference
 			   otherBufferData + offset,
 			   bufferSize - offset - oldSize);
 		if (!lossy)

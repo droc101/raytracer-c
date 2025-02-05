@@ -3,7 +3,6 @@
 //
 
 #include "Input.h"
-
 #include "../../Structs/GlobalState.h"
 #include "../../Structs/Vector2.h"
 #include "Logging.h"
@@ -109,7 +108,7 @@ void HandleControllerButtonDown(const SDL_GameControllerButton button)
 
 void HandleControllerAxis(const SDL_GameControllerAxis axis, const Sint16 value)
 {
-	const double dValue = value / 32767.0;
+	const float dValue = (float)value / 32767.0f;
 	switch (axis)
 	{
 		case SDL_CONTROLLER_AXIS_LEFTX:
@@ -249,12 +248,12 @@ bool IsMouseButtonJustReleased(const int button)
 
 Vector2 GetMousePos()
 {
-	return Vector2Scale(v2(mouseX, mouseY), 1.0 / GetState()->uiScale);
+	return Vector2Scale(v2((float)mouseX, (float)mouseY), (float)(1.0 / GetState()->uiScale));
 }
 
 Vector2 GetMouseRel()
 {
-	return v2(mouseRelativeX, mouseRelativeY);
+	return v2((float)mouseRelativeX, (float)mouseRelativeY);
 }
 
 void ConsumeKey(const int code)
@@ -288,7 +287,7 @@ void ConsumeAllMouseButtons()
 	}
 }
 
-double GetAxis(const SDL_GameControllerAxis axis)
+float GetAxis(const SDL_GameControllerAxis axis)
 {
 	switch (axis)
 	{

@@ -42,11 +42,10 @@ void TestActorInit(Actor *this, const b2WorldId worldId)
 void TestActorUpdate(Actor *this, const double delta)
 {
 	this->position = b2Body_GetPosition(this->bodyId);
-	this->rotation += 0.01;
+	this->rotation += 0.01f;
 
 	b2Body_ApplyLinearImpulseToCenter(this->bodyId,
-									  Vector2Rotate((Vector2){.y = (float)(32768 * 0.05 * delta)},
-													(float)this->rotation),
+									  Vector2Rotate((Vector2){.y = 1638 * (float)delta}, this->rotation),
 									  true);
 }
 

@@ -191,7 +191,7 @@ void ConsumeAllMouseButtons();
  * @param axis The axis to get the value of
  * @return The value of the axis (between -1 and 1)
  */
-double GetAxis(SDL_GameControllerAxis axis);
+float GetAxis(SDL_GameControllerAxis axis);
 
 /**
  * Checks if a controller is being used

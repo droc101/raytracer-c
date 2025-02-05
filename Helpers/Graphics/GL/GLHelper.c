@@ -3,7 +3,6 @@
 //
 
 #include "GLHelper.h"
-
 #include <cglm/cglm.h>
 #include "../../../Structs/GlobalState.h"
 #include "../../../Structs/Vector2.h"
@@ -82,11 +81,21 @@ bool GL_PreInit()
 			LogError("Failed to set MSAA samples attribute: %s\n", SDL_GetError());
 		}
 	}
-	TestSDLFunction(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3), "Failed to set OpenGL major version", "Failed to start OpenGL");
-	TestSDLFunction(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3), "Failed to set OpenGL minor version", "Failed to start OpenGL");
-	TestSDLFunction(SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1), "Failed to set OpenGL accelerated visual", "Failed to start OpenGL");
-	TestSDLFunction(SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE), "Failed to set OpenGL profile", "Failed to start OpenGL");
-	TestSDLFunction(SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1), "Failed to set OpenGL double buffer", "Failed to start OpenGL");
+	TestSDLFunction(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3),
+					"Failed to set OpenGL major version",
+					"Failed to start OpenGL");
+	TestSDLFunction(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3),
+					"Failed to set OpenGL minor version",
+					"Failed to start OpenGL");
+	TestSDLFunction(SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1),
+					"Failed to set OpenGL accelerated visual",
+					"Failed to start OpenGL");
+	TestSDLFunction(SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE),
+					"Failed to set OpenGL profile",
+					"Failed to start OpenGL");
+	TestSDLFunction(SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1),
+					"Failed to set OpenGL double buffer",
+					"Failed to start OpenGL");
 
 	memset(GL_AssetTextureMap, -1, MAX_TEXTURES * sizeof(int));
 	memset(GL_Textures, 0, sizeof(GL_Textures));
@@ -134,14 +143,7 @@ bool GL_Init(SDL_Window *wnd)
 	modelShaded = GL_ConstructShaderFromAssets(OGL_SHADER("GL_model_shaded_f"), OGL_SHADER("GL_model_shaded_v"));
 	modelUnshaded = GL_ConstructShaderFromAssets(OGL_SHADER("GL_model_unshaded_f"), OGL_SHADER("GL_model_unshaded_v"));
 
-	if (!uiTextured ||
-		!uiColored ||
-		!wall ||
-		!floorAndCeiling ||
-		!shadow ||
-		!sky ||
-		!modelShaded ||
-		!modelUnshaded)
+	if (!uiTextured || !uiColored || !wall || !floorAndCeiling || !shadow || !sky || !modelShaded || !modelUnshaded)
 	{
 		GL_Error("Failed to compile shaders");
 		return false;
@@ -627,9 +629,9 @@ void GL_SetLevelParams(mat4 *mvp, const Level *l)
 	GL_SharedUniforms uniforms;
 	glm_mat4_copy(mvp[0], uniforms.worldViewMatrix);
 	glm_vec3_copy((vec3){(float)(l->fogColor >> 16 & 0xFF) / 255.0f,
-                         (float)(l->fogColor >> 8 & 0xFF) / 255.0f,
-                         (float)(l->fogColor & 0xFF) / 255.0f},
-                  uniforms.fogColor);
+						 (float)(l->fogColor >> 8 & 0xFF) / 255.0f,
+						 (float)(l->fogColor & 0xFF) / 255.0f},
+				  uniforms.fogColor);
 	uniforms.cameraYaw = GetState()->cam->yaw;
 	uniforms.fogStart = (float)l->fogStart;
 	uniforms.fogEnd = (float)l->fogEnd;
@@ -883,7 +885,7 @@ void GL_DrawTexturedArrays(const float *vertices,
 mat4 *GL_GetMatrix(const Camera *cam)
 {
 	vec3 cam_pos = {cam->x, cam->y, cam->z};
-	const float aspect = (float)WindowWidth() / (float)WindowHeight();
+	const float aspect = WindowWidthFloat() / WindowHeightFloat();
 
 	mat4 IDENTITY = GLM_MAT4_IDENTITY_INIT;
 	mat4 PERSPECTIVE = GLM_MAT4_ZERO_INIT;
@@ -953,7 +955,11 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
 			// remove the rotation and y position from the actor matrix so the shadow draws correctly
 			glm_rotate(actor_xfm, (float)actor->rotation, (vec3){0, 1, 0});
 			glm_translate(actor_xfm, (vec3){0, -actor->yPosition, 0});
-			GL_DrawShadow(v2s(-0.5 * actor->shadowSize), v2s(0.5 * actor->shadowSize), WORLD_VIEW_MATRIX, actor_xfm, l);
+			GL_DrawShadow(v2s(-0.5f * actor->shadowSize),
+						  v2s(0.5f * actor->shadowSize),
+						  WORLD_VIEW_MATRIX,
+						  actor_xfm,
+						  l);
 		}
 	}
 	glEnable(GL_DEPTH_TEST);
@@ -1007,16 +1013,10 @@ void GL_LoadModel(const Model *model)
 	glBindVertexArray(buf->vao);
 
 	glBindBuffer(GL_ARRAY_BUFFER, buf->vbo);
-	glBufferData(GL_ARRAY_BUFFER,
-				 (long)(model->vertexCount * sizeof(float) * 8),
-				 model->vertexData,
-				 GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, (long)(model->vertexCount * sizeof(float) * 8), model->vertexData, GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buf->ebo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-				 (long)(model->indexCount * sizeof(uint)),
-				 model->indexData,
-				 GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, (long)(model->indexCount * sizeof(uint)), model->indexData, GL_STATIC_DRAW);
 }
 
 void GL_RenderModel(const Model *model, const mat4 modelWorldMatrix, const char *texture, const ModelShader shader)

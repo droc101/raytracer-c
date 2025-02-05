@@ -64,7 +64,7 @@ void GMainStateUpdate(GlobalState *State)
 		ShowTextBox(tb);
 	}
 
-	State->level->player.angle += GetMouseRel().x * (State->options.mouseSpeed / 120.0);
+	State->level->player.angle += GetMouseRel().x * (float)State->options.mouseSpeed / 120.0f;
 
 	if (IsKeyJustPressed(SDL_SCANCODE_L))
 	{
@@ -73,7 +73,7 @@ void GMainStateUpdate(GlobalState *State)
 	}
 }
 
-void GMainStateFixedUpdate(GlobalState *state, double delta)
+void GMainStateFixedUpdate(GlobalState *state, const double delta)
 {
 	if (state->textBoxActive)
 	{
@@ -86,11 +86,11 @@ void GMainStateFixedUpdate(GlobalState *state, double delta)
 	{
 		moveVec.y = GetAxis(SDL_CONTROLLER_AXIS_LEFTX);
 		moveVec.x = -GetAxis(SDL_CONTROLLER_AXIS_LEFTY);
-		if (fabs(moveVec.x) < 0.1)
+		if (fabsf(moveVec.x) < 0.1)
 		{
 			moveVec.x = 0;
 		}
-		if (fabs(moveVec.y) < 0.1)
+		if (fabsf(moveVec.y) < 0.1)
 		{
 			moveVec.y = 0;
 		}
@@ -123,13 +123,13 @@ void GMainStateFixedUpdate(GlobalState *state, double delta)
 	}
 
 
-	double speed = MOVE_SPEED;
+	float speed = MOVE_SPEED;
 	if (IsKeyPressed(SDL_SCANCODE_LCTRL) || GetAxis(SDL_CONTROLLER_AXIS_TRIGGERLEFT) > 0.5)
 	{
 		speed = SLOW_MOVE_SPEED;
 	}
 
-	speed *= delta;
+	speed *= (float)delta;
 
 	moveVec = Vector2Scale(moveVec, speed);
 	moveVec = Vector2Rotate(moveVec, l->player.angle);
@@ -141,14 +141,14 @@ void GMainStateFixedUpdate(GlobalState *state, double delta)
 
 	if (UseController())
 	{
-		double cx = GetAxis(SDL_CONTROLLER_AXIS_RIGHTX);
+		float cx = GetAxis(SDL_CONTROLLER_AXIS_RIGHTX);
 		if (state->options.cameraInvertX)
 		{
 			cx *= -1;
 		}
-		if (fabs(cx) > 0.1)
+		if (fabsf(cx) > 0.1)
 		{
-			l->player.angle += cx * (state->options.mouseSpeed / 11.25);
+			l->player.angle += cx * (float)state->options.mouseSpeed / 11.25f;
 		}
 	}
 
@@ -173,7 +173,7 @@ void GMainStateFixedUpdate(GlobalState *state, double delta)
 		}
 	}
 
-	l->player.angle = wrap(l->player.angle, 0, 2 * PI);
+	l->player.angle = fmodf(l->player.angle, 2 * PIf);
 
 	for (int i = 0; i < l->actors.length; i++)
 	{
@@ -208,18 +208,18 @@ void GMainStateRender(GlobalState *State)
 	RenderLevel(State);
 
 	SDL_Rect coinIconRect = {WindowWidth() - 260, 16, 40, 40};
-	DrawTexture(v2(WindowWidth() - 260, 16), v2(40, 40), TEXTURE("interface_hud_ycoin"));
+	DrawTexture(v2(WindowWidthFloat() - 260, 16), v2(40, 40), TEXTURE("interface_hud_ycoin"));
 
 	char coinStr[16];
 	sprintf(coinStr, "%d", State->coins);
-	FontDrawString(v2(WindowWidth() - 210, 16), coinStr, 40, 0xFFFFFFFF, largeFont);
+	FontDrawString(v2(WindowWidthFloat() - 210, 16), coinStr, 40, 0xFFFFFFFF, largeFont);
 
 	coinIconRect.y = 64;
 
 	for (int bc = 0; bc < State->blueCoins; bc++)
 	{
 		coinIconRect.x = WindowWidth() - 260 + bc * 48;
-		DrawTexture(v2(coinIconRect.x, coinIconRect.y), v2(40, 40), TEXTURE("interface_hud_bcoin"));
+		DrawTexture(v2((float)coinIconRect.x, (float)coinIconRect.y), v2(40, 40), TEXTURE("interface_hud_bcoin"));
 	}
 
 	if (State->textBoxActive)
@@ -231,8 +231,8 @@ void GMainStateRender(GlobalState *State)
 			false,
 			l->player.pos.x,
 			l->player.pos.y,
-			l->player.angle,
-			radToDeg(l->player.angle));
+			fabsf(l->player.angle),
+			radToDeg(fabsf(l->player.angle)));
 
 	DPrintF("Walls: %d", 0xFFFFFFFF, false, l->walls.length);
 	DPrintF("Actors: %d", 0xFFFFFFFF, false, l->actors.length);

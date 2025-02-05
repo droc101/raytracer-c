@@ -7,11 +7,7 @@
 #include "../Helpers/Core/Error.h"
 #include "Vector2.h"
 
-Trigger *CreateTrigger(const Vector2 pos,
-					   const Vector2 extents,
-					   const double rot,
-					   const char *command,
-					   const uint flags)
+Trigger *CreateTrigger(const Vector2 pos, const Vector2 extents, const float rot, const char *command, const uint flags)
 {
 	Trigger *t = malloc(sizeof(Trigger));
 	CheckAlloc(t);
@@ -27,7 +23,7 @@ Trigger *CreateTrigger(const Vector2 pos,
 bool CheckTriggerCollision(const Trigger *t, const Player *p)
 {
 	const Vector2 rotatedPlayerPos = Vector2Rotate(Vector2Sub(p->pos, t->position), -t->rotation);
-	const Vector2 halfExtents = Vector2Scale(t->extents, 0.5);
+	const Vector2 halfExtents = Vector2Scale(t->extents, 0.5f);
 	return rotatedPlayerPos.x >= -halfExtents.x &&
 		   rotatedPlayerPos.x <= halfExtents.x &&
 		   rotatedPlayerPos.y >= -halfExtents.y &&

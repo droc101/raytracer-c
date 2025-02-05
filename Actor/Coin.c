@@ -14,8 +14,8 @@
 
 void CoinInit(Actor *this, b2WorldId /*worldId*/)
 {
-	this->actorWall = CreateWall(v2(0, -0.125),
-								 v2(0, 0.125),
+	this->actorWall = CreateWall(v2(0, -0.125f),
+								 v2(0, 0.125f),
 								 this->paramB == 1 ? TEXTURE("actor_bluecoin") : TEXTURE("actor_coin"),
 								 1.0f,
 								 0.0f,
@@ -33,13 +33,13 @@ void CoinUpdate(Actor *this, double /*delta*/)
 		this->paramA++;
 		this->paramA = this->paramA % 4;
 
-		const double uvo = 0.25 * this->paramA;
+		const float uvo = 0.25f * (float)this->paramA;
 		this->actorWall->uvOffset = uvo;
 	}
 
 	const Vector2 dir = Vector2Sub(GetState()->level->player.pos, this->position);
-	this->rotation = atan2(dir.y, dir.x);
-	this->rotation += PI;
+	this->rotation = atan2f(dir.y, dir.x);
+	this->rotation += PIf;
 
 	if (CollideCylinder(this->position, 0.5, GetState()->level->player.pos))
 	{

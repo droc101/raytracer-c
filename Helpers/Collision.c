@@ -5,9 +5,7 @@
 #include "Collision.h"
 #include <box2d/box2d.h>
 #include "../Structs/Actor.h"
-#include "../Structs/GlobalState.h"
 #include "../Structs/Vector2.h"
-#include "../Structs/Wall.h"
 
 bool CollideCylinder(const Vector2 cylOrigin, const double cylRadius, const Vector2 testPoint)
 {

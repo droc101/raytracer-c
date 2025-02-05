@@ -4,9 +4,9 @@
 
 #include "GMenuState.h"
 #include <stdio.h>
+#include "../../../Structs/Vector2.h"
 #include "../Helpers/CommonAssets.h"
 #include "../Helpers/Core/AssetReader.h"
-#include "../Helpers/Core/Input.h"
 #include "../Helpers/Graphics/Drawing.h"
 #include "../Helpers/Graphics/Font.h"
 #include "../Helpers/Graphics/RenderingHelpers.h"
@@ -49,7 +49,9 @@ void GMenuStateRender(GlobalState * /*State*/)
 	logoRect.y = 32;
 	logoRect.w = 480;
 	logoRect.h = 320;
-	DrawTexture(v2(logoRect.x, logoRect.y), v2(logoRect.w, logoRect.h), TEXTURE("interface_menu_logo"));
+	DrawTexture(v2((float)logoRect.x, (float)logoRect.y),
+				v2((float)logoRect.w, (float)logoRect.h),
+				TEXTURE("interface_menu_logo"));
 
 #ifdef BUILDSTYLE_DEBUG
 	FontDrawString(v2(20, 200), "DEBUG BUILD", 16, 0xFF00FF00, smallFont);
@@ -61,7 +63,7 @@ void GMenuStateRender(GlobalState * /*State*/)
 	DrawTextAligned(buffer,
 					16,
 					0xFF000000,
-					v2(WindowWidth() - 208, WindowHeight() - 208),
+					v2(WindowWidthFloat() - 208, WindowHeightFloat() - 208),
 					v2(200, 200),
 					FONT_HALIGN_RIGHT,
 					FONT_VALIGN_BOTTOM,
@@ -69,7 +71,7 @@ void GMenuStateRender(GlobalState * /*State*/)
 	DrawTextAligned(buffer,
 					16,
 					0xFFa0a0a0,
-					v2(WindowWidth() - 210, WindowHeight() - 210),
+					v2(WindowWidthFloat() - 210, WindowHeightFloat() - 210),
 					v2(200, 200),
 					FONT_HALIGN_RIGHT,
 					FONT_VALIGN_BOTTOM,
@@ -84,8 +86,8 @@ void GMenuStateSet()
 	if (menuStack == NULL)
 	{
 		menuStack = CreateUiStack();
-		int opY = 80;
-		const int opSpacing = 50;
+		float opY = 80;
+		const float opSpacing = 50;
 
 		UiStackPush(menuStack, CreateButtonControl(v2(0, opY), v2(480, 40), "Start", StartGame, MIDDLE_CENTER));
 		opY += opSpacing;

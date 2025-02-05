@@ -5,9 +5,9 @@
 #include "VulkanHelpers.h"
 #include <cglm/clipspace/persp_lh_zo.h>
 #include <cglm/clipspace/view_lh_zo.h>
-
 #include "../../CommonAssets.h"
 #include "../../Core/Error.h"
+#include "../../Core/Logging.h"
 #include "../RenderingHelpers.h"
 #include "VulkanInternal.h"
 #include "VulkanResources.h"
@@ -1067,7 +1067,7 @@ VkResult EndRenderPass(const VkCommandBuffer commandBuffer)
 	return VK_SUCCESS;
 }
 
-bool DrawRectInternal(const float ndcStartX,
+void DrawRectInternal(const float ndcStartX,
 					  const float ndcStartY,
 					  const float ndcEndX,
 					  const float ndcEndY,
@@ -1084,10 +1084,10 @@ bool DrawRectInternal(const float ndcStartX,
 		{ndcEndX, ndcEndY, endU, endV},
 		{ndcStartX, ndcEndY, startU, endV},
 	};
-	return DrawQuadInternal(matrix, color, textureIndex);
+	DrawQuadInternal(matrix, color, textureIndex);
 }
 
-bool DrawQuadInternal(const mat4 vertices_posXY_uvZW, const uint32_t color, const uint32_t textureIndex)
+void DrawQuadInternal(const mat4 vertices_posXY_uvZW, const uint32_t color, const uint32_t textureIndex)
 {
 	GET_COLOR(color);
 
@@ -1158,6 +1158,4 @@ bool DrawQuadInternal(const mat4 vertices_posXY_uvZW, const uint32_t color, cons
 	buffers.ui.indices[6 * buffers.ui.quadCount + 5] = buffers.ui.quadCount * 4 + 3;
 
 	buffers.ui.quadCount++;
-
-	return true;
 }

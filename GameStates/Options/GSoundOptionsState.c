@@ -3,6 +3,7 @@
 //
 
 #include "GSoundOptionsState.h"
+#include "../../../Structs/Vector2.h"
 #include "../../Helpers/CommonAssets.h"
 #include "../../Helpers/Core/Input.h"
 #include "../../Helpers/Graphics/Drawing.h"
@@ -61,7 +62,7 @@ void GSoundOptionsStateRender(GlobalState *)
 					32,
 					0xFFFFFFFF,
 					v2s(0),
-					v2(WindowWidth(), 100),
+					v2(WindowWidthFloat(), 100),
 					FONT_HALIGN_CENTER,
 					FONT_VALIGN_MIDDLE,
 					largeFont);

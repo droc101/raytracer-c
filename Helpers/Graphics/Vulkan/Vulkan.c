@@ -7,6 +7,7 @@
 #include "../../../Structs/GlobalState.h"
 #include "../../CommonAssets.h"
 #include "../../Core/Error.h"
+#include "../../Core/Logging.h"
 #include "../../Core/MathEx.h"
 #include "VulkanHelpers.h"
 #include "VulkanInternal.h"
@@ -810,21 +811,12 @@ bool VK_LoadNewActor()
 	return DestroyBuffer(&stagingBuffer);
 }
 
-bool VK_DrawColoredQuad(const int32_t x, const int32_t y, const int32_t w, const int32_t h, const uint32_t color)
+void VK_DrawColoredQuad(const int32_t x, const int32_t y, const int32_t w, const int32_t h, const uint32_t color)
 {
-	return DrawRectInternal(VK_X_TO_NDC(x),
-							VK_Y_TO_NDC(y),
-							VK_X_TO_NDC(x + w),
-							VK_Y_TO_NDC(y + h),
-							0,
-							0,
-							0,
-							0,
-							color,
-							-1);
+	DrawRectInternal(VK_X_TO_NDC(x), VK_Y_TO_NDC(y), VK_X_TO_NDC(x + w), VK_Y_TO_NDC(y + h), 0, 0, 0, 0, color, -1);
 }
 
-bool VK_DrawColoredQuadsBatched(const float *vertices, const int32_t quadCount, const uint32_t color)
+void VK_DrawColoredQuadsBatched(const float *vertices, const int32_t quadCount, const uint32_t color)
 {
 	for (int32_t i = 0; i < quadCount; i++)
 	{
@@ -835,49 +827,44 @@ bool VK_DrawColoredQuadsBatched(const float *vertices, const int32_t quadCount, 
 			{vertices[index + 4], vertices[index + 5], 0, 0},
 			{vertices[index + 6], vertices[index + 7], 0, 0},
 		};
-		if (!DrawQuadInternal(matrix, color, -1))
-		{
-			return false;
-		}
+		DrawQuadInternal(matrix, color, -1);
 	}
-
-	return true;
 }
 
-bool VK_DrawTexturedQuad(const int32_t x, const int32_t y, const int32_t w, const int32_t h, const char *texture)
+void VK_DrawTexturedQuad(const int32_t x, const int32_t y, const int32_t w, const int32_t h, const char *texture)
 {
-	return DrawRectInternal(VK_X_TO_NDC(x),
-							VK_Y_TO_NDC(y),
-							VK_X_TO_NDC(x + w),
-							VK_Y_TO_NDC(y + h),
-							0,
-							0,
-							1,
-							1,
-							0xFFFFFFFF,
-							TextureIndex(texture));
+	DrawRectInternal(VK_X_TO_NDC(x),
+					 VK_Y_TO_NDC(y),
+					 VK_X_TO_NDC(x + w),
+					 VK_Y_TO_NDC(y + h),
+					 0,
+					 0,
+					 1,
+					 1,
+					 0xFFFFFFFF,
+					 TextureIndex(texture));
 }
 
-bool VK_DrawTexturedQuadMod(const int32_t x,
+void VK_DrawTexturedQuadMod(const int32_t x,
 							const int32_t y,
 							const int32_t w,
 							const int32_t h,
 							const char *texture,
 							const uint32_t color)
 {
-	return DrawRectInternal(VK_X_TO_NDC(x),
-							VK_Y_TO_NDC(y),
-							VK_X_TO_NDC(x + w),
-							VK_Y_TO_NDC(y + h),
-							0,
-							0,
-							1,
-							1,
-							color,
-							TextureIndex(texture));
+	DrawRectInternal(VK_X_TO_NDC(x),
+					 VK_Y_TO_NDC(y),
+					 VK_X_TO_NDC(x + w),
+					 VK_Y_TO_NDC(y + h),
+					 0,
+					 0,
+					 1,
+					 1,
+					 color,
+					 TextureIndex(texture));
 }
 
-bool VK_DrawTexturedQuadRegion(const int32_t x,
+void VK_DrawTexturedQuadRegion(const int32_t x,
 							   const int32_t y,
 							   const int32_t w,
 							   const int32_t h,
@@ -892,19 +879,19 @@ bool VK_DrawTexturedQuadRegion(const int32_t x,
 	const float startU = (float)regionX / (float)image->width;
 	const float startV = (float)regionY / (float)image->height;
 
-	return DrawRectInternal(VK_X_TO_NDC(x),
-							VK_Y_TO_NDC(y),
-							VK_X_TO_NDC(x + w),
-							VK_Y_TO_NDC(y + h),
-							startU,
-							startV,
-							startU + (float)regionW / (float)image->width,
-							startV + (float)regionH / (float)image->height,
-							0xFFFFFFFF,
-							imageAssetIdToIndexMap[image->id]);
+	DrawRectInternal(VK_X_TO_NDC(x),
+					 VK_Y_TO_NDC(y),
+					 VK_X_TO_NDC(x + w),
+					 VK_Y_TO_NDC(y + h),
+					 startU,
+					 startV,
+					 startU + (float)regionW / (float)image->width,
+					 startV + (float)regionH / (float)image->height,
+					 0xFFFFFFFF,
+					 imageAssetIdToIndexMap[image->id]);
 }
 
-bool VK_DrawTexturedQuadRegionMod(const int32_t x,
+void VK_DrawTexturedQuadRegionMod(const int32_t x,
 								  const int32_t y,
 								  const int32_t w,
 								  const int32_t h,
@@ -920,19 +907,19 @@ bool VK_DrawTexturedQuadRegionMod(const int32_t x,
 	const float startU = (float)regionX / (float)image->width;
 	const float startV = (float)regionY / (float)image->height;
 
-	return DrawRectInternal(VK_X_TO_NDC(x),
-							VK_Y_TO_NDC(y),
-							VK_X_TO_NDC(x + w),
-							VK_Y_TO_NDC(y + h),
-							startU,
-							startV,
-							startU + (float)regionW / (float)image->width,
-							startV + (float)regionH / (float)image->height,
-							color,
-							imageAssetIdToIndexMap[image->id]);
+	DrawRectInternal(VK_X_TO_NDC(x),
+					 VK_Y_TO_NDC(y),
+					 VK_X_TO_NDC(x + w),
+					 VK_Y_TO_NDC(y + h),
+					 startU,
+					 startV,
+					 startU + (float)regionW / (float)image->width,
+					 startV + (float)regionH / (float)image->height,
+					 color,
+					 imageAssetIdToIndexMap[image->id]);
 }
 
-bool VK_DrawTexturedQuadsBatched(const float *vertices,
+void VK_DrawTexturedQuadsBatched(const float *vertices,
 								 const int32_t quadCount,
 								 const char *texture,
 								 const uint32_t color)
@@ -966,17 +953,11 @@ bool VK_DrawTexturedQuadsBatched(const float *vertices,
 				vertices[index + 15],
 			},
 		};
-
-		if (!DrawQuadInternal(matrix, color, TextureIndex(texture)))
-		{
-			return false;
-		}
+		DrawQuadInternal(matrix, color, TextureIndex(texture));
 	}
-
-	return true;
 }
 
-bool VK_DrawLine(const int32_t startX,
+void VK_DrawLine(const int32_t startX,
 				 const int32_t startY,
 				 const int32_t endX,
 				 const int32_t endY,
@@ -985,97 +966,48 @@ bool VK_DrawLine(const int32_t startX,
 {
 	const float dx = (float)endX - (float)startX;
 	const float dy = (float)endY - (float)startY;
-	const float distance = sqrtf(dx * dx + dy * dy);
-
-	if (thickness == 1)
-	{
-		const mat4 matrix = {
-			{
-				VK_X_TO_NDC(-dy / distance + (float)startX),
-				VK_Y_TO_NDC(dx / distance + (float)startY),
-				0,
-				0,
-			},
-			{
-				VK_X_TO_NDC(-dy / distance + (float)endX),
-				VK_Y_TO_NDC(dx / distance + (float)endY),
-				0,
-				0,
-			},
-			{
-				VK_X_TO_NDC(endX),
-				VK_Y_TO_NDC(endY),
-				0,
-				0,
-			},
-			{
-				VK_X_TO_NDC(startX),
-				VK_Y_TO_NDC(startY),
-				0,
-				0,
-			},
-		};
-
-		return DrawQuadInternal(matrix, color, -1);
-	}
-
-	const float size = (float)thickness / 2.0f;
+	const float distance = 2.0f * sqrtf(dx * dx + dy * dy);
 
 	const mat4 matrix = {
 		{
-			VK_X_TO_NDC(-size * dy / distance + (float)startX),
-			VK_Y_TO_NDC(size * dx / distance + (float)startY),
+			VK_X_TO_NDC(-thickness * dy / distance + (float)startX),
+			VK_Y_TO_NDC(thickness * dx / distance + (float)startY),
 			0,
 			0,
 		},
 		{
-			VK_X_TO_NDC(-size * dy / distance + (float)endX),
-			VK_Y_TO_NDC(size * dx / distance + (float)endY),
+			VK_X_TO_NDC(-thickness * dy / distance + (float)endX),
+			VK_Y_TO_NDC(thickness * dx / distance + (float)endY),
 			0,
 			0,
 		},
 		{
-			VK_X_TO_NDC(size * dy / distance + (float)endX),
-			VK_Y_TO_NDC(-size * dx / distance + (float)endY),
+			VK_X_TO_NDC(thickness * dy / distance + (float)endX),
+			VK_Y_TO_NDC(-thickness * dx / distance + (float)endY),
 			0,
 			0,
 		},
 		{
-			VK_X_TO_NDC(size * dy / distance + (float)startX),
-			VK_Y_TO_NDC(-size * dx / distance + (float)startY),
+			VK_X_TO_NDC(thickness * dy / distance + (float)startX),
+			VK_Y_TO_NDC(-thickness * dx / distance + (float)startY),
 			0,
 			0,
 		},
 	};
-
-	return DrawQuadInternal(matrix, color, -1);
+	DrawQuadInternal(matrix, color, -1);
 }
 
-bool VK_DrawRectOutline(const int32_t x,
+void VK_DrawRectOutline(const int32_t x,
 						const int32_t y,
 						const int32_t w,
 						const int32_t h,
 						const int32_t thickness,
 						const uint32_t color)
 {
-	if (!VK_DrawLine(x, y, x + w, y, thickness, color))
-	{
-		return false;
-	}
-	if (!VK_DrawLine(x + w, y, x + w, y + h, thickness, color))
-	{
-		return false;
-	}
-	if (!VK_DrawLine(x + w, y + h, x, y + h, thickness, color))
-	{
-		return false;
-	}
-	if (!VK_DrawLine(x, y + h, x, y, thickness, color))
-	{
-		return false;
-	}
-
-	return true;
+	VK_DrawLine(x, y, x + w, y, thickness, color);
+	VK_DrawLine(x + w, y, x + w, y + h, thickness, color);
+	VK_DrawLine(x + w, y + h, x, y + h, thickness, color);
+	VK_DrawLine(x, y + h, x, y, thickness, color);
 }
 
 void VK_ClearColor(const uint32_t color)

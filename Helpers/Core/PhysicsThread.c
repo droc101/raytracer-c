@@ -4,7 +4,6 @@
 
 #include "PhysicsThread.h"
 #include <SDL_thread.h>
-
 #include "../../defines.h"
 #include "../../Structs/GlobalState.h"
 #include "Error.h"

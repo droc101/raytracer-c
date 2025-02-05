@@ -114,7 +114,7 @@ bool ChangeLevelByName(const char *name);
  * @param signal The signal to send
  * @param sender The actor sending the signal (can be NULL)
  */
-void SendSignal(int signal, const Actor* sender);
+void SendSignal(int signal, const Actor *sender);
 
 /**
  * Remove a trigger from a level

@@ -25,7 +25,7 @@
  * @param font The font to use
  * @return Bottom right position of the text
  */
-Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, const uint color, const Font *font);
+Vector2 FontDrawString(Vector2 pos, const char *str, uint size, uint color, const Font *font);
 
 /**
  * Count the number of lines in a string
@@ -38,7 +38,7 @@ int StringLineCount(const char *str);
  * Measure the size of a string of text
  * @param str String to measure
  * @param size Size of the font
- * @param small Whether to use the small font or not
+ * @param font The font to use
  * @return Size of the text
  */
 Vector2 MeasureText(const char *str, uint size, const Font *font);
@@ -63,12 +63,12 @@ void TextGetLine(const char *str, int line, char *out);
  * @param font The font to use
  */
 void DrawTextAligned(const char *str,
-					 const uint size,
-					 const uint color,
-					 const Vector2 rect_pos,
-					 const Vector2 rect_size,
-					 const byte h_align,
-					 const byte v_align,
+					 uint size,
+					 uint color,
+					 Vector2 rect_pos,
+					 Vector2 rect_size,
+					 byte h_align,
+					 byte v_align,
 					 const Font *font);
 
 #endif //GAME_FONT_H

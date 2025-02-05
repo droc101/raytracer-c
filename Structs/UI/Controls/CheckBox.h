@@ -5,7 +5,6 @@
 #ifndef GAME_CHECKBOX_H
 #define GAME_CHECKBOX_H
 
-#include "../../Vector2.h"
 #include "../UiStack.h"
 
 typedef struct CheckBoxData CheckBoxData;

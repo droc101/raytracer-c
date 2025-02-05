@@ -72,7 +72,7 @@ void DoorUpdate(Actor *this, const double delta)
 	this->position = b2Body_GetPosition(this->bodyId);
 	DoorData *data = this->extra_data;
 
-	const Vector2 wallCenter = Vector2Scale(Vector2Add(this->actorWall->a, this->actorWall->b), 0.5);
+	const Vector2 wallCenter = Vector2Scale(Vector2Add(this->actorWall->a, this->actorWall->b), 0.5f);
 	const bool playerCollide = CollideCylinder(wallCenter, 1.0, GetState()->level->player.pos);
 
 	switch (data->state)

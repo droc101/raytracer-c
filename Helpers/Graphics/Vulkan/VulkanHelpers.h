@@ -5,14 +5,10 @@
 #ifndef VULKANHELPERS_H
 #define VULKANHELPERS_H
 
-// It lies.
-// ReSharper disable CppUnusedIncludeDirective
 #include <cglm/cglm.h>
 #include <vulkan/vulkan.h>
 #include "../../Core/AssetReader.h"
 #include "../../Core/DataReader.h"
-#include "../../Core/Logging.h"
-// ReSharper restore CppUnusedIncludeDirective
 
 #pragma region macros
 #define VULKAN_VERSION VK_MAKE_VERSION(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH)
@@ -696,7 +692,7 @@ VkResult BeginRenderPass(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 
 VkResult EndRenderPass(VkCommandBuffer commandBuffer);
 
-bool DrawRectInternal(float ndcStartX,
+void DrawRectInternal(float ndcStartX,
 					  float ndcStartY,
 					  float ndcEndX,
 					  float ndcEndY,
@@ -707,7 +703,7 @@ bool DrawRectInternal(float ndcStartX,
 					  uint32_t color,
 					  uint32_t textureIndex);
 
-bool DrawQuadInternal(const mat4 vertices_posXY_uvZW, uint32_t color, uint32_t textureIndex);
+void DrawQuadInternal(const mat4 vertices_posXY_uvZW, uint32_t color, uint32_t textureIndex);
 #pragma endregion drawingHelpers
 
 #endif //VULKANHELPERS_H

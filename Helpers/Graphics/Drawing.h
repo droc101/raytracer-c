@@ -33,6 +33,18 @@ int WindowWidth();
 int WindowHeight();
 
 /**
+ * Get the width of the window
+ * @return width of the window
+ */
+float WindowWidthFloat();
+
+/**
+ * Get the height of the window
+ * @return height of the window
+ */
+float WindowHeightFloat();
+
+/**
  * Updates the variables returned by @c WindowWidth() and @c WindowHeight()
  */
 void UpdateWindowSize();
@@ -183,8 +195,8 @@ Vector2 GetTextureSize(const char *texture);
  */
 void DrawNinePatchTexture(Vector2 pos,
 						  Vector2 size,
-						  int output_margins_px,
-						  int texture_margins_px,
+						  float output_margins_px,
+						  float texture_margins_px,
 						  const char *texture);
 
 #endif //GAME_DRAWING_H

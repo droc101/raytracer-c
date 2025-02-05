@@ -3,12 +3,12 @@
 //
 
 #include "VulkanInternal.h"
-
 #include <dirent.h>
 #include <SDL_vulkan.h>
 #include <string.h>
 #include "../../../Structs/GlobalState.h"
 #include "../../Core/Error.h"
+#include "../../Core/Logging.h"
 #include "../../Core/MathEx.h"
 #include "VulkanHelpers.h"
 #include "VulkanMemory.h"

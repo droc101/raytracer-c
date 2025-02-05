@@ -15,14 +15,14 @@
 
 void GoalInit(Actor *this, b2WorldId /*worldId*/)
 {
-	this->actorWall = CreateWall(v2(0, -0.5), v2(0, 0.5), TEXTURE("actor_goal0"), 1, 0.0f, GetState()->level->worldId);
+	this->actorWall = CreateWall(v2(0, -0.5f), v2(0, 0.5f), TEXTURE("actor_goal0"), 1, 0.0f, GetState()->level->worldId);
 }
 
 void GoalUpdate(Actor *this, double /*delta*/)
 {
 	const Vector2 dir = Vector2Sub(GetState()->level->player.pos, this->position);
-	this->rotation = atan2(dir.y, dir.x);
-	this->rotation += PI;
+	this->rotation = atan2f(dir.y, dir.x);
+	this->rotation += PIf;
 
 	if (CollideActorCylinder(this, GetState()->level->player.pos))
 	{

@@ -4,6 +4,7 @@
 
 #ifndef TRIGGER_H
 #define TRIGGER_H
+
 #include "Vector2.h"
 
 /**
@@ -15,7 +16,7 @@
  * @param flags
  * @return The created trigger
  */
-Trigger *CreateTrigger(Vector2 pos, Vector2 extents, double rot, const char *command, uint flags);
+Trigger *CreateTrigger(Vector2 pos, Vector2 extents, float rot, const char *command, uint flags);
 
 /**
  * Check if a player is colliding with a trigger

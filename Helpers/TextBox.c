@@ -3,9 +3,9 @@
 //
 
 #include "TextBox.h"
+#include "CommonAssets.h"
 #include "Graphics/Drawing.h"
 #include "Graphics/Font.h"
-#include "CommonAssets.h"
 
 #define BOX_OUTER_PADDING 14
 #define TEXT_BOX_FONT_SIZE 24
@@ -45,10 +45,10 @@ void TextBoxRender(const TextBox *box, const int page)
 
 	if (box->hAlign == TEXT_BOX_H_ALIGN_CENTER)
 	{
-		topLeft.x = (WindowWidth() - width) / 2; // NOLINT(*-integer-division)
+		topLeft.x = (WindowWidthFloat() - (float)width) / 2; // NOLINT(*-integer-division)
 	} else if (box->hAlign == TEXT_BOX_H_ALIGN_RIGHT)
 	{
-		topLeft.x = WindowWidth() - width;
+		topLeft.x = WindowWidthFloat() - (float)width;
 	} else
 	{
 		topLeft.x = 0;
@@ -56,17 +56,17 @@ void TextBoxRender(const TextBox *box, const int page)
 
 	if (box->vAlign == TEXT_BOX_V_ALIGN_CENTER)
 	{
-		topLeft.y = (WindowHeight() - height) / 2; // NOLINT(*-integer-division)
+		topLeft.y = (WindowHeightFloat() - (float)height) / 2; // NOLINT(*-integer-division)
 	} else if (box->vAlign == TEXT_BOX_V_ALIGN_BOTTOM)
 	{
-		topLeft.y = WindowHeight() - height;
+		topLeft.y = WindowHeightFloat() - (float)height;
 	} else
 	{
 		topLeft.y = 0;
 	}
 
-	topLeft.x += box->x;
-	topLeft.y += box->y;
+	topLeft.x += (float)box->x;
+	topLeft.y += (float)box->y;
 
 	SetColorUint(boxColor);
 	DrawRect((int)topLeft.x,
@@ -79,7 +79,7 @@ void TextBoxRender(const TextBox *box, const int page)
 	{
 		char line[256];
 		TextGetLine(box->text, i, line);
-		const Vector2 pos = {topLeft.x + BOX_OUTER_PADDING, txtY};
+		const Vector2 pos = {topLeft.x + BOX_OUTER_PADDING, (float)txtY};
 		FontDrawString(pos, line, TEXT_BOX_FONT_SIZE, textColor, smallFont);
 		txtY += TEXT_BOX_FONT_SIZE;
 	}

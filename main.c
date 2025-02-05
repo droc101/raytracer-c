@@ -9,7 +9,6 @@
 #include "Debug/FrameGrapher.h"
 #include "defines.h"
 #include "GameStates/GLogoSplashState.h"
-#include "GameStates/GMainState.h"
 #include "Helpers/CommonAssets.h"
 #include "Helpers/Core/AssetReader.h"
 #include "Helpers/Core/Error.h"
@@ -19,7 +18,6 @@
 #include "Helpers/Core/Timing.h"
 #include "Helpers/Graphics/Drawing.h"
 #include "Helpers/Graphics/RenderingHelpers.h"
-#include "Helpers/LevelLoader.h"
 #include "Helpers/PlatformHelpers.h"
 #include "Structs/GlobalState.h"
 #include "Structs/Level.h"
@@ -183,7 +181,8 @@ void HandleEvent(const SDL_Event event, bool *shouldQuit)
 				case SDL_WINDOWEVENT_FOCUS_GAINED:
 					SetLowFPS(false);
 					break;
-				default: break;
+				default:
+					break;
 			}
 			break;
 		case SDL_CONTROLLERDEVICEADDED:
@@ -236,9 +235,9 @@ int main(const int argc, char *argv[])
 
 	InitCommonAssets();
 
-	ChangeLevelByName("leveldata_physicstest");
+	ChangeLevel(CreateLevel());
 
-	GMainStateSet();
+	GLogoSplashStateSet();
 
 	InitTimers();
 
@@ -300,16 +299,16 @@ int main(const int argc, char *argv[])
 		}
 #endif
 
-		state->cam->x = (float)state->level->player.pos.x;
+		state->cam->x = state->level->player.pos.x;
 		state->cam->y = (float)state->cameraY;
-		state->cam->z = (float)state->level->player.pos.y;
-		state->cam->yaw = (float)state->level->player.angle;
+		state->cam->z = state->level->player.pos.y;
+		state->cam->yaw = state->level->player.angle;
 
 		state->RenderGame(state);
 
 		FrameGraphDraw();
 
-        FrameEnd();
+		FrameEnd();
 
 		UpdateInputStates();
 
@@ -322,7 +321,10 @@ int main(const int argc, char *argv[])
 		BenchFrameEnd();
 #endif
 
-		if (IsLowFPSModeEnabled()) SDL_Delay(33);
+		if (IsLowFPSModeEnabled())
+		{
+			SDL_Delay(33);
+		}
 		FrameGraphUpdate(GetTimeNs() - frameStart);
 	}
 	LogInfo("Mainloop exited, cleaning up engine...\n");

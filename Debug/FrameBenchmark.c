@@ -65,7 +65,7 @@ void BenchFinish()
 	benchRunning = false;
 	const ulong endTime = GetTimeNs();
 	const ulong totalTime = endTime - benchStartTime;
-	double avgFrameTime = (double)totalTime / benchFrameCount;
+	double avgFrameTime = (double)totalTime / (double)benchFrameCount;
 	const double avgFps = 1.0 / (avgFrameTime / 1000000000.0);
 
 	avgFrameTime /= 1000000.0;

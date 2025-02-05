@@ -209,7 +209,7 @@ struct Player
 	/// The player's position
 	Vector2 pos;
 	/// The player's rotation
-	double angle;
+	float angle;
 	/// The player's box2d body ID
 	b2BodyId bodyId;
 };
@@ -535,7 +535,7 @@ struct Trigger
 	/// The center position of the trigger
 	Vector2 position;
 	/// The rotation of the trigger
-	double rotation;
+	float rotation;
 	/// The size of the trigger
 	Vector2 extents;
 	/// The command to execute when this trigger is triggered

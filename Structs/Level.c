@@ -5,7 +5,6 @@
 #include "Level.h"
 #include <box2d/box2d.h>
 #include <string.h>
-
 #include "../defines.h"
 #include "../Helpers/Core/Error.h"
 #include "../Helpers/Graphics/RenderingHelpers.h"

@@ -4,7 +4,6 @@
 
 #include "Camera.h"
 #include <math.h>
-
 #include "../Helpers/Core/Error.h"
 
 /**
@@ -32,6 +31,6 @@ Camera *CreateCamera()
  */
 void CameraLookAt(Camera *camera, const Vector2 target)
 {
-	camera->yaw = (float)atan2(target.x - camera->x, target.y - camera->z);
+	camera->yaw = atan2f(target.x - camera->x, target.y - camera->z);
 	camera->pitch = 0;
 }
