@@ -7,4 +7,6 @@
 
 void GSoundOptionsStateSet();
 
+void GSoundOptionsStateDestroy();
+
 #endif //GSOUNDOPTIONSSTATE_H

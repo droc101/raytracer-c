@@ -18,7 +18,7 @@
 #include "Options/GSoundOptionsState.h"
 #include "Options/GVideoOptionsState.h"
 
-UiStack *optionsStack;
+UiStack *optionsStack = NULL;
 bool optionsStateInGame = false;
 
 void BtnOptionsBack()
@@ -90,4 +90,13 @@ void GOptionsStateSet(const bool inGame)
 					  NULL,
 					  OPTIONS_STATE,
 					  GOptionsStateRender); // Fixed update is not needed for this state
+}
+
+void GOptionsStateDestroy()
+{
+	if (optionsStack != NULL)
+	{
+		DestroyUiStack(optionsStack);
+		optionsStack = NULL;
+	}
 }

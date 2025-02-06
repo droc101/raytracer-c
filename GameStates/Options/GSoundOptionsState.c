@@ -15,7 +15,7 @@
 #include "../../Structs/UI/UiStack.h"
 #include "../GOptionsState.h"
 
-UiStack *soundOptionsStack;
+UiStack *soundOptionsStack = NULL;
 
 void BtnSoundOptionsBack()
 {
@@ -128,4 +128,13 @@ void GSoundOptionsStateSet()
 					  NULL,
 					  SOUND_OPTIONS_STATE,
 					  GSoundOptionsStateRender); // Fixed update is not needed for this state
+}
+
+void GSoundOptionsStateDestroy()
+{
+	if (soundOptionsStack != NULL)
+	{
+		DestroyUiStack(soundOptionsStack);
+		soundOptionsStack = NULL;
+	}
 }

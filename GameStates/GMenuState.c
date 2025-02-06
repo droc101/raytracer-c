@@ -16,7 +16,7 @@
 #include "GLevelSelectState.h"
 #include "GOptionsState.h"
 
-UiStack *menuStack;
+UiStack *menuStack = NULL;
 
 void StartGame()
 {
@@ -101,4 +101,13 @@ void GMenuStateSet()
 					  NULL,
 					  MENU_STATE,
 					  GMenuStateRender); // Fixed update is not needed for this state
+}
+
+void GMenuStateDestroy()
+{
+	if (menuStack != NULL)
+	{
+		DestroyUiStack(menuStack);
+		menuStack = NULL;
+	}
 }

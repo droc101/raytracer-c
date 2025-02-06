@@ -126,3 +126,12 @@ void GPauseStateSet()
 					  PAUSE_STATE,
 					  GPauseStateRender); // Fixed update is not needed for this state
 }
+
+void GPauseStateDestroy()
+{
+	if (pauseStack != NULL)
+	{
+		DestroyUiStack(pauseStack);
+		pauseStack = NULL;
+	}
+}

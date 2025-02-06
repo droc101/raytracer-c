@@ -199,6 +199,8 @@ Asset *DecompressAsset(const char *relPath)
 	ListAdd(&assetCacheNames, data);
 	ListAdd(&assetCacheData, assetStruct);
 
+	free(asset - 16);
+
 	return assetStruct;
 }
 

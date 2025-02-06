@@ -7,4 +7,6 @@
 
 void GMenuStateSet();
 
+void GMenuStateDestroy();
+
 #endif //GAME_GMENUSTATE_H
