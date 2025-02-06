@@ -68,7 +68,7 @@ void InitSDL()
 #ifdef __LINUX__
 	if (GetState()->options.preferWayland)
 	{
-		SDL_SetHint(SDL_HINT_VIDEODRIVER, "wayland,x11");
+		SDL_SetHint(SDL_HINT_VIDEODRIVER, "wayland,x11"); // TODO: seems to be ignored with sdl2-compat
 	} else
 	{
 		SDL_SetHint(SDL_HINT_VIDEODRIVER, "x11,wayland");
@@ -80,6 +80,8 @@ void InitSDL()
 		LogError("SDL_Init Error: %s\n", SDL_GetError());
 		Error("Failed to initialize SDL");
 	}
+
+	LogInfo("SDL Video Driver: %s\n", SDL_GetCurrentVideoDriver());
 }
 
 /**
