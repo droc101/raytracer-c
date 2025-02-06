@@ -23,47 +23,60 @@ typedef enum
 typedef struct DoorData
 {
 	DoorState state;
-	double openingTime;
+	bool playerColliding;
+	double animationTime;
+	b2ShapeId sensorId;
 } DoorData;
 
 void DoorSetState(const Actor *door, const DoorState state)
 {
 	DoorData *data = door->extra_data;
 	data->state = state;
-	data->openingTime = 0;
+	data->animationTime = 0;
 }
 
 void DoorInit(Actor *this, const b2WorldId worldId)
 {
-	const Vector2 wallOffset = Vector2Normalize((Vector2){cosf(this->rotation), sinf(this->rotation)});
-	this->actorWall = malloc(sizeof(Wall));
-	CheckAlloc(this->actorWall);
-	this->actorWall->a = (Vector2){this->position.x + wallOffset.x, this->position.y + wallOffset.y};
-	this->actorWall->b = this->position;
-	strncpy(this->actorWall->tex, TEXTURE("actor_door"), 32);
-	this->actorWall->uvScale = 1.0f;
-	this->actorWall->uvOffset = 0.0f;
-	this->actorWall->height = 1.0f;
-
-	b2BodyDef bodyDef = b2DefaultBodyDef();
-	bodyDef.type = b2_kinematicBody;
-	bodyDef.position = this->actorWall->a;
-	this->bodyId = b2CreateBody(worldId, &bodyDef);
-	this->actorWall->bodyId = this->bodyId;
-	const b2Segment shape = {
-		.point2 = {-wallOffset.x, -wallOffset.y},
-	};
-	b2ShapeDef shapeDef = b2DefaultShapeDef();
-	shapeDef.friction = 0;
-	b2CreateSegmentShape(this->bodyId, &shapeDef, &shape);
-
 	this->showShadow = false;
 	this->extra_data = malloc(sizeof(DoorData));
 	CheckAlloc(this->extra_data);
 	memset(this->extra_data, 0, sizeof(DoorData));
 	DoorData *data = this->extra_data;
 	data->state = DOOR_CLOSED;
-	data->openingTime = 0;
+	data->animationTime = 0;
+
+	const Vector2 wallOffset = Vector2Normalize((Vector2){-cosf(this->rotation), -sinf(this->rotation)});
+	this->actorWall = malloc(sizeof(Wall));
+	CheckAlloc(this->actorWall);
+	this->actorWall->a = (Vector2){this->position.x - wallOffset.x, this->position.y - wallOffset.y};
+	this->actorWall->b = this->position;
+	strncpy(this->actorWall->tex, TEXTURE("actor_door"), 32);
+	this->actorWall->uvScale = 1.0f;
+	this->actorWall->uvOffset = 0.0f;
+	this->actorWall->height = 1.0f;
+
+	b2BodyDef doorBodyDef = b2DefaultBodyDef();
+	doorBodyDef.type = b2_kinematicBody;
+	doorBodyDef.position = this->actorWall->a;
+	this->bodyId = b2CreateBody(worldId, &doorBodyDef);
+	const b2Segment doorShape = {
+		.point2 = {wallOffset.x, wallOffset.y},
+	};
+	b2ShapeDef doorShapeDef = b2DefaultShapeDef();
+	doorShapeDef.friction = 0;
+	b2CreateSegmentShape(this->bodyId, &doorShapeDef, &doorShape);
+
+	b2BodyDef sensorBodyDef = b2DefaultBodyDef();
+	sensorBodyDef.type = b2_staticBody;
+	sensorBodyDef.position = Vector2Scale(Vector2Add(this->actorWall->a, this->actorWall->b), 0.5f);
+	sensorBodyDef.enableSleep = false;
+	const b2BodyId sensorBody = b2CreateBody(worldId, &sensorBodyDef);
+	const b2Circle sensorShape = {
+		.radius = 1,
+	};
+	b2ShapeDef sensorShapeDef = b2DefaultShapeDef();
+	sensorShapeDef.isSensor = true;
+	data->sensorId = b2CreateCircleShape(sensorBody, &sensorShapeDef, &sensorShape);
 }
 
 // ReSharper disable once CppParameterMayBeConstPtrOrRef
@@ -72,13 +85,34 @@ void DoorUpdate(Actor *this, const double delta)
 	this->position = b2Body_GetPosition(this->bodyId);
 	DoorData *data = this->extra_data;
 
-	const Vector2 wallCenter = Vector2Scale(Vector2Add(this->actorWall->a, this->actorWall->b), 0.5f);
-	const bool playerCollide = CollideCylinder(wallCenter, 1.0, GetState()->level->player.pos);
+	const uint32_t sensorShapeIdIndex = data->sensorId.index1;
+	const b2SensorEvents sensorEvents = b2World_GetSensorEvents(GetState()->level->worldId);
+	if (data->playerColliding)
+	{
+		for (int i = 0; i < sensorEvents.endCount; i++)
+		{
+			const b2SensorEndTouchEvent event = sensorEvents.endEvents[i];
+			if (event.sensorShapeId.index1 == sensorShapeIdIndex)
+			{
+				data->playerColliding = false;
+			}
+		}
+	} else
+	{
+		for (int i = 0; i < sensorEvents.beginCount; i++)
+		{
+			const b2SensorBeginTouchEvent event = sensorEvents.beginEvents[i];
+			if (event.sensorShapeId.index1 == sensorShapeIdIndex)
+			{
+				data->playerColliding = true;
+			}
+		}
+	}
 
 	switch (data->state)
 	{
 		case DOOR_CLOSED:
-			if (playerCollide)
+			if (data->playerColliding)
 			{
 				b2Body_SetLinearVelocity(this->bodyId,
 										 Vector2Normalize((Vector2){-cosf(this->rotation), -sinf(this->rotation)}));
@@ -86,7 +120,7 @@ void DoorUpdate(Actor *this, const double delta)
 			}
 			break;
 		case DOOR_OPEN:
-			if (data->openingTime >= 1 && !playerCollide)
+			if (data->animationTime >= 1 && !data->playerColliding)
 			{
 				b2Body_SetLinearVelocity(this->bodyId,
 										 Vector2Normalize((Vector2){cosf(this->rotation), sinf(this->rotation)}));
@@ -94,7 +128,7 @@ void DoorUpdate(Actor *this, const double delta)
 			}
 			break;
 		case DOOR_OPENING:
-			if (data->openingTime >= 1)
+			if (data->animationTime >= 1)
 			{
 				b2Body_SetLinearVelocity(this->bodyId, (Vector2){0, 0});
 				b2Body_SetTransform(this->bodyId, this->actorWall->b, b2MakeRot(0));
@@ -102,7 +136,13 @@ void DoorUpdate(Actor *this, const double delta)
 			}
 			break;
 		case DOOR_CLOSING:
-			if (data->openingTime >= 1)
+			if (data->playerColliding)
+			{
+				b2Body_SetLinearVelocity(this->bodyId,
+										 Vector2Normalize((Vector2){-cosf(this->rotation), -sinf(this->rotation)}));
+				data->state = DOOR_OPENING; // Set manually in order to not reset data->animationTime
+				data->animationTime = 1 - data->animationTime;
+			} else if (data->animationTime >= 1)
 			{
 				b2Body_SetLinearVelocity(this->bodyId, (Vector2){0, 0});
 				b2Body_SetTransform(this->bodyId, this->actorWall->a, b2MakeRot(0));
@@ -113,7 +153,7 @@ void DoorUpdate(Actor *this, const double delta)
 			LogWarning("Invalid door state: %d", data->state);
 			break;
 	}
-	data->openingTime += delta / PHYSICS_TARGET_TPS;
+	data->animationTime += delta / PHYSICS_TARGET_TPS;
 }
 
 // ReSharper disable once CppParameterMayBeConstPtrOrRef
