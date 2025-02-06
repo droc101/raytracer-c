@@ -104,8 +104,21 @@ void InitAudio()
  */
 void WindowAndRenderInit()
 {
+	const size_t title_len = strlen(GAME_TITLE) + strlen(" - Vulkan") + 1;
+	char title[title_len];
+	switch (currentRenderer) {
+		case RENDERER_OPENGL:
+			snprintf(title, title_len, "%s - OpenGL", GAME_TITLE);
+			break;
+		case RENDERER_VULKAN:
+			snprintf(title, title_len, "%s - Vulkan", GAME_TITLE);
+			break;
+		default:
+			snprintf(title, title_len, "%s", GAME_TITLE);
+			break;
+	}
 	const Uint32 rendererFlags = currentRenderer == RENDERER_OPENGL ? SDL_WINDOW_OPENGL : SDL_WINDOW_VULKAN;
-	SDL_Window *window = SDL_CreateWindow(GAME_TITLE,
+	SDL_Window *window = SDL_CreateWindow(&title[0],
 										  SDL_WINDOWPOS_UNDEFINED,
 										  SDL_WINDOWPOS_UNDEFINED,
 										  DEF_WIDTH,
