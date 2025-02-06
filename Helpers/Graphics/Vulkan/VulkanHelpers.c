@@ -720,24 +720,28 @@ void LoadActorWalls(const Level *level, ActorVertex *vertices, uint32_t *indices
 		vertices[4 * wallCount].z = startVertex[1];
 		vertices[4 * wallCount].u = startUV[0];
 		vertices[4 * wallCount].v = startUV[1];
+		vertices[4 * wallCount].nz = NAN;
 
 		vertices[4 * wallCount + 1].x = endVertex[0];
 		vertices[4 * wallCount + 1].y = halfHeight;
 		vertices[4 * wallCount + 1].z = endVertex[1];
 		vertices[4 * wallCount + 1].u = endUV[0];
 		vertices[4 * wallCount + 1].v = startUV[1];
+		vertices[4 * wallCount + 1].nz = NAN;
 
 		vertices[4 * wallCount + 2].x = endVertex[0];
 		vertices[4 * wallCount + 2].y = -halfHeight;
 		vertices[4 * wallCount + 2].z = endVertex[1];
 		vertices[4 * wallCount + 2].u = endUV[0];
 		vertices[4 * wallCount + 2].v = endUV[1];
+		vertices[4 * wallCount + 2].nz = NAN;
 
 		vertices[4 * wallCount + 3].x = startVertex[0];
 		vertices[4 * wallCount + 3].y = -halfHeight;
 		vertices[4 * wallCount + 3].z = startVertex[1];
 		vertices[4 * wallCount + 3].u = startUV[0];
 		vertices[4 * wallCount + 3].v = endUV[1];
+		vertices[4 * wallCount + 3].nz = NAN;
 
 		indices[6 * wallCount] = wallCount * 4;
 		indices[6 * wallCount + 1] = wallCount * 4 + 1;
@@ -783,34 +787,6 @@ void LoadActorInstanceData(const Level *level,
 			memcpy(offsetInstanceData[modelCounts[index]].transform, transformMatrix, sizeof(mat4));
 			offsetInstanceData[modelCounts[index]].textureIndex = TextureIndex(actor->actorModelTexture);
 
-			if (actor->showShadow)
-			{
-				shadowVertices[4 * shadowCount].x = (float)actor->position.x - 0.5f * actor->shadowSize;
-				shadowVertices[4 * shadowCount].y = -0.49f;
-				shadowVertices[4 * shadowCount].z = (float)actor->position.y - 0.5f * actor->shadowSize;
-
-				shadowVertices[4 * shadowCount + 1].x = (float)actor->position.x + 0.5f * actor->shadowSize;
-				shadowVertices[4 * shadowCount + 1].y = -0.49f;
-				shadowVertices[4 * shadowCount + 1].z = (float)actor->position.y - 0.5f * actor->shadowSize;
-
-				shadowVertices[4 * shadowCount + 2].x = (float)actor->position.x + 0.5f * actor->shadowSize;
-				shadowVertices[4 * shadowCount + 2].y = -0.49f;
-				shadowVertices[4 * shadowCount + 2].z = (float)actor->position.y + 0.5f * actor->shadowSize;
-
-				shadowVertices[4 * shadowCount + 3].x = (float)actor->position.x - 0.5f * actor->shadowSize;
-				shadowVertices[4 * shadowCount + 3].y = -0.49f;
-				shadowVertices[4 * shadowCount + 3].z = (float)actor->position.y + 0.5f * actor->shadowSize;
-
-				shadowIndices[6 * shadowCount] = shadowCount * 4;
-				shadowIndices[6 * shadowCount + 1] = shadowCount * 4 + 1;
-				shadowIndices[6 * shadowCount + 2] = shadowCount * 4 + 2;
-				shadowIndices[6 * shadowCount + 3] = shadowCount * 4;
-				shadowIndices[6 * shadowCount + 4] = shadowCount * 4 + 2;
-				shadowIndices[6 * shadowCount + 5] = shadowCount * 4 + 3;
-
-				shadowCount++;
-			}
-
 			modelCounts[index]++;
 		} else if (actor->actorWall)
 		{
@@ -822,35 +798,34 @@ void LoadActorInstanceData(const Level *level,
 			offsetInstanceData[wallCount].textureIndex = TextureIndex(wall->tex);
 			offsetInstanceData[wallCount].wallAngle = (float)actor->rotation;
 
-			if (actor->showShadow)
-			{
-				shadowVertices[4 * shadowCount].x = (float)actor->position.x - 0.5f * actor->shadowSize;
-				shadowVertices[4 * shadowCount].y = -0.49f;
-				shadowVertices[4 * shadowCount].z = (float)actor->position.y - 0.5f * actor->shadowSize;
-
-				shadowVertices[4 * shadowCount + 1].x = (float)actor->position.x + 0.5f * actor->shadowSize;
-				shadowVertices[4 * shadowCount + 1].y = -0.49f;
-				shadowVertices[4 * shadowCount + 1].z = (float)actor->position.y - 0.5f * actor->shadowSize;
-
-				shadowVertices[4 * shadowCount + 2].x = (float)actor->position.x + 0.5f * actor->shadowSize;
-				shadowVertices[4 * shadowCount + 2].y = -0.49f;
-				shadowVertices[4 * shadowCount + 2].z = (float)actor->position.y + 0.5f * actor->shadowSize;
-
-				shadowVertices[4 * shadowCount + 3].x = (float)actor->position.x - 0.5f * actor->shadowSize;
-				shadowVertices[4 * shadowCount + 3].y = -0.49f;
-				shadowVertices[4 * shadowCount + 3].z = (float)actor->position.y + 0.5f * actor->shadowSize;
-
-				shadowIndices[6 * shadowCount] = shadowCount * 4;
-				shadowIndices[6 * shadowCount + 1] = shadowCount * 4 + 1;
-				shadowIndices[6 * shadowCount + 2] = shadowCount * 4 + 2;
-				shadowIndices[6 * shadowCount + 3] = shadowCount * 4;
-				shadowIndices[6 * shadowCount + 4] = shadowCount * 4 + 2;
-				shadowIndices[6 * shadowCount + 5] = shadowCount * 4 + 3;
-
-				shadowCount++;
-			}
-
 			wallCount++;
+		}
+		if (actor->showShadow)
+		{
+			shadowVertices[4 * shadowCount].x = (float)actor->position.x - 0.5f * actor->shadowSize;
+			shadowVertices[4 * shadowCount].y = -0.49f;
+			shadowVertices[4 * shadowCount].z = (float)actor->position.y - 0.5f * actor->shadowSize;
+
+			shadowVertices[4 * shadowCount + 1].x = (float)actor->position.x + 0.5f * actor->shadowSize;
+			shadowVertices[4 * shadowCount + 1].y = -0.49f;
+			shadowVertices[4 * shadowCount + 1].z = (float)actor->position.y - 0.5f * actor->shadowSize;
+
+			shadowVertices[4 * shadowCount + 2].x = (float)actor->position.x + 0.5f * actor->shadowSize;
+			shadowVertices[4 * shadowCount + 2].y = -0.49f;
+			shadowVertices[4 * shadowCount + 2].z = (float)actor->position.y + 0.5f * actor->shadowSize;
+
+			shadowVertices[4 * shadowCount + 3].x = (float)actor->position.x - 0.5f * actor->shadowSize;
+			shadowVertices[4 * shadowCount + 3].y = -0.49f;
+			shadowVertices[4 * shadowCount + 3].z = (float)actor->position.y + 0.5f * actor->shadowSize;
+
+			shadowIndices[6 * shadowCount] = shadowCount * 4;
+			shadowIndices[6 * shadowCount + 1] = shadowCount * 4 + 1;
+			shadowIndices[6 * shadowCount + 2] = shadowCount * 4 + 2;
+			shadowIndices[6 * shadowCount + 3] = shadowCount * 4;
+			shadowIndices[6 * shadowCount + 4] = shadowCount * 4 + 2;
+			shadowIndices[6 * shadowCount + 5] = shadowCount * 4 + 3;
+
+			shadowCount++;
 		}
 	}
 	free(modelCounts);
