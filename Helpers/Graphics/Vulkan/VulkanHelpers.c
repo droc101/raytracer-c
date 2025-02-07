@@ -707,13 +707,10 @@ void LoadActorWalls(const Level *level, ActorVertex *vertices, uint32_t *indices
 		}
 		const Wall *wall = actor->actorWall;
 		const float halfHeight = wall->height / 2.0f;
-		const float dx = wall->b.x - wall->a.x;
-		const float dy = wall->b.y - wall->a.y;
-		const float length = sqrtf(dx * dx + dy * dy);
-		const vec2 startVertex = {dx * 0.5f + actor->position.x, dy * 0.5f + actor->position.y};
-		const vec2 endVertex = {startVertex[0] - dx, startVertex[1] - dy};
+		const vec2 startVertex = {wall->dx * 0.5f + actor->position.x, wall->dy * 0.5f + actor->position.y};
+		const vec2 endVertex = {startVertex[0] - wall->dx, startVertex[1] - wall->dy};
 		const vec2 startUV = {wall->uvOffset, 0};
-		const vec2 endUV = {wall->uvScale * length + wall->uvOffset, 1};
+		const vec2 endUV = {wall->uvScale * wall->length + wall->uvOffset, 1};
 
 		vertices[4 * wallCount].x = startVertex[0];
 		vertices[4 * wallCount].y = halfHeight + actor->yPosition;
@@ -781,8 +778,7 @@ void LoadActorInstanceData(const Level *level,
 		if (actor->actorModel)
 		{
 			mat4 transformMatrix = GLM_MAT4_IDENTITY_INIT;
-			glm_translate(transformMatrix, (vec3){actor->position.x, actor->yPosition, actor->position.y});
-			glm_rotate(transformMatrix, -actor->rotation, (vec3){0, 1, 0});
+			ActorTransformMatrix(actor, &transformMatrix);
 			const size_t index = ListFind(buffers.actors.models.loadedModelIds, (void *)actor->actorModel->id);
 			ActorInstanceData *offsetInstanceData = (void *)instanceData + offsets[index];
 			memcpy(offsetInstanceData[modelCounts[index]].transform, transformMatrix, sizeof(mat4));
@@ -796,7 +792,7 @@ void LoadActorInstanceData(const Level *level,
 													offsets[buffers.actors.models.loadedModelIds.length];
 			memcpy(offsetInstanceData[wallCount].transform, GLM_MAT4_IDENTITY, sizeof(mat4));
 			offsetInstanceData[wallCount].textureIndex = TextureIndex(wall->tex);
-			offsetInstanceData[wallCount].wallAngle = actor->rotation;
+			offsetInstanceData[wallCount].wallAngle = actor->actorWall->angle;
 
 			wallCount++;
 		}

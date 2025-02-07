@@ -30,6 +30,7 @@ void GoalInit(Actor *this, const b2WorldId worldId)
 	this->actorWall->uvScale = 1.0f;
 	this->actorWall->uvOffset = 0.0f;
 	this->actorWall->height = 1.0f;
+	WallBake(this->actorWall);
 
 	b2BodyDef sensorBodyDef = b2DefaultBodyDef();
 	sensorBodyDef.type = b2_staticBody;
@@ -50,6 +51,7 @@ void GoalUpdate(Actor *this, double /*delta*/)
 	const float rotation = atan2f(playerPosition.y - this->position.y, playerPosition.x - this->position.x) + PIf / 2;
 	this->actorWall->a = v2(this->position.x - 0.5f * cosf(rotation), this->position.y - 0.5f * sinf(rotation));
 	this->actorWall->b = v2(this->position.x + 0.5f * cosf(rotation), this->position.y + 0.5f * sinf(rotation));
+	WallBake(this->actorWall);
 
 	const b2SensorEvents sensorEvents = b2World_GetSensorEvents(GetState()->level->worldId);
 	for (int i = 0; i < sensorEvents.beginCount; i++)

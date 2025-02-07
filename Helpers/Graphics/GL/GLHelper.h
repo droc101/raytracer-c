@@ -126,12 +126,9 @@ void GL_ClearColor(uint color);
 /**
  * Draw a wall in 3D
  * @param w The wall to draw
- * @param mdl The model -> world matrix
- * @param cam The camera
- * @param l The level
  * @note This expects 3D mode to be enabled
  */
-void GL_DrawWall(const Wall *w, const mat4 mdl, const Camera *cam, const Level *l);
+void GL_DrawWall(const Wall *w);
 
 /**
  * Draw the floor in 3D

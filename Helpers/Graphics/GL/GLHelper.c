@@ -27,7 +27,7 @@ SDL_GLContext ctx;
 
 GL_Shader *uiTextured;
 GL_Shader *uiColored;
-GL_Shader *wall;
+GL_Shader *wallShader;
 GL_Shader *floorAndCeiling;
 GL_Shader *shadow;
 GL_Shader *sky;
@@ -136,14 +136,21 @@ bool GL_Init(SDL_Window *wnd)
 
 	uiTextured = GL_ConstructShaderFromAssets(OGL_SHADER("GL_hud_textured_f"), OGL_SHADER("GL_hud_textured_v"));
 	uiColored = GL_ConstructShaderFromAssets(OGL_SHADER("GL_hud_color_f"), OGL_SHADER("GL_hud_color_v"));
-	wall = GL_ConstructShaderFromAssets(OGL_SHADER("GL_wall_f"), OGL_SHADER("GL_wall_v"));
+	wallShader = GL_ConstructShaderFromAssets(OGL_SHADER("GL_wall_f"), OGL_SHADER("GL_wall_v"));
 	floorAndCeiling = GL_ConstructShaderFromAssets(OGL_SHADER("GL_floor_f"), OGL_SHADER("GL_floor_v"));
 	shadow = GL_ConstructShaderFromAssets(OGL_SHADER("GL_shadow_f"), OGL_SHADER("GL_shadow_v"));
 	sky = GL_ConstructShaderFromAssets(OGL_SHADER("GL_sky_f"), OGL_SHADER("GL_sky_v"));
 	modelShaded = GL_ConstructShaderFromAssets(OGL_SHADER("GL_model_shaded_f"), OGL_SHADER("GL_model_shaded_v"));
 	modelUnshaded = GL_ConstructShaderFromAssets(OGL_SHADER("GL_model_unshaded_f"), OGL_SHADER("GL_model_unshaded_v"));
 
-	if (!uiTextured || !uiColored || !wall || !floorAndCeiling || !shadow || !sky || !modelShaded || !modelUnshaded)
+	if (!uiTextured ||
+		!uiColored ||
+		!wallShader ||
+		!floorAndCeiling ||
+		!shadow ||
+		!sky ||
+		!modelShaded ||
+		!modelUnshaded)
 	{
 		GL_Error("Failed to compile shaders");
 		return false;
@@ -301,7 +308,7 @@ void GL_DestroyGL()
 {
 	GL_DestroyShader(uiTextured);
 	GL_DestroyShader(uiColored);
-	GL_DestroyShader(wall);
+	GL_DestroyShader(wallShader);
 	GL_DestroyShader(floorAndCeiling);
 	GL_DestroyShader(shadow);
 	GL_DestroyShader(sky);
@@ -659,20 +666,15 @@ void GL_SetLevelParams(mat4 *mvp, const Level *l)
 					   mvp[0][0]); // world -> screen
 }
 
-void GL_DrawWall(const Wall *w, const mat4 mdl, const Camera *, const Level *)
+void GL_DrawWall(const Wall *w)
 {
-	glUseProgram(wall->program);
+	glUseProgram(wallShader->program);
 
 	glBindBufferBase(GL_UNIFORM_BUFFER, 2, sharedUniformBuffer);
 
 	GL_LoadTextureFromAsset(w->tex);
 
-	glUniformMatrix4fv(glGetUniformLocation(wall->program, "MODEL_WORLD_MATRIX"),
-					   1,
-					   GL_FALSE,
-					   mdl[0]); // model -> world
-
-	glUniform1f(glGetUniformLocation(wall->program, "wall_angle"), (float)w->angle);
+	glUniform1f(glGetUniformLocation(wallShader->program, "wall_angle"), (float)w->angle);
 
 	float vertices[4][5] = {
 		// X Y Z U V
@@ -699,11 +701,77 @@ void GL_DrawWall(const Wall *w, const mat4 mdl, const Camera *, const Level *)
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glBuffer->ebo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-	const GLint posAttrLoc = glGetAttribLocation(wall->program, "VERTEX");
+	const GLint posAttrLoc = glGetAttribLocation(wallShader->program, "VERTEX");
 	glVertexAttribPointer(posAttrLoc, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void *)0);
 	glEnableVertexAttribArray(posAttrLoc);
 
-	const GLint texAttrLoc = glGetAttribLocation(wall->program, "VERTEX_UV");
+	const GLint texAttrLoc = glGetAttribLocation(wallShader->program, "VERTEX_UV");
+	glVertexAttribPointer(texAttrLoc, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void *)(3 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(texAttrLoc);
+
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
+}
+
+void GL_DrawActorWall(const Actor *actor)
+{
+	const Wall *wall = actor->actorWall;
+
+	glUseProgram(wallShader->program);
+
+	glBindBufferBase(GL_UNIFORM_BUFFER, 2, sharedUniformBuffer);
+
+	GL_LoadTextureFromAsset(wall->tex);
+
+	glUniform1f(glGetUniformLocation(wallShader->program, "wall_angle"), wall->angle);
+
+
+	const float vertices[4][5] = {
+		// X Y Z U V
+		{
+			0.5f * wall->dx + actor->position.x,
+			0.5f * wall->height + actor->yPosition,
+			0.5f * wall->dy + actor->position.y,
+			wall->uvOffset,
+			0.0f,
+		},
+		{
+			-0.5f * wall->dx + actor->position.x,
+			0.5f * wall->height + actor->yPosition,
+			-0.5f * wall->dy + actor->position.y,
+			wall->length * wall->uvScale + wall->uvOffset,
+			0.0f,
+		},
+		{
+			-0.5f * wall->dx + actor->position.x,
+			-0.5f * wall->height + actor->yPosition,
+			-0.5f * wall->dy + actor->position.y,
+			wall->length * wall->uvScale + wall->uvOffset,
+			1.0f,
+		},
+		{
+			0.5f * wall->dx + actor->position.x,
+			-0.5f * wall->height + actor->yPosition,
+			0.5f * wall->dy + actor->position.y,
+			wall->uvOffset,
+			1.0f,
+		},
+	};
+
+	const uint indices[] = {0, 1, 2, 0, 2, 3};
+
+	glBindVertexArray(glBuffer->vao);
+
+	glBindBuffer(GL_ARRAY_BUFFER, glBuffer->vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glBuffer->ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+	const GLint posAttrLoc = glGetAttribLocation(wallShader->program, "VERTEX");
+	glVertexAttribPointer(posAttrLoc, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void *)0);
+	glEnableVertexAttribArray(posAttrLoc);
+
+	const GLint texAttrLoc = glGetAttribLocation(wallShader->program, "VERTEX_UV");
 	glVertexAttribPointer(texAttrLoc, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void *)(3 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(texAttrLoc);
 
@@ -924,7 +992,6 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
 	//glLineWidth(2);
 
 	mat4 *WORLD_VIEW_MATRIX = GL_GetMatrix(cam);
-	const mat4 IDENTITY = GLM_MAT4_IDENTITY_INIT;
 	mat4 SKY_MODEL_WORLD = GLM_MAT4_IDENTITY_INIT;
 	glm_translated(SKY_MODEL_WORLD, (vec3){(float)l->player.pos.x, 0, (float)l->player.pos.y});
 
@@ -966,7 +1033,7 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
 
 	for (int i = 0; i < l->walls.length; i++)
 	{
-		GL_DrawWall(ListGet(l->walls, i), IDENTITY, cam, l);
+		GL_DrawWall(ListGet(l->walls, i));
 	}
 
 	for (int i = 0; i < l->actors.length; i++)
@@ -980,11 +1047,7 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
 			{
 				continue;
 			}
-			Wall w;
-			memcpy(&w, actor->actorWall, sizeof(Wall));
-			WallBake(&w);
-			w.angle += actor->rotation;
-			GL_DrawWall(&w, actor_xfm, cam, l);
+			GL_DrawActorWall(actor);
 		} else
 		{
 			GL_RenderModel(actor->actorModel, actor_xfm, actor->actorModelTexture, SHADER_SHADED);

@@ -30,12 +30,12 @@ Wall *CreateWall(const Vector2 a,
 	bodyDef.type = b2_staticBody;
 	bodyDef.position = a;
 	w->bodyId = b2CreateBody(worldId, &bodyDef);
-	const float dx = b.x - a.x;
-	const float dy = b.y - a.y;
-	if (dx != 0 || dy != 0)
+	w->dx = w->b.x - w->a.x;
+	w->dy = w->b.y - w->a.y;
+	if (w->dx != 0 || w->dy != 0)
 	{
 		const b2Segment shape = {
-			.point2 = {dx, dy},
+			.point2 = {w->dx, w->dy},
 		};
 		b2ShapeDef shapeDef = b2DefaultShapeDef();
 		shapeDef.friction = 0;
@@ -47,8 +47,8 @@ Wall *CreateWall(const Vector2 a,
 
 void WallBake(Wall *w)
 {
-	const float dx = w->b.x - w->a.x;
-	const float dy = w->b.y - w->a.y;
-	w->length = sqrtf(dx * dx + dy * dy);
+	w->dx = w->b.x - w->a.x;
+	w->dy = w->b.y - w->a.y;
+	w->length = sqrtf(w->dx * w->dx + w->dy * w->dy);
 	w->angle = atan2f(w->b.y - w->a.y, w->b.x - w->a.x);
 }

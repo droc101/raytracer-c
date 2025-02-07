@@ -235,9 +235,9 @@ struct Wall
 	/// The angle of the wall (Call @c WallBake to update)
 	float angle;
 	/// The change in x over the length of the wall, calculated with @code Wall.b.x - Wall.a.x@endcode
-	double dx;
+	float dx;
 	/// The change in y over the length of the wall, calculated with @code Wall.b.y - Wall.a.y@endcode
-	double dy;
+	float dy;
 	/// The X scale of the texture
 	float uvScale;
 	/// The X offset of the texture

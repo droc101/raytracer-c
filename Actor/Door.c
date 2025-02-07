@@ -11,6 +11,7 @@
 #include "../Helpers/Core/Logging.h"
 #include "../Structs/GlobalState.h"
 #include "../Structs/Vector2.h"
+#include "../Structs/Wall.h"
 
 typedef enum
 {
@@ -54,6 +55,7 @@ void DoorInit(Actor *this, const b2WorldId worldId)
 	this->actorWall->uvScale = 1.0f;
 	this->actorWall->uvOffset = 0.0f;
 	this->actorWall->height = 1.0f;
+	WallBake(this->actorWall);
 
 	b2BodyDef doorBodyDef = b2DefaultBodyDef();
 	doorBodyDef.type = b2_kinematicBody;
