@@ -34,7 +34,8 @@ Level *CreateLevel()
 		.center = l->player.pos,
 		.radius = 0.25f,
 	};
-	const b2ShapeDef playerShapeDef = b2DefaultShapeDef();
+	b2ShapeDef playerShapeDef = b2DefaultShapeDef();
+	playerShapeDef.filter.categoryBits = COLLISION_GROUP_PLAYER;
 	b2CreateCircleShape(l->player.bodyId, &playerShapeDef, &playerShape);
 	l->hasCeiling = false;
 	strncpy(l->ceilOrSkyTex, "texture/level_sky_test.gtex", 28);
@@ -50,13 +51,13 @@ Level *CreateLevel()
 
 void DestroyLevel(Level *l)
 {
-	b2DestroyWorld(l->worldId);
-
 	for (int i = 0; i < l->actors.length; i++)
 	{
 		Actor *a = ListGet(l->actors, i);
 		FreeActor(a);
 	}
+
+	b2DestroyWorld(l->worldId);
 
 	ListAndContentsFree(&l->walls, false);
 	ListAndContentsFree(&l->triggers, false);

@@ -710,31 +710,31 @@ void LoadActorWalls(const Level *level, ActorVertex *vertices, uint32_t *indices
 		const float dx = wall->b.x - wall->a.x;
 		const float dy = wall->b.y - wall->a.y;
 		const float length = sqrtf(dx * dx + dy * dy);
-		const vec2 startVertex = {actor->position.x, actor->position.y};
-		const vec2 endVertex = {startVertex[0] + dx, startVertex[1] + dy};
+		const vec2 startVertex = {dx * 0.5f + actor->position.x, dy * 0.5f + actor->position.y};
+		const vec2 endVertex = {startVertex[0] - dx, startVertex[1] - dy};
 		const vec2 startUV = {wall->uvOffset, 0};
 		const vec2 endUV = {wall->uvScale * length + wall->uvOffset, 1};
 
 		vertices[4 * wallCount].x = startVertex[0];
-		vertices[4 * wallCount].y = halfHeight;
+		vertices[4 * wallCount].y = halfHeight + actor->yPosition;
 		vertices[4 * wallCount].z = startVertex[1];
 		vertices[4 * wallCount].u = startUV[0];
 		vertices[4 * wallCount].v = startUV[1];
 
 		vertices[4 * wallCount + 1].x = endVertex[0];
-		vertices[4 * wallCount + 1].y = halfHeight;
+		vertices[4 * wallCount + 1].y = halfHeight + actor->yPosition;
 		vertices[4 * wallCount + 1].z = endVertex[1];
 		vertices[4 * wallCount + 1].u = endUV[0];
 		vertices[4 * wallCount + 1].v = startUV[1];
 
 		vertices[4 * wallCount + 2].x = endVertex[0];
-		vertices[4 * wallCount + 2].y = -halfHeight;
+		vertices[4 * wallCount + 2].y = -halfHeight + actor->yPosition;
 		vertices[4 * wallCount + 2].z = endVertex[1];
 		vertices[4 * wallCount + 2].u = endUV[0];
 		vertices[4 * wallCount + 2].v = endUV[1];
 
 		vertices[4 * wallCount + 3].x = startVertex[0];
-		vertices[4 * wallCount + 3].y = -halfHeight;
+		vertices[4 * wallCount + 3].y = -halfHeight + actor->yPosition;
 		vertices[4 * wallCount + 3].z = startVertex[1];
 		vertices[4 * wallCount + 3].u = startUV[0];
 		vertices[4 * wallCount + 3].v = endUV[1];

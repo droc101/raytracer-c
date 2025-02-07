@@ -180,6 +180,13 @@ enum TriggerFlag
 	TRIGGER_FLAG_ONE_SHOT = 1
 };
 
+enum CollisionGroups
+{
+	COLLISION_GROUP_DEFAULT = 0x00000001,
+	COLLISION_GROUP_PLAYER = 0x00000002,
+	COLLISION_GROUP_ACTOR = 0x00000004,
+};
+
 #pragma endregion
 
 #pragma region Struct definitions
@@ -456,7 +463,7 @@ struct GlobalState
 // Actor (interactable/moving wall) struct
 struct Actor
 {
-	/// The position of the actor
+	/// The position of the actor (centered)
 	Vector2 position;
 	/// The rotation of the actor
 	float rotation;

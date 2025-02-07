@@ -30,6 +30,7 @@ void TestActorInit(Actor *this, const b2WorldId worldId)
 	};
 	b2ShapeDef shapeDef = b2DefaultShapeDef();
 	shapeDef.density = 32768;
+	shapeDef.filter.categoryBits = COLLISION_GROUP_ACTOR;
 	b2CreateCircleShape(this->bodyId, &shapeDef, &shape);
 
 
@@ -49,4 +50,8 @@ void TestActorUpdate(Actor *this, const double delta)
 									  true);
 }
 
-void TestActorDestroy(Actor * /*this*/) {}
+// ReSharper disable once CppParameterMayBeConstPtrOrRef
+void TestActorDestroy(Actor *this)
+{
+	b2DestroyBody(this->bodyId);
+}

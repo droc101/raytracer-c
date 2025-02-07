@@ -196,9 +196,6 @@ VkResult VK_FrameEnd()
 
 	if (textureCacheMiss)
 	{
-		vkCmdNextSubpass(commandBuffers[currentFrame], VK_SUBPASS_CONTENTS_INLINE);
-		VulkanTestReturnResult(EndRenderPass(commandBuffers[currentFrame]), "Failed to end render pass!");
-
 		return VK_INCOMPLETE;
 	}
 

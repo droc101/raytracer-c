@@ -38,18 +38,17 @@ void DoorSetState(const Actor *door, const DoorState state)
 void DoorInit(Actor *this, const b2WorldId worldId)
 {
 	this->showShadow = false;
-	this->extra_data = malloc(sizeof(DoorData));
+	this->extra_data = calloc(1, sizeof(DoorData));
 	CheckAlloc(this->extra_data);
-	memset(this->extra_data, 0, sizeof(DoorData));
 	DoorData *data = this->extra_data;
 	data->state = DOOR_CLOSED;
 	data->animationTime = 0;
 
-	const Vector2 wallOffset = Vector2Normalize((Vector2){-cosf(this->rotation), -sinf(this->rotation)});
+	const Vector2 wallOffset = Vector2Scale(Vector2Normalize((Vector2){-cosf(this->rotation), -sinf(this->rotation)}), 0.5f);
 	this->actorWall = malloc(sizeof(Wall));
 	CheckAlloc(this->actorWall);
 	this->actorWall->a = (Vector2){this->position.x - wallOffset.x, this->position.y - wallOffset.y};
-	this->actorWall->b = this->position;
+	this->actorWall->b = (Vector2){this->position.x + wallOffset.x, this->position.y + wallOffset.y};
 	strncpy(this->actorWall->tex, TEXTURE("actor_door"), 32);
 	this->actorWall->uvScale = 1.0f;
 	this->actorWall->uvOffset = 0.0f;
@@ -59,11 +58,14 @@ void DoorInit(Actor *this, const b2WorldId worldId)
 	doorBodyDef.type = b2_kinematicBody;
 	doorBodyDef.position = this->actorWall->a;
 	this->bodyId = b2CreateBody(worldId, &doorBodyDef);
+	this->actorWall->bodyId = this->bodyId;
 	const b2Segment doorShape = {
+		.point1 = {-wallOffset.x, -wallOffset.y},
 		.point2 = {wallOffset.x, wallOffset.y},
 	};
 	b2ShapeDef doorShapeDef = b2DefaultShapeDef();
 	doorShapeDef.friction = 0;
+	doorShapeDef.filter.categoryBits = COLLISION_GROUP_ACTOR;
 	b2CreateSegmentShape(this->bodyId, &doorShapeDef, &doorShape);
 
 	b2BodyDef sensorBodyDef = b2DefaultBodyDef();
@@ -76,6 +78,8 @@ void DoorInit(Actor *this, const b2WorldId worldId)
 	};
 	b2ShapeDef sensorShapeDef = b2DefaultShapeDef();
 	sensorShapeDef.isSensor = true;
+	sensorShapeDef.filter.categoryBits = COLLISION_GROUP_ACTOR;
+	sensorShapeDef.filter.maskBits = COLLISION_GROUP_PLAYER;
 	data->sensorId = b2CreateCircleShape(sensorBody, &sensorShapeDef, &sensorShape);
 }
 
@@ -95,6 +99,7 @@ void DoorUpdate(Actor *this, const double delta)
 			if (event.sensorShapeId.index1 == sensorShapeIdIndex)
 			{
 				data->playerColliding = false;
+				break;
 			}
 		}
 	} else
@@ -105,6 +110,7 @@ void DoorUpdate(Actor *this, const double delta)
 			if (event.sensorShapeId.index1 == sensorShapeIdIndex)
 			{
 				data->playerColliding = true;
+				break;
 			}
 		}
 	}
@@ -159,6 +165,8 @@ void DoorUpdate(Actor *this, const double delta)
 // ReSharper disable once CppParameterMayBeConstPtrOrRef
 void DoorDestroy(Actor *this)
 {
+	b2DestroyBody(this->bodyId);
+	b2DestroyBody(b2Shape_GetBody(((DoorData*)this->extra_data)->sensorId));
 	free(this->extra_data);
 	free(this->actorWall);
 }
