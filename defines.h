@@ -185,6 +185,7 @@ enum CollisionGroups
 	COLLISION_GROUP_DEFAULT = 0x00000001,
 	COLLISION_GROUP_PLAYER = 0x00000002,
 	COLLISION_GROUP_ACTOR = 0x00000004,
+	COLLISION_GROUP_TRIGGER = 0x00000008,
 };
 
 #pragma endregion
@@ -549,6 +550,10 @@ struct Trigger
 	char command[64];
 	/// The flags set on this trigger
 	uint flags;
+	/// The trigger's sensor's box2d shape ID
+	b2ShapeId sensorId;
+	/// A boolean indicating if the player is currently colliding with the trigger
+	bool playerColliding;
 };
 
 struct Font

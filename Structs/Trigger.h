@@ -9,21 +9,26 @@
 
 /**
  * Create a trigger
- * @param pos The position of the trigger
+ * @param position The position of the trigger
  * @param extents The extents of the trigger (half in each direction)
- * @param rot The rotation of the trigger
+ * @param rotation The rotation of the trigger
  * @param command The command to execute when the trigger is activated
- * @param flags
+ * @param flags @TODO(droc101): Why isn't this documented?
+ * @param worldId
  * @return The created trigger
  */
-Trigger *CreateTrigger(Vector2 pos, Vector2 extents, float rot, const char *command, uint flags);
+Trigger *CreateTrigger(Vector2 position,
+					   Vector2 extents,
+					   float rotation,
+					   const char *command,
+					   uint flags,
+					   b2WorldId worldId);
 
 /**
  * Check if a player is colliding with a trigger
- * @param t The trigger to check
- * @param p The player to check
+ * @param trigger The trigger to check
  * @return Whether the player is colliding with the trigger
  */
-bool CheckTriggerCollision(const Trigger *t, const Player *p);
+bool CheckTriggerCollision(Trigger *trigger);
 
 #endif //TRIGGER_H

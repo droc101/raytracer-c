@@ -184,7 +184,7 @@ void GMainStateFixedUpdate(GlobalState *state, const double delta)
 	for (int i = 0; i < l->triggers.length; i++)
 	{
 		Trigger *t = ListGet(l->triggers, i);
-		if (CheckTriggerCollision(t, &l->player))
+		if (CheckTriggerCollision(t))
 		{
 			ExecuteCommand(t->command);
 			if (t->flags & TRIGGER_FLAG_ONE_SHOT)

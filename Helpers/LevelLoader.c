@@ -96,7 +96,7 @@ Level *LoadLevel(const byte *data)
 		char trigCommand[64];
 		ReadString(data, &offset, (char *)&trigCommand, 64);
 		const uint flags = ReadUint(data, &offset);
-		Trigger *t = CreateTrigger(v2(trigX, trigY), v2(trigExtX, trigExtY), trigRot, trigCommand, flags);
+		Trigger *t = CreateTrigger(v2(trigX, trigY), v2(trigExtX, trigExtY), trigRot, trigCommand, flags, l->worldId);
 		ListAdd(&l->triggers, t);
 	}
 
