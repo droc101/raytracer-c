@@ -14,10 +14,17 @@
  * @param texture Wall texture name
  * @param uvScale Wall texture scale
  * @param uvOffset Wall texture offset
- * @param worldId
  * @return Wall pointer
  */
-Wall *CreateWall(Vector2 a, Vector2 b, const char *texture, float uvScale, float uvOffset, b2WorldId worldId);
+Wall *CreateWall(Vector2 a, Vector2 b, const char *texture, float uvScale, float uvOffset);
+
+/**
+ * Create a box2d rigid body to serve as a wall's hitbox
+ * @param wall The wall to create the hitbox for
+ * @param worldId The box2d world within which to create the hitbox
+ * @note This function expects the wall to be baked
+ */
+void CreateWallCollider(Wall *wall, b2WorldId worldId);
 
 /**
  * Bake a wall's information

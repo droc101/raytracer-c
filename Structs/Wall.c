@@ -10,12 +10,7 @@
 #include "../defines.h"
 #include "../Helpers/Core/Error.h"
 
-Wall *CreateWall(const Vector2 a,
-				 const Vector2 b,
-				 const char *texture,
-				 const float uvScale,
-				 const float uvOffset,
-				 const b2WorldId worldId)
+Wall *CreateWall(const Vector2 a, const Vector2 b, const char *texture, const float uvScale, const float uvOffset)
 {
 	Wall *w = malloc(sizeof(Wall));
 	CheckAlloc(w);
@@ -25,24 +20,24 @@ Wall *CreateWall(const Vector2 a,
 	w->uvScale = uvScale;
 	w->uvOffset = uvOffset;
 	w->height = 1.0f;
+	return w;
+}
 
+void CreateWallCollider(Wall *wall, const b2WorldId worldId)
+{
 	b2BodyDef bodyDef = b2DefaultBodyDef();
 	bodyDef.type = b2_staticBody;
-	bodyDef.position = a;
-	w->bodyId = b2CreateBody(worldId, &bodyDef);
-	w->dx = w->b.x - w->a.x;
-	w->dy = w->b.y - w->a.y;
-	if (w->dx != 0 || w->dy != 0)
+	bodyDef.position = wall->a;
+	wall->bodyId = b2CreateBody(worldId, &bodyDef);
+	if (wall->dx != 0 || wall->dy != 0)
 	{
 		const b2Segment shape = {
-			.point2 = {w->dx, w->dy},
+			.point2 = {wall->dx, wall->dy},
 		};
 		b2ShapeDef shapeDef = b2DefaultShapeDef();
 		shapeDef.friction = 0;
-		b2CreateSegmentShape(w->bodyId, &shapeDef, &shape);
+		b2CreateSegmentShape(wall->bodyId, &shapeDef, &shape);
 	}
-
-	return w;
 }
 
 void WallBake(Wall *w)

@@ -21,18 +21,11 @@ void CoinInit(Actor *this, const b2WorldId worldId)
 	this->extra_data = calloc(1, sizeof(b2ShapeId));
 	CheckAlloc(this->extra_data);
 	b2ShapeId *shapeId = this->extra_data;
-	this->paramA = 0;
-	this->yPosition = -0.25f;
-	this->shadowSize = 0.1f;
-
-	this->actorWall = malloc(sizeof(Wall));
-	CheckAlloc(this->actorWall);
-	this->actorWall->a = v2(this->position.x, this->position.y - 0.125f);
-	this->actorWall->b = v2(this->position.x, this->position.y + 0.125f);
-	strncpy(this->actorWall->tex, this->paramB ? TEXTURE("actor_bluecoin") : TEXTURE("actor_coin"), 32);
-	this->actorWall->uvScale = 1.0f;
-	this->actorWall->uvOffset = 0.0f;
-	this->actorWall->height = 0.25f;
+	this->actorWall = CreateWall((Vector2){this->position.x, this->position.y - 0.125f},
+								 (Vector2){this->position.x, this->position.y + 0.125f},
+								 this->paramB == 1 ? TEXTURE("actor_bluecoin") : TEXTURE("actor_coin"),
+								 1.0f,
+								 0.0f);
 	WallBake(this->actorWall);
 
 	b2BodyDef sensorBodyDef = b2DefaultBodyDef();
@@ -46,6 +39,11 @@ void CoinInit(Actor *this, const b2WorldId worldId)
 	b2ShapeDef sensorShapeDef = b2DefaultShapeDef();
 	sensorShapeDef.isSensor = true;
 	*shapeId = b2CreateCircleShape(this->bodyId, &sensorShapeDef, &sensorShape);
+
+	this->paramA = 0;
+	this->actorWall->height = 0.25f;
+	this->yPosition = -0.25f;
+	this->shadowSize = 0.1f;
 }
 
 void CoinUpdate(Actor *this, double /*delta*/)

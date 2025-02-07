@@ -79,7 +79,9 @@ Level *LoadLevel(const byte *data)
 		snprintf(wallTex, 48, "texture/%s.gtex", lDataWallTex);
 		const float wallUVScale = ReadFloat(data, &offset);
 		const float wallUVOffset = ReadFloat(data, &offset);
-		Wall *w = CreateWall(v2(wallAX, wallAY), v2(wallBX, wallBY), wallTex, wallUVScale, wallUVOffset, l->worldId);
+		Wall *w = CreateWall(v2(wallAX, wallAY), v2(wallBX, wallBY), wallTex, wallUVScale, wallUVOffset);
+		WallBake(w);
+		CreateWallCollider(w, l->worldId);
 		ListAdd(&l->walls, w);
 	}
 

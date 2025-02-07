@@ -22,14 +22,11 @@ void GoalInit(Actor *this, const b2WorldId worldId)
 	CheckAlloc(this->extra_data);
 	b2ShapeId *shapeId = this->extra_data;
 
-	this->actorWall = malloc(sizeof(Wall));
-	CheckAlloc(this->actorWall);
-	this->actorWall->a = v2(this->position.x, this->position.y - 0.5f);
-	this->actorWall->b = v2(this->position.x, this->position.y + 0.5f);
-	strncpy(this->actorWall->tex, TEXTURE("actor_goal0"), 32);
-	this->actorWall->uvScale = 1.0f;
-	this->actorWall->uvOffset = 0.0f;
-	this->actorWall->height = 1.0f;
+	this->actorWall = CreateWall((Vector2){this->position.x, this->position.y - 0.5f},
+								 (Vector2){this->position.x, this->position.y + 0.5f},
+								 TEXTURE("actor_goal0"),
+								 1.0f,
+								 0.0f);
 	WallBake(this->actorWall);
 
 	b2BodyDef sensorBodyDef = b2DefaultBodyDef();

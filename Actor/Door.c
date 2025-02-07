@@ -38,23 +38,17 @@ void DoorSetState(const Actor *door, const DoorState state)
 
 void DoorInit(Actor *this, const b2WorldId worldId)
 {
-	this->showShadow = false;
 	this->extra_data = calloc(1, sizeof(DoorData));
 	CheckAlloc(this->extra_data);
 	DoorData *data = this->extra_data;
-	data->state = DOOR_CLOSED;
-	data->animationTime = 0;
 
 	const Vector2 wallOffset = Vector2Scale(Vector2Normalize((Vector2){-cosf(this->rotation), -sinf(this->rotation)}),
 											0.5f);
-	this->actorWall = malloc(sizeof(Wall));
-	CheckAlloc(this->actorWall);
-	this->actorWall->a = (Vector2){this->position.x - wallOffset.x, this->position.y - wallOffset.y};
-	this->actorWall->b = (Vector2){this->position.x + wallOffset.x, this->position.y + wallOffset.y};
-	strncpy(this->actorWall->tex, TEXTURE("actor_door"), 32);
-	this->actorWall->uvScale = 1.0f;
-	this->actorWall->uvOffset = 0.0f;
-	this->actorWall->height = 1.0f;
+	this->actorWall = CreateWall((Vector2){this->position.x - wallOffset.x, this->position.y - wallOffset.y},
+								 (Vector2){this->position.x + wallOffset.x, this->position.y + wallOffset.y},
+								 TEXTURE("actor_door"),
+								 1.0f,
+								 0.0f);
 	WallBake(this->actorWall);
 
 	b2BodyDef doorBodyDef = b2DefaultBodyDef();
@@ -83,6 +77,10 @@ void DoorInit(Actor *this, const b2WorldId worldId)
 	sensorShapeDef.filter.categoryBits = COLLISION_GROUP_ACTOR;
 	sensorShapeDef.filter.maskBits = COLLISION_GROUP_PLAYER;
 	data->sensorId = b2CreateCircleShape(sensorBody, &sensorShapeDef, &sensorShape);
+
+	this->showShadow = false;
+	data->state = DOOR_CLOSED;
+	data->animationTime = 0;
 }
 
 // ReSharper disable once CppParameterMayBeConstPtrOrRef
