@@ -16,7 +16,7 @@ void CreateTriggerSensor(Trigger *trigger, const Vector2 position, const b2World
 	sensorBodyDef.type = b2_staticBody;
 	sensorBodyDef.position = position;
 	const b2BodyId bodyId = b2CreateBody(worldId, &sensorBodyDef);
-	const b2Polygon sensorShape = b2MakeBox(trigger->extents.x, trigger->extents.y);
+	const b2Polygon sensorShape = b2MakeBox(trigger->extents.x * 0.5f, trigger->extents.y * 0.5f);
 	b2ShapeDef sensorShapeDef = b2DefaultShapeDef();
 	sensorShapeDef.isSensor = true;
 	sensorShapeDef.filter.categoryBits = COLLISION_GROUP_TRIGGER;
