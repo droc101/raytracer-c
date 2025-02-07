@@ -7,4 +7,6 @@
 
 void GLevelSelectStateSet();
 
+void GLevelSelectStateDestroy();
+
 #endif //GAME_GLEVELSELECTSTATE_H

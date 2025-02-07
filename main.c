@@ -68,7 +68,7 @@ void InitSDL()
 #ifdef __LINUX__
 	if (GetState()->options.preferWayland)
 	{
-		SDL_SetHint(SDL_HINT_VIDEODRIVER, "wayland,x11");
+		SDL_SetHint(SDL_HINT_VIDEODRIVER, "wayland,x11"); // TODO: seems to be ignored with sdl2-compat
 	} else
 	{
 		SDL_SetHint(SDL_HINT_VIDEODRIVER, "x11,wayland");
@@ -80,6 +80,8 @@ void InitSDL()
 		LogError("SDL_Init Error: %s\n", SDL_GetError());
 		Error("Failed to initialize SDL");
 	}
+
+	LogInfo("SDL Video Driver: %s\n", SDL_GetCurrentVideoDriver());
 }
 
 /**
@@ -104,8 +106,21 @@ void InitAudio()
  */
 void WindowAndRenderInit()
 {
+	const size_t title_len = strlen(GAME_TITLE) + strlen(" - Vulkan") + 1;
+	char title[title_len];
+	switch (currentRenderer) {
+		case RENDERER_OPENGL:
+			snprintf(title, title_len, "%s - OpenGL", GAME_TITLE);
+			break;
+		case RENDERER_VULKAN:
+			snprintf(title, title_len, "%s - Vulkan", GAME_TITLE);
+			break;
+		default:
+			snprintf(title, title_len, "%s", GAME_TITLE);
+			break;
+	}
 	const Uint32 rendererFlags = currentRenderer == RENDERER_OPENGL ? SDL_WINDOW_OPENGL : SDL_WINDOW_VULKAN;
-	SDL_Window *window = SDL_CreateWindow(GAME_TITLE,
+	SDL_Window *window = SDL_CreateWindow(&title[0],
 										  SDL_WINDOWPOS_UNDEFINED,
 										  SDL_WINDOWPOS_UNDEFINED,
 										  DEF_WIDTH,

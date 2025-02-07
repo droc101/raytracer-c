@@ -49,6 +49,9 @@ bool CreateDepthImage();
 
 bool CreateFramebuffers();
 
+/// TODO: This will first be written using a separate allocation from the walls and other things that use VRAM, but
+///  then once the code is fully working and committed, I will come back to this and add the textures to the shared
+///  allocation to improve performance.
 bool InitTextures();
 
 bool CreateTexturesImageView();

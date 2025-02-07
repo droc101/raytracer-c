@@ -13,12 +13,14 @@ You will need development packages for CGLM, GLEW, SDL2, SDL2_Mixer, Vulkan, and
 Arch Packages:
 [cglmᴬᵁᴿ](https://aur.archlinux.org/packages/cglm),
 [glew](https://archlinux.org/packages/extra/x86_64/glew/),
-[sdl2](https://archlinux.org/packages/extra/x86_64/sdl2/),
+[sdl2-gitᴬᵁᴿ](https://aur.archlinux.org/packages/sdl2-git),
 [sdl2_mixer](https://archlinux.org/packages/extra/x86_64/sdl2_mixer/),
 [vulkan-devel](https://archlinux.org/groups/x86_64/vulkan-devel/),
 [zlib](https://archlinux.org/packages/core/x86_64/zlib/),
 [python](https://archlinux.org/packages/core/x86_64/python/),
 [python-pillow](https://archlinux.org/packages/extra/x86_64/python-pillow/)
+
+Note: While [sdl2-compat](https://archlinux.org/packages/extra/x86_64/sdl2-compat/) mostly works, there are a few bugs, so we do recommend using [sdl2-gitᴬᵁᴿ](https://aur.archlinux.org/packages/sdl2-git) instead.
 
 ### Building
 There are 3 build types available:

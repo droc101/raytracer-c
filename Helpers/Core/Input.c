@@ -40,7 +40,11 @@ bool FindGameController()
 			if (SDL_JoystickIsHaptic(stick))
 			{
 				haptic = SDL_HapticOpenFromJoystick(stick);
-				if (SDL_HapticRumbleInit(haptic) < 0)
+				if (!haptic)
+				{
+					LogError("Failed to open haptic: %s\n", SDL_GetError()); // This should never happen (if it does, SDL lied to us)
+					haptic = NULL;
+				} else if (SDL_HapticRumbleInit(haptic) != 0)
 				{
 					LogError("Failed to initialize rumble: %s\n", SDL_GetError());
 					haptic = NULL;

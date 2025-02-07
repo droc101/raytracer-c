@@ -44,7 +44,8 @@ void DoorInit(Actor *this, const b2WorldId worldId)
 	data->state = DOOR_CLOSED;
 	data->animationTime = 0;
 
-	const Vector2 wallOffset = Vector2Scale(Vector2Normalize((Vector2){-cosf(this->rotation), -sinf(this->rotation)}), 0.5f);
+	const Vector2 wallOffset = Vector2Scale(Vector2Normalize((Vector2){-cosf(this->rotation), -sinf(this->rotation)}),
+											0.5f);
 	this->actorWall = malloc(sizeof(Wall));
 	CheckAlloc(this->actorWall);
 	this->actorWall->a = (Vector2){this->position.x - wallOffset.x, this->position.y - wallOffset.y};
@@ -166,7 +167,7 @@ void DoorUpdate(Actor *this, const double delta)
 void DoorDestroy(Actor *this)
 {
 	b2DestroyBody(this->bodyId);
-	b2DestroyBody(b2Shape_GetBody(((DoorData*)this->extra_data)->sensorId));
+	b2DestroyBody(b2Shape_GetBody(((DoorData *)this->extra_data)->sensorId));
 	free(this->extra_data);
 	free(this->actorWall);
 }

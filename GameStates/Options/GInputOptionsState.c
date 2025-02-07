@@ -16,7 +16,7 @@
 #include "../../Structs/UI/UiStack.h"
 #include "../GOptionsState.h"
 
-UiStack *inputOptionsStack;
+UiStack *inputOptionsStack = NULL;
 
 void BtnInputOptionsBack()
 {
@@ -183,4 +183,13 @@ void GInputOptionsStateSet()
 					  NULL,
 					  INPUT_OPTIONS_STATE,
 					  GInputOptionsStateRender); // Fixed update is not needed for this state
+}
+
+void GInputOptionsStateDestroy()
+{
+	if (inputOptionsStack != NULL)
+	{
+		DestroyUiStack(inputOptionsStack);
+		inputOptionsStack = NULL;
+	}
 }

@@ -7,4 +7,6 @@
 
 void GPauseStateSet();
 
+void GPauseStateDestroy();
+
 #endif //GAME_GPAUSESTATE_H

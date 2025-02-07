@@ -18,7 +18,7 @@ layout (push_constant) uniform PushConstants {
 layout(location = 0) in vec3 inVertex;
 layout(location = 1) in vec2 inUV;
 layout(location = 2) in vec3 inNormal;
-layout (location = 3) in mat4 inTransform;
+layout(location = 3) in mat4 inTransform;
 layout(location = 7) in uint inTextureIndex;
 layout(location = 8) in float inWallAngle;
 
@@ -31,6 +31,5 @@ void main() {
 	outUV = inUV;
 	outTextureIndex = inTextureIndex;
 
-	float shading = dot(inNormal, vec3(0, 0, 1));
-	outShading = shading == 0 ? max(0.6, min(1, abs(cos(pushConstants.yaw - inWallAngle)))) : max(0.6, 1 - pow(2, -10 * shading));
+	outShading = isnan(inNormal.z) ? max(0.6, min(1, abs(cos(pushConstants.yaw - inWallAngle)))) : max(0.6, 1 - pow(2, -10 * inNormal.z));
 }

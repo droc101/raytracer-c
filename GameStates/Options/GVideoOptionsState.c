@@ -20,7 +20,7 @@
 #include "../../Structs/Vector2.h"
 #include "../GOptionsState.h"
 
-UiStack *videoOptionsStack;
+UiStack *videoOptionsStack = NULL;
 bool hasChangedVideoOptions = false;
 
 void BtnVideoOptionsBack()
@@ -219,4 +219,13 @@ void GVideoOptionsStateSet()
 					  NULL,
 					  VIDEO_OPTIONS_STATE,
 					  GVideoOptionsStateRender); // Fixed update is not needed for this state
+}
+
+void GVideoOptionsStateDestroy()
+{
+	if (videoOptionsStack != NULL)
+	{
+		DestroyUiStack(videoOptionsStack);
+		videoOptionsStack = NULL;
+	}
 }

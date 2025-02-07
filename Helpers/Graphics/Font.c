@@ -9,8 +9,12 @@
 #include "../Core/MathEx.h"
 #include "RenderingHelpers.h"
 
-int FontFindChar(const char target, const Font *font)
+int FontFindChar(char target, const Font *font)
 {
+	if (font->uppercase_only)
+	{
+		target = (char)toupper(target);
+	}
 	int i = 0;
 	while (font->chars[i] != 0)
 	{
@@ -118,7 +122,12 @@ Vector2 MeasureText(const char *str, const uint size, const Font *font)
 		{
 			tempWidth -= fSize;
 			tempWidth += (int)(font->space_width * sizeMultiplier);
-		} else if (str[j] == '\n')
+		}
+		else if (str[j+1] == '\0')
+        {
+			tempWidth -= (int)(font->char_spacing * sizeMultiplier); // fix extra spacing at the end of the string
+        }
+		else if (str[j] == '\n')
 		{
 			tempWidth -= fSize;
 			textWidth = max(textWidth, tempWidth);

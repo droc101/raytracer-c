@@ -68,7 +68,7 @@ void CoinUpdate(Actor *this, double /*delta*/)
 	for (int i = 0; i < sensorEvents.beginCount; i++)
 	{
 		const b2SensorBeginTouchEvent event = sensorEvents.beginEvents[i];
-		if (event.sensorShapeId.index1 == ((b2ShapeId*)this->extra_data)->index1)
+		if (event.sensorShapeId.index1 == ((b2ShapeId *)this->extra_data)->index1)
 		{
 			if (this->paramB == 0)
 			{

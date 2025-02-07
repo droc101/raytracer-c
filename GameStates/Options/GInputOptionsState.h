@@ -7,4 +7,6 @@
 
 void GInputOptionsStateSet();
 
+void GInputOptionsStateDestroy();
+
 #endif //GINPUTOPTIONSSTATE_H

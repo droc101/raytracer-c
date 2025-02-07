@@ -15,6 +15,7 @@
 #include "../Helpers/Graphics/Font.h"
 #include "../Helpers/Graphics/RenderingHelpers.h"
 #include "../Structs/GlobalState.h"
+#include "../Structs/UI/UiStack.h"
 #include "../Structs/Vector2.h"
 #include "GMainState.h"
 #include "GMenuState.h"
@@ -123,4 +124,9 @@ void GLevelSelectStateSet()
 					  NULL,
 					  LEVEL_SELECT_STATE,
 					  GLevelSelectStateRender); // Fixed update is not needed for this state
+}
+
+void GLevelSelectStateDestroy()
+{
+	ListFreeOnlyContents(levelList);
 }

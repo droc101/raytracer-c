@@ -11,4 +11,6 @@ extern bool optionsStateInGame;
 
 void GOptionsStateSet(bool inGame);
 
+void GOptionsStateDestroy();
+
 #endif //GAME_GOPTIONSSTATE_H

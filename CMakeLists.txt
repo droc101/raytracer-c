@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.25)
 project(game C)
 
+#region Compile options
+
 set(CMAKE_C_STANDARD 11)
 
 set(CMAKE_C_FLAGS "-Wall -Wno-discarded-qualifiers -fvisibility=hidden")
@@ -28,6 +30,10 @@ if (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDeb
         message(WARNING "IPO/LTO is not supported")
     endif ()
 endif ()
+
+#endregion
+
+#region Game Executable
 
 add_executable(
         game
@@ -149,6 +155,10 @@ add_executable(
         Helpers/Graphics/Vulkan/VulkanResources.h
 )
 
+#endregion
+
+#region Libraries
+
 set(SDL2_PATH "${CMAKE_SOURCE_DIR}/lib/SDL2/x86_64-w64-mingw32")
 set(SDL2_MIXER_PATH "${CMAKE_SOURCE_DIR}/lib/SDL2_mixer/x86_64-w64-mingw32")
 set(ZLIB_ROOT "${CMAKE_SOURCE_DIR}/lib/zlib")
@@ -189,6 +199,10 @@ elseif (WIN32)
     target_link_libraries(game PRIVATE ${SDL2_LIBRARY} ${ZLIB_LIBRARIES} ${SDL2_MIXER_LIBRARY} ${Vulkan_LIBRARIES} ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} opengl32 dwmapi) # Don't pass extra l* flags on Windows (it isn't happy with them)
 endif ()
 
+#endregion
+
+#region Asset Generation
+
 add_custom_target( # Python script for generating assets code
         genassets ALL
         COMMAND "python" ${CMAKE_CURRENT_SOURCE_DIR}/AssetGenerator/genassets.py ${CMAKE_CURRENT_SOURCE_DIR}/Assets/ ${CMAKE_CURRENT_BINARY_DIR}/assets/
@@ -197,6 +211,10 @@ add_custom_target( # Python script for generating assets code
 )
 
 add_dependencies(game genassets)
+
+#endregion
+
+#region Actor Library
 
 if (UNIX)
     # Libactor is a shared library that is used by the level editor to get information about actor types
@@ -212,3 +230,5 @@ if (UNIX)
 
     add_dependencies(game actor)
 endif ()
+
+#endregion

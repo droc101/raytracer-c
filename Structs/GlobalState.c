@@ -5,6 +5,13 @@
 #include "GlobalState.h"
 #include <stdio.h>
 #include <string.h>
+#include "../GameStates/GLevelSelectState.h"
+#include "../GameStates/GMenuState.h"
+#include "../GameStates/GOptionsState.h"
+#include "../GameStates/GPauseState.h"
+#include "../GameStates/Options/GInputOptionsState.h"
+#include "../GameStates/Options/GSoundOptionsState.h"
+#include "../GameStates/Options/GVideoOptionsState.h"
 #include "../Helpers/Core/AssetReader.h"
 #include "../Helpers/Core/Error.h"
 #include "../Helpers/Core/Logging.h"
@@ -24,7 +31,14 @@ GlobalState state;
  */
 void ChannelFinished(const int channel)
 {
-	state.channels[channel] = NULL;
+	if (state.channels[channel] != NULL)
+	{
+		Mix_FreeChunk(state.channels[channel]);
+		state.channels[channel] = NULL;
+	} else
+	{
+		LogWarning("A sound effect channel finished, but it was already NULL!\n");
+	}
 }
 
 void InitOptions()
@@ -248,6 +262,10 @@ void DestroyGlobalState()
 		Mix_HaltMusic();
 		Mix_FreeMusic(state.music);
 	}
+
+	Mix_ChannelFinished(NULL);
+	Mix_HaltChannel(-1);
+
 	// free sound effects
 	if (state.isAudioStarted)
 	{
@@ -258,7 +276,17 @@ void DestroyGlobalState()
 				Mix_FreeChunk(state.channels[i]);
 			}
 		}
+
+
 	}
+
+	GInputOptionsStateDestroy();
+	GSoundOptionsStateDestroy();
+	GVideoOptionsStateDestroy();
+	GLevelSelectStateDestroy();
+	GMenuStateDestroy();
+	GOptionsStateDestroy();
+	GPauseStateDestroy();
 }
 
 bool ChangeLevelByName(const char *name)

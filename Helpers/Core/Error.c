@@ -45,7 +45,7 @@ _Noreturn void _ErrorInternal(char *error, const char *file, const int line, con
 
 	char messageBuffer[256];
 #ifdef BUILDSTYLE_DEBUG
-	sprintf(messageBuffer, "%s\n \n%s:%d (%s)", error, file, line, function);
+	sprintf(messageBuffer, "%s\n \n%s:%d (%s)\n", error, file, line, function);
 #else
 	sprintf(messageBuffer, "%s", error);
 #endif
@@ -100,7 +100,7 @@ _Noreturn void _ErrorInternal(char *error, const char *file, const int line, con
 	int pressedButtonID;
 	if (SDL_ShowMessageBox(&mb, &pressedButtonID) < 0)
 	{
-		printf("%s", SDL_GetError());
+		LogError("Failed to show error dialog: %s\n", SDL_GetError());
 	};
 
 	switch (pressedButtonID)

@@ -1498,11 +1498,6 @@ bool InitTextures()
 		}
 	}
 
-	/// TODO: This will first be written using a seperate allocation from the walls and other things that use VRAM, but
-	///  then once the code is fully working and comitted, I will come back to this and add the textures to the shared
-	///  allocation to improve performance.
-	textureMemory.size = MAX_TEXTURE_SIZE * MAX_TEXTURE_SIZE * 4 * textureCount;
-
 	VkImage image;
 	if (!CreateImage(&image,
 					 NULL,
@@ -1517,7 +1512,10 @@ bool InitTextures()
 	}
 	VkMemoryRequirements memoryRequirements;
 	vkGetImageMemoryRequirements(device, image, &memoryRequirements);
-	vkDestroyImage(device, image, NULL);
+	textureMemory.size = memoryRequirements.alignment *
+						 (VkDeviceSize)ceil((double)(MAX_TEXTURE_SIZE * MAX_TEXTURE_SIZE * 4) /
+											(double)memoryRequirements.alignment) *
+						 textureCount;
 	for (uint32_t i = 0; i < physicalDevice.memoryProperties.memoryTypeCount; i++)
 	{
 		if (memoryRequirements.memoryTypeBits & 1 << i &&
@@ -1534,6 +1532,8 @@ bool InitTextures()
 			break;
 		}
 	}
+
+	vkDestroyImage(device, image, NULL);
 
 	return true;
 }

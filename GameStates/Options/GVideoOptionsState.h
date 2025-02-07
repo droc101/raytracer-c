@@ -7,4 +7,6 @@
 
 void GVideoOptionsStateSet();
 
+void GVideoOptionsStateDestroy();
+
 #endif //GVIDEOOPTIONSSTATE_H
