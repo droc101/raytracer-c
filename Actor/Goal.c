@@ -53,11 +53,12 @@ void GoalUpdate(Actor *this, double /*delta*/)
 	this->actorWall->b = v2(this->position.x + 0.5f * cosf(rotation), this->position.y + 0.5f * sinf(rotation));
 	WallBake(this->actorWall);
 
+	const uint32_t sensorShapeIdIndex = ((b2ShapeId *)this->extra_data)->index1;
 	const b2SensorEvents sensorEvents = b2World_GetSensorEvents(GetState()->level->worldId);
 	for (int i = 0; i < sensorEvents.beginCount; i++)
 	{
 		const b2SensorBeginTouchEvent event = sensorEvents.beginEvents[i];
-		if (event.sensorShapeId.index1 == ((b2ShapeId *)this->extra_data)->index1)
+		if (event.sensorShapeId.index1 == sensorShapeIdIndex)
 		{
 			RemoveActor(this);
 			const TextBox tb = DEFINE_TEXT("Goal!",
