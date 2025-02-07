@@ -12,7 +12,7 @@
 #include "GlobalState.h"
 #include "Vector2.h"
 
-void PlayerCreateCollider(Level *level)
+void CreatePlayerCollider(Level *level)
 {
 	b2BodyDef playerBodyDef = b2DefaultBodyDef();
 	playerBodyDef.type = b2_dynamicBody;
@@ -41,7 +41,7 @@ Level *CreateLevel()
 	l->worldId = b2CreateWorld(&worldDef);
 	l->player.pos = v2s(0);
 	l->player.angle = 0;
-	PlayerCreateCollider(l);
+	CreatePlayerCollider(l);
 	l->hasCeiling = false;
 	strncpy(l->ceilOrSkyTex, "texture/level_sky_test.gtex", 28);
 	strncpy(l->floorTex, "texture/level_floor_test.gtex", 30);

@@ -14,7 +14,7 @@
 #include "../Structs/Vector2.h"
 #include "../Structs/Wall.h"
 
-void GoalCreateSensor(Actor *this, const b2WorldId worldId)
+void CreateGoalSensor(Actor *this, const b2WorldId worldId)
 {
 	this->extra_data = calloc(1, sizeof(b2ShapeId));
 	CheckAlloc(this->extra_data);
@@ -42,7 +42,7 @@ void GoalInit(Actor *this, const b2WorldId worldId)
 								 0.0f);
 	WallBake(this->actorWall);
 
-	GoalCreateSensor(this, worldId);
+	CreateGoalSensor(this, worldId);
 }
 
 void GoalUpdate(Actor *this, double /*delta*/)

@@ -14,7 +14,7 @@ void TestActorSignalHandler(Actor * /*self*/, const Actor *sender, const int sig
 	LogDebug("Test actor got signal %d from actor %p\n", signal, sender);
 }
 
-void TestActorCreateCollider(Actor *this, const b2WorldId worldId)
+void CreateTestActorCollider(Actor *this, const b2WorldId worldId)
 {
 	b2BodyDef bodyDef = b2DefaultBodyDef();
 	bodyDef.type = b2_dynamicBody;
@@ -33,7 +33,7 @@ void TestActorCreateCollider(Actor *this, const b2WorldId worldId)
 
 void TestActorInit(Actor *this, const b2WorldId worldId)
 {
-	TestActorCreateCollider(this, worldId);
+	CreateTestActorCollider(this, worldId);
 
 	this->actorModel = LoadModel(MODEL("model_leafy"));
 	this->actorModelTexture = TEXTURE("actor_BLOB2");

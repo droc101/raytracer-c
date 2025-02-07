@@ -35,7 +35,7 @@ void DoorSetState(const Actor *door, const DoorState state)
 	data->animationTime = 0;
 }
 
-void DoorCreateCollider(Actor *this, const b2WorldId worldId, const Vector2 wallOffset)
+void CreateDoorCollider(Actor *this, const b2WorldId worldId, const Vector2 wallOffset)
 {
 	b2BodyDef doorBodyDef = b2DefaultBodyDef();
 	doorBodyDef.type = b2_kinematicBody;
@@ -52,7 +52,7 @@ void DoorCreateCollider(Actor *this, const b2WorldId worldId, const Vector2 wall
 	b2CreateSegmentShape(this->bodyId, &doorShapeDef, &doorShape);
 }
 
-void DoorCreateSensor(Actor *this, const b2WorldId worldId)
+void CreateDoorSensor(Actor *this, const b2WorldId worldId)
 {
 	this->extra_data = calloc(1, sizeof(DoorData));
 	CheckAlloc(this->extra_data);
@@ -83,10 +83,10 @@ void DoorInit(Actor *this, const b2WorldId worldId)
 								 0.0f);
 	WallBake(this->actorWall);
 
-	DoorCreateCollider(this, worldId, wallOffset);
-	DoorCreateSensor(this, worldId);
+	CreateDoorCollider(this, worldId, wallOffset);
+	CreateDoorSensor(this, worldId);
 
-	DoorData *data = this->extra_data; // Allocated in CreateSensor
+	DoorData *data = this->extra_data; // Allocated in CreateDoorSensor
 	this->showShadow = false;
 	data->state = DOOR_CLOSED;
 	data->animationTime = 0;

@@ -10,7 +10,7 @@
 #include "GlobalState.h"
 #include "Vector2.h"
 
-void TriggerCreateSensor(Trigger *trigger, const Vector2 position, const b2WorldId worldId)
+void CreateTriggerSensor(Trigger *trigger, const Vector2 position, const b2WorldId worldId)
 {
 	b2BodyDef sensorBodyDef = b2DefaultBodyDef();
 	sensorBodyDef.type = b2_staticBody;
@@ -40,7 +40,7 @@ Trigger *CreateTrigger(const Vector2 position,
 	strncpy(trigger->command, command, 63);
 	trigger->playerColliding = false;
 
-	TriggerCreateSensor(trigger, position, worldId);
+	CreateTriggerSensor(trigger, position, worldId);
 
 	return trigger;
 }

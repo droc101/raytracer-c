@@ -13,7 +13,7 @@
 #include "../Structs/Vector2.h"
 #include "../Structs/Wall.h"
 
-void CoinCreateSensor(Actor *this, const b2WorldId worldId)
+void CreateCoinSensor(Actor *this, const b2WorldId worldId)
 {
 	this->extra_data = calloc(1, sizeof(b2ShapeId));
 	CheckAlloc(this->extra_data);
@@ -41,7 +41,7 @@ void CoinInit(Actor *this, const b2WorldId worldId)
 								 0.0f);
 	WallBake(this->actorWall);
 
-	CoinCreateSensor(this, worldId);
+	CreateCoinSensor(this, worldId);
 
 	this->paramA = 0;
 	this->actorWall->height = 0.25f;
