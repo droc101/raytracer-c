@@ -14,29 +14,21 @@
  * @param y The y value
  * @return The new vector
  */
-Vector2 v2(float x, float y);
+#define v2(x, y) ((Vector2){x, y})
 
 /**
  * Create a 2D vector with the same x and y values
  * @param xy The x and y value
  * @return The new vector
  */
-Vector2 v2s(float xy);
+#define v2s(xy) v2(xy, xy)
 
 /**
  * Create a unit vector from an angle
  * @param angle The angle (in radians)
  * @return The unit vector
  */
-Vector2 Vector2FromAngle(float angle);
-
-/**
- * Get the angle between two vectors
- * @param a The first vector
- * @param b The second vector
- * @return The angle between the two vectors (in radians)
- */
-float Vector2Angle(Vector2 a, Vector2 b);
+#define Vector2FromAngle(angle) v2(cosf(angle), sinf(angle))
 
 /**
  * Get the distance between two vectors
@@ -44,30 +36,26 @@ float Vector2Angle(Vector2 a, Vector2 b);
  * @param b The second vector
  * @return The distance between the two vectors
  */
-static inline float Vector2Distance(const Vector2 a, const Vector2 b)
-{
-	return b2Distance(a, b);
-}
+#define Vector2Distance(a, b) \
+	({ \
+		float dx = (b).x - (a).x; \
+		float dy = (b).y - (a).y; \
+		sqrtf(dx * dx + dy * dy); \
+	})
 
 /**
  * Get the length of a vector
- * @param vec The vector
+ * @param vector The vector
  * @return The length of the vector
  */
-static inline float Vector2Length(const Vector2 vec)
-{
-	return b2Length(vec);
-}
+#define Vector2Length(vector) sqrtf(((vector).x * (vector).x) + ((vector).y * (vector).y))
 
 /**
  * Convert a vector into a unit vector if possible
- * @param vec The vector
- * @return The unit vector, or the zero vector if @c vec cannot be turned into a unit vector.
+ * @param vector The vector
+ * @return The unit vector, or the zero vector if @c vector cannot be turned into a unit vector.
  */
-static inline Vector2 Vector2Normalize(const Vector2 vec)
-{
-	return b2Normalize(vec);
-}
+#define Vector2Normalize(vector) b2Normalize(vector)
 
 /**
  * Add two vectors
@@ -75,10 +63,7 @@ static inline Vector2 Vector2Normalize(const Vector2 vec)
  * @param b The second vector
  * @return The sum of the two vectors
  */
-static inline Vector2 Vector2Add(const Vector2 a, const Vector2 b)
-{
-	return b2Add(a, b);
-}
+#define Vector2Add(a, b) v2((a).x + (b).x, (a).y + (b).y)
 
 /**
  * Subtract two vectors
@@ -86,21 +71,20 @@ static inline Vector2 Vector2Add(const Vector2 a, const Vector2 b)
  * @param b The offset
  * @return The difference of the two vectors
  */
-static inline Vector2 Vector2Sub(const Vector2 a, const Vector2 b)
-{
-	return b2Sub(a, b);
-}
+#define Vector2Sub(a, b) v2((a).x - (b).x, (a).y - (b).y)
 
 /**
  * Rotate a vector by an angle
- * @param vec The vector
+ * @param vector The vector
  * @param angle The angle (in radians)
  * @return The rotated vector
  */
-static inline Vector2 Vector2Rotate(const Vector2 vec, const float angle)
-{
-	return b2RotateVector(b2MakeRot(angle), vec);
-}
+#define Vector2Rotate(vector, angle) \
+	({ \
+		const float x = cosf(angle); \
+		const float y = sinf(angle); \
+		v2(x * (vector).x - y * (vector).y, y * (vector).x + x * (vector).y); \
+	})
 
 /**
  * Get the dot product of two vectors
@@ -108,32 +92,31 @@ static inline Vector2 Vector2Rotate(const Vector2 vec, const float angle)
  * @param b The second vector
  * @return The dot product of the two vectors
  */
-static inline float Vector2Dot(const Vector2 a, const Vector2 b)
-{
-	return b2Dot(a, b);
-}
+#define Vector2Dot(a, b) ((a).x * (b).x + (a).y * (b).y)
+
+/**
+ * Get the angle between two vectors
+ * @param a The first vector
+ * @param b The second vector
+ * @return The angle between the two vectors (in radians)
+ */
+#define Vector2Angle(a, b) acosf(Vector2Dot(a, b) / (Vector2Length(a) * Vector2Length(b)))
 
 /**
  * Scale a vector (multiply by a scalar)
- * @param vec The vector
+ * @param vector The vector
  * @param scale The scalar
  * @return The scaled vector
  */
-static inline Vector2 Vector2Scale(const Vector2 vec, const float scale)
-{
-	return b2MulSV(scale, vec);
-}
+#define Vector2Scale(vector, scale) v2((scale) * (vector).x, (scale) * (vector).y)
 
 /**
  * Divide a vector by a scalar divisor
- * @param vec The vector
+ * @param vector The vector
  * @param divisor The divisor
  * @return The divided vector
  * @note Prefer to scale by @code 1 / divisor@endcode instead of calling this function
  */
-static inline Vector2 Vector2Div(const Vector2 vec, const float divisor)
-{
-	return b2MulSV(1 / divisor, vec);
-}
+#define Vector2Div(vector, divisor) Vector2Scale(vector, (1 / (divisor)))
 
 #endif //GAME_VECTOR2_H

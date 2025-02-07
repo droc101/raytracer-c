@@ -44,7 +44,6 @@ add_executable(
         Helpers/Graphics/Drawing.h
         Helpers/Graphics/Drawing.c
         Structs/Vector2.h
-        Structs/Vector2.c
         Helpers/Core/MathEx.h
         Helpers/Core/MathEx.c
         Structs/Wall.h

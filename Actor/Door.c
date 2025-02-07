@@ -74,10 +74,9 @@ void CreateDoorSensor(Actor *this, const b2WorldId worldId)
 
 void DoorInit(Actor *this, const b2WorldId worldId)
 {
-	const Vector2 wallOffset = Vector2Scale(Vector2Normalize((Vector2){-cosf(this->rotation), -sinf(this->rotation)}),
-											0.5f);
-	this->actorWall = CreateWall((Vector2){this->position.x - wallOffset.x, this->position.y - wallOffset.y},
-								 (Vector2){this->position.x + wallOffset.x, this->position.y + wallOffset.y},
+	const Vector2 wallOffset = Vector2Scale(Vector2Normalize(Vector2FromAngle(this->rotation)), -0.5f);
+	this->actorWall = CreateWall(Vector2Sub(this->position, wallOffset),
+								 Vector2Add(this->position, wallOffset),
 								 TEXTURE("actor_door"),
 								 1.0f,
 								 0.0f);
@@ -130,22 +129,21 @@ void DoorUpdate(Actor *this, const double delta)
 			if (data->playerColliding)
 			{
 				b2Body_SetLinearVelocity(this->bodyId,
-										 Vector2Normalize((Vector2){-cosf(this->rotation), -sinf(this->rotation)}));
+										 Vector2Normalize(Vector2Scale(Vector2FromAngle(this->rotation), -1)));
 				DoorSetState(this, DOOR_OPENING);
 			}
 			break;
 		case DOOR_OPEN:
 			if (data->animationTime >= 1 && !data->playerColliding)
 			{
-				b2Body_SetLinearVelocity(this->bodyId,
-										 Vector2Normalize((Vector2){cosf(this->rotation), sinf(this->rotation)}));
+				b2Body_SetLinearVelocity(this->bodyId, Vector2Normalize(Vector2FromAngle(this->rotation)));
 				DoorSetState(this, DOOR_CLOSING);
 			}
 			break;
 		case DOOR_OPENING:
 			if (data->animationTime >= 1)
 			{
-				b2Body_SetLinearVelocity(this->bodyId, (Vector2){0, 0});
+				b2Body_SetLinearVelocity(this->bodyId, v2s(0));
 				b2Body_SetTransform(this->bodyId, this->actorWall->b, b2MakeRot(0));
 				DoorSetState(this, DOOR_OPEN);
 			}
@@ -154,12 +152,12 @@ void DoorUpdate(Actor *this, const double delta)
 			if (data->playerColliding)
 			{
 				b2Body_SetLinearVelocity(this->bodyId,
-										 Vector2Normalize((Vector2){-cosf(this->rotation), -sinf(this->rotation)}));
+										 Vector2Normalize(Vector2Scale(Vector2FromAngle(this->rotation), -1)));
 				data->state = DOOR_OPENING; // Set manually in order to not reset data->animationTime
 				data->animationTime = 1 - data->animationTime;
 			} else if (data->animationTime >= 1)
 			{
-				b2Body_SetLinearVelocity(this->bodyId, (Vector2){0, 0});
+				b2Body_SetLinearVelocity(this->bodyId, v2s(0));
 				b2Body_SetTransform(this->bodyId, this->actorWall->a, b2MakeRot(0));
 				DoorSetState(this, DOOR_CLOSED);
 			}

@@ -35,8 +35,8 @@ void CreateGoalSensor(Actor *this, const b2WorldId worldId)
 
 void GoalInit(Actor *this, const b2WorldId worldId)
 {
-	this->actorWall = CreateWall((Vector2){this->position.x, this->position.y - 0.5f},
-								 (Vector2){this->position.x, this->position.y + 0.5f},
+	this->actorWall = CreateWall(v2(this->position.x, this->position.y - 0.5f),
+								 v2(this->position.x, this->position.y + 0.5f),
 								 TEXTURE("actor_goal0"),
 								 1.0f,
 								 0.0f);
@@ -49,8 +49,8 @@ void GoalUpdate(Actor *this, double /*delta*/)
 {
 	const Vector2 playerPosition = GetState()->level->player.pos;
 	const float rotation = atan2f(playerPosition.y - this->position.y, playerPosition.x - this->position.x) + PIf / 2;
-	this->actorWall->a = v2(this->position.x - 0.5f * cosf(rotation), this->position.y - 0.5f * sinf(rotation));
-	this->actorWall->b = v2(this->position.x + 0.5f * cosf(rotation), this->position.y + 0.5f * sinf(rotation));
+	this->actorWall->a = v2(-0.5f * cosf(rotation) + this->position.x, -0.5f * sinf(rotation) + this->position.y);
+	this->actorWall->b = v2(0.5f * cosf(rotation) + this->position.x, 0.5f * sinf(rotation) + this->position.y);
 	WallBake(this->actorWall);
 
 	const uint32_t sensorShapeIdIndex = ((b2ShapeId *)this->extra_data)->index1;

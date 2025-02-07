@@ -45,10 +45,9 @@ void TestActorUpdate(Actor *this, const double delta)
 {
 	this->position = b2Body_GetPosition(this->bodyId);
 	this->rotation += 0.01f;
+	const Vector2 impulse = v2(0, 1638 * (float)delta);
 
-	b2Body_ApplyLinearImpulseToCenter(this->bodyId,
-									  Vector2Rotate((Vector2){.y = 1638 * (float)delta}, this->rotation),
-									  true);
+	b2Body_ApplyLinearImpulseToCenter(this->bodyId, Vector2Rotate(impulse, this->rotation), true);
 }
 
 // ReSharper disable once CppParameterMayBeConstPtrOrRef
