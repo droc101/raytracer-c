@@ -3,9 +3,12 @@
 //
 
 #include "Goal.h"
+#include <box2d/box2d.h>
 #include <math.h>
+
 #include "../Helpers/Collision.h"
 #include "../Helpers/Core/AssetReader.h"
+#include "../Helpers/Core/Error.h"
 #include "../Helpers/Core/MathEx.h"
 #include "../Helpers/TextBox.h"
 #include "../Structs/GlobalState.h"
@@ -13,34 +16,66 @@
 #include "../Structs/Vector2.h"
 #include "../Structs/Wall.h"
 
-void GoalInit(Actor *this, b2WorldId /*worldId*/)
+void GoalInit(Actor *this, const b2WorldId worldId)
 {
-	this->actorWall = CreateWall(v2(0, -0.5f), v2(0, 0.5f), TEXTURE("actor_goal0"), 1, 0.0f, GetState()->level->worldId);
+	this->extra_data = calloc(1, sizeof(b2ShapeId));
+	CheckAlloc(this->extra_data);
+	b2ShapeId *shapeId = this->extra_data;
+
+	this->actorWall = malloc(sizeof(Wall));
+	CheckAlloc(this->actorWall);
+	this->actorWall->a = v2(this->position.x, this->position.y - 0.5f);
+	this->actorWall->b = v2(this->position.x, this->position.y + 0.5f);
+	strncpy(this->actorWall->tex, TEXTURE("actor_goal0"), 32);
+	this->actorWall->uvScale = 1.0f;
+	this->actorWall->uvOffset = 0.0f;
+	this->actorWall->height = 1.0f;
+
+	b2BodyDef sensorBodyDef = b2DefaultBodyDef();
+	sensorBodyDef.type = b2_staticBody;
+	sensorBodyDef.position = this->position;
+	this->bodyId = b2CreateBody(worldId, &sensorBodyDef);
+	this->actorWall->bodyId = this->bodyId;
+	const b2Circle sensorShape = {
+		.radius = 0.5f,
+	};
+	b2ShapeDef sensorShapeDef = b2DefaultShapeDef();
+	sensorShapeDef.isSensor = true;
+	*shapeId = b2CreateCircleShape(this->bodyId, &sensorShapeDef, &sensorShape);
 }
 
 void GoalUpdate(Actor *this, double /*delta*/)
 {
-	const Vector2 dir = Vector2Sub(GetState()->level->player.pos, this->position);
-	this->rotation = atan2f(dir.y, dir.x);
-	this->rotation += PIf;
+	const Vector2 playerPosition = GetState()->level->player.pos;
+	const float rotation = atan2f(playerPosition.y - this->position.y, playerPosition.x - this->position.x) + PIf / 2;
+	this->actorWall->a = v2(this->position.x - 0.5f * cosf(rotation), this->position.y - 0.5f * sinf(rotation));
+	this->actorWall->b = v2(this->position.x + 0.5f * cosf(rotation), this->position.y + 0.5f * sinf(rotation));
 
-	if (CollideActorCylinder(this, GetState()->level->player.pos))
+	const b2SensorEvents sensorEvents = b2World_GetSensorEvents(GetState()->level->worldId);
+	for (int i = 0; i < sensorEvents.beginCount; i++)
 	{
-		RemoveActor(this);
-		const TextBox tb = DEFINE_TEXT("Goal!",
-									   2,
-									   20,
-									   0,
-									   70,
-									   TEXT_BOX_H_ALIGN_CENTER,
-									   TEXT_BOX_V_ALIGN_TOP,
-									   TEXT_BOX_THEME_WHITE);
-		ShowTextBox(tb);
+		const b2SensorBeginTouchEvent event = sensorEvents.beginEvents[i];
+		if (event.sensorShapeId.index1 == ((b2ShapeId *)this->extra_data)->index1)
+		{
+			RemoveActor(this);
+			const TextBox tb = DEFINE_TEXT("Goal!",
+										   2,
+										   20,
+										   0,
+										   70,
+										   TEXT_BOX_H_ALIGN_CENTER,
+										   TEXT_BOX_V_ALIGN_TOP,
+										   TEXT_BOX_THEME_WHITE);
+			ShowTextBox(tb);
+			break;
+		}
 	}
 }
 
 // ReSharper disable once CppParameterMayBeConstPtrOrRef
 void GoalDestroy(Actor *this)
 {
+	b2DestroyBody(this->bodyId);
 	free(this->actorWall);
+	free(this->extra_data);
 }

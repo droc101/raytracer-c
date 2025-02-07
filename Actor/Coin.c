@@ -36,8 +36,7 @@ void CoinInit(Actor *this, const b2WorldId worldId)
 
 	b2BodyDef sensorBodyDef = b2DefaultBodyDef();
 	sensorBodyDef.type = b2_staticBody;
-	sensorBodyDef.position = Vector2Scale(Vector2Add(this->actorWall->a, this->actorWall->b), 0.5f);
-	sensorBodyDef.enableSleep = false;
+	sensorBodyDef.position = this->position;
 	this->bodyId = b2CreateBody(worldId, &sensorBodyDef);
 	this->actorWall->bodyId = this->bodyId;
 	const b2Circle sensorShape = {
@@ -90,4 +89,5 @@ void CoinDestroy(Actor *this)
 {
 	b2DestroyBody(this->bodyId);
 	free(this->actorWall);
+	free(this->extra_data);
 }

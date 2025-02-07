@@ -72,7 +72,6 @@ void DoorInit(Actor *this, const b2WorldId worldId)
 	b2BodyDef sensorBodyDef = b2DefaultBodyDef();
 	sensorBodyDef.type = b2_staticBody;
 	sensorBodyDef.position = Vector2Scale(Vector2Add(this->actorWall->a, this->actorWall->b), 0.5f);
-	sensorBodyDef.enableSleep = false;
 	const b2BodyId sensorBody = b2CreateBody(worldId, &sensorBodyDef);
 	const b2Circle sensorShape = {
 		.radius = 1,

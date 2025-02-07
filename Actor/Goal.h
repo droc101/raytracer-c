@@ -7,7 +7,7 @@
 
 #include "../defines.h"
 
-void GoalInit(Actor *this, b2WorldId /*worldId*/);
+void GoalInit(Actor *this, b2WorldId worldId);
 
 void GoalUpdate(Actor *this, double /*delta*/);
 
