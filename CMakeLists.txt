@@ -175,15 +175,12 @@ include_directories(${OPENGL_INCLUDE_DIR})
 find_package(Vulkan REQUIRED) # 3d
 include_directories(${Vulkan_INCLUDE_DIRS})
 
-include_directories("${CMAKE_SOURCE_DIR}/lib/box2d/include")
-
 if (UNIX)
     find_package(GLEW REQUIRED) # OpenGL Extension Wrangler
     include_directories(${GLEW_INCLUDE_DIRS})
-
-    include_directories("/usr/include/cglm") # C OpenGL Mathematics Library
 elseif (WIN32) # Thank you Windows, I hate you.
     include_directories("${CMAKE_SOURCE_DIR}/lib/cglm/include") # C OpenGL Mathematics Library
+    include_directories("${CMAKE_SOURCE_DIR}/lib/box2d/include")
 
     list(APPEND CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/lib/glew") # OpenGL Extension Wrangler
     add_definitions(-DGLEW_STATIC)
