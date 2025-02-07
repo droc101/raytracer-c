@@ -5,7 +5,6 @@
 #include "Door.h"
 #include <box2d/box2d.h>
 #include <box2d/types.h>
-#include "../Helpers/Collision.h"
 #include "../Helpers/Core/AssetReader.h"
 #include "../Helpers/Core/Error.h"
 #include "../Helpers/Core/Logging.h"
