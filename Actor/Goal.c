@@ -5,7 +5,6 @@
 #include "Goal.h"
 #include <box2d/box2d.h>
 #include <math.h>
-
 #include "../Helpers/Collision.h"
 #include "../Helpers/Core/AssetReader.h"
 #include "../Helpers/Core/Error.h"
@@ -16,18 +15,11 @@
 #include "../Structs/Vector2.h"
 #include "../Structs/Wall.h"
 
-void GoalInit(Actor *this, const b2WorldId worldId)
+void GoalCreateSensor(Actor *this, const b2WorldId worldId)
 {
 	this->extra_data = calloc(1, sizeof(b2ShapeId));
 	CheckAlloc(this->extra_data);
 	b2ShapeId *shapeId = this->extra_data;
-
-	this->actorWall = CreateWall((Vector2){this->position.x, this->position.y - 0.5f},
-								 (Vector2){this->position.x, this->position.y + 0.5f},
-								 TEXTURE("actor_goal0"),
-								 1.0f,
-								 0.0f);
-	WallBake(this->actorWall);
 
 	b2BodyDef sensorBodyDef = b2DefaultBodyDef();
 	sensorBodyDef.type = b2_staticBody;
@@ -40,6 +32,18 @@ void GoalInit(Actor *this, const b2WorldId worldId)
 	b2ShapeDef sensorShapeDef = b2DefaultShapeDef();
 	sensorShapeDef.isSensor = true;
 	*shapeId = b2CreateCircleShape(this->bodyId, &sensorShapeDef, &sensorShape);
+}
+
+void GoalInit(Actor *this, const b2WorldId worldId)
+{
+	this->actorWall = CreateWall((Vector2){this->position.x, this->position.y - 0.5f},
+								 (Vector2){this->position.x, this->position.y + 0.5f},
+								 TEXTURE("actor_goal0"),
+								 1.0f,
+								 0.0f);
+	WallBake(this->actorWall);
+
+	GoalCreateSensor(this, worldId);
 }
 
 void GoalUpdate(Actor *this, double /*delta*/)

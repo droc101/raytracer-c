@@ -36,21 +36,8 @@ void DoorSetState(const Actor *door, const DoorState state)
 	data->animationTime = 0;
 }
 
-void DoorInit(Actor *this, const b2WorldId worldId)
+void DoorCreateCollider(Actor *this, const b2WorldId worldId, const Vector2 wallOffset)
 {
-	this->extra_data = calloc(1, sizeof(DoorData));
-	CheckAlloc(this->extra_data);
-	DoorData *data = this->extra_data;
-
-	const Vector2 wallOffset = Vector2Scale(Vector2Normalize((Vector2){-cosf(this->rotation), -sinf(this->rotation)}),
-											0.5f);
-	this->actorWall = CreateWall((Vector2){this->position.x - wallOffset.x, this->position.y - wallOffset.y},
-								 (Vector2){this->position.x + wallOffset.x, this->position.y + wallOffset.y},
-								 TEXTURE("actor_door"),
-								 1.0f,
-								 0.0f);
-	WallBake(this->actorWall);
-
 	b2BodyDef doorBodyDef = b2DefaultBodyDef();
 	doorBodyDef.type = b2_kinematicBody;
 	doorBodyDef.position = this->actorWall->a;
@@ -64,6 +51,13 @@ void DoorInit(Actor *this, const b2WorldId worldId)
 	doorShapeDef.friction = 0;
 	doorShapeDef.filter.categoryBits = COLLISION_GROUP_ACTOR;
 	b2CreateSegmentShape(this->bodyId, &doorShapeDef, &doorShape);
+}
+
+void DoorCreateSensor(Actor *this, const b2WorldId worldId)
+{
+	this->extra_data = calloc(1, sizeof(DoorData));
+	CheckAlloc(this->extra_data);
+	DoorData *data = this->extra_data;
 
 	b2BodyDef sensorBodyDef = b2DefaultBodyDef();
 	sensorBodyDef.type = b2_staticBody;
@@ -77,7 +71,23 @@ void DoorInit(Actor *this, const b2WorldId worldId)
 	sensorShapeDef.filter.categoryBits = COLLISION_GROUP_ACTOR;
 	sensorShapeDef.filter.maskBits = COLLISION_GROUP_PLAYER;
 	data->sensorId = b2CreateCircleShape(sensorBody, &sensorShapeDef, &sensorShape);
+}
 
+void DoorInit(Actor *this, const b2WorldId worldId)
+{
+	const Vector2 wallOffset = Vector2Scale(Vector2Normalize((Vector2){-cosf(this->rotation), -sinf(this->rotation)}),
+											0.5f);
+	this->actorWall = CreateWall((Vector2){this->position.x - wallOffset.x, this->position.y - wallOffset.y},
+								 (Vector2){this->position.x + wallOffset.x, this->position.y + wallOffset.y},
+								 TEXTURE("actor_door"),
+								 1.0f,
+								 0.0f);
+	WallBake(this->actorWall);
+
+	DoorCreateCollider(this, worldId, wallOffset);
+	DoorCreateSensor(this, worldId);
+
+	DoorData *data = this->extra_data; // Allocated in CreateSensor
 	this->showShadow = false;
 	data->state = DOOR_CLOSED;
 	data->animationTime = 0;

@@ -6,7 +6,6 @@
 #include <box2d/box2d.h>
 #include <box2d/types.h>
 #include <math.h>
-
 #include "../Helpers/Collision.h"
 #include "../Helpers/Core/AssetReader.h"
 #include "../Helpers/Core/Error.h"
@@ -16,17 +15,11 @@
 #include "../Structs/Vector2.h"
 #include "../Structs/Wall.h"
 
-void CoinInit(Actor *this, const b2WorldId worldId)
+void CoinCreateSensor(Actor *this, const b2WorldId worldId)
 {
 	this->extra_data = calloc(1, sizeof(b2ShapeId));
 	CheckAlloc(this->extra_data);
 	b2ShapeId *shapeId = this->extra_data;
-	this->actorWall = CreateWall((Vector2){this->position.x, this->position.y - 0.125f},
-								 (Vector2){this->position.x, this->position.y + 0.125f},
-								 this->paramB == 1 ? TEXTURE("actor_bluecoin") : TEXTURE("actor_coin"),
-								 1.0f,
-								 0.0f);
-	WallBake(this->actorWall);
 
 	b2BodyDef sensorBodyDef = b2DefaultBodyDef();
 	sensorBodyDef.type = b2_staticBody;
@@ -39,6 +32,18 @@ void CoinInit(Actor *this, const b2WorldId worldId)
 	b2ShapeDef sensorShapeDef = b2DefaultShapeDef();
 	sensorShapeDef.isSensor = true;
 	*shapeId = b2CreateCircleShape(this->bodyId, &sensorShapeDef, &sensorShape);
+}
+
+void CoinInit(Actor *this, const b2WorldId worldId)
+{
+	this->actorWall = CreateWall((Vector2){this->position.x, this->position.y - 0.125f},
+								 (Vector2){this->position.x, this->position.y + 0.125f},
+								 this->paramB == 1 ? TEXTURE("actor_bluecoin") : TEXTURE("actor_coin"),
+								 1.0f,
+								 0.0f);
+	WallBake(this->actorWall);
+
+	CoinCreateSensor(this, worldId);
 
 	this->paramA = 0;
 	this->actorWall->height = 0.25f;

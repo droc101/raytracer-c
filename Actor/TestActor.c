@@ -17,7 +17,7 @@ void TestActorSignalHandler(Actor * /*self*/, const Actor *sender, const int sig
 	LogDebug("Test actor got signal %d from actor %p\n", signal, sender);
 }
 
-void TestActorInit(Actor *this, const b2WorldId worldId)
+void TestActorCreateCollider(Actor *this, const b2WorldId worldId)
 {
 	b2BodyDef bodyDef = b2DefaultBodyDef();
 	bodyDef.type = b2_dynamicBody;
@@ -32,7 +32,11 @@ void TestActorInit(Actor *this, const b2WorldId worldId)
 	shapeDef.density = 32768;
 	shapeDef.filter.categoryBits = COLLISION_GROUP_ACTOR;
 	b2CreateCircleShape(this->bodyId, &shapeDef, &shape);
+}
 
+void TestActorInit(Actor *this, const b2WorldId worldId)
+{
+	TestActorCreateCollider(this, worldId);
 
 	this->actorModel = LoadModel(MODEL("model_leafy"));
 	this->actorModelTexture = TEXTURE("actor_BLOB2");
