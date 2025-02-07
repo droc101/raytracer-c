@@ -12,6 +12,23 @@
 #include "GlobalState.h"
 #include "Vector2.h"
 
+void PlayerCreateCollider(Level *level)
+{
+	b2BodyDef playerBodyDef = b2DefaultBodyDef();
+	playerBodyDef.type = b2_dynamicBody;
+	playerBodyDef.position = level->player.pos;
+	playerBodyDef.fixedRotation = true;
+	playerBodyDef.linearDamping = 12;
+	level->player.bodyId = b2CreateBody(level->worldId, &playerBodyDef);
+	const b2Circle playerShape = {
+		.center = level->player.pos,
+		.radius = 0.25f,
+	};
+	b2ShapeDef playerShapeDef = b2DefaultShapeDef();
+	playerShapeDef.filter.categoryBits = COLLISION_GROUP_PLAYER;
+	b2CreateCircleShape(level->player.bodyId, &playerShapeDef, &playerShape);
+}
+
 Level *CreateLevel()
 {
 	Level *l = malloc(sizeof(Level));
@@ -24,19 +41,7 @@ Level *CreateLevel()
 	l->worldId = b2CreateWorld(&worldDef);
 	l->player.pos = v2s(0);
 	l->player.angle = 0;
-	b2BodyDef playerBodyDef = b2DefaultBodyDef();
-	playerBodyDef.type = b2_dynamicBody;
-	playerBodyDef.position = l->player.pos;
-	playerBodyDef.fixedRotation = true;
-	playerBodyDef.linearDamping = 12;
-	l->player.bodyId = b2CreateBody(l->worldId, &playerBodyDef);
-	const b2Circle playerShape = {
-		.center = l->player.pos,
-		.radius = 0.25f,
-	};
-	b2ShapeDef playerShapeDef = b2DefaultShapeDef();
-	playerShapeDef.filter.categoryBits = COLLISION_GROUP_PLAYER;
-	b2CreateCircleShape(l->player.bodyId, &playerShapeDef, &playerShape);
+	PlayerCreateCollider(l);
 	l->hasCeiling = false;
 	strncpy(l->ceilOrSkyTex, "texture/level_sky_test.gtex", 28);
 	strncpy(l->floorTex, "texture/level_floor_test.gtex", 30);
