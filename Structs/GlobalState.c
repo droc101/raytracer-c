@@ -3,8 +3,10 @@
 //
 
 #include "GlobalState.h"
+#include <box2d/box2d.h>
 #include <stdio.h>
 #include <string.h>
+
 #include "../GameStates/GLevelSelectState.h"
 #include "../GameStates/GMenuState.h"
 #include "../GameStates/GOptionsState.h"
@@ -328,6 +330,8 @@ void SendSignal(const int signal, const Actor *sender)
 
 void RemoveTrigger(const size_t index)
 {
+	const Trigger *trigger = ListGet(state.level->triggers, index);
+	b2DestroyBody(b2Shape_GetBody(trigger->sensorId));
 	if (index != -1)
 	{
 		ListRemoveAt(&state.level->triggers, index);
