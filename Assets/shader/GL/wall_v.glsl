@@ -1,4 +1,4 @@
-#version 460
+#version 330 core
 
 in vec3 VERTEX; // Model space vertex position
 in vec2 VERTEX_UV; // Vertex UV coordinates
@@ -8,7 +8,7 @@ flat out float SHADE; // Output shade value for fragment shader
 
 uniform mat4 MODEL_WORLD_MATRIX; // Model to world matrix
 
-layout(std140, binding = 2) uniform SharedUniforms
+layout(std140) uniform SharedUniforms
 {
     mat4 worldViewMatrix;
     vec3 fogColor;

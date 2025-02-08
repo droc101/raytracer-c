@@ -1,11 +1,11 @@
-#version 460
+#version 330 core
 
 in vec2 UV; // UV coordinates of the fragment
 flat in float SHADE; // Shading value of this wall
 
 out vec4 COLOR; // Output color of the fragment
 
-layout(std140, binding = 2) uniform SharedUniforms
+layout(std140) uniform SharedUniforms
 {
     mat4 worldViewMatrix;
     vec3 fogColor;

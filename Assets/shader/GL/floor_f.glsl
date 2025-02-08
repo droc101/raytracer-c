@@ -1,4 +1,4 @@
-#version 460
+#version 330 core
 
 in vec2 UV; // UV coordinates of the fragment
 
@@ -7,7 +7,7 @@ out vec4 COLOR; // Output color of the fragment
 uniform sampler2D alb; // Albedo texture of the floor
 uniform float shade; // Shading color of the floor
 
-layout(std140, binding = 2) uniform SharedUniforms
+layout(std140) uniform SharedUniforms
 {
     mat4 worldViewMatrix;
     vec3 fogColor;

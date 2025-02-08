@@ -736,7 +736,7 @@ void GL_DrawWall(const Wall *w, const mat4 mdl, const Camera *, const Level *)
 {
 	glUseProgram(wallShader->program);
 
-	glBindBufferBase(GL_UNIFORM_BUFFER, 2, sharedUniformBuffer);
+	glBindBufferBase(GL_UNIFORM_BUFFER, glGetUniformBlockIndex(wallShader->program, "SharedUniforms"), sharedUniformBuffer);
 
 	GL_LoadTextureFromAsset(w->tex);
 
@@ -787,7 +787,7 @@ void GL_DrawFloor(const Vector2 vp1, const Vector2 vp2, const char *texture, con
 {
 	glUseProgram(floorAndCeilingShader->program);
 
-	glBindBufferBase(GL_UNIFORM_BUFFER, 2, sharedUniformBuffer);
+	glBindBufferBase(GL_UNIFORM_BUFFER, glGetUniformBlockIndex(floorAndCeilingShader->program, "SharedUniforms"), sharedUniformBuffer);
 
 	GL_LoadTextureFromAsset(texture);
 

@@ -1,4 +1,4 @@
-#version 460
+#version 330 core
 
 in vec3 VERTEX; // Model space vertex position
 in vec2 VERTEX_UV; // Vertex UV coordinates

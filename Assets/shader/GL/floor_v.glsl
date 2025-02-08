@@ -1,4 +1,4 @@
-#version 460
+#version 330 core
 
 in vec2 VERTEX; // Model space vertex position
 
@@ -6,7 +6,7 @@ out vec2 UV; // Output UV coordinates for fragment shader
 
 uniform float height; // Height of the floor
 
-layout(std140, binding = 2) uniform SharedUniforms
+layout(std140) uniform SharedUniforms
 {
     mat4 worldViewMatrix;
     vec3 fogColor;
