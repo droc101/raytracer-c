@@ -46,6 +46,79 @@ GL_Buffer *GL_ModelBuffers[MAX_MODELS];
 
 GLuint sharedUniformBuffer;
 
+#pragma region Shader Variable Locations
+
+GLint floorTextureLoc;
+GLint floorShadeLoc;
+GLint floorHeightLoc;
+
+GLint hudColoredColorLoc; // TODO: confusing name -- location of the color uniform in the colored shader
+
+GLint hudTexturedTextureLoc; // TODO: confusing name -- location of the texture uniform in the textured shader
+GLint hudTexturedColorLoc;
+GLint hudTexturedRegionLoc;
+
+GLint modelShadedTextureLoc;
+GLint modelShadedModelViewMatrixLoc;
+GLint modelShadedWorldViewMatrixLoc;
+
+GLint modelUnshadedTextureLoc;
+GLint modelUnshadedModelViewMatrixLoc;
+GLint modelUnshadedWorldViewMatrixLoc;
+
+GLint shadowTextureLoc;
+GLint shadowFogColorLoc;
+GLint shadowFogStartLoc;
+GLint shadowFogEndLoc;
+GLint shadowModelViewMatrixLoc;
+GLint shadowWorldViewMatrixLoc;
+
+GLint skyTextureLoc;
+GLint skyModelWorldMatrixLoc;
+GLint skyWorldViewMatrixLoc;
+
+GLint wallTextureLoc;
+GLint wallModelWorldMatrixLoc;
+GLint wallAngleLoc;
+
+#pragma endregion
+
+void LoadShaderLocations()
+{
+	floorTextureLoc = glGetUniformLocation(floorAndCeilingShader->program, "alb");
+	floorShadeLoc = glGetUniformLocation(floorAndCeilingShader->program, "shade");
+	floorHeightLoc = glGetUniformLocation(floorAndCeilingShader->program, "height");
+
+	hudColoredColorLoc = glGetUniformLocation(uiColoredShader->program, "col");
+
+	hudTexturedTextureLoc = glGetUniformLocation(uiTexturedShader->program, "alb");
+	hudTexturedColorLoc = glGetUniformLocation(uiTexturedShader->program, "col");
+	hudTexturedRegionLoc = glGetUniformLocation(uiTexturedShader->program, "region");
+
+	modelShadedTextureLoc = glGetUniformLocation(modelShadedShader->program, "alb");
+	modelShadedModelViewMatrixLoc = glGetUniformLocation(modelShadedShader->program, "MODEL_VIEW_MATRIX");
+	modelShadedWorldViewMatrixLoc = glGetUniformLocation(modelShadedShader->program, "WORLD_VIEW_MATRIX");
+
+	modelUnshadedTextureLoc = glGetUniformLocation(modelUnshadedShader->program, "alb");
+	modelUnshadedModelViewMatrixLoc = glGetUniformLocation(modelUnshadedShader->program, "MODEL_VIEW_MATRIX");
+	modelUnshadedWorldViewMatrixLoc = glGetUniformLocation(modelUnshadedShader->program, "WORLD_VIEW_MATRIX");
+
+	shadowTextureLoc = glGetUniformLocation(shadowShader->program, "alb");
+	shadowFogColorLoc = glGetUniformLocation(shadowShader->program, "fog_color");
+	shadowFogStartLoc = glGetUniformLocation(shadowShader->program, "fog_start");
+	shadowFogEndLoc = glGetUniformLocation(shadowShader->program, "fog_end");
+	shadowModelViewMatrixLoc = glGetUniformLocation(shadowShader->program, "MODEL_VIEW_MATRIX");
+	shadowWorldViewMatrixLoc = glGetUniformLocation(shadowShader->program, "WORLD_VIEW_MATRIX");
+
+	skyTextureLoc = glGetUniformLocation(skyShader->program, "alb");
+	skyModelWorldMatrixLoc = glGetUniformLocation(skyShader->program, "MODEL_WORLD_MATRIX");
+	skyWorldViewMatrixLoc = glGetUniformLocation(skyShader->program, "WORLD_VIEW_MATRIX");
+
+	wallTextureLoc = glGetUniformLocation(wallShader->program, "alb");
+	wallModelWorldMatrixLoc = glGetUniformLocation(wallShader->program, "MODEL_WORLD_MATRIX");
+	wallAngleLoc = glGetUniformLocation(wallShader->program, "wall_angle");
+}
+
 void GL_Error(const char *error)
 {
 	LogError("OpenGL Error: %s\n", error);
@@ -146,6 +219,8 @@ bool GL_Init(SDL_Window *wnd)
 		GL_Error("Failed to compile shaders");
 		return false;
 	}
+
+	LoadShaderLocations();
 
 	glBuffer = GL_ConstructBuffer();
 
@@ -335,7 +410,7 @@ void GL_DrawRect(const Vector2 pos, const Vector2 size, const uint color)
 	const float g = (float)(color >> 8 & 0xFF) / 255.0f;
 	const float b = (float)(color & 0xFF) / 255.0f;
 
-	glUniform4f(glGetUniformLocation(uiColoredShader->program, "col"), r, g, b, a);
+	glUniform4f(hudColoredColorLoc, r, g, b, a);
 
 	const Vector2 ndcStartPos = v2(GL_X_TO_NDC(pos.x), GL_Y_TO_NDC(pos.y));
 	const Vector2 ncdEndPos = v2(GL_X_TO_NDC(pos.x + size.x), GL_Y_TO_NDC(pos.y + size.y));
@@ -384,7 +459,7 @@ void GL_DrawRectOutline(const Vector2 pos, const Vector2 size, const uint color,
 	const float g = (float)(color >> 8 & 0xFF) / 255.0f;
 	const float b = (float)(color & 0xFF) / 255.0f;
 
-	glUniform4f(glGetUniformLocation(uiColoredShader->program, "col"), r, g, b, a);
+	glUniform4f(hudColoredColorLoc, r, g, b, a);
 
 	const Vector2 ndcStartPos = v2(GL_X_TO_NDC(pos.x), GL_Y_TO_NDC(pos.y));
 	const Vector2 ndcEndPos = v2(GL_X_TO_NDC(pos.x + size.x), GL_Y_TO_NDC(pos.y + size.y));
@@ -507,9 +582,9 @@ void GL_DrawTexture_Internal(const Vector2 pos,
 	const float g = (float)(color >> 8 & 0xFF) / 255.0f;
 	const float b = (float)(color & 0xFF) / 255.0f;
 
-	glUniform4f(glGetUniformLocation(uiTexturedShader->program, "col"), r, g, b, a);
+	glUniform4f(hudTexturedColorLoc, r, g, b, a);
 
-	glUniform4f(glGetUniformLocation(uiTexturedShader->program, "region"),
+	glUniform4f(hudTexturedRegionLoc,
 				(GLfloat)region_start.x,
 				(GLfloat)region_start.y,
 				(GLfloat)region_end.x,
@@ -593,7 +668,7 @@ void GL_DrawLine(const Vector2 start, const Vector2 end, const uint color, const
 	const float g = (float)(color >> 8 & 0xFF) / 255.0f;
 	const float b = (float)(color & 0xFF) / 255.0f;
 
-	glUniform4f(glGetUniformLocation(uiColoredShader->program, "col"), r, g, b, a);
+	glUniform4f(hudColoredColorLoc, r, g, b, a);
 
 	const Vector2 ndcStartPos = v2(GL_X_TO_NDC(start.x), GL_Y_TO_NDC(start.y));
 	const Vector2 ndcEndPos = v2(GL_X_TO_NDC(end.x), GL_Y_TO_NDC(end.y));
@@ -639,19 +714,19 @@ void GL_SetLevelParams(mat4 *mvp, const Level *l)
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 	glUseProgram(skyShader->program);
-	glUniformMatrix4fv(glGetUniformLocation(skyShader->program, "WORLD_VIEW_MATRIX"),
+	glUniformMatrix4fv(skyWorldViewMatrixLoc,
 					   1,
 					   GL_FALSE,
 					   mvp[0][0]); // world -> screen
 
 	glUseProgram(modelShadedShader->program);
-	glUniformMatrix4fv(glGetUniformLocation(modelShadedShader->program, "WORLD_VIEW_MATRIX"),
+	glUniformMatrix4fv(modelShadedWorldViewMatrixLoc,
 					   1,
 					   GL_FALSE,
 					   mvp[0][0]); // world -> screen
 
 	glUseProgram(modelUnshadedShader->program);
-	glUniformMatrix4fv(glGetUniformLocation(modelUnshadedShader->program, "WORLD_VIEW_MATRIX"),
+	glUniformMatrix4fv(modelUnshadedWorldViewMatrixLoc,
 					   1,
 					   GL_FALSE,
 					   mvp[0][0]); // world -> screen
@@ -665,12 +740,12 @@ void GL_DrawWall(const Wall *w, const mat4 mdl, const Camera *, const Level *)
 
 	GL_LoadTextureFromAsset(w->tex);
 
-	glUniformMatrix4fv(glGetUniformLocation(wallShader->program, "MODEL_WORLD_MATRIX"),
+	glUniformMatrix4fv(wallModelWorldMatrixLoc,
 					   1,
 					   GL_FALSE,
 					   mdl[0]); // model -> world
 
-	glUniform1f(glGetUniformLocation(wallShader->program, "wall_angle"), (float)w->angle);
+	glUniform1f(wallAngleLoc, (float)w->angle);
 
 	float vertices[4][5] = {
 		// X Y Z U V
@@ -716,8 +791,8 @@ void GL_DrawFloor(const Vector2 vp1, const Vector2 vp2, const char *texture, con
 
 	GL_LoadTextureFromAsset(texture);
 
-	glUniform1f(glGetUniformLocation(floorAndCeilingShader->program, "height"), height);
-	glUniform1f(glGetUniformLocation(floorAndCeilingShader->program, "shade"), shade);
+	glUniform1f(floorHeightLoc, height);
+	glUniform1f(floorShadeLoc, shade);
 
 	const float vertices[4][2] = {
 		// X Z
@@ -750,11 +825,11 @@ void GL_DrawShadow(const Vector2 vp1, const Vector2 vp2, const mat4 *mvp, const 
 
 	GL_LoadTextureFromAsset(TEXTURE("vfx_shadow"));
 
-	glUniformMatrix4fv(glGetUniformLocation(shadowShader->program, "WORLD_VIEW_MATRIX"),
+	glUniformMatrix4fv(shadowWorldViewMatrixLoc,
 					   1,
 					   GL_FALSE,
 					   mvp[0][0]); // world -> screen
-	glUniformMatrix4fv(glGetUniformLocation(shadowShader->program, "MODEL_WORLD_MATRIX"),
+	glUniformMatrix4fv(shadowModelViewMatrixLoc,
 					   1,
 					   GL_FALSE,
 					   mdl[0]); // model -> world
@@ -764,10 +839,10 @@ void GL_DrawShadow(const Vector2 vp1, const Vector2 vp2, const mat4 *mvp, const 
 	const float g = (float)(fogColor >> 8 & 0xFF) / 255.0f;
 	const float b = (float)(fogColor & 0xFF) / 255.0f;
 
-	glUniform3f(glGetUniformLocation(shadowShader->program, "fog_color"), r, g, b);
+	glUniform3f(shadowFogColorLoc, r, g, b);
 
-	glUniform1f(glGetUniformLocation(shadowShader->program, "fog_start"), (float)l->fogStart);
-	glUniform1f(glGetUniformLocation(shadowShader->program, "fog_end"), (float)l->fogEnd);
+	glUniform1f(shadowFogStartLoc, (float)l->fogStart);
+	glUniform1f(shadowFogEndLoc, (float)l->fogEnd);
 
 	const float vertices[4][2] = {
 		// X Z
@@ -825,7 +900,7 @@ void GL_DrawColoredArrays(const float *vertices, const uint *indices, const uint
 	const float g = (float)(color >> 8 & 0xFF) / 255.0f;
 	const float b = (float)(color & 0xFF) / 255.0f;
 
-	glUniform4f(glGetUniformLocation(uiTexturedShader->program, "col"), r, g, b, a);
+	glUniform4f(hudColoredColorLoc, r, g, b, a);
 
 	glBindVertexArray(glBuffer->vertexArrayObject);
 
@@ -857,9 +932,9 @@ void GL_DrawTexturedArrays(const float *vertices,
 	const float g = (float)(color >> 8 & 0xFF) / 255.0f;
 	const float b = (float)(color & 0xFF) / 255.0f;
 
-	glUniform4f(glGetUniformLocation(uiTexturedShader->program, "col"), r, g, b, a);
+	glUniform4f(hudTexturedColorLoc, r, g, b, a);
 
-	glUniform4f(glGetUniformLocation(uiTexturedShader->program, "region"), -1, 0, 0, 0);
+	glUniform4f(hudTexturedRegionLoc, -1, 0, 0, 0);
 
 	glBindVertexArray(glBuffer->vertexArrayObject);
 
