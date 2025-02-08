@@ -12,7 +12,7 @@
  * @param extents The extents of the trigger (half in each direction)
  * @param rot The rotation of the trigger
  * @param command The command to execute when the trigger is activated
- * @param flags
+ * @param flags The flags of the trigger. See @c TriggerFlags for a list of flags
  * @return The created trigger
  */
 Trigger *CreateTrigger(Vector2 pos, Vector2 extents, double rot, const char *command, uint flags);
