@@ -26,14 +26,14 @@ typedef struct __attribute__((aligned(16))) GL_SharedUniforms
 
 SDL_GLContext ctx;
 
-GL_Shader *uiTextured;
-GL_Shader *uiColored;
-GL_Shader *wall;
-GL_Shader *floorAndCeiling;
-GL_Shader *shadow;
-GL_Shader *sky;
-GL_Shader *modelUnshaded;
-GL_Shader *modelShaded;
+GL_Shader *uiTexturedShader;
+GL_Shader *uiColoredShader;
+GL_Shader *wallShader;
+GL_Shader *floorAndCeilingShader;
+GL_Shader *shadowShader;
+GL_Shader *skyShader;
+GL_Shader *modelUnshadedShader;
+GL_Shader *modelShadedShader;
 
 GL_Buffer *glBuffer;
 
@@ -125,23 +125,23 @@ bool GL_Init(SDL_Window *wnd)
 	glDebugMessageCallback(GL_DebugMessageCallback, NULL);
 #endif
 
-	uiTextured = GL_ConstructShaderFromAssets(OGL_SHADER("GL_hud_textured_f"), OGL_SHADER("GL_hud_textured_v"));
-	uiColored = GL_ConstructShaderFromAssets(OGL_SHADER("GL_hud_color_f"), OGL_SHADER("GL_hud_color_v"));
-	wall = GL_ConstructShaderFromAssets(OGL_SHADER("GL_wall_f"), OGL_SHADER("GL_wall_v"));
-	floorAndCeiling = GL_ConstructShaderFromAssets(OGL_SHADER("GL_floor_f"), OGL_SHADER("GL_floor_v"));
-	shadow = GL_ConstructShaderFromAssets(OGL_SHADER("GL_shadow_f"), OGL_SHADER("GL_shadow_v"));
-	sky = GL_ConstructShaderFromAssets(OGL_SHADER("GL_sky_f"), OGL_SHADER("GL_sky_v"));
-	modelShaded = GL_ConstructShaderFromAssets(OGL_SHADER("GL_model_shaded_f"), OGL_SHADER("GL_model_shaded_v"));
-	modelUnshaded = GL_ConstructShaderFromAssets(OGL_SHADER("GL_model_unshaded_f"), OGL_SHADER("GL_model_unshaded_v"));
+	uiTexturedShader = GL_ConstructShaderFromAssets(OGL_SHADER("GL_hud_textured_f"), OGL_SHADER("GL_hud_textured_v"));
+	uiColoredShader = GL_ConstructShaderFromAssets(OGL_SHADER("GL_hud_color_f"), OGL_SHADER("GL_hud_color_v"));
+	wallShader = GL_ConstructShaderFromAssets(OGL_SHADER("GL_wall_f"), OGL_SHADER("GL_wall_v"));
+	floorAndCeilingShader = GL_ConstructShaderFromAssets(OGL_SHADER("GL_floor_f"), OGL_SHADER("GL_floor_v"));
+	shadowShader = GL_ConstructShaderFromAssets(OGL_SHADER("GL_shadow_f"), OGL_SHADER("GL_shadow_v"));
+	skyShader = GL_ConstructShaderFromAssets(OGL_SHADER("GL_sky_f"), OGL_SHADER("GL_sky_v"));
+	modelShadedShader = GL_ConstructShaderFromAssets(OGL_SHADER("GL_model_shaded_f"), OGL_SHADER("GL_model_shaded_v"));
+	modelUnshadedShader = GL_ConstructShaderFromAssets(OGL_SHADER("GL_model_unshaded_f"), OGL_SHADER("GL_model_unshaded_v"));
 
-	if (!uiTextured ||
-		!uiColored ||
-		!wall ||
-		!floorAndCeiling ||
-		!shadow ||
-		!sky ||
-		!modelShaded ||
-		!modelUnshaded)
+	if (!uiTexturedShader ||
+		!uiColoredShader ||
+		!wallShader ||
+		!floorAndCeilingShader ||
+		!shadowShader ||
+		!skyShader ||
+		!modelShadedShader ||
+		!modelUnshadedShader)
 	{
 		GL_Error("Failed to compile shaders");
 		return false;
@@ -193,56 +193,56 @@ GL_Shader *GL_ConstructShader(const char *fsh, const char *vsh)
 	GLint status;
 	char errorBuffer[512];
 
-	GL_Shader *shd = malloc(sizeof(GL_Shader));
-	CheckAlloc(shd);
+	GL_Shader *shader = malloc(sizeof(GL_Shader));
+	CheckAlloc(shader);
 
-	shd->vsh = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(shd->vsh, 1, (const GLchar *const *)&vsh, NULL);
-	glCompileShader(shd->vsh);
-	glGetShaderiv(shd->vsh, GL_COMPILE_STATUS, &status);
+	shader->vertexShader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(shader->vertexShader, 1, (const GLchar *const *)&vsh, NULL);
+	glCompileShader(shader->vertexShader);
+	glGetShaderiv(shader->vertexShader, GL_COMPILE_STATUS, &status);
 	if (status != GL_TRUE)
 	{
-		glGetShaderInfoLog(shd->vsh, sizeof(errorBuffer), NULL, errorBuffer);
+		glGetShaderInfoLog(shader->vertexShader, sizeof(errorBuffer), NULL, errorBuffer);
 		errorBuffer[sizeof(errorBuffer) - 1] = '\0';
 		Error(errorBuffer);
 	}
 
-	shd->fsh = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(shd->fsh, 1, (const GLchar *const *)&fsh, NULL);
-	glCompileShader(shd->fsh);
-	glGetShaderiv(shd->fsh, GL_COMPILE_STATUS, &status);
+	shader->fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(shader->fragmentShader, 1, (const GLchar *const *)&fsh, NULL);
+	glCompileShader(shader->fragmentShader);
+	glGetShaderiv(shader->fragmentShader, GL_COMPILE_STATUS, &status);
 	if (status != GL_TRUE)
 	{
-		glGetShaderInfoLog(shd->fsh, sizeof(errorBuffer), NULL, errorBuffer);
+		glGetShaderInfoLog(shader->fragmentShader, sizeof(errorBuffer), NULL, errorBuffer);
 		errorBuffer[sizeof(errorBuffer) - 1] = '\0';
 		LogError(errorBuffer);
-		free(shd);
+		free(shader);
 		return NULL;
 	}
 
-	shd->program = glCreateProgram();
-	glAttachShader(shd->program, shd->vsh);
-	glAttachShader(shd->program, shd->fsh);
-	glBindFragDataLocation(shd->program, 0, "COLOR");
-	glLinkProgram(shd->program);
+	shader->program = glCreateProgram();
+	glAttachShader(shader->program, shader->vertexShader);
+	glAttachShader(shader->program, shader->fragmentShader);
+	glBindFragDataLocation(shader->program, 0, "COLOR");
+	glLinkProgram(shader->program);
 
-	glGetProgramiv(shd->program, GL_LINK_STATUS, &status);
+	glGetProgramiv(shader->program, GL_LINK_STATUS, &status);
 	if (status != GL_TRUE)
 	{
-		glGetProgramInfoLog(shd->program, sizeof(errorBuffer), NULL, errorBuffer);
+		glGetProgramInfoLog(shader->program, sizeof(errorBuffer), NULL, errorBuffer);
 		errorBuffer[sizeof(errorBuffer) - 1] = '\0';
 		LogError(errorBuffer);
-		free(shd);
+		free(shader);
 		return NULL;
 	}
 
-	return shd;
+	return shader;
 }
 
 void GL_DestroyShader(GL_Shader *shd)
 {
-	glDeleteShader(shd->vsh);
-	glDeleteShader(shd->fsh);
+	glDeleteShader(shd->vertexShader);
+	glDeleteShader(shd->fragmentShader);
 	glDeleteProgram(shd->program);
 	free(shd);
 	shd = NULL;
@@ -250,22 +250,22 @@ void GL_DestroyShader(GL_Shader *shd)
 
 GL_Buffer *GL_ConstructBuffer()
 {
-	GL_Buffer *buf = malloc(sizeof(GL_Buffer));
-	CheckAlloc(buf);
+	GL_Buffer *buffer = malloc(sizeof(GL_Buffer));
+	CheckAlloc(buffer);
 
-	glGenVertexArrays(1, &buf->vao);
-	glGenBuffers(1, &buf->vbo);
-	glGenBuffers(1, &buf->ebo);
+	glGenVertexArrays(1, &buffer->vertexArrayObject);
+	glGenBuffers(1, &buffer->vertexBufferObject);
+	glGenBuffers(1, &buffer->elementBufferObject);
 
-	return buf;
+	return buffer;
 }
 
-void GL_DestroyBuffer(GL_Buffer *buf)
+void GL_DestroyBuffer(GL_Buffer *buffer)
 {
-	glDeleteVertexArrays(1, &buf->vao);
-	glDeleteBuffers(1, &buf->vbo);
-	glDeleteBuffers(1, &buf->ebo);
-	free(buf);
+	glDeleteVertexArrays(1, &buffer->vertexArrayObject);
+	glDeleteBuffers(1, &buffer->vertexBufferObject);
+	glDeleteBuffers(1, &buffer->elementBufferObject);
+	free(buffer);
 }
 
 inline void GL_ClearScreen()
@@ -297,14 +297,14 @@ inline void GL_Swap()
 
 void GL_DestroyGL()
 {
-	GL_DestroyShader(uiTextured);
-	GL_DestroyShader(uiColored);
-	GL_DestroyShader(wall);
-	GL_DestroyShader(floorAndCeiling);
-	GL_DestroyShader(shadow);
-	GL_DestroyShader(sky);
-	GL_DestroyShader(modelShaded);
-	GL_DestroyShader(modelUnshaded);
+	GL_DestroyShader(uiTexturedShader);
+	GL_DestroyShader(uiColoredShader);
+	GL_DestroyShader(wallShader);
+	GL_DestroyShader(floorAndCeilingShader);
+	GL_DestroyShader(shadowShader);
+	GL_DestroyShader(skyShader);
+	GL_DestroyShader(modelShadedShader);
+	GL_DestroyShader(modelUnshadedShader);
 	glUseProgram(0);
 	glDisableVertexAttribArray(0);
 	GL_DestroyBuffer(glBuffer);
@@ -328,37 +328,37 @@ void GL_DestroyGL()
 
 void GL_DrawRect(const Vector2 pos, const Vector2 size, const uint color)
 {
-	glUseProgram(uiColored->program);
+	glUseProgram(uiColoredShader->program);
 
 	const float a = (float)(color >> 24 & 0xFF) / 255.0f;
 	const float r = (float)(color >> 16 & 0xFF) / 255.0f;
 	const float g = (float)(color >> 8 & 0xFF) / 255.0f;
 	const float b = (float)(color & 0xFF) / 255.0f;
 
-	glUniform4f(glGetUniformLocation(uiColored->program, "col"), r, g, b, a);
+	glUniform4f(glGetUniformLocation(uiColoredShader->program, "col"), r, g, b, a);
 
-	const Vector2 ndcPos = v2(GL_X_TO_NDC(pos.x), GL_Y_TO_NDC(pos.y));
-	const Vector2 ndcPosEnd = v2(GL_X_TO_NDC(pos.x + size.x), GL_Y_TO_NDC(pos.y + size.y));
+	const Vector2 ndcStartPos = v2(GL_X_TO_NDC(pos.x), GL_Y_TO_NDC(pos.y));
+	const Vector2 ncdEndPos = v2(GL_X_TO_NDC(pos.x + size.x), GL_Y_TO_NDC(pos.y + size.y));
 
 
 	const float vertices[4][2] = {
-		{(float)ndcPos.x, (float)ndcPos.y},
-		{(float)ndcPosEnd.x, (float)ndcPos.y},
-		{(float)ndcPosEnd.x, (float)ndcPosEnd.y},
-		{(float)ndcPos.x, (float)ndcPosEnd.y},
+		{(float)ndcStartPos.x, (float)ndcStartPos.y},
+		{(float)ncdEndPos.x, (float)ndcStartPos.y},
+		{(float)ncdEndPos.x, (float)ncdEndPos.y},
+		{(float)ndcStartPos.x, (float)ncdEndPos.y},
 	};
 
 	const uint indices[] = {0, 1, 2, 0, 2, 3};
 
-	glBindVertexArray(glBuffer->vao);
+	glBindVertexArray(glBuffer->vertexArrayObject);
 
-	glBindBuffer(GL_ARRAY_BUFFER, glBuffer->vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, glBuffer->vertexBufferObject);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glBuffer->ebo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glBuffer->elementBufferObject);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-	const GLint posAttrLoc = glGetAttribLocation(uiColored->program, "VERTEX");
+	const GLint posAttrLoc = glGetAttribLocation(uiColoredShader->program, "VERTEX");
 	glVertexAttribPointer(posAttrLoc, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void *)0);
 	glEnableVertexAttribArray(posAttrLoc);
 
@@ -377,37 +377,37 @@ void GL_DrawRectOutline(const Vector2 pos, const Vector2 size, const uint color,
 
 	glLineWidth(thickness);
 
-	glUseProgram(uiColored->program);
+	glUseProgram(uiColoredShader->program);
 
 	const float a = (float)(color >> 24 & 0xFF) / 255.0f;
 	const float r = (float)(color >> 16 & 0xFF) / 255.0f;
 	const float g = (float)(color >> 8 & 0xFF) / 255.0f;
 	const float b = (float)(color & 0xFF) / 255.0f;
 
-	glUniform4f(glGetUniformLocation(uiColored->program, "col"), r, g, b, a);
+	glUniform4f(glGetUniformLocation(uiColoredShader->program, "col"), r, g, b, a);
 
-	const Vector2 ndcPos = v2(GL_X_TO_NDC(pos.x), GL_Y_TO_NDC(pos.y));
-	const Vector2 ndcPosEnd = v2(GL_X_TO_NDC(pos.x + size.x), GL_Y_TO_NDC(pos.y + size.y));
+	const Vector2 ndcStartPos = v2(GL_X_TO_NDC(pos.x), GL_Y_TO_NDC(pos.y));
+	const Vector2 ndcEndPos = v2(GL_X_TO_NDC(pos.x + size.x), GL_Y_TO_NDC(pos.y + size.y));
 
 
 	const float vertices[4][2] = {
-		{(float)ndcPos.x, (float)ndcPos.y},
-		{(float)ndcPosEnd.x, (float)ndcPos.y},
-		{(float)ndcPosEnd.x, (float)ndcPosEnd.y},
-		{(float)ndcPos.x, (float)ndcPosEnd.y},
+		{(float)ndcStartPos.x, (float)ndcStartPos.y},
+		{(float)ndcEndPos.x, (float)ndcStartPos.y},
+		{(float)ndcEndPos.x, (float)ndcEndPos.y},
+		{(float)ndcStartPos.x, (float)ndcEndPos.y},
 	};
 
 	const uint indices[] = {0, 1, 2, 3};
 
-	glBindVertexArray(glBuffer->vao);
+	glBindVertexArray(glBuffer->vertexArrayObject);
 
-	glBindBuffer(GL_ARRAY_BUFFER, glBuffer->vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, glBuffer->vertexBufferObject);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glBuffer->ebo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glBuffer->elementBufferObject);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-	const GLint posAttrLoc = glGetAttribLocation(uiColored->program, "VERTEX");
+	const GLint posAttrLoc = glGetAttribLocation(uiColoredShader->program, "VERTEX");
 	glVertexAttribPointer(posAttrLoc, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void *)0);
 	glEnableVertexAttribArray(posAttrLoc);
 
@@ -416,24 +416,24 @@ void GL_DrawRectOutline(const Vector2 pos, const Vector2 size, const uint color,
 
 void GL_LoadTextureFromAsset(const char *texture)
 {
-	const Image *img = LoadImage(texture);
+	const Image *image = LoadImage(texture);
 
 	// if the texture is already loaded, don't load it again
-	if (GL_AssetTextureMap[img->id] != -1)
+	if (GL_AssetTextureMap[image->id] != -1)
 	{
-		if (glIsTexture(GL_Textures[GL_AssetTextureMap[img->id]]))
+		if (glIsTexture(GL_Textures[GL_AssetTextureMap[image->id]]))
 		{
-			glBindTexture(GL_TEXTURE_2D, GL_Textures[GL_AssetTextureMap[img->id]]);
+			glBindTexture(GL_TEXTURE_2D, GL_Textures[GL_AssetTextureMap[image->id]]);
 			return;
 		}
 	}
 
-	const int slot = GL_RegisterTexture(img->pixelData, (int)img->width, (int)img->height);
+	const int slot = GL_RegisterTexture(image->pixelData, (int)image->width, (int)image->height);
 
-	GL_AssetTextureMap[img->id] = slot;
+	GL_AssetTextureMap[image->id] = slot;
 }
 
-int GL_RegisterTexture(const unsigned char *pixelData, const int width, const int height)
+int GL_RegisterTexture(const byte *pixelData, const int width, const int height)
 {
 	const int slot = GL_NextFreeSlot;
 
@@ -469,11 +469,11 @@ void GL_SetTexParams(const char *texture, const bool linear, const bool repeat)
 {
 	GL_LoadTextureFromAsset(texture); // make sure the texture is loaded
 
-	const Image *img = LoadImage(texture);
+	const Image *image = LoadImage(texture);
 
-	const GLuint tex = GL_Textures[GL_AssetTextureMap[img->id]];
+	const GLuint glTextureID = GL_Textures[GL_AssetTextureMap[image->id]];
 
-	glBindTexture(GL_TEXTURE_2D, tex);
+	glBindTexture(GL_TEXTURE_2D, glTextureID);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, repeat ? GL_REPEAT : GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, repeat ? GL_REPEAT : GL_CLAMP_TO_EDGE);
 
@@ -497,7 +497,7 @@ void GL_DrawTexture_Internal(const Vector2 pos,
 							 const Vector2 region_start,
 							 const Vector2 region_end)
 {
-	glUseProgram(uiTextured->program);
+	glUseProgram(uiTexturedShader->program);
 
 	GL_LoadTextureFromAsset(texture);
 
@@ -507,40 +507,40 @@ void GL_DrawTexture_Internal(const Vector2 pos,
 	const float g = (float)(color >> 8 & 0xFF) / 255.0f;
 	const float b = (float)(color & 0xFF) / 255.0f;
 
-	glUniform4f(glGetUniformLocation(uiTextured->program, "col"), r, g, b, a);
+	glUniform4f(glGetUniformLocation(uiTexturedShader->program, "col"), r, g, b, a);
 
-	glUniform4f(glGetUniformLocation(uiTextured->program, "region"),
+	glUniform4f(glGetUniformLocation(uiTexturedShader->program, "region"),
 				(GLfloat)region_start.x,
 				(GLfloat)region_start.y,
 				(GLfloat)region_end.x,
 				(GLfloat)region_end.y);
 
-	const Vector2 ndcPos = v2(GL_X_TO_NDC(pos.x), GL_Y_TO_NDC(pos.y));
-	const Vector2 ndcPosEnd = v2(GL_X_TO_NDC(pos.x + size.x), GL_Y_TO_NDC(pos.y + size.y));
+	const Vector2 ndcStartPos = v2(GL_X_TO_NDC(pos.x), GL_Y_TO_NDC(pos.y));
+	const Vector2 ndcEndPos = v2(GL_X_TO_NDC(pos.x + size.x), GL_Y_TO_NDC(pos.y + size.y));
 
 
 	const float vertices[4][4] = {
-		{(float)ndcPos.x, (float)ndcPos.y, 0.0f, 0.0f},
-		{(float)ndcPosEnd.x, (float)ndcPos.y, 1.0f, 0.0f},
-		{(float)ndcPosEnd.x, (float)ndcPosEnd.y, 1.0f, 1.0f},
-		{(float)ndcPos.x, (float)ndcPosEnd.y, 0.0f, 1.0f},
+		{(float)ndcStartPos.x, (float)ndcStartPos.y, 0.0f, 0.0f},
+		{(float)ndcEndPos.x, (float)ndcStartPos.y, 1.0f, 0.0f},
+		{(float)ndcEndPos.x, (float)ndcEndPos.y, 1.0f, 1.0f},
+		{(float)ndcStartPos.x, (float)ndcEndPos.y, 0.0f, 1.0f},
 	};
 
 	const uint indices[] = {0, 1, 2, 0, 2, 3};
 
-	glBindVertexArray(glBuffer->vao);
+	glBindVertexArray(glBuffer->vertexArrayObject);
 
-	glBindBuffer(GL_ARRAY_BUFFER, glBuffer->vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, glBuffer->vertexBufferObject);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glBuffer->ebo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glBuffer->elementBufferObject);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-	const GLint posAttrLoc = glGetAttribLocation(uiTextured->program, "VERTEX");
+	const GLint posAttrLoc = glGetAttribLocation(uiTexturedShader->program, "VERTEX");
 	glVertexAttribPointer(posAttrLoc, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void *)0);
 	glEnableVertexAttribArray(posAttrLoc);
 
-	const GLint texAttrLoc = glGetAttribLocation(uiTextured->program, "VERTEX_UV");
+	const GLint texAttrLoc = glGetAttribLocation(uiTexturedShader->program, "VERTEX_UV");
 	glVertexAttribPointer(texAttrLoc, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void *)(2 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(texAttrLoc);
 
@@ -586,35 +586,35 @@ void GL_DrawLine(const Vector2 start, const Vector2 end, const uint color, const
 		glDisable(GL_LINE_SMOOTH);
 	}
 
-	glUseProgram(uiColored->program);
+	glUseProgram(uiColoredShader->program);
 
 	const float a = (float)(color >> 24 & 0xFF) / 255.0f;
 	const float r = (float)(color >> 16 & 0xFF) / 255.0f;
 	const float g = (float)(color >> 8 & 0xFF) / 255.0f;
 	const float b = (float)(color & 0xFF) / 255.0f;
 
-	glUniform4f(glGetUniformLocation(uiColored->program, "col"), r, g, b, a);
+	glUniform4f(glGetUniformLocation(uiColoredShader->program, "col"), r, g, b, a);
 
-	const Vector2 ndcStart = v2(GL_X_TO_NDC(start.x), GL_Y_TO_NDC(start.y));
-	const Vector2 ndcEnd = v2(GL_X_TO_NDC(end.x), GL_Y_TO_NDC(end.y));
+	const Vector2 ndcStartPos = v2(GL_X_TO_NDC(start.x), GL_Y_TO_NDC(start.y));
+	const Vector2 ndcEndPos = v2(GL_X_TO_NDC(end.x), GL_Y_TO_NDC(end.y));
 
 	// Calculate the 2 corner vertices of each point for a thick line
 	const float vertices[2][2] = {
-		{(float)ndcStart.x, (float)ndcStart.y},
-		{(float)ndcEnd.x, (float)ndcEnd.y},
+		{(float)ndcStartPos.x, (float)ndcStartPos.y},
+		{(float)ndcEndPos.x, (float)ndcEndPos.y},
 	};
 
 	const uint indices[] = {0, 1};
 
-	glBindVertexArray(glBuffer->vao);
+	glBindVertexArray(glBuffer->vertexArrayObject);
 
-	glBindBuffer(GL_ARRAY_BUFFER, glBuffer->vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, glBuffer->vertexBufferObject);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glBuffer->ebo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glBuffer->elementBufferObject);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-	const GLint posAttrLoc = glGetAttribLocation(uiColored->program, "VERTEX");
+	const GLint posAttrLoc = glGetAttribLocation(uiColoredShader->program, "VERTEX");
 	glVertexAttribPointer(posAttrLoc, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void *)0);
 	glEnableVertexAttribArray(posAttrLoc);
 
@@ -638,20 +638,20 @@ void GL_SetLevelParams(mat4 *mvp, const Level *l)
 	glBufferData(GL_UNIFORM_BUFFER, sizeof(GL_SharedUniforms), &uniforms, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-	glUseProgram(sky->program);
-	glUniformMatrix4fv(glGetUniformLocation(sky->program, "WORLD_VIEW_MATRIX"),
+	glUseProgram(skyShader->program);
+	glUniformMatrix4fv(glGetUniformLocation(skyShader->program, "WORLD_VIEW_MATRIX"),
 					   1,
 					   GL_FALSE,
 					   mvp[0][0]); // world -> screen
 
-	glUseProgram(modelShaded->program);
-	glUniformMatrix4fv(glGetUniformLocation(modelShaded->program, "WORLD_VIEW_MATRIX"),
+	glUseProgram(modelShadedShader->program);
+	glUniformMatrix4fv(glGetUniformLocation(modelShadedShader->program, "WORLD_VIEW_MATRIX"),
 					   1,
 					   GL_FALSE,
 					   mvp[0][0]); // world -> screen
 
-	glUseProgram(modelUnshaded->program);
-	glUniformMatrix4fv(glGetUniformLocation(modelUnshaded->program, "WORLD_VIEW_MATRIX"),
+	glUseProgram(modelUnshadedShader->program);
+	glUniformMatrix4fv(glGetUniformLocation(modelUnshadedShader->program, "WORLD_VIEW_MATRIX"),
 					   1,
 					   GL_FALSE,
 					   mvp[0][0]); // world -> screen
@@ -659,18 +659,18 @@ void GL_SetLevelParams(mat4 *mvp, const Level *l)
 
 void GL_DrawWall(const Wall *w, const mat4 mdl, const Camera *, const Level *)
 {
-	glUseProgram(wall->program);
+	glUseProgram(wallShader->program);
 
 	glBindBufferBase(GL_UNIFORM_BUFFER, 2, sharedUniformBuffer);
 
 	GL_LoadTextureFromAsset(w->tex);
 
-	glUniformMatrix4fv(glGetUniformLocation(wall->program, "MODEL_WORLD_MATRIX"),
+	glUniformMatrix4fv(glGetUniformLocation(wallShader->program, "MODEL_WORLD_MATRIX"),
 					   1,
 					   GL_FALSE,
 					   mdl[0]); // model -> world
 
-	glUniform1f(glGetUniformLocation(wall->program, "wall_angle"), (float)w->angle);
+	glUniform1f(glGetUniformLocation(wallShader->program, "wall_angle"), (float)w->angle);
 
 	float vertices[4][5] = {
 		// X Y Z U V
@@ -689,19 +689,19 @@ void GL_DrawWall(const Wall *w, const mat4 mdl, const Camera *, const Level *)
 
 	const uint indices[] = {0, 1, 2, 0, 2, 3};
 
-	glBindVertexArray(glBuffer->vao);
+	glBindVertexArray(glBuffer->vertexArrayObject);
 
-	glBindBuffer(GL_ARRAY_BUFFER, glBuffer->vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, glBuffer->vertexBufferObject);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glBuffer->ebo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glBuffer->elementBufferObject);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-	const GLint posAttrLoc = glGetAttribLocation(wall->program, "VERTEX");
+	const GLint posAttrLoc = glGetAttribLocation(wallShader->program, "VERTEX");
 	glVertexAttribPointer(posAttrLoc, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void *)0);
 	glEnableVertexAttribArray(posAttrLoc);
 
-	const GLint texAttrLoc = glGetAttribLocation(wall->program, "VERTEX_UV");
+	const GLint texAttrLoc = glGetAttribLocation(wallShader->program, "VERTEX_UV");
 	glVertexAttribPointer(texAttrLoc, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void *)(3 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(texAttrLoc);
 
@@ -710,14 +710,14 @@ void GL_DrawWall(const Wall *w, const mat4 mdl, const Camera *, const Level *)
 
 void GL_DrawFloor(const Vector2 vp1, const Vector2 vp2, const char *texture, const float height, const float shade)
 {
-	glUseProgram(floorAndCeiling->program);
+	glUseProgram(floorAndCeilingShader->program);
 
 	glBindBufferBase(GL_UNIFORM_BUFFER, 2, sharedUniformBuffer);
 
 	GL_LoadTextureFromAsset(texture);
 
-	glUniform1f(glGetUniformLocation(floorAndCeiling->program, "height"), height);
-	glUniform1f(glGetUniformLocation(floorAndCeiling->program, "shade"), shade);
+	glUniform1f(glGetUniformLocation(floorAndCeilingShader->program, "height"), height);
+	glUniform1f(glGetUniformLocation(floorAndCeilingShader->program, "shade"), shade);
 
 	const float vertices[4][2] = {
 		// X Z
@@ -729,15 +729,15 @@ void GL_DrawFloor(const Vector2 vp1, const Vector2 vp2, const char *texture, con
 
 	const uint indices[] = {0, 1, 2, 0, 2, 3};
 
-	glBindVertexArray(glBuffer->vao);
+	glBindVertexArray(glBuffer->vertexArrayObject);
 
-	glBindBuffer(GL_ARRAY_BUFFER, glBuffer->vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, glBuffer->vertexBufferObject);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glBuffer->ebo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glBuffer->elementBufferObject);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-	const GLint posAttrLoc = glGetAttribLocation(floorAndCeiling->program, "VERTEX");
+	const GLint posAttrLoc = glGetAttribLocation(floorAndCeilingShader->program, "VERTEX");
 	glVertexAttribPointer(posAttrLoc, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void *)0);
 	glEnableVertexAttribArray(posAttrLoc);
 
@@ -746,28 +746,28 @@ void GL_DrawFloor(const Vector2 vp1, const Vector2 vp2, const char *texture, con
 
 void GL_DrawShadow(const Vector2 vp1, const Vector2 vp2, const mat4 *mvp, const mat4 mdl, const Level *l)
 {
-	glUseProgram(shadow->program);
+	glUseProgram(shadowShader->program);
 
 	GL_LoadTextureFromAsset(TEXTURE("vfx_shadow"));
 
-	glUniformMatrix4fv(glGetUniformLocation(shadow->program, "WORLD_VIEW_MATRIX"),
+	glUniformMatrix4fv(glGetUniformLocation(shadowShader->program, "WORLD_VIEW_MATRIX"),
 					   1,
 					   GL_FALSE,
 					   mvp[0][0]); // world -> screen
-	glUniformMatrix4fv(glGetUniformLocation(shadow->program, "MODEL_WORLD_MATRIX"),
+	glUniformMatrix4fv(glGetUniformLocation(shadowShader->program, "MODEL_WORLD_MATRIX"),
 					   1,
 					   GL_FALSE,
 					   mdl[0]); // model -> world
 
-	const uint color = l->fogColor;
-	const float r = (float)(color >> 16 & 0xFF) / 255.0f;
-	const float g = (float)(color >> 8 & 0xFF) / 255.0f;
-	const float b = (float)(color & 0xFF) / 255.0f;
+	const uint fogColor = l->fogColor;
+	const float r = (float)(fogColor >> 16 & 0xFF) / 255.0f;
+	const float g = (float)(fogColor >> 8 & 0xFF) / 255.0f;
+	const float b = (float)(fogColor & 0xFF) / 255.0f;
 
-	glUniform3f(glGetUniformLocation(shadow->program, "fog_color"), r, g, b);
+	glUniform3f(glGetUniformLocation(shadowShader->program, "fog_color"), r, g, b);
 
-	glUniform1f(glGetUniformLocation(shadow->program, "fog_start"), (float)l->fogStart);
-	glUniform1f(glGetUniformLocation(shadow->program, "fog_end"), (float)l->fogEnd);
+	glUniform1f(glGetUniformLocation(shadowShader->program, "fog_start"), (float)l->fogStart);
+	glUniform1f(glGetUniformLocation(shadowShader->program, "fog_end"), (float)l->fogEnd);
 
 	const float vertices[4][2] = {
 		// X Z
@@ -779,15 +779,15 @@ void GL_DrawShadow(const Vector2 vp1, const Vector2 vp2, const mat4 *mvp, const 
 
 	const uint indices[] = {0, 1, 2, 0, 2, 3};
 
-	glBindVertexArray(glBuffer->vao);
+	glBindVertexArray(glBuffer->vertexArrayObject);
 
-	glBindBuffer(GL_ARRAY_BUFFER, glBuffer->vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, glBuffer->vertexBufferObject);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glBuffer->ebo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glBuffer->elementBufferObject);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-	const GLint posAttrLoc = glGetAttribLocation(shadow->program, "VERTEX");
+	const GLint posAttrLoc = glGetAttribLocation(shadowShader->program, "VERTEX");
 	glVertexAttribPointer(posAttrLoc, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void *)0);
 	glEnableVertexAttribArray(posAttrLoc);
 
@@ -810,32 +810,32 @@ inline void GL_Disable3D()
 
 inline void GL_UpdateViewportSize()
 {
-	int w;
-	int h;
-	SDL_GL_GetDrawableSize(GetGameWindow(), &w, &h);
-	glViewport(0, 0, w, h);
+	int vpWidth;
+	int vpHeight;
+	SDL_GL_GetDrawableSize(GetGameWindow(), &vpWidth, &vpHeight);
+	glViewport(0, 0, vpWidth, vpHeight);
 }
 
 void GL_DrawColoredArrays(const float *vertices, const uint *indices, const uint quad_count, const uint color)
 {
-	glUseProgram(uiColored->program);
+	glUseProgram(uiColoredShader->program);
 
 	const float a = (float)(color >> 24 & 0xFF) / 255.0f;
 	const float r = (float)(color >> 16 & 0xFF) / 255.0f;
 	const float g = (float)(color >> 8 & 0xFF) / 255.0f;
 	const float b = (float)(color & 0xFF) / 255.0f;
 
-	glUniform4f(glGetUniformLocation(uiTextured->program, "col"), r, g, b, a);
+	glUniform4f(glGetUniformLocation(uiTexturedShader->program, "col"), r, g, b, a);
 
-	glBindVertexArray(glBuffer->vao);
+	glBindVertexArray(glBuffer->vertexArrayObject);
 
-	glBindBuffer(GL_ARRAY_BUFFER, glBuffer->vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, glBuffer->vertexBufferObject);
 	glBufferData(GL_ARRAY_BUFFER, (long)(quad_count * 16 * sizeof(float)), vertices, GL_STATIC_DRAW);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glBuffer->ebo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glBuffer->elementBufferObject);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, (long)(quad_count * 6 * sizeof(uint)), indices, GL_STATIC_DRAW);
 
-	const GLint posAttrLoc = glGetAttribLocation(uiColored->program, "VERTEX");
+	const GLint posAttrLoc = glGetAttribLocation(uiColoredShader->program, "VERTEX");
 	glVertexAttribPointer(posAttrLoc, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void *)0);
 	glEnableVertexAttribArray(posAttrLoc);
 
@@ -848,7 +848,7 @@ void GL_DrawTexturedArrays(const float *vertices,
 						   const char *texture,
 						   const uint color)
 {
-	glUseProgram(uiTextured->program);
+	glUseProgram(uiTexturedShader->program);
 
 	GL_LoadTextureFromAsset(texture);
 
@@ -857,23 +857,23 @@ void GL_DrawTexturedArrays(const float *vertices,
 	const float g = (float)(color >> 8 & 0xFF) / 255.0f;
 	const float b = (float)(color & 0xFF) / 255.0f;
 
-	glUniform4f(glGetUniformLocation(uiTextured->program, "col"), r, g, b, a);
+	glUniform4f(glGetUniformLocation(uiTexturedShader->program, "col"), r, g, b, a);
 
-	glUniform4f(glGetUniformLocation(uiTextured->program, "region"), -1, 0, 0, 0);
+	glUniform4f(glGetUniformLocation(uiTexturedShader->program, "region"), -1, 0, 0, 0);
 
-	glBindVertexArray(glBuffer->vao);
+	glBindVertexArray(glBuffer->vertexArrayObject);
 
-	glBindBuffer(GL_ARRAY_BUFFER, glBuffer->vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, glBuffer->vertexBufferObject);
 	glBufferData(GL_ARRAY_BUFFER, (long)(quad_count * 16 * sizeof(float)), vertices, GL_STATIC_DRAW);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glBuffer->ebo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glBuffer->elementBufferObject);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, (long)(quad_count * 6 * sizeof(uint)), indices, GL_STATIC_DRAW);
 
-	const GLint posAttrLoc = glGetAttribLocation(uiTextured->program, "VERTEX");
+	const GLint posAttrLoc = glGetAttribLocation(uiTexturedShader->program, "VERTEX");
 	glVertexAttribPointer(posAttrLoc, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void *)0);
 	glEnableVertexAttribArray(posAttrLoc);
 
-	const GLint texAttrLoc = glGetAttribLocation(uiTextured->program, "VERTEX_UV");
+	const GLint texAttrLoc = glGetAttribLocation(uiTexturedShader->program, "VERTEX_UV");
 	glVertexAttribPointer(texAttrLoc, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void *)(2 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(texAttrLoc);
 
@@ -882,36 +882,36 @@ void GL_DrawTexturedArrays(const float *vertices,
 
 mat4 *GL_GetMatrix(const Camera *cam)
 {
-	vec3 cam_pos = {cam->x, cam->y, cam->z};
-	const float aspect = (float)WindowWidth() / (float)WindowHeight();
+	vec3 cameraPosition = {cam->x, cam->y, cam->z};
+	const float aspectRatio = (float)WindowWidth() / (float)WindowHeight();
 
-	mat4 IDENTITY = GLM_MAT4_IDENTITY_INIT;
-	mat4 PERSPECTIVE = GLM_MAT4_ZERO_INIT;
-	glm_perspective(glm_rad(cam->fov), aspect, NEAR_Z, FAR_Z, PERSPECTIVE);
+	mat4 identityMatrix = GLM_MAT4_IDENTITY_INIT;
+	mat4 perspectiveMatrix = GLM_MAT4_ZERO_INIT;
+	glm_perspective(glm_rad(cam->fov), aspectRatio, NEAR_Z, FAR_Z, perspectiveMatrix);
 
-	vec3 look_at = {cosf(cam->yaw), 0, sinf(cam->yaw)};
-	vec3 up = {0, 1, 0};
+	vec3 lookAtPosition = {cosf(cam->yaw), 0, sinf(cam->yaw)};
+	vec3 upVector = {0, 1, 0};
 
 	// TODO: roll and pitch are messed up
 
-	glm_vec3_rotate(look_at, cam->roll, (vec3){0, 0, 1}); // Roll
-	glm_vec3_rotate(look_at, cam->pitch, (vec3){1, 0, 0}); // Pitch
+	glm_vec3_rotate(lookAtPosition, cam->roll, (vec3){0, 0, 1}); // Roll
+	glm_vec3_rotate(lookAtPosition, cam->pitch, (vec3){1, 0, 0}); // Pitch
 
-	look_at[0] += cam_pos[0];
-	look_at[1] += cam_pos[1];
-	look_at[2] += cam_pos[2];
+	lookAtPosition[0] += cameraPosition[0];
+	lookAtPosition[1] += cameraPosition[1];
+	lookAtPosition[2] += cameraPosition[2];
 
-	mat4 VIEW = GLM_MAT4_ZERO_INIT;
-	glm_lookat(cam_pos, look_at, up, VIEW);
+	mat4 viewMatrix = GLM_MAT4_ZERO_INIT;
+	glm_lookat(cameraPosition, lookAtPosition, upVector, viewMatrix);
 
-	mat4 MODEL_VIEW = GLM_MAT4_ZERO_INIT;
-	glm_mat4_mul(VIEW, IDENTITY, MODEL_VIEW);
+	mat4 modelViewMatrix = GLM_MAT4_ZERO_INIT;
+	glm_mat4_mul(viewMatrix, identityMatrix, modelViewMatrix);
 
-	mat4 *MODEL_VIEW_PROJECTION = malloc(sizeof(mat4));
-	CheckAlloc(MODEL_VIEW_PROJECTION);
-	glm_mat4_mul(PERSPECTIVE, MODEL_VIEW, *MODEL_VIEW_PROJECTION);
+	mat4 *modelViewProjectionMatrix = malloc(sizeof(mat4));
+	CheckAlloc(modelViewProjectionMatrix);
+	glm_mat4_mul(perspectiveMatrix, modelViewMatrix, *modelViewProjectionMatrix);
 
-	return MODEL_VIEW_PROJECTION;
+	return modelViewProjectionMatrix;
 }
 
 void GL_RenderLevel(const Level *l, const Camera *cam)
@@ -921,26 +921,26 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
 	//glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 	//glLineWidth(2);
 
-	mat4 *WORLD_VIEW_MATRIX = GL_GetMatrix(cam);
-	const mat4 IDENTITY = GLM_MAT4_IDENTITY_INIT;
-	mat4 SKY_MODEL_WORLD = GLM_MAT4_IDENTITY_INIT;
-	glm_translated(SKY_MODEL_WORLD, (vec3){(float)l->player.pos.x, 0, (float)l->player.pos.y});
+	mat4 *worldViewMatrix = GL_GetMatrix(cam);
+	const mat4 identityMatrix = GLM_MAT4_IDENTITY_INIT;
+	mat4 skyModelWorldMatrix = GLM_MAT4_IDENTITY_INIT;
+	glm_translated(skyModelWorldMatrix, (vec3){(float)l->player.pos.x, 0, (float)l->player.pos.y});
 
-	const Vector2 floor_start = v2(l->player.pos.x - 100, l->player.pos.y - 100);
-	const Vector2 floor_end = v2(l->player.pos.x + 100, l->player.pos.y + 100);
+	const Vector2 floorStart = v2(l->player.pos.x - 100, l->player.pos.y - 100);
+	const Vector2 floorEnd = v2(l->player.pos.x + 100, l->player.pos.y + 100);
 
-	GL_SetLevelParams(WORLD_VIEW_MATRIX, l);
+	GL_SetLevelParams(worldViewMatrix, l);
 
 	if (l->hasCeiling)
 	{
-		GL_DrawFloor(floor_start, floor_end, l->ceilOrSkyTex, 0.5f, 0.8f);
+		GL_DrawFloor(floorStart, floorEnd, l->ceilOrSkyTex, 0.5f, 0.8f);
 	} else
 	{
-		GL_RenderModel(skyModel, SKY_MODEL_WORLD, l->ceilOrSkyTex, SHADER_SKY);
+		GL_RenderModel(skyModel, skyModelWorldMatrix, l->ceilOrSkyTex, SHADER_SKY);
 		GL_ClearDepthOnly(); // prevent sky from clipping into walls
 	}
 
-	GL_DrawFloor(floor_start, floor_end, l->floorTex, -0.5f, 1.0f);
+	GL_DrawFloor(floorStart, floorEnd, l->floorTex, -0.5f, 1.0f);
 
 	glDisable(GL_DEPTH_TEST);
 	for (int i = 0; i < l->actors.length; i++)
@@ -948,26 +948,26 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
 		const Actor *actor = ListGet(l->actors, i);
 		if (actor->showShadow)
 		{
-			mat4 actor_xfm = GLM_MAT4_IDENTITY_INIT;
-			ActorTransformMatrix(actor, &actor_xfm);
+			mat4 actorXfm = GLM_MAT4_IDENTITY_INIT;
+			ActorTransformMatrix(actor, &actorXfm);
 			// remove the rotation and y position from the actor matrix so the shadow draws correctly
-			glm_rotate(actor_xfm, (float)actor->rotation, (vec3){0, 1, 0});
-			glm_translate(actor_xfm, (vec3){0, -actor->yPosition, 0});
-			GL_DrawShadow(v2s(-0.5 * actor->shadowSize), v2s(0.5 * actor->shadowSize), WORLD_VIEW_MATRIX, actor_xfm, l);
+			glm_rotate(actorXfm, (float)actor->rotation, (vec3){0, 1, 0});
+			glm_translate(actorXfm, (vec3){0, -actor->yPosition, 0});
+			GL_DrawShadow(v2s(-0.5 * actor->shadowSize), v2s(0.5 * actor->shadowSize), worldViewMatrix, actorXfm, l);
 		}
 	}
 	glEnable(GL_DEPTH_TEST);
 
 	for (int i = 0; i < l->walls.length; i++)
 	{
-		GL_DrawWall(ListGet(l->walls, i), IDENTITY, cam, l);
+		GL_DrawWall(ListGet(l->walls, i), identityMatrix, cam, l);
 	}
 
 	for (int i = 0; i < l->actors.length; i++)
 	{
 		const Actor *actor = ListGet(l->actors, i);
-		mat4 actor_xfm = GLM_MAT4_IDENTITY_INIT;
-		ActorTransformMatrix(actor, &actor_xfm);
+		mat4 actorXfm = GLM_MAT4_IDENTITY_INIT;
+		ActorTransformMatrix(actor, &actorXfm);
 		if (actor->actorModel == NULL)
 		{
 			if (actor->actorWall == NULL)
@@ -978,14 +978,14 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
 			memcpy(&w, actor->actorWall, sizeof(Wall));
 			WallBake(&w);
 			w.angle += actor->rotation;
-			GL_DrawWall(&w, actor_xfm, cam, l);
+			GL_DrawWall(&w, actorXfm, cam, l);
 		} else
 		{
-			GL_RenderModel(actor->actorModel, actor_xfm, actor->actorModelTexture, SHADER_SHADED);
+			GL_RenderModel(actor->actorModel, actorXfm, actor->actorModelTexture, SHADER_SHADED);
 		}
 	}
 
-	free(WORLD_VIEW_MATRIX);
+	free(worldViewMatrix);
 
 	//glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 	GL_Disable3D();
@@ -995,24 +995,24 @@ void GL_LoadModel(const Model *model)
 {
 	if (GL_ModelBuffers[model->id] != NULL)
 	{
-		const GL_Buffer *buf = GL_ModelBuffers[model->id];
-		glBindVertexArray(buf->vao);
-		glBindBuffer(GL_ARRAY_BUFFER, buf->vbo);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buf->ebo);
+		const GL_Buffer *modelBuffer = GL_ModelBuffers[model->id];
+		glBindVertexArray(modelBuffer->vertexArrayObject);
+		glBindBuffer(GL_ARRAY_BUFFER, modelBuffer->vertexBufferObject);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, modelBuffer->elementBufferObject);
 		return;
 	}
-	GL_Buffer *buf = GL_ConstructBuffer();
-	GL_ModelBuffers[model->id] = buf;
+	GL_Buffer *modelBuffer = GL_ConstructBuffer();
+	GL_ModelBuffers[model->id] = modelBuffer;
 
-	glBindVertexArray(buf->vao);
+	glBindVertexArray(modelBuffer->vertexArrayObject);
 
-	glBindBuffer(GL_ARRAY_BUFFER, buf->vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, modelBuffer->vertexBufferObject);
 	glBufferData(GL_ARRAY_BUFFER,
 				 (long)(model->vertexCount * sizeof(float) * 8),
 				 model->vertexData,
 				 GL_STATIC_DRAW);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buf->ebo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, modelBuffer->elementBufferObject);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER,
 				 (long)(model->indexCount * sizeof(uint)),
 				 model->indexData,
@@ -1021,44 +1021,44 @@ void GL_LoadModel(const Model *model)
 
 void GL_RenderModel(const Model *model, const mat4 modelWorldMatrix, const char *texture, const ModelShader shader)
 {
-	GL_Shader *shd;
+	GL_Shader *glShader;
 	switch (shader)
 	{
 		case SHADER_SKY:
-			shd = sky;
+			glShader = skyShader;
 			break;
 		case SHADER_SHADED:
-			shd = modelShaded;
+			glShader = modelShadedShader;
 			break;
 		case SHADER_UNSHADED:
-			shd = modelUnshaded;
+			glShader = modelUnshadedShader;
 			break;
 		default:
 			Error("Invalid shader for model drawing");
 	}
 
-	glUseProgram(shd->program);
+	glUseProgram(glShader->program);
 
 	GL_LoadTextureFromAsset(texture);
 
-	glUniformMatrix4fv(glGetUniformLocation(shd->program, "MODEL_WORLD_MATRIX"),
+	glUniformMatrix4fv(glGetUniformLocation(glShader->program, "MODEL_WORLD_MATRIX"),
 					   1,
 					   GL_FALSE,
 					   modelWorldMatrix[0]); // model -> world
 
 	GL_LoadModel(model);
 
-	const GLint posAttrLoc = glGetAttribLocation(shd->program, "VERTEX");
+	const GLint posAttrLoc = glGetAttribLocation(glShader->program, "VERTEX");
 	glVertexAttribPointer(posAttrLoc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void *)0);
 	glEnableVertexAttribArray(posAttrLoc);
 
-	const GLint texAttrLoc = glGetAttribLocation(shd->program, "VERTEX_UV");
+	const GLint texAttrLoc = glGetAttribLocation(glShader->program, "VERTEX_UV");
 	glVertexAttribPointer(texAttrLoc, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void *)(3 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(texAttrLoc);
 
 	if (shader == SHADER_SHADED) // other shaders do not take normals
 	{
-		const GLint normAttrLoc = glGetAttribLocation(shd->program, "VERTEX_NORMAL");
+		const GLint normAttrLoc = glGetAttribLocation(glShader->program, "VERTEX_NORMAL");
 		glVertexAttribPointer(normAttrLoc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void *)(5 * sizeof(GLfloat)));
 		glEnableVertexAttribArray(normAttrLoc);
 	}
