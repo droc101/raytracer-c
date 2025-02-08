@@ -175,6 +175,8 @@ include_directories(${OPENGL_INCLUDE_DIR})
 find_package(Vulkan REQUIRED) # 3d
 include_directories(${Vulkan_INCLUDE_DIRS})
 
+include_directories("${CMAKE_SOURCE_DIR}/lib/box2d/include")
+
 if (UNIX)
     find_package(GLEW REQUIRED) # OpenGL Extension Wrangler
     include_directories(${GLEW_INCLUDE_DIRS})
@@ -193,7 +195,7 @@ endif ()
 if (UNIX)
     target_link_libraries(game -lGL -lGLU ${SDL2_LIBRARY} ${ZLIB_LIBRARIES} ${SDL2_MIXER_LIBRARY} ${Vulkan_LIBRARIES} box2d m SDL2 SDL2_mixer z ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES}) # extra l* flags are needed on Linux
 elseif (WIN32)
-    target_link_libraries(game PRIVATE ${SDL2_LIBRARY} ${ZLIB_LIBRARIES} ${SDL2_MIXER_LIBRARY} ${Vulkan_LIBRARIES} ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} opengl32 dwmapi) # Don't pass extra l* flags on Windows (it isn't happy with them)
+    target_link_libraries(game PRIVATE ${SDL2_LIBRARY} ${ZLIB_LIBRARIES} ${SDL2_MIXER_LIBRARY} ${Vulkan_LIBRARIES} ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} ${CMAKE_SOURCE_DIR}/lib/box2d/libbox2d.a opengl32 dwmapi) # Don't pass extra l* flags on Windows (it isn't happy with them)
 endif ()
 
 #endregion
