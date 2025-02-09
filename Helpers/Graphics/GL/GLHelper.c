@@ -51,6 +51,7 @@ GLuint sharedUniformBuffer;
 GLint floorTextureLoc;
 GLint floorShadeLoc;
 GLint floorHeightLoc;
+GLint floorSharedUniformsLoc;
 
 GLint hudColoredColorLoc; // TODO: confusing name -- location of the color uniform in the colored shader
 
@@ -58,28 +59,14 @@ GLint hudTexturedTextureLoc; // TODO: confusing name -- location of the texture 
 GLint hudTexturedColorLoc;
 GLint hudTexturedRegionLoc;
 
-GLint modelShadedTextureLoc;
-GLint modelShadedModelViewMatrixLoc;
-GLint modelShadedWorldViewMatrixLoc;
-
-GLint modelUnshadedTextureLoc;
-GLint modelUnshadedModelViewMatrixLoc;
-GLint modelUnshadedWorldViewMatrixLoc;
-
 GLint shadowTextureLoc;
-GLint shadowFogColorLoc;
-GLint shadowFogStartLoc;
-GLint shadowFogEndLoc;
 GLint shadowModelViewMatrixLoc;
-GLint shadowWorldViewMatrixLoc;
-
-GLint skyTextureLoc;
-GLint skyModelWorldMatrixLoc;
-GLint skyWorldViewMatrixLoc;
+GLint shadowSharedUniformsLoc;
 
 GLint wallTextureLoc;
 GLint wallModelWorldMatrixLoc;
 GLint wallAngleLoc;
+GLint wallSharedUniformsLoc;
 
 #pragma endregion
 
@@ -88,6 +75,7 @@ void LoadShaderLocations()
 	floorTextureLoc = glGetUniformLocation(floorAndCeilingShader->program, "alb");
 	floorShadeLoc = glGetUniformLocation(floorAndCeilingShader->program, "shade");
 	floorHeightLoc = glGetUniformLocation(floorAndCeilingShader->program, "height");
+	floorSharedUniformsLoc = glGetUniformBlockIndex(floorAndCeilingShader->program, "SharedUniforms");
 
 	hudColoredColorLoc = glGetUniformLocation(uiColoredShader->program, "col");
 
@@ -95,28 +83,14 @@ void LoadShaderLocations()
 	hudTexturedColorLoc = glGetUniformLocation(uiTexturedShader->program, "col");
 	hudTexturedRegionLoc = glGetUniformLocation(uiTexturedShader->program, "region");
 
-	modelShadedTextureLoc = glGetUniformLocation(modelShadedShader->program, "alb");
-	modelShadedModelViewMatrixLoc = glGetUniformLocation(modelShadedShader->program, "MODEL_VIEW_MATRIX");
-	modelShadedWorldViewMatrixLoc = glGetUniformLocation(modelShadedShader->program, "WORLD_VIEW_MATRIX");
-
-	modelUnshadedTextureLoc = glGetUniformLocation(modelUnshadedShader->program, "alb");
-	modelUnshadedModelViewMatrixLoc = glGetUniformLocation(modelUnshadedShader->program, "MODEL_VIEW_MATRIX");
-	modelUnshadedWorldViewMatrixLoc = glGetUniformLocation(modelUnshadedShader->program, "WORLD_VIEW_MATRIX");
-
 	shadowTextureLoc = glGetUniformLocation(shadowShader->program, "alb");
-	shadowFogColorLoc = glGetUniformLocation(shadowShader->program, "fog_color");
-	shadowFogStartLoc = glGetUniformLocation(shadowShader->program, "fog_start");
-	shadowFogEndLoc = glGetUniformLocation(shadowShader->program, "fog_end");
-	shadowModelViewMatrixLoc = glGetUniformLocation(shadowShader->program, "MODEL_VIEW_MATRIX");
-	shadowWorldViewMatrixLoc = glGetUniformLocation(shadowShader->program, "WORLD_VIEW_MATRIX");
-
-	skyTextureLoc = glGetUniformLocation(skyShader->program, "alb");
-	skyModelWorldMatrixLoc = glGetUniformLocation(skyShader->program, "MODEL_WORLD_MATRIX");
-	skyWorldViewMatrixLoc = glGetUniformLocation(skyShader->program, "WORLD_VIEW_MATRIX");
+	shadowModelViewMatrixLoc = glGetUniformLocation(shadowShader->program, "MODEL_WORLD_MATRIX");
+	shadowSharedUniformsLoc = glGetUniformBlockIndex(shadowShader->program, "SharedUniforms");
 
 	wallTextureLoc = glGetUniformLocation(wallShader->program, "alb");
 	wallModelWorldMatrixLoc = glGetUniformLocation(wallShader->program, "MODEL_WORLD_MATRIX");
 	wallAngleLoc = glGetUniformLocation(wallShader->program, "wall_angle");
+	wallSharedUniformsLoc = glGetUniformBlockIndex(wallShader->program, "SharedUniforms");
 }
 
 void GL_Error(const char *error)
@@ -713,30 +687,30 @@ void GL_SetLevelParams(mat4 *mvp, const Level *l)
 	glBufferData(GL_UNIFORM_BUFFER, sizeof(GL_SharedUniforms), &uniforms, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-	glUseProgram(skyShader->program);
-	glUniformMatrix4fv(skyWorldViewMatrixLoc,
-					   1,
-					   GL_FALSE,
-					   mvp[0][0]); // world -> screen
-
-	glUseProgram(modelShadedShader->program);
-	glUniformMatrix4fv(modelShadedWorldViewMatrixLoc,
-					   1,
-					   GL_FALSE,
-					   mvp[0][0]); // world -> screen
-
-	glUseProgram(modelUnshadedShader->program);
-	glUniformMatrix4fv(modelUnshadedWorldViewMatrixLoc,
-					   1,
-					   GL_FALSE,
-					   mvp[0][0]); // world -> screen
+	// glUseProgram(skyShader->program);
+	// glUniformMatrix4fv(skyWorldViewMatrixLoc,
+	// 				   1,
+	// 				   GL_FALSE,
+	// 				   mvp[0][0]); // world -> screen
+	//
+	// glUseProgram(modelShadedShader->program);
+	// glUniformMatrix4fv(modelShadedWorldViewMatrixLoc,
+	// 				   1,
+	// 				   GL_FALSE,
+	// 				   mvp[0][0]); // world -> screen
+	//
+	// glUseProgram(modelUnshadedShader->program);
+	// glUniformMatrix4fv(modelUnshadedWorldViewMatrixLoc,
+	// 				   1,
+	// 				   GL_FALSE,
+	// 				   mvp[0][0]); // world -> screen
 }
 
 void GL_DrawWall(const Wall *w, const mat4 mdl, const Camera *, const Level *)
 {
 	glUseProgram(wallShader->program);
 
-	glBindBufferBase(GL_UNIFORM_BUFFER, glGetUniformBlockIndex(wallShader->program, "SharedUniforms"), sharedUniformBuffer);
+	glBindBufferBase(GL_UNIFORM_BUFFER, wallSharedUniformsLoc, sharedUniformBuffer);
 
 	GL_LoadTextureFromAsset(w->tex);
 
@@ -787,7 +761,7 @@ void GL_DrawFloor(const Vector2 vp1, const Vector2 vp2, const char *texture, con
 {
 	glUseProgram(floorAndCeilingShader->program);
 
-	glBindBufferBase(GL_UNIFORM_BUFFER, glGetUniformBlockIndex(floorAndCeilingShader->program, "SharedUniforms"), sharedUniformBuffer);
+	glBindBufferBase(GL_UNIFORM_BUFFER, floorSharedUniformsLoc, sharedUniformBuffer);
 
 	GL_LoadTextureFromAsset(texture);
 
@@ -825,24 +799,26 @@ void GL_DrawShadow(const Vector2 vp1, const Vector2 vp2, const mat4 *mvp, const 
 
 	GL_LoadTextureFromAsset(TEXTURE("vfx_shadow"));
 
-	glUniformMatrix4fv(shadowWorldViewMatrixLoc,
-					   1,
-					   GL_FALSE,
-					   mvp[0][0]); // world -> screen
+	glBindBufferBase(GL_UNIFORM_BUFFER, shadowSharedUniformsLoc, sharedUniformBuffer);
+
+	// glUniformMatrix4fv(shadowWorldViewMatrixLoc,
+	// 				   1,
+	// 				   GL_FALSE,
+	// 				   mvp[0][0]); // world -> screen
 	glUniformMatrix4fv(shadowModelViewMatrixLoc,
 					   1,
 					   GL_FALSE,
 					   mdl[0]); // model -> world
 
-	const uint fogColor = l->fogColor;
-	const float r = (float)(fogColor >> 16 & 0xFF) / 255.0f;
-	const float g = (float)(fogColor >> 8 & 0xFF) / 255.0f;
-	const float b = (float)(fogColor & 0xFF) / 255.0f;
-
-	glUniform3f(shadowFogColorLoc, r, g, b);
-
-	glUniform1f(shadowFogStartLoc, (float)l->fogStart);
-	glUniform1f(shadowFogEndLoc, (float)l->fogEnd);
+	// const uint fogColor = l->fogColor;
+	// const float r = (float)(fogColor >> 16 & 0xFF) / 255.0f;
+	// const float g = (float)(fogColor >> 8 & 0xFF) / 255.0f;
+	// const float b = (float)(fogColor & 0xFF) / 255.0f;
+	//
+	// glUniform3f(shadowFogColorLoc, r, g, b);
+	//
+	// glUniform1f(shadowFogStartLoc, (float)l->fogStart);
+	// glUniform1f(shadowFogEndLoc, (float)l->fogEnd);
 
 	const float vertices[4][2] = {
 		// X Z
@@ -1115,6 +1091,8 @@ void GL_RenderModel(const Model *model, const mat4 modelWorldMatrix, const char 
 	glUseProgram(glShader->program);
 
 	GL_LoadTextureFromAsset(texture);
+
+	glBindBufferBase(GL_UNIFORM_BUFFER, glGetUniformBlockIndex(glShader->program, "SharedUniforms"), sharedUniformBuffer);
 
 	glUniformMatrix4fv(glGetUniformLocation(glShader->program, "MODEL_WORLD_MATRIX"),
 					   1,
