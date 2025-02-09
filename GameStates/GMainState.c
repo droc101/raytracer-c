@@ -70,6 +70,15 @@ void GMainStateUpdate(GlobalState *State)
         Actor *leaf = CreateActor(State->level->player.pos, 0, 1, 0, 0, 0, 0);
         AddActor(leaf);
     }
+
+	if (State->coins > 9999)
+	{
+		State->coins = 9999;
+	}
+	if (State->blueCoins > 5)
+	{
+		State->blueCoins = 5;
+	}
 }
 
 void GMainStateFixedUpdate(GlobalState *state, double delta)
