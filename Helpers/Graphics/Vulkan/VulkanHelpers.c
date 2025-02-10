@@ -675,6 +675,7 @@ void LoadActorModels(const Level *level, ActorVertex *vertices, uint32_t *indice
 	size_t vertexOffset = 0;
 	size_t indexOffset = 0;
 	ListClear(&buffers.actors.models.loadedModelIds);
+	ListLock(level->actors);
 	for (size_t i = 0; i < level->actors.length; i++)
 	{
 		const Actor *actor = ListGet(level->actors, i);
@@ -693,11 +694,13 @@ void LoadActorModels(const Level *level, ActorVertex *vertices, uint32_t *indice
 			indexOffset += indexSize;
 		}
 	}
+	ListUnlock(level->actors);
 }
 
 void LoadActorWalls(const Level *level, ActorVertex *vertices, uint32_t *indices)
 {
 	uint32_t wallCount = 0;
+	ListLock(level->actors);
 	for (size_t i = 0; i < level->actors.length; i++)
 	{
 		const Actor *actor = ListGet(level->actors, i);
@@ -749,6 +752,7 @@ void LoadActorWalls(const Level *level, ActorVertex *vertices, uint32_t *indices
 
 		wallCount++;
 	}
+	ListUnlock(level->actors);
 }
 
 void LoadActorInstanceData(const Level *level,
@@ -767,6 +771,7 @@ void LoadActorInstanceData(const Level *level,
 		offsets[i] = offsets[i - 1] +
 					 (size_t)ListGet(buffers.actors.models.modelCounts, i - 1) * sizeof(ActorInstanceData);
 	}
+	ListLock(level->actors);
 	for (size_t i = 0; i < level->actors.length; i++)
 	{
 		const Actor *actor = ListGet(level->actors, i);
@@ -824,6 +829,7 @@ void LoadActorInstanceData(const Level *level,
 			shadowCount++;
 		}
 	}
+	ListUnlock(level->actors);
 	free(modelCounts);
 	free(offsets);
 }
@@ -838,6 +844,7 @@ void LoadActorDrawInfo(const Level *level, VkDrawIndexedIndirectCommand *drawInf
 		drawInfo[i].instanceCount = (size_t)ListGet(buffers.actors.models.modelCounts, i);
 		modelCount += (size_t)ListGet(buffers.actors.models.modelCounts, i);
 	}
+	ListLock(level->actors);
 	for (size_t i = 0; i < level->actors.length; i++)
 	{
 		const Actor *actor = ListGet(level->actors, i);
@@ -856,6 +863,7 @@ void LoadActorDrawInfo(const Level *level, VkDrawIndexedIndirectCommand *drawInf
 			wallCount++;
 		}
 	}
+	ListUnlock(level->actors);
 }
 
 VkResult CopyBuffers(const Level *level)

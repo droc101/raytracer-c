@@ -315,6 +315,7 @@ bool ChangeLevelByName(const char *name)
 void SendSignal(const int signal, const Actor *sender)
 {
 	// LogDebug("Sending signal %d from actor %p\n", signal, sender);
+	ListLock(state.level->actors);
 	for (int i = 0; i < state.level->actors.length; i++)
 	{
 		Actor *a = ListGet(state.level->actors, i);
@@ -326,6 +327,7 @@ void SendSignal(const int signal, const Actor *sender)
 			}
 		}
 	}
+	ListUnlock(state.level->actors);
 }
 
 void RemoveTrigger(const size_t index)

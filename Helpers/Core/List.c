@@ -20,6 +20,7 @@ void ListCreate(List *list)
 
 	list->length = 0;
 	list->data = NULL;
+	list->mutex = SDL_CreateMutex();
 }
 
 void ListAdd(List *list, void *data)
@@ -29,10 +30,14 @@ void ListAdd(List *list, void *data)
 		Error("A NULL list must not be passed to ListAdd!");
 	}
 
+	ListLock(*list);
+
 	list->data = GameReallocArray(list->data, list->length + 1, sizeof(void *));
 	CheckAlloc(list->data);
 	list->data[list->length] = data;
 	list->length++;
+
+	ListUnlock(*list);
 }
 
 void ListAddBatched(List *list, const size_t count, ...)
@@ -41,6 +46,8 @@ void ListAddBatched(List *list, const size_t count, ...)
 	{
 		Error("A NULL list must not be passed to ListAddBatched!");
 	}
+
+	ListLock(*list);
 
 	list->data = GameReallocArray(list->data, list->length + count, sizeof(void *));
 	CheckAlloc(list->data);
@@ -53,6 +60,8 @@ void ListAddBatched(List *list, const size_t count, ...)
 		list->length++;
 	}
 	va_end(args);
+
+	ListUnlock(*list);
 }
 
 void ListRemoveAt(List *list, const size_t index)
@@ -70,16 +79,22 @@ void ListRemoveAt(List *list, const size_t index)
 		Error("Attempted to remove an item past the end of a list!");
 	}
 
+	ListLock(*list);
+
 	list->length--;
 	if (list->length == 0)
 	{
 		free(list->data);
 		list->data = NULL;
+
+		ListUnlock(*list);
 		return;
 	}
 	memmove(&list->data[index], &list->data[index + 1], sizeof(void *) * (list->length - index));
 	list->data = GameReallocArray(list->data, list->length, sizeof(void *));
 	CheckAlloc(list->data);
+
+	ListUnlock(*list);
 }
 
 void ListInsertAfter(List *list, size_t index, void *data)
@@ -93,6 +108,8 @@ void ListInsertAfter(List *list, size_t index, void *data)
 		Error("Attempted to insert an item past the end of a list!");
 	}
 
+	ListLock(*list);
+
 	index++;
 	list->length++;
 	list->data = GameReallocArray(list->data, list->length, sizeof(void *));
@@ -100,6 +117,8 @@ void ListInsertAfter(List *list, size_t index, void *data)
 
 	memmove(&list->data[index + 1], &list->data[index], sizeof(void *) * (list->length - index - 1));
 	list->data[index] = data;
+
+	ListUnlock(*list);
 }
 
 size_t ListFind(const List list, const void *data)
@@ -109,14 +128,53 @@ size_t ListFind(const List list, const void *data)
 		return -1;
 	}
 
+	ListLock(list);
+
 	for (size_t i = 0; i < list.length; i++)
 	{
 		if (list.data[i] == data)
 		{
+			ListUnlock(list);
 			return i;
 		}
 	}
+
+	ListUnlock(list);
 	return -1;
+}
+
+void ListLock(const List list)
+{
+	if (SDL_LockMutex(list.mutex) < 0)
+	{
+		LogError("Failed to lock list mutex with error: %s", SDL_GetError());
+		Error("Failed to lock list mutex!");
+	}
+}
+
+void ListUnlock(const List list)
+{
+	if (SDL_UnlockMutex(list.mutex) < 0)
+	{
+		LogError("Failed to unlock list mutex with error: %s", SDL_GetError());
+		Error("Failed to unlock list mutex!");
+	}
+}
+
+void ListClear(List *list)
+{
+	if (!list)
+	{
+		Error("A NULL list must not be passed to ListClear!");
+	}
+
+	ListLock(*list);
+
+	list->length = 0;
+	free(list->data);
+	list->data = NULL;
+
+	ListUnlock(*list);
 }
 
 void ListFree(List *list, const bool freeListPointer)
@@ -126,7 +184,10 @@ void ListFree(List *list, const bool freeListPointer)
 		Error("A NULL list must not be passed to ListFree!");
 	}
 
+	ListLock(*list);
 	free(list->data);
+	ListUnlock(*list);
+	SDL_DestroyMutex(list->mutex);
 	if (freeListPointer)
 	{
 		free(list);
@@ -135,6 +196,7 @@ void ListFree(List *list, const bool freeListPointer)
 
 void ListFreeOnlyContents(const List list)
 {
+	ListLock(list);
 	if (list.length && list.data)
 	{
 		for (size_t i = 0; i < list.length; i++)
@@ -142,6 +204,7 @@ void ListFreeOnlyContents(const List list)
 			free(list.data[i]);
 		}
 	}
+	ListUnlock(list);
 }
 
 void ListAndContentsFree(List *list, const bool freeListPointer)
@@ -154,18 +217,6 @@ void ListAndContentsFree(List *list, const bool freeListPointer)
 	ListFreeOnlyContents(*list);
 
 	ListFree(list, freeListPointer);
-}
-
-void ListClear(List *list)
-{
-	if (!list)
-	{
-		Error("A NULL list must not be passed to ListClear!");
-	}
-
-	list->length = 0;
-	free(list->data);
-	list->data = NULL;
 }
 
 void *GameReallocArray(void *ptr, const size_t arrayLength, const size_t elementSize)

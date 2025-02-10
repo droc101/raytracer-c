@@ -549,6 +549,7 @@ bool VK_LoadLevelWalls(const Level *level)
 	buffers.walls.shadowCount = 0;
 	memset(&buffers.actors.models, 0, sizeof(ModelActorBuffer));
 	memset(&buffers.actors.walls, 0, sizeof(WallActorBuffer));
+	ListLock(level->actors);
 	for (size_t i = 0; i < level->actors.length; i++)
 	{
 		const Actor *actor = ListGet(level->actors, i);
@@ -582,6 +583,7 @@ bool VK_LoadLevelWalls(const Level *level)
 			buffers.walls.shadowCount++;
 		}
 	}
+	ListUnlock(level->actors);
 
 	if (sizeof(ActorVertex) * buffers.actors.models.vertexCount > buffers.actors.models.vertexSize ||
 		sizeof(uint32_t) * buffers.actors.models.indexCount > buffers.actors.models.indexSize ||
