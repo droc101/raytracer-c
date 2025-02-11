@@ -175,6 +175,14 @@ bool GL_Init(SDL_Window *wnd)
 		return false;
 	}
 
+	// Ensure we have GL 3.3 or higher
+	if (!GLEW_VERSION_3_3)
+	{
+		SDL_GL_DeleteContext(ctx);
+		GL_Error("Failed to start OpenGL. Your GPU or drivers may not support OpenGL 3.3.");
+		return false;
+	}
+
 
 #ifdef BUILDSTYLE_DEBUG
 	glEnable(GL_DEBUG_OUTPUT);
