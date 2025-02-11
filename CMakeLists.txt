@@ -152,6 +152,8 @@ add_executable(
         Helpers/Graphics/Vulkan/VulkanResources.h
         Helpers/Navigation.c
         Helpers/Navigation.h
+        Helpers/Collision.c
+        Helpers/Collision.h
 )
 
 #endregion

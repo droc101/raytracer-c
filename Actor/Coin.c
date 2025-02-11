@@ -5,6 +5,8 @@
 #include "Coin.h"
 #include <box2d/box2d.h>
 #include <box2d/types.h>
+
+#include "../Helpers/Collision.h"
 #include "../Helpers/Core/AssetReader.h"
 #include "../Helpers/Core/Error.h"
 #include "../Helpers/Core/MathEx.h"
@@ -66,25 +68,18 @@ void CoinUpdate(Actor *this, double /*delta*/)
 	this->actorWall->b = v2(0.125f * cosf(rotation) + this->position.x, 0.125f * sinf(rotation) + this->position.y);
 	WallBake(this->actorWall);
 
-	const uint32_t sensorShapeIdIndex = ((b2ShapeId *)this->extra_data)->index1;
-	const b2SensorEvents sensorEvents = b2World_GetSensorEvents(GetState()->level->worldId);
-	for (int i = 0; i < sensorEvents.beginCount; i++)
+	if (GetSensorState(GetState()->level->worldId, ((b2ShapeId *)this->extra_data)->index1, false))
 	{
-		const b2SensorBeginTouchEvent event = sensorEvents.beginEvents[i];
-		if (event.sensorShapeId.index1 == sensorShapeIdIndex)
+		if (this->paramB == 0)
 		{
-			if (this->paramB == 0)
-			{
-				GetState()->coins++;
-			} else
-			{
-				GetState()->blueCoins++;
-				GetState()->coins += 5;
-			}
-			PlaySoundEffect(SOUND("sfx_coincling"));
-			RemoveActor(this);
-			break;
+			GetState()->coins++;
+		} else
+		{
+			GetState()->blueCoins++;
+			GetState()->coins += 5;
 		}
+		PlaySoundEffect(SOUND("sfx_coincling"));
+		RemoveActor(this);
 	}
 }
 

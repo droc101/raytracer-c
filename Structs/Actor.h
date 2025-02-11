@@ -35,15 +35,6 @@ Actor *CreateActor(Vector2 position,
 void FreeActor(Actor *actor);
 
 /**
- * Transform an actor's wall by its position and rotation
- * @param actor Actor to use
- * @param wall Wall to transform
- * @return True if the wall was transformed successfully
- * @note The @c wall variable should NOT be the actor's original wall.
- */
-bool GetTransformedWall(const Actor *actor, Wall *wall);
-
-/**
  * Add a signal to listen for
  * @param actor The actor that will listen
  * @param signal The signal to listen for

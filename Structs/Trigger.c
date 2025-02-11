@@ -6,6 +6,7 @@
 #include <box2d/box2d.h>
 #include <string.h>
 
+#include "../Helpers/Collision.h"
 #include "../Helpers/Core/Error.h"
 #include "GlobalState.h"
 #include "Vector2.h"
@@ -47,30 +48,8 @@ Trigger *CreateTrigger(const Vector2 position,
 
 bool CheckTriggerCollision(Trigger *trigger)
 {
-	const uint32_t sensorShapeIdIndex = trigger->sensorId.index1;
-	const b2SensorEvents sensorEvents = b2World_GetSensorEvents(GetState()->level->worldId);
-	if (trigger->playerColliding)
-	{
-		for (int i = 0; i < sensorEvents.endCount; i++)
-		{
-			const b2SensorEndTouchEvent event = sensorEvents.endEvents[i];
-			if (event.sensorShapeId.index1 == sensorShapeIdIndex)
-			{
-				trigger->playerColliding = false;
-				break;
-			}
-		}
-	} else
-	{
-		for (int i = 0; i < sensorEvents.beginCount; i++)
-		{
-			const b2SensorBeginTouchEvent event = sensorEvents.beginEvents[i];
-			if (event.sensorShapeId.index1 == sensorShapeIdIndex)
-			{
-				trigger->playerColliding = true;
-				break;
-			}
-		}
-	}
+	trigger->playerColliding = GetSensorState(GetState()->level->worldId,
+										   trigger->sensorId.index1,
+										   trigger->playerColliding);
 	return trigger->playerColliding;
 }

@@ -94,27 +94,6 @@ void FreeActor(Actor *actor)
 	actor = NULL;
 }
 
-bool GetTransformedWall(const Actor *actor, Wall *wall)
-{
-	if (actor->actorWall == NULL)
-	{
-		return false;
-	}
-
-	memcpy(wall, actor->actorWall, sizeof(Wall)); // duplicate the wall struct without modifying the original
-
-	// Rotate the wall
-	wall->a = Vector2Rotate(wall->a, actor->rotation);
-	wall->b = Vector2Rotate(wall->b, actor->rotation);
-	// Translate the wall
-	wall->a = Vector2Add(wall->a, actor->position);
-	wall->b = Vector2Add(wall->b, actor->position);
-
-	WallBake(wall);
-
-	return true;
-}
-
 void ActorListenFor(Actor *actor, const int signal)
 {
 	ListAdd(&actor->listeningFor, (void *)(size_t)signal);

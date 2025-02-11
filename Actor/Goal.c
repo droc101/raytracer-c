@@ -5,6 +5,8 @@
 #include "Goal.h"
 #include <box2d/box2d.h>
 #include <math.h>
+
+#include "../Helpers/Collision.h"
 #include "../Helpers/Core/AssetReader.h"
 #include "../Helpers/Core/Error.h"
 #include "../Helpers/Core/MathEx.h"
@@ -53,25 +55,18 @@ void GoalUpdate(Actor *this, double /*delta*/)
 	this->actorWall->b = v2(0.5f * cosf(rotation) + this->position.x, 0.5f * sinf(rotation) + this->position.y);
 	WallBake(this->actorWall);
 
-	const uint32_t sensorShapeIdIndex = ((b2ShapeId *)this->extra_data)->index1;
-	const b2SensorEvents sensorEvents = b2World_GetSensorEvents(GetState()->level->worldId);
-	for (int i = 0; i < sensorEvents.beginCount; i++)
+	if (GetSensorState(GetState()->level->worldId, ((b2ShapeId *)this->extra_data)->index1, false))
 	{
-		const b2SensorBeginTouchEvent event = sensorEvents.beginEvents[i];
-		if (event.sensorShapeId.index1 == sensorShapeIdIndex)
-		{
-			RemoveActor(this);
-			const TextBox tb = DEFINE_TEXT("Goal!",
-										   2,
-										   20,
-										   0,
-										   70,
-										   TEXT_BOX_H_ALIGN_CENTER,
-										   TEXT_BOX_V_ALIGN_TOP,
-										   TEXT_BOX_THEME_WHITE);
-			ShowTextBox(tb);
-			break;
-		}
+		RemoveActor(this);
+		const TextBox tb = DEFINE_TEXT("Goal!",
+									   2,
+									   20,
+									   0,
+									   70,
+									   TEXT_BOX_H_ALIGN_CENTER,
+									   TEXT_BOX_V_ALIGN_TOP,
+									   TEXT_BOX_THEME_WHITE);
+		ShowTextBox(tb);
 	}
 }
 

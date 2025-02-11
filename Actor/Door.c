@@ -5,6 +5,8 @@
 #include "Door.h"
 #include <box2d/box2d.h>
 #include <box2d/types.h>
+
+#include "../Helpers/Collision.h"
 #include "../Helpers/Core/AssetReader.h"
 #include "../Helpers/Core/Error.h"
 #include "../Helpers/Core/Logging.h"
@@ -86,6 +88,7 @@ void DoorInit(Actor *this, const b2WorldId worldId)
 	CreateDoorSensor(this, worldId);
 
 	DoorData *data = this->extra_data; // Allocated in CreateDoorSensor
+	CheckAlloc(data);
 	this->showShadow = false;
 	data->state = DOOR_CLOSED;
 	data->animationTime = 0;
@@ -96,33 +99,7 @@ void DoorUpdate(Actor *this, const double delta)
 {
 	this->position = b2Body_GetPosition(this->bodyId);
 	DoorData *data = this->extra_data;
-
-	const uint32_t sensorShapeIdIndex = data->sensorId.index1;
-	const b2SensorEvents sensorEvents = b2World_GetSensorEvents(GetState()->level->worldId);
-	if (data->playerColliding)
-	{
-		for (int i = 0; i < sensorEvents.endCount; i++)
-		{
-			const b2SensorEndTouchEvent event = sensorEvents.endEvents[i];
-			if (event.sensorShapeId.index1 == sensorShapeIdIndex)
-			{
-				data->playerColliding = false;
-				break;
-			}
-		}
-	} else
-	{
-		for (int i = 0; i < sensorEvents.beginCount; i++)
-		{
-			const b2SensorBeginTouchEvent event = sensorEvents.beginEvents[i];
-			if (event.sensorShapeId.index1 == sensorShapeIdIndex)
-			{
-				data->playerColliding = true;
-				break;
-			}
-		}
-	}
-
+	data->playerColliding = GetSensorState(GetState()->level->worldId, data->sensorId.index1, data->playerColliding);
 	switch (data->state)
 	{
 		case DOOR_CLOSED:
