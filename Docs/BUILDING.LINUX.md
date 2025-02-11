@@ -8,10 +8,9 @@ Congratulations! Linux is far easier to build on than Windows.
 
 ### Libraries
 
-You will need development packages for Box2D, CGLM, GLEW, SDL2, SDL2_Mixer, Vulkan, and ZLIB.
+You will need development packages for CGLM, GLEW, SDL2, SDL2_Mixer, Vulkan, and ZLIB.
 
 Arch Packages:
-[box2d](https://archlinux.org/packages/extra/x86_64/box2d/),
 [cglmᴬᵁᴿ](https://aur.archlinux.org/packages/cglm),
 [glew](https://archlinux.org/packages/extra/x86_64/glew/),
 [sdl2-gitᴬᵁᴿ](https://aur.archlinux.org/packages/sdl2-git),
