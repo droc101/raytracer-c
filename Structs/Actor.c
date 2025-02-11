@@ -3,6 +3,10 @@
 //
 
 #include "Actor.h"
+
+#include <box2d/box2d.h>
+#include <box2d/types.h>
+
 #include "../Helpers/Core/Error.h"
 #include "Vector2.h"
 #include "Wall.h"
@@ -97,4 +101,40 @@ void FreeActor(Actor *actor)
 void ActorListenFor(Actor *actor, const int signal)
 {
 	ListAdd(&actor->listeningFor, (void *)(size_t)signal);
+}
+
+void CreateActorWallCollider(Actor *this, const b2WorldId worldId)
+{
+	b2BodyDef bodyDef = b2DefaultBodyDef();
+	bodyDef.type = b2_dynamicBody;
+	bodyDef.position = this->actorWall->a;
+	this->bodyId = b2CreateBody(worldId, &bodyDef);
+	this->actorWall->bodyId = this->bodyId;
+	const float dx = this->actorWall->dx;
+	const float dy = this->actorWall->dy;
+	const float invDistance = 1 / sqrtf(dx * dx + dy * dy);
+	const Vector2 points[4] = {
+		{
+			(dy - dx / 2) * 0.01f * invDistance,
+			(-dx - dy / 2) * 0.01f * invDistance,
+		},
+		{
+			(-dy - dx / 2) * 0.01f * invDistance,
+			(dx - dy / 2) * 0.01f * invDistance,
+		},
+		{
+			dx + (dy + dx / 2) * 0.01f * invDistance,
+			dy + (-dx + dy / 2) * 0.01f * invDistance,
+		},
+		{
+			dx + (-dy + dx / 2) * 0.01f * invDistance,
+			dy + (dx + dy / 2) * 0.01f * invDistance,
+		},
+	};
+	const b2Hull hull = b2ComputeHull(points, 4);
+	const b2Polygon shape = b2MakePolygon(&hull, 0);
+	b2ShapeDef shapeDef = b2DefaultShapeDef();
+	shapeDef.friction = 0;
+	shapeDef.filter.categoryBits = COLLISION_GROUP_ACTOR;
+	b2CreatePolygonShape(this->actorWall->bodyId, &shapeDef, &shape);
 }

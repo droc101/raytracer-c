@@ -41,4 +41,11 @@ void FreeActor(Actor *actor);
  */
 void ActorListenFor(Actor *actor, int signal);
 
+/**
+ * 
+ * @param this The actor to create the collider for
+ * @param worldId The world within which to create the collider
+ */
+void CreateActorWallCollider(Actor *this, b2WorldId worldId);
+
 #endif //GAME_ACTOR_H
