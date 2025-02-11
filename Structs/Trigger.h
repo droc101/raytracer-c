@@ -14,7 +14,7 @@
  * @param rotation The rotation of the trigger
  * @param command The command to execute when the trigger is activated
  * @param flags @TODO(droc101): Why isn't this documented?
- * @param worldId
+ * @param worldId The Box2D world within which to create the trigger
  * @return The created trigger
  */
 Trigger *CreateTrigger(Vector2 position,

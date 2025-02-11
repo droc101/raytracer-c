@@ -16,7 +16,7 @@
  * @param paramB Initial parameter B
  * @param paramC Initial parameter C
  * @param paramD Initial parameter D
- * @param worldId
+ * @param worldId The Box2D world within which to create the actor
  * @return Initialized Actor struct
  */
 Actor *CreateActor(Vector2 position,

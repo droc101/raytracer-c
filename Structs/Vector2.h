@@ -38,8 +38,8 @@
  */
 #define Vector2Distance(a, b) \
 	({ \
-		float dx = (b).x - (a).x; \
-		float dy = (b).y - (a).y; \
+		const float dx = (b).x - (a).x; \
+		const float dy = (b).y - (a).y; \
 		sqrtf(dx * dx + dy * dy); \
 	})
 
@@ -118,5 +118,7 @@
  * @note Prefer to scale by @code 1 / divisor@endcode instead of calling this function
  */
 #define Vector2Div(vector, divisor) Vector2Scale(vector, (1 / (divisor)))
+
+#define Vector2RelativeAngle(a, b) atan2f(b.x * a.x - b.x * a.y, b.y * a.x + b.y * a.y)
 
 #endif //GAME_VECTOR2_H

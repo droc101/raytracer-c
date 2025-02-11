@@ -172,7 +172,7 @@ void GMainStateFixedUpdate(GlobalState *state, const double delta)
 		}
 	}
 
-	l->player.angle = fmodf(l->player.angle, 2 * PIf);
+	l->player.angle = wrap(l->player.angle, 0, 2 * PI);
 
 	for (int i = 0; i < l->actors.length; i++)
 	{

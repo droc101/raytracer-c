@@ -34,11 +34,11 @@ void GLevelSelectStateUpdate(GlobalState * /*State*/)
 		if (IsKeyJustPressed(SDL_SCANCODE_DOWN) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_DPAD_DOWN))
 		{
 			GLevelSelectState_SelectedLevel--;
-			GLevelSelectState_SelectedLevel = (int)wrap(GLevelSelectState_SelectedLevel, 0, (double)levelList.length);
+			GLevelSelectState_SelectedLevel = wrap(GLevelSelectState_SelectedLevel, 0, levelList.length);
 		} else if (IsKeyJustPressed(SDL_SCANCODE_UP) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_DPAD_UP))
 		{
 			GLevelSelectState_SelectedLevel++;
-			GLevelSelectState_SelectedLevel = (int)wrap(GLevelSelectState_SelectedLevel, 0, (double)levelList.length);
+			GLevelSelectState_SelectedLevel = wrap(GLevelSelectState_SelectedLevel, 0, levelList.length);
 		} else if (IsKeyJustReleased(SDL_SCANCODE_SPACE) || IsButtonJustReleased(CONTROLLER_OK))
 		{
 			ConsumeKey(SDL_SCANCODE_SPACE);

@@ -38,7 +38,6 @@ typedef struct Camera Camera;
 typedef struct Player Player;
 typedef struct Wall Wall;
 typedef struct Level Level;
-typedef struct RayCastResult RayCastResult;
 typedef struct TextBox TextBox;
 typedef struct Model Model;
 typedef struct Actor Actor;
@@ -61,6 +60,10 @@ typedef void (*TextBoxCloseFunction)(TextBox *textBox);
 typedef void (*ActorInitFunction)(Actor *self, b2WorldId worldId);
 
 typedef void (*ActorUpdateFunction)(Actor *self, double delta);
+
+typedef void (*ActorIdleFunction)(Actor *self, double delta);
+
+typedef void (*ActorTargetReachedFunction)(Actor *self, double delta);
 
 typedef void (*ActorDestroyFunction)(Actor *self);
 
@@ -218,7 +221,7 @@ struct Player
 	Vector2 pos;
 	/// The player's rotation
 	float angle;
-	/// The player's box2d body ID
+	/// The player's Box2D body ID
 	b2BodyId bodyId;
 };
 
@@ -245,7 +248,7 @@ struct Wall
 	float uvOffset;
 	/// height of the wall for rendering. Does not affect collision
 	float height;
-	/// The wall's box2d body ID
+	/// The wall's Box2D body ID
 	b2BodyId bodyId;
 };
 
@@ -283,24 +286,11 @@ struct Level
 	/// The distance from the player at which the fog is fully opaque
 	double fogEnd;
 
-	/// The ID of the box2d world
+	/// The ID of the Box2D world
 	b2WorldId worldId;
 
 	/// The player object
 	Player player;
-};
-
-// Utility functions are in Structs/ray.h
-struct RayCastResult
-{
-	/// The point of collision
-	Vector2 collisionPoint;
-	/// The distance to the collision
-	double distance;
-	/// Whether the ray collided with anything
-	bool collided;
-	/// The wall that was collided with
-	Wall *collisionWall;
 };
 
 struct TextBox
@@ -444,14 +434,14 @@ struct GlobalState
 
 	/// Game options
 	Options options;
-	// Whether the audio system has been started successfully
+	/// Whether the audio system has been started successfully
 	bool isAudioStarted;
 	/// background music
 	Mix_Music *music;
 	/// sound effects
 	Mix_Chunk *channels[SFX_CHANNEL_COUNT];
 
-	// The path to the executable
+	/// The path to the executable
 	char executablePath[261];
 	/// The path to the executable folder
 	char executableFolder[261];
@@ -464,17 +454,24 @@ struct GlobalState
 // Actor (interactable/moving wall) struct
 struct Actor
 {
-	/// The position of the actor (centered)
+	/// The center position of the actor
+	/// @warning This is the visual position only, and synchronization between the visual position and the physics
+	///	 position must be explicitly done in the update function
 	Vector2 position;
 	/// The rotation of the actor
+	/// @warning This is the visual rotation only, and synchronization between the visual rotation and the physics
+	///	 rotation must be explicitly done in the update function
 	float rotation;
-	/// y position for rendering. Does not affect collision
+	/// Y position for rendering
+	/// @note Because this game uses a 2d physics engine, this value is not considered in any physics calculations.
+	///  As such, an actor can be rendered floating, but will always collide as though it is on the same plane as
+	///  everything else.
 	float yPosition;
-	/// should the actor cast a shadow?
+	/// Should the actor cast a shadow?
 	bool showShadow;
-	/// size of the shadow
+	/// The size of the shadow
 	float shadowSize;
-	// Optional model for the actor, if not NULL, will be rendered instead of the wall
+	/// Optional model for the actor, if not NULL, will be rendered instead of the wall
 	Model *actorModel;
 	/// Texture for the model
 	char *actorModelTexture;
@@ -482,13 +479,17 @@ struct Actor
 	/// The actor's wall, in global space
 	Wall *actorWall;
 
-	/// type of actor. do not change this after creation.
+	/// The actor type index
+	/// @warning Do not change this after creation
 	int actorType;
-	/// The function to call when the actor is initialized. This should only be called once, when the actor is created.
+	/// The function to call when the actor is initialized
+	/// @note This should only be called once, when the actor is created
 	ActorInitFunction Init;
-	/// The function to call when the actor is updated. This should be called every tick.
+	/// The function to call when the actor is updated
+	/// @note This should be called every tick
 	ActorUpdateFunction Update;
-	/// The function to call when the actor is destroyed. This should only be called once, when the actor is destroyed.
+	/// The function to call when the actor is destroyed
+	/// @note This should only be called once, when the actor is destroyed
 	ActorDestroyFunction Destroy;
 	/// The function to call when the actor receives a signal.
 	ActorSignalHandlerFunction SignalHandler;
@@ -501,12 +502,13 @@ struct Actor
 	byte paramC;
 	byte paramD;
 
-	// health. may be unused for some actors
+	/// The actor's health
+	/// @note May be unused for some actors
 	int health;
-	/// extra data for the actor
+	/// Extra data for the actor
 	void *extra_data;
 
-	/// The actor's box2d body ID
+	/// The actor's Box2D body ID
 	b2BodyId bodyId;
 };
 
@@ -550,7 +552,7 @@ struct Trigger
 	char command[64];
 	/// The flags set on this trigger
 	uint flags;
-	/// The trigger's sensor's box2d shape ID
+	/// The trigger's sensor's Box2D shape ID
 	b2ShapeId sensorId;
 	/// A boolean indicating if the player is currently colliding with the trigger
 	bool playerColliding;

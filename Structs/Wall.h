@@ -19,9 +19,9 @@
 Wall *CreateWall(Vector2 a, Vector2 b, const char *texture, float uvScale, float uvOffset);
 
 /**
- * Create a box2d rigid body to serve as a wall's hitbox
+ * Create a Box2D rigid body to serve as a wall's hitbox
  * @param wall The wall to create the hitbox for
- * @param worldId The box2d world within which to create the hitbox
+ * @param worldId The Box2D world within which to create the hitbox
  * @note This function expects the wall to be baked
  */
 void CreateWallCollider(Wall *wall, b2WorldId worldId);

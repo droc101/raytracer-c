@@ -31,7 +31,34 @@
  * @param max Maximum value
  * @return The wrapped number
  */
-double wrap(double x, double min, double max);
+int wrapi(int x, int min, int max);
+
+/**
+ * Wraps a number between a minimum and maximum value
+ * @param x Number to wrap
+ * @param min Minimum value
+ * @param max Maximum value
+ * @return The wrapped number
+ */
+float wrapf(float x, float min, float max);
+
+/**
+ * Wraps a number between a minimum and maximum value
+ * @param x Number to wrap
+ * @param min Minimum value
+ * @param max Maximum value
+ * @return The wrapped number
+ */
+double wrapd(double x, double min, double max);
+
+/**
+ * Wraps a number between a minimum and maximum value
+ * @param x Number to wrap
+ * @param min Minimum value
+ * @param max Maximum value
+ * @return The wrapped number
+ */
+#define wrap(x, min, max) _Generic((x), default: wrapi, float: wrapf, double: wrapd)(x, min, max)
 
 /**
  * Remap a number from one range to another
@@ -49,10 +76,10 @@ double wrap(double x, double min, double max);
  * Linear interpolation between two numbers
  * @param a Number 1
  * @param b Number 2
- * @param f Interpolation factor
+ * @param factor Interpolation factor
  * @return Interpolated value
  */
-#define lerp(a, b, f) ((a) * (1.0 - (f)) + (b) * (f))
+#define lerp(a, b, factor) ((a) * (_Generic((factor), default: 1.0, float: 1.0f) - (factor)) + (b) * (factor))
 
 /**
  * Clamp a number between a minimum and maximum value
