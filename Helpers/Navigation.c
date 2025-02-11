@@ -77,7 +77,8 @@ void NavigationStep(Actor *actor, NavigationConfig *navigationConfig, const doub
 	{
 		if (navigationConfig->agroTicksRemaining > 0.5)
 		{
-			if (Vector2Distance(navigationConfig->lastKnownTarget, actor->position) < navigationConfig->minDistance)
+			const float distance = Vector2Distance(navigationConfig->lastKnownTarget, actor->position);
+			if (distance < navigationConfig->minDistance || distance > navigationConfig->deAgroDistance)
 			{
 				navigationConfig->agroTicksRemaining = 0;
 				navigationConfig->ticksUntilDirectionChange = 0;
