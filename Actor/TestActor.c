@@ -20,15 +20,16 @@ void TestActorSignalHandler(Actor * /*self*/, const Actor *sender, const int sig
 
 void TestActorIdle(Actor *this, const double delta)
 {
+	const NavigationConfig *navigationConfig = this->extra_data;
 	this->rotation += 0.01f;
-	const Vector2 impulse = v2(0, 1638 * (float)delta);
+	const Vector2 impulse = v2(0, navigationConfig->speed * (float)delta);
 	b2Body_ApplyLinearImpulseToCenter(this->bodyId, Vector2Rotate(impulse, this->rotation), true);
 }
 
 void TestActorTargetReached(Actor *this, const double delta)
 {
 	const NavigationConfig *navigationConfig = this->extra_data;
-	this->rotation += lerp(0, PlayerRelativeAngle(this), navigationConfig->rotationSpeed * delta);
+	this->rotation += lerp(0, PlayerRelativeAngle(this), navigationConfig->rotationSpeed * (float)delta);
 }
 
 void CreateTestActorCollider(Actor *this, const b2WorldId worldId)
@@ -43,7 +44,6 @@ void CreateTestActorCollider(Actor *this, const b2WorldId worldId)
 		.radius = 0.25f,
 	};
 	b2ShapeDef shapeDef = b2DefaultShapeDef();
-	shapeDef.density = 32768;
 	shapeDef.filter.categoryBits = COLLISION_GROUP_ACTOR;
 	b2CreateCircleShape(this->bodyId, &shapeDef, &shape);
 }
@@ -60,7 +60,7 @@ void TestActorInit(Actor *this, const b2WorldId worldId)
 	CheckAlloc(this->extra_data);
 	NavigationConfig *navigationConfig = this->extra_data;
 	navigationConfig->fov = PIf / 2;
-	navigationConfig->speed = 1638;
+	navigationConfig->speed = 0.0425f;
 	navigationConfig->rotationSpeed = 0.1f;
 	navigationConfig->directness = 0.5f;
 	navigationConfig->minDistance = 1.5f;
