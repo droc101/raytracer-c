@@ -4,13 +4,13 @@
 
 #include "GLoadingState.h"
 #include <string.h>
+#include "../../../Helpers/CommonAssets.h"
 #include "../Helpers/Core/Logging.h"
 #include "../Helpers/Graphics/Drawing.h"
 #include "../Helpers/Graphics/Font.h"
 #include "../Structs/GlobalState.h"
 #include "../Structs/Vector2.h"
 #include "GMainState.h"
-#include "../../../Helpers/CommonAssets.h"
 
 char loadStateLevelname[32];
 
@@ -35,7 +35,7 @@ void GLoadingStateRender(GlobalState *)
 					16,
 					-1,
 					v2s(0),
-					v2(WindowWidth(), WindowHeight()),
+					v2(WindowWidthFloat(), WindowHeightFloat()),
 					FONT_HALIGN_CENTER,
 					FONT_VALIGN_MIDDLE,
 					smallFont);

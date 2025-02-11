@@ -11,13 +11,13 @@
 #include "../../Helpers/Graphics/Font.h"
 #include "../../Helpers/Graphics/RenderingHelpers.h"
 #include "../../Structs/GlobalState.h"
-#include "../../Structs/Level.h"
 #include "../../Structs/Options.h"
 #include "../../Structs/UI/Controls/Button.h"
 #include "../../Structs/UI/Controls/CheckBox.h"
 #include "../../Structs/UI/Controls/RadioButton.h"
 #include "../../Structs/UI/Controls/Slider.h"
 #include "../../Structs/UI/UiStack.h"
+#include "../../Structs/Vector2.h"
 #include "../GOptionsState.h"
 
 UiStack *videoOptionsStack = NULL;
@@ -114,7 +114,7 @@ void GVideoOptionsStateRender(GlobalState *)
 					32,
 					0xFFFFFFFF,
 					v2s(0),
-					v2(WindowWidth(), 100),
+					v2(WindowWidthFloat(), 100),
 					FONT_HALIGN_CENTER,
 					FONT_VALIGN_MIDDLE,
 					largeFont);
@@ -128,8 +128,8 @@ void GVideoOptionsStateSet()
 	if (videoOptionsStack == NULL)
 	{
 		videoOptionsStack = CreateUiStack();
-		int opY = 80;
-		const int opSpacing = 45;
+		float opY = 80;
+		const float opSpacing = 45;
 		UiStackPush(videoOptionsStack,
 					CreateCheckboxControl(v2(0, opY),
 										  v2(480, 40),
@@ -161,7 +161,7 @@ void GVideoOptionsStateSet()
 										  CbOptionsMipmaps,
 										  TOP_CENTER,
 										  GetState()->options.mipmaps));
-		opY += (int)(opSpacing * 1.5);
+		opY += opSpacing * 1.5f;
 
 		UiStackPush(videoOptionsStack,
 					CreateRadioButtonControl(v2(0, opY),
@@ -183,7 +183,7 @@ void GVideoOptionsStateSet()
 											 GetState()->options.renderer == RENDERER_OPENGL,
 											 0,
 											 RENDERER_OPENGL));
-		opY += (int)(opSpacing * 1.5);
+		opY += opSpacing * 1.5f;
 		UiStackPush(videoOptionsStack,
 					CreateSliderControl(v2(0, opY),
 										v2(480, 40),
@@ -197,7 +197,7 @@ void GVideoOptionsStateSet()
 										1,
 										SliderLabelMSAA));
 #ifdef __LINUX__
-		opY += (int)(opSpacing * 1.5);
+		opY += opSpacing * 1.5f;
 		UiStackPush(videoOptionsStack,
 					CreateCheckboxControl(v2(0, opY),
 										  v2(480, 40),

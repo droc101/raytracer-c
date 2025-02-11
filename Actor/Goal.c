@@ -3,29 +3,59 @@
 //
 
 #include "Goal.h"
+#include <box2d/box2d.h>
 #include <math.h>
+
 #include "../Helpers/Collision.h"
+#include "../Helpers/Core/AssetReader.h"
+#include "../Helpers/Core/Error.h"
 #include "../Helpers/Core/MathEx.h"
 #include "../Helpers/TextBox.h"
 #include "../Structs/GlobalState.h"
 #include "../Structs/Level.h"
 #include "../Structs/Vector2.h"
 #include "../Structs/Wall.h"
-#include "../Helpers/Core/AssetReader.h"
 
-void GoalInit(Actor *this)
+void CreateGoalSensor(Actor *this, const b2WorldId worldId)
 {
-	this->solid = false;
-	this->actorWall = CreateWall(v2(0, -0.5), v2(0, 0.5), TEXTURE("actor_goal0"), 1, 0.0f);
+	this->extra_data = calloc(1, sizeof(b2ShapeId));
+	CheckAlloc(this->extra_data);
+	b2ShapeId *shapeId = this->extra_data;
+
+	b2BodyDef sensorBodyDef = b2DefaultBodyDef();
+	sensorBodyDef.type = b2_staticBody;
+	sensorBodyDef.position = this->position;
+	this->bodyId = b2CreateBody(worldId, &sensorBodyDef);
+	this->actorWall->bodyId = this->bodyId;
+	const b2Circle sensorShape = {
+		.radius = 0.5f,
+	};
+	b2ShapeDef sensorShapeDef = b2DefaultShapeDef();
+	sensorShapeDef.isSensor = true;
+	*shapeId = b2CreateCircleShape(this->bodyId, &sensorShapeDef, &sensorShape);
+}
+
+void GoalInit(Actor *this, const b2WorldId worldId)
+{
+	this->actorWall = CreateWall(v2(this->position.x, this->position.y - 0.5f),
+								 v2(this->position.x, this->position.y + 0.5f),
+								 TEXTURE("actor_goal0"),
+								 1.0f,
+								 0.0f);
+	WallBake(this->actorWall);
+
+	CreateGoalSensor(this, worldId);
 }
 
 void GoalUpdate(Actor *this, double /*delta*/)
 {
-	const Vector2 dir = Vector2Sub(GetState()->level->player.pos, this->position);
-	this->rotation = atan2(dir.y, dir.x);
-	this->rotation += PI;
+	const Vector2 playerPosition = GetState()->level->player.pos;
+	const float rotation = atan2f(playerPosition.y - this->position.y, playerPosition.x - this->position.x) + PIf / 2;
+	this->actorWall->a = v2(-0.5f * cosf(rotation) + this->position.x, -0.5f * sinf(rotation) + this->position.y);
+	this->actorWall->b = v2(0.5f * cosf(rotation) + this->position.x, 0.5f * sinf(rotation) + this->position.y);
+	WallBake(this->actorWall);
 
-	if (CollideActorCylinder(this, GetState()->level->player.pos))
+	if (GetSensorState(GetState()->level->worldId, ((b2ShapeId *)this->extra_data)->index1, false))
 	{
 		RemoveActor(this);
 		const TextBox tb = DEFINE_TEXT("Goal!",
@@ -43,5 +73,7 @@ void GoalUpdate(Actor *this, double /*delta*/)
 // ReSharper disable once CppParameterMayBeConstPtrOrRef
 void GoalDestroy(Actor *this)
 {
+	b2DestroyBody(this->bodyId);
 	free(this->actorWall);
+	free(this->extra_data);
 }

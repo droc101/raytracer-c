@@ -44,11 +44,8 @@ add_executable(
         Helpers/Graphics/Drawing.h
         Helpers/Graphics/Drawing.c
         Structs/Vector2.h
-        Structs/Vector2.c
         Helpers/Core/MathEx.h
         Helpers/Core/MathEx.c
-        Structs/Ray.h
-        Structs/Ray.c
         Structs/Wall.h
         Structs/Wall.c
         Helpers/Core/List.h
@@ -83,8 +80,6 @@ add_executable(
         Helpers/Core/AssetReader.h
         Helpers/Core/DataReader.c
         Helpers/Core/DataReader.h
-        Helpers/Collision.c
-        Helpers/Collision.h
         config.h
         GameStates/GLevelSelectState.c
         GameStates/GLevelSelectState.h
@@ -155,6 +150,10 @@ add_executable(
         Helpers/Graphics/Vulkan/VulkanMemory.h
         Helpers/Graphics/Vulkan/VulkanResources.c
         Helpers/Graphics/Vulkan/VulkanResources.h
+        Helpers/Navigation.c
+        Helpers/Navigation.h
+        Helpers/Collision.c
+        Helpers/Collision.h
 )
 
 #endregion
@@ -183,10 +182,9 @@ include_directories(${Vulkan_INCLUDE_DIRS})
 if (UNIX)
     find_package(GLEW REQUIRED) # OpenGL Extension Wrangler
     include_directories(${GLEW_INCLUDE_DIRS})
-
-    include_directories("/usr/include/cglm") # C OpenGL Mathematics Library
 elseif (WIN32) # Thank you Windows, I hate you.
     include_directories("${CMAKE_SOURCE_DIR}/lib/cglm/include") # C OpenGL Mathematics Library
+    include_directories("${CMAKE_SOURCE_DIR}/lib/box2d/include")
 
     list(APPEND CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/lib/glew") # OpenGL Extension Wrangler
     add_definitions(-DGLEW_STATIC)
@@ -196,9 +194,9 @@ elseif (WIN32) # Thank you Windows, I hate you.
 endif ()
 
 if (UNIX)
-    target_link_libraries(game -lGL -lGLU ${SDL2_LIBRARY} ${ZLIB_LIBRARIES} ${SDL2_MIXER_LIBRARY} ${Vulkan_LIBRARIES} m SDL2 SDL2_mixer z ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES}) # extra l* flags are needed on Linux
+    target_link_libraries(game -lGL -lGLU ${SDL2_LIBRARY} ${ZLIB_LIBRARIES} ${SDL2_MIXER_LIBRARY} ${Vulkan_LIBRARIES} box2d m SDL2 SDL2_mixer z ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES}) # extra l* flags are needed on Linux
 elseif (WIN32)
-    target_link_libraries(game PRIVATE ${SDL2_LIBRARY} ${ZLIB_LIBRARIES} ${SDL2_MIXER_LIBRARY} ${Vulkan_LIBRARIES} ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} opengl32 dwmapi) # Don't pass extra l* flags on Windows (it isn't happy with them)
+    target_link_libraries(game PRIVATE ${SDL2_LIBRARY} ${ZLIB_LIBRARIES} ${SDL2_MIXER_LIBRARY} ${Vulkan_LIBRARIES} ${OPENGL_gl_LIBRARY} ${GLEW_LIBRARIES} ${CMAKE_SOURCE_DIR}/lib/box2d/libbox2d.a opengl32 dwmapi) # Don't pass extra l* flags on Windows (it isn't happy with them)
 endif ()
 
 #endregion

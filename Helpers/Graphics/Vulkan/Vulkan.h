@@ -43,15 +43,15 @@ bool VK_LoadLevelWalls(const Level *level);
 
 bool VK_LoadNewActor();
 
-bool VK_DrawColoredQuad(int x, int y, int w, int h, uint32_t color);
+void VK_DrawColoredQuad(int x, int y, int w, int h, uint32_t color);
 
-bool VK_DrawColoredQuadsBatched(const float *vertices, int quadCount, uint32_t color);
+void VK_DrawColoredQuadsBatched(const float *vertices, int quadCount, uint32_t color);
 
-bool VK_DrawTexturedQuad(int x, int y, int w, int h, const char *texture);
+void VK_DrawTexturedQuad(int x, int y, int w, int h, const char *texture);
 
-bool VK_DrawTexturedQuadMod(int x, int y, int w, int h, const char *texture, uint32_t color);
+void VK_DrawTexturedQuadMod(int x, int y, int w, int h, const char *texture, uint32_t color);
 
-bool VK_DrawTexturedQuadRegion(int x,
+void VK_DrawTexturedQuadRegion(int x,
 							   int y,
 							   int w,
 							   int h,
@@ -61,7 +61,7 @@ bool VK_DrawTexturedQuadRegion(int x,
 							   int regionH,
 							   const char *texture);
 
-bool VK_DrawTexturedQuadRegionMod(int x,
+void VK_DrawTexturedQuadRegionMod(int x,
 								  int y,
 								  int w,
 								  int h,
@@ -72,11 +72,11 @@ bool VK_DrawTexturedQuadRegionMod(int x,
 								  const char *texture,
 								  uint32_t color);
 
-bool VK_DrawTexturedQuadsBatched(const float *vertices, int quadCount, const char *texture, uint32_t color);
+void VK_DrawTexturedQuadsBatched(const float *vertices, int quadCount, const char *texture, uint32_t color);
 
-bool VK_DrawLine(int startX, int startY, int endX, int endY, int thickness, uint32_t color);
+void VK_DrawLine(int startX, int startY, int endX, int endY, int thickness, uint32_t color);
 
-bool VK_DrawRectOutline(int x, int y, int w, int h, int thickness, uint32_t color);
+void VK_DrawRectOutline(int x, int y, int w, int h, int thickness, uint32_t color);
 
 void VK_ClearColor(uint32_t color);
 

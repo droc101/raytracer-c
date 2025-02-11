@@ -16,15 +16,17 @@
  * @param paramB Initial parameter B
  * @param paramC Initial parameter C
  * @param paramD Initial parameter D
+ * @param worldId The Box2D world within which to create the actor
  * @return Initialized Actor struct
  */
 Actor *CreateActor(Vector2 position,
-				   double rotation,
+				   float rotation,
 				   int actorType,
 				   byte paramA,
 				   byte paramB,
 				   byte paramC,
-				   byte paramD);
+				   byte paramD,
+				   b2WorldId worldId);
 
 /**
  * Destroy an Actor
@@ -33,19 +35,17 @@ Actor *CreateActor(Vector2 position,
 void FreeActor(Actor *actor);
 
 /**
- * Transform an actor's wall by its position and rotation
- * @param actor Actor to use
- * @param wall Wall to transform
- * @return True if the wall was transformed successfully
- * @note The @c wall variable should NOT be the actor's original wall.
- */
-bool GetTransformedWall(const Actor *actor, Wall *wall);
-
-/**
  * Add a signal to listen for
  * @param actor The actor that will listen
  * @param signal The signal to listen for
  */
 void ActorListenFor(Actor *actor, int signal);
+
+/**
+ * 
+ * @param this The actor to create the collider for
+ * @param worldId The world within which to create the collider
+ */
+void CreateActorWallCollider(Actor *this, b2WorldId worldId);
 
 #endif //GAME_ACTOR_H

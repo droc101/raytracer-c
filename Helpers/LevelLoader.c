@@ -3,6 +3,7 @@
 //
 
 #include "LevelLoader.h"
+#include <box2d/box2d.h>
 #include <stdio.h>
 #include "../Helpers/CommonAssets.h"
 #include "../Structs/Actor.h"
@@ -36,38 +37,42 @@ Level *LoadLevel(const byte *data)
 	l->fogColor = ReadUint(data, &offset);
 	l->fogStart = ReadDouble(data, &offset);
 	l->fogEnd = ReadDouble(data, &offset);
-	l->player.pos.x = ReadDouble(data, &offset);
-	l->player.pos.y = ReadDouble(data, &offset);
-	l->player.angle = ReadDouble(data, &offset);
+
+	l->player.pos.x = (float)ReadDouble(data, &offset);
+	l->player.pos.y = (float)ReadDouble(data, &offset);
+	l->player.angle = (float)ReadDouble(data, &offset);
+
+	b2Body_SetTransform(l->player.bodyId, l->player.pos, b2MakeRot(l->player.angle));
 
 	const uint actorCount = ReadUint(data, &offset);
 	for (int i = 0; i < actorCount; i++)
 	{
-		const double actorX = ReadDouble(data, &offset);
-		const double actorY = ReadDouble(data, &offset);
-		const double actorRot = ReadDouble(data, &offset);
+		const float actorX = (float)ReadDouble(data, &offset);
+		const float actorY = (float)ReadDouble(data, &offset);
+		const float actorRotation = (float)ReadDouble(data, &offset);
 		const int actorType = ReadInt(data, &offset);
 		const byte actorParamA = ReadByte(data, &offset);
 		const byte actorParamB = ReadByte(data, &offset);
 		const byte actorParamC = ReadByte(data, &offset);
 		const byte actorParamD = ReadByte(data, &offset);
 		Actor *a = CreateActor(v2(actorX, actorY),
-							   actorRot,
+							   actorRotation,
 							   actorType,
 							   actorParamA,
 							   actorParamB,
 							   actorParamC,
-							   actorParamD);
+							   actorParamD,
+							   l->worldId);
 		ListAdd(&l->actors, a);
 	}
 
 	const uint wallCount = ReadUint(data, &offset);
 	for (int i = 0; i < wallCount; i++)
 	{
-		const double wallAX = ReadDouble(data, &offset);
-		const double wallAY = ReadDouble(data, &offset);
-		const double wallBX = ReadDouble(data, &offset);
-		const double wallBY = ReadDouble(data, &offset);
+		const float wallAX = (float)ReadDouble(data, &offset);
+		const float wallAY = (float)ReadDouble(data, &offset);
+		const float wallBX = (float)ReadDouble(data, &offset);
+		const float wallBY = (float)ReadDouble(data, &offset);
 		char lDataWallTex[32];
 		ReadString(data, &offset, (char *)&lDataWallTex, 32);
 		const char wallTex[48];
@@ -75,21 +80,23 @@ Level *LoadLevel(const byte *data)
 		const float wallUVScale = ReadFloat(data, &offset);
 		const float wallUVOffset = ReadFloat(data, &offset);
 		Wall *w = CreateWall(v2(wallAX, wallAY), v2(wallBX, wallBY), wallTex, wallUVScale, wallUVOffset);
+		WallBake(w);
+		CreateWallCollider(w, l->worldId);
 		ListAdd(&l->walls, w);
 	}
 
 	const uint triggerCount = ReadUint(data, &offset);
 	for (int i = 0; i < triggerCount; i++)
 	{
-		const double trigX = ReadDouble(data, &offset);
-		const double trigY = ReadDouble(data, &offset);
-		const double trigRot = ReadDouble(data, &offset);
-		const double trigExtX = ReadDouble(data, &offset);
-		const double trigExtY = ReadDouble(data, &offset);
+		const float trigX = (float)ReadDouble(data, &offset);
+		const float trigY = (float)ReadDouble(data, &offset);
+		const float trigRot = (float)ReadDouble(data, &offset);
+		const float trigExtX = (float)ReadDouble(data, &offset);
+		const float trigExtY = (float)ReadDouble(data, &offset);
 		char trigCommand[64];
 		ReadString(data, &offset, (char *)&trigCommand, 64);
 		const uint flags = ReadUint(data, &offset);
-		Trigger *t = CreateTrigger(v2(trigX, trigY), v2(trigExtX, trigExtY), trigRot, trigCommand, flags);
+		Trigger *t = CreateTrigger(v2(trigX, trigY), v2(trigExtX, trigExtY), trigRot, trigCommand, flags, l->worldId);
 		ListAdd(&l->triggers, t);
 	}
 

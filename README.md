@@ -2,7 +2,9 @@
 
 ![](Assets/actor/BLOB2.png)
 
-Old-School FPS game (and engine) written in C using [SDL](https://www.libsdl.org/), OpenGL/Vulkan, and [zlib](https://www.zlib.net/).
+Old-School FPS game (and engine) written in C using [SDL](https://www.libsdl.org/) for platform
+abstraction, [OpenGL/Vulkan](https://www.khronos.org/) for graphics, [Box2D](https://box2d.org/) for physics,
+and [zlib](https://www.zlib.net/) for compression.
 
 Runs on x86_64 Windows and Linux.
 

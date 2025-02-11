@@ -21,7 +21,7 @@ void ActorTransformMatrix(const Actor *actor, mat4 *transformMatrix)
 		Error("A NULL transformMatrix must not be passed to ActorTransformMatrix!");
 	}
 	glm_translate(*transformMatrix, (vec3){(float)actor->position.x, actor->yPosition, (float)actor->position.y});
-	glm_rotate(*transformMatrix, (float)-actor->rotation, (vec3){0, 1, 0});
+	glm_rotate(*transformMatrix, -actor->rotation, (vec3){0, 1, 0});
 }
 
 bool RenderPreInit()
@@ -136,8 +136,8 @@ void RenderLevel3D(const Level *l, const Camera *cam)
 
 inline void UpdateViewportSize()
 {
-	const float newScaleX = (float)ActualWindowSize().x / (float)DEF_WIDTH;
-	const float newScaleY = (float)ActualWindowSize().y / (float)DEF_HEIGHT;
+	const float newScaleX = ActualWindowSize().x / DEF_WIDTH;
+	const float newScaleY = ActualWindowSize().y / DEF_HEIGHT;
 	float newScale = newScaleX < newScaleY ? newScaleX : newScaleY;
 	newScale = max(newScale, 1.0f);
 	GetState()->uiScale = newScale;
@@ -268,10 +268,10 @@ void RenderMenuBackground()
 	const Vector2 bgTileSize = v2(320, 240); // size on screen
 	const Vector2 bgTexSize = GetTextureSize(TEXTURE("interface_menu_bg_tile")); // actual size of the texture
 
-	const Vector2 tilesOnScreen = v2(WindowWidth() / bgTileSize.x, WindowHeight() / bgTileSize.y);
+	const Vector2 tilesOnScreen = v2(WindowWidthFloat() / bgTileSize.x, WindowHeightFloat() / bgTileSize.y);
 	const Vector2 tileRegion = v2(tilesOnScreen.x * bgTexSize.x, tilesOnScreen.y * bgTexSize.y);
 	DrawTextureRegion(v2(0, 0),
-					  v2(WindowWidth(), WindowHeight()),
+					  v2(WindowWidthFloat(), WindowHeightFloat()),
 					  TEXTURE("interface_menu_bg_tile"),
 					  v2(0, 0),
 					  tileRegion);

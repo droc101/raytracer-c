@@ -5,7 +5,6 @@
 #ifndef GAME_RADIOBUTTON_H
 #define GAME_RADIOBUTTON_H
 
-#include "../../Vector2.h"
 #include "../UiStack.h"
 
 typedef struct RadioButtonData RadioButtonData;

@@ -5,9 +5,9 @@
 #include "VulkanHelpers.h"
 #include <cglm/clipspace/persp_lh_zo.h>
 #include <cglm/clipspace/view_lh_zo.h>
-
 #include "../../CommonAssets.h"
 #include "../../Core/Error.h"
+#include "../../Core/Logging.h"
 #include "../RenderingHelpers.h"
 #include "VulkanInternal.h"
 #include "VulkanResources.h"
@@ -675,6 +675,7 @@ void LoadActorModels(const Level *level, ActorVertex *vertices, uint32_t *indice
 	size_t vertexOffset = 0;
 	size_t indexOffset = 0;
 	ListClear(&buffers.actors.models.loadedModelIds);
+	ListLock(level->actors);
 	for (size_t i = 0; i < level->actors.length; i++)
 	{
 		const Actor *actor = ListGet(level->actors, i);
@@ -693,11 +694,13 @@ void LoadActorModels(const Level *level, ActorVertex *vertices, uint32_t *indice
 			indexOffset += indexSize;
 		}
 	}
+	ListUnlock(level->actors);
 }
 
 void LoadActorWalls(const Level *level, ActorVertex *vertices, uint32_t *indices)
 {
 	uint32_t wallCount = 0;
+	ListLock(level->actors);
 	for (size_t i = 0; i < level->actors.length; i++)
 	{
 		const Actor *actor = ListGet(level->actors, i);
@@ -707,37 +710,34 @@ void LoadActorWalls(const Level *level, ActorVertex *vertices, uint32_t *indices
 		}
 		const Wall *wall = actor->actorWall;
 		const float halfHeight = wall->height / 2.0f;
-		const vec2 startVertex = {(float)wall->a.x, (float)wall->a.y};
-		const vec2 endVertex = {(float)wall->b.x, (float)wall->b.y};
+		const vec2 startVertex = {wall->dx * 0.5f + actor->position.x, wall->dy * 0.5f + actor->position.y};
+		const vec2 endVertex = {startVertex[0] - wall->dx, startVertex[1] - wall->dy};
 		const vec2 startUV = {wall->uvOffset, 0};
-		const float dx = (float)wall->b.x - (float)wall->a.x;
-		const float dy = (float)wall->b.y - (float)wall->a.y;
-		const float length = sqrtf(dx * dx + dy * dy);
-		const vec2 endUV = {wall->uvScale * length + wall->uvOffset, 1};
+		const vec2 endUV = {wall->uvScale * wall->length + wall->uvOffset, 1};
 
 		vertices[4 * wallCount].x = startVertex[0];
-		vertices[4 * wallCount].y = halfHeight;
+		vertices[4 * wallCount].y = halfHeight + actor->yPosition;
 		vertices[4 * wallCount].z = startVertex[1];
 		vertices[4 * wallCount].u = startUV[0];
 		vertices[4 * wallCount].v = startUV[1];
 		vertices[4 * wallCount].nz = NAN;
 
 		vertices[4 * wallCount + 1].x = endVertex[0];
-		vertices[4 * wallCount + 1].y = halfHeight;
+		vertices[4 * wallCount + 1].y = halfHeight + actor->yPosition;
 		vertices[4 * wallCount + 1].z = endVertex[1];
 		vertices[4 * wallCount + 1].u = endUV[0];
 		vertices[4 * wallCount + 1].v = startUV[1];
 		vertices[4 * wallCount + 1].nz = NAN;
 
 		vertices[4 * wallCount + 2].x = endVertex[0];
-		vertices[4 * wallCount + 2].y = -halfHeight;
+		vertices[4 * wallCount + 2].y = -halfHeight + actor->yPosition;
 		vertices[4 * wallCount + 2].z = endVertex[1];
 		vertices[4 * wallCount + 2].u = endUV[0];
 		vertices[4 * wallCount + 2].v = endUV[1];
 		vertices[4 * wallCount + 2].nz = NAN;
 
 		vertices[4 * wallCount + 3].x = startVertex[0];
-		vertices[4 * wallCount + 3].y = -halfHeight;
+		vertices[4 * wallCount + 3].y = -halfHeight + actor->yPosition;
 		vertices[4 * wallCount + 3].z = startVertex[1];
 		vertices[4 * wallCount + 3].u = startUV[0];
 		vertices[4 * wallCount + 3].v = endUV[1];
@@ -752,6 +752,7 @@ void LoadActorWalls(const Level *level, ActorVertex *vertices, uint32_t *indices
 
 		wallCount++;
 	}
+	ListUnlock(level->actors);
 }
 
 void LoadActorInstanceData(const Level *level,
@@ -770,6 +771,7 @@ void LoadActorInstanceData(const Level *level,
 		offsets[i] = offsets[i - 1] +
 					 (size_t)ListGet(buffers.actors.models.modelCounts, i - 1) * sizeof(ActorInstanceData);
 	}
+	ListLock(level->actors);
 	for (size_t i = 0; i < level->actors.length; i++)
 	{
 		const Actor *actor = ListGet(level->actors, i);
@@ -777,13 +779,13 @@ void LoadActorInstanceData(const Level *level,
 		{
 			continue;
 		}
-		mat4 transformMatrix = GLM_MAT4_IDENTITY_INIT;
-		ActorTransformMatrix(actor, &transformMatrix);
+
 		if (actor->actorModel)
 		{
+			mat4 transformMatrix = GLM_MAT4_IDENTITY_INIT;
+			ActorTransformMatrix(actor, &transformMatrix);
 			const size_t index = ListFind(buffers.actors.models.loadedModelIds, (void *)actor->actorModel->id);
 			ActorInstanceData *offsetInstanceData = (void *)instanceData + offsets[index];
-
 			memcpy(offsetInstanceData[modelCounts[index]].transform, transformMatrix, sizeof(mat4));
 			offsetInstanceData[modelCounts[index]].textureIndex = TextureIndex(actor->actorModelTexture);
 
@@ -793,30 +795,29 @@ void LoadActorInstanceData(const Level *level,
 			const Wall *wall = actor->actorWall;
 			ActorInstanceData *offsetInstanceData = (void *)instanceData +
 													offsets[buffers.actors.models.loadedModelIds.length];
-
-			memcpy(offsetInstanceData[wallCount].transform, transformMatrix, sizeof(mat4));
+			memcpy(offsetInstanceData[wallCount].transform, GLM_MAT4_IDENTITY, sizeof(mat4));
 			offsetInstanceData[wallCount].textureIndex = TextureIndex(wall->tex);
-			offsetInstanceData[wallCount].wallAngle = (float)actor->rotation;
+			offsetInstanceData[wallCount].wallAngle = actor->actorWall->angle;
 
 			wallCount++;
 		}
 		if (actor->showShadow)
 		{
-			shadowVertices[4 * shadowCount].x = (float)actor->position.x - 0.5f * actor->shadowSize;
+			shadowVertices[4 * shadowCount].x = actor->position.x - 0.5f * actor->shadowSize;
 			shadowVertices[4 * shadowCount].y = -0.49f;
-			shadowVertices[4 * shadowCount].z = (float)actor->position.y - 0.5f * actor->shadowSize;
+			shadowVertices[4 * shadowCount].z = actor->position.y - 0.5f * actor->shadowSize;
 
-			shadowVertices[4 * shadowCount + 1].x = (float)actor->position.x + 0.5f * actor->shadowSize;
+			shadowVertices[4 * shadowCount + 1].x = actor->position.x + 0.5f * actor->shadowSize;
 			shadowVertices[4 * shadowCount + 1].y = -0.49f;
-			shadowVertices[4 * shadowCount + 1].z = (float)actor->position.y - 0.5f * actor->shadowSize;
+			shadowVertices[4 * shadowCount + 1].z = actor->position.y - 0.5f * actor->shadowSize;
 
-			shadowVertices[4 * shadowCount + 2].x = (float)actor->position.x + 0.5f * actor->shadowSize;
+			shadowVertices[4 * shadowCount + 2].x = actor->position.x + 0.5f * actor->shadowSize;
 			shadowVertices[4 * shadowCount + 2].y = -0.49f;
-			shadowVertices[4 * shadowCount + 2].z = (float)actor->position.y + 0.5f * actor->shadowSize;
+			shadowVertices[4 * shadowCount + 2].z = actor->position.y + 0.5f * actor->shadowSize;
 
-			shadowVertices[4 * shadowCount + 3].x = (float)actor->position.x - 0.5f * actor->shadowSize;
+			shadowVertices[4 * shadowCount + 3].x = actor->position.x - 0.5f * actor->shadowSize;
 			shadowVertices[4 * shadowCount + 3].y = -0.49f;
-			shadowVertices[4 * shadowCount + 3].z = (float)actor->position.y + 0.5f * actor->shadowSize;
+			shadowVertices[4 * shadowCount + 3].z = actor->position.y + 0.5f * actor->shadowSize;
 
 			shadowIndices[6 * shadowCount] = shadowCount * 4;
 			shadowIndices[6 * shadowCount + 1] = shadowCount * 4 + 1;
@@ -828,6 +829,7 @@ void LoadActorInstanceData(const Level *level,
 			shadowCount++;
 		}
 	}
+	ListUnlock(level->actors);
 	free(modelCounts);
 	free(offsets);
 }
@@ -842,6 +844,7 @@ void LoadActorDrawInfo(const Level *level, VkDrawIndexedIndirectCommand *drawInf
 		drawInfo[i].instanceCount = (size_t)ListGet(buffers.actors.models.modelCounts, i);
 		modelCount += (size_t)ListGet(buffers.actors.models.modelCounts, i);
 	}
+	ListLock(level->actors);
 	for (size_t i = 0; i < level->actors.length; i++)
 	{
 		const Actor *actor = ListGet(level->actors, i);
@@ -860,6 +863,7 @@ void LoadActorDrawInfo(const Level *level, VkDrawIndexedIndirectCommand *drawInf
 			wallCount++;
 		}
 	}
+	ListUnlock(level->actors);
 }
 
 VkResult CopyBuffers(const Level *level)
@@ -1040,7 +1044,7 @@ VkResult EndRenderPass(const VkCommandBuffer commandBuffer)
 	return VK_SUCCESS;
 }
 
-bool DrawRectInternal(const float ndcStartX,
+void DrawRectInternal(const float ndcStartX,
 					  const float ndcStartY,
 					  const float ndcEndX,
 					  const float ndcEndY,
@@ -1057,10 +1061,10 @@ bool DrawRectInternal(const float ndcStartX,
 		{ndcEndX, ndcEndY, endU, endV},
 		{ndcStartX, ndcEndY, startU, endV},
 	};
-	return DrawQuadInternal(matrix, color, textureIndex);
+	DrawQuadInternal(matrix, color, textureIndex);
 }
 
-bool DrawQuadInternal(const mat4 vertices_posXY_uvZW, const uint32_t color, const uint32_t textureIndex)
+void DrawQuadInternal(const mat4 vertices_posXY_uvZW, const uint32_t color, const uint32_t textureIndex)
 {
 	GET_COLOR(color);
 
@@ -1131,6 +1135,4 @@ bool DrawQuadInternal(const mat4 vertices_posXY_uvZW, const uint32_t color, cons
 	buffers.ui.indices[6 * buffers.ui.quadCount + 5] = buffers.ui.quadCount * 4 + 3;
 
 	buffers.ui.quadCount++;
-
-	return true;
 }

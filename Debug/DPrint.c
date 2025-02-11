@@ -8,6 +8,7 @@
 #include "../Helpers/CommonAssets.h"
 #include "../Helpers/Core/Logging.h"
 #include "../Helpers/Graphics/Font.h"
+#include "../Structs/Vector2.h"
 
 int dprintYPosition = 10;
 
@@ -19,8 +20,10 @@ void ResetDPrintYPos()
 void DPrint(const char *str, const uint color)
 {
 #ifdef ENABLE_DEBUG_PRINT
-	FontDrawString((Vector2){12, dprintYPosition + 2}, str, 16, 0xFF000000, smallFont);
-	dprintYPosition += (int)FontDrawString((Vector2){10, dprintYPosition}, str, 16, color, smallFont).y - dprintYPosition + 8;
+	FontDrawString(v2(12, (float)dprintYPosition + 2), str, 16, 0xFF000000, smallFont);
+	dprintYPosition += (int)FontDrawString(v2(10, (float)dprintYPosition), str, 16, color, smallFont).y -
+					   dprintYPosition +
+					   8;
 #endif
 }
 

@@ -10,6 +10,7 @@
 #include "../../../Helpers/Graphics/Drawing.h"
 #include "../../../Helpers/Graphics/Font.h"
 #include "../../GlobalState.h"
+#include "../../Vector2.h"
 
 Control *CreateRadioButtonControl(const Vector2 position,
 								  const Vector2 size,

@@ -219,32 +219,32 @@ Vector2 CalculateControlPosition(const Control *control)
 			pos = v2(0, 0);
 			break;
 		case TOP_CENTER:
-			pos.x = (WindowWidth() - control->size.x) / 2;
+			pos.x = (WindowWidthFloat() - control->size.x) / 2;
 			pos.y = 0;
 			break;
 		case TOP_RIGHT:
-			pos.x = WindowWidth() - control->size.x;
+			pos.x = WindowWidthFloat() - control->size.x;
 			pos.y = 0;
 			break;
 		case MIDDLE_LEFT:
-			pos.y = (WindowHeight() - control->size.y) / 2;
+			pos.y = (WindowHeightFloat() - control->size.y) / 2;
 			pos.x = 0;
 			break;
 		case MIDDLE_CENTER:
-			pos = v2((WindowWidth() - control->size.x) / 2, (WindowHeight() - control->size.y) / 2);
+			pos = v2((WindowWidthFloat() - control->size.x) / 2, (WindowHeightFloat() - control->size.y) / 2);
 			break;
 		case MIDDLE_RIGHT:
-			pos = v2(WindowWidth() - control->size.x, (WindowHeight() - control->size.y) / 2);
+			pos = v2(WindowWidthFloat() - control->size.x, (WindowHeightFloat() - control->size.y) / 2);
 			break;
 		case BOTTOM_LEFT:
-			pos.y = WindowHeight() - control->size.y;
+			pos.y = WindowHeightFloat() - control->size.y;
 			pos.x = 0;
 			break;
 		case BOTTOM_CENTER:
-			pos = v2((WindowWidth() - control->size.x) / 2, WindowHeight() - control->size.y);
+			pos = v2((WindowWidthFloat() - control->size.x) / 2, WindowHeightFloat() - control->size.y);
 			break;
 		case BOTTOM_RIGHT:
-			pos = v2(WindowWidth() - control->size.x, WindowHeight() - control->size.y);
+			pos = v2(WindowWidthFloat() - control->size.x, WindowHeightFloat() - control->size.y);
 			break;
 	}
 

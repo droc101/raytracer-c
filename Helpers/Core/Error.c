@@ -275,6 +275,6 @@ inline void TestSDLFunction(const int result, const char *message, const char *u
 	if (result != 0)
 	{
 		LogError("%s: %s\n", message, SDL_GetError());
-		Error((char*)userMessage);
+		Error((char *)userMessage);
 	}
 }

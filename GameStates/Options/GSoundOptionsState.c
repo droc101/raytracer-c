@@ -3,13 +3,13 @@
 //
 
 #include "GSoundOptionsState.h"
+#include "../../../Structs/Vector2.h"
 #include "../../Helpers/CommonAssets.h"
 #include "../../Helpers/Core/Input.h"
 #include "../../Helpers/Graphics/Drawing.h"
 #include "../../Helpers/Graphics/Font.h"
 #include "../../Helpers/Graphics/RenderingHelpers.h"
 #include "../../Structs/GlobalState.h"
-#include "../../Structs/Level.h"
 #include "../../Structs/UI/Controls/Button.h"
 #include "../../Structs/UI/Controls/Slider.h"
 #include "../../Structs/UI/UiStack.h"
@@ -62,7 +62,7 @@ void GSoundOptionsStateRender(GlobalState *)
 					32,
 					0xFFFFFFFF,
 					v2s(0),
-					v2(WindowWidth(), 100),
+					v2(WindowWidthFloat(), 100),
 					FONT_HALIGN_CENTER,
 					FONT_VALIGN_MIDDLE,
 					largeFont);
@@ -76,8 +76,8 @@ void GSoundOptionsStateSet()
 	if (soundOptionsStack == NULL)
 	{
 		soundOptionsStack = CreateUiStack();
-		int opY = 80;
-		const int opSpacing = 45;
+		ushort opY = 80;
+		const ushort opSpacing = 45;
 		UiStackPush(soundOptionsStack,
 					CreateSliderControl(v2(0, opY),
 										v2(480, 40),

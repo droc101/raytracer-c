@@ -41,6 +41,16 @@ inline int WindowHeight()
 	return windowHeight;
 }
 
+inline float WindowWidthFloat()
+{
+	return (float)windowWidth;
+}
+
+inline float WindowHeightFloat()
+{
+	return (float)windowHeight;
+}
+
 inline void UpdateWindowSize()
 {
 	SDL_GetWindowSize(window, &windowWidth, &windowHeight);
@@ -53,7 +63,7 @@ inline Vector2 ActualWindowSize()
 	int w;
 	int h;
 	SDL_GetWindowSize(window, &w, &h);
-	return v2(w, h);
+	return v2((float)w, (float)h);
 }
 
 // Set the SDL color from an ARGB uint32
@@ -310,7 +320,7 @@ inline void DrawRect(const int x, const int y, const int w, const int h)
 			VK_DrawColoredQuad(x, y, w, h, drawColor);
 			break;
 		case RENDERER_OPENGL:
-			GL_DrawRect(v2(x, y), v2(w, h), drawColor);
+			GL_DrawRect(v2((float)x, (float)y), v2((float)w, (float)h), drawColor);
 			break;
 		default:
 			break;
@@ -321,13 +331,13 @@ Vector2 GetTextureSize(const char *texture)
 {
 	const Image *img = LoadImage(texture);
 
-	return v2(img->width, img->height);
+	return v2((float)img->width, (float)img->height);
 }
 
 void DrawNinePatchTexture(const Vector2 pos,
 						  const Vector2 size,
-						  const int output_margins_px,
-						  const int texture_margins_px,
+						  const float output_margins_px,
+						  const float texture_margins_px,
 						  const char *texture)
 {
 	const Vector2 textureSize = GetTextureSize(texture);

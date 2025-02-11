@@ -3,17 +3,13 @@
 //
 
 #include "CommandParser.h"
-
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include "../GameStates/GLoadingState.h"
-#include "../GameStates/GMainState.h"
 #include "../Structs/GlobalState.h"
 #include "Core/List.h"
-
 
 void ExecuteCommand(const char *command)
 {
@@ -40,25 +36,24 @@ void ExecuteCommand(const char *command)
 		{
 			GLoadingStateSet(ListGet(commandList, 1));
 		}
-	}
-	else if (strcmp(commandName, "signal") == 0)
+	} else if (strcmp(commandName, "signal") == 0)
 	{
 		if (commandList.length < 2)
-        {
-            printf("signal command requires a signal number\n");
-        } else
-        {
+		{
+			printf("signal command requires a signal number\n");
+		} else
+		{
 			errno = 0;
-        	char *end;
-        	const long signal = strtol(ListGet(commandList, 1), &end, 10);
-        	if (errno != 0 || *end != '\0')
-        	{
-        		printf("Invalid signal number: %s\n", (char*)ListGet(commandList, 1));
-        	} else
-        	{
-        		SendSignal((int)signal, NULL);
-        	}
-        }
+			char *end;
+			const long signal = strtol(ListGet(commandList, 1), &end, 10);
+			if (errno != 0 || *end != '\0')
+			{
+				printf("Invalid signal number: %s\n", (char *)ListGet(commandList, 1));
+			} else
+			{
+				SendSignal((int)signal, NULL);
+			}
+		}
 	}
 	// TODO: signal system and related commands
 	else

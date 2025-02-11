@@ -5,9 +5,26 @@
 #include "MathEx.h"
 #include <math.h>
 
-double wrap(const double x, const double min, const double max) // NOLINT(*-no-recursion)
+int wrapi(int x, int min, int max)
 {
-	// BUG: Sometimes returns a value outside the range, needs more testing
+	if (min > max)
+	{
+		return wrap(x, max, min);
+	}
+	return (x >= 0 ? min : max) + x % max - min;
+}
+
+float wrapf(float x, float min, float max)
+{
+	if (min > max)
+	{
+		return wrap(x, max, min);
+	}
+	return (x >= 0 ? min : max) + fmodf(x, max - min);
+}
+
+double wrapd(double x, double min, double max)
+{
 	if (min > max)
 	{
 		return wrap(x, max, min);

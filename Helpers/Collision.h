@@ -1,37 +1,20 @@
 //
-// Created by droc101 on 6/22/2024.
+// Created by noah on 2/10/25.
 //
 
-#ifndef GAME_COLLISION_H
-#define GAME_COLLISION_H
+#ifndef COLLISION_H
+#define COLLISION_H
 
 #include "../defines.h"
 
 /**
- * Move around in the world, accounting for solid walls
- * @param position Start position
- * @param moveVec Movement vector
- * @param ignore Wall or actor to ignore
- * @return new position
+ * Get the state of a sensor. The current state of the sensor must be passed into this function because Box2D sensors
+ * only provide events when collision starts or stops
+ * @param worldId The Box2D world that the sensor is in
+ * @param sensorShapeIdIndex The @c index1 member of the sensor shape ID
+ * @param currentState A boolean for the current state of the sensor
+ * @return The new state of the sensor. True if something is colliding with it, false if nothing is colliding with it
  */
-Vector2 Move(Vector2 position, Vector2 moveVec, const void *ignore);
+bool GetSensorState(b2WorldId worldId, uint sensorShapeIdIndex, bool currentState);
 
-/**
- * Check if a point is inside a cylinder
- * @param cylOrigin Center of the cylinder
- * @param cylRadius Radius of the cylinder
- * @param testPoint Point to test
- * @return Whether the point is inside the cylinder
- */
-bool CollideCylinder(Vector2 cylOrigin, double cylRadius, Vector2 testPoint);
-
-/**
- * Check if a point is inside an actor's cylinder
- * @param a Actor to check
- * @param testPoint Point to test
- * @return Whether the point is inside the actor's cylinder
- * @note The cylinder is defined by the actor's wall
- */
-bool CollideActorCylinder(const Actor *a, Vector2 testPoint);
-
-#endif //GAME_COLLISION_H
+#endif //COLLISION_H

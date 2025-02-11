@@ -4,8 +4,9 @@
 
 #ifndef GAME_LIST_H
 #define GAME_LIST_H
+
+#include <SDL_mutex.h>
 #include <stdbool.h>
-#include <stddef.h>
 
 typedef struct List List;
 
@@ -15,6 +16,8 @@ struct List
 	size_t length;
 	/// The data that the list is storing
 	void **data;
+	/// Fix a synchronization segfault
+	SDL_mutex *mutex;
 };
 
 /**
@@ -54,6 +57,33 @@ void ListRemoveAt(List *list, size_t index);
 void ListInsertAfter(List *list, size_t index, void *data);
 
 /**
+ * Find an item in the list
+ * @param list List to search
+ * @param data Data to search for
+ * @return Index of the item in the list, -1 if not found
+ */
+size_t ListFind(List list, const void *data);
+
+/**
+ * Lock the mutex on a list
+ * @param list The list to lock
+ */
+void ListLock(List list);
+
+/**
+ * Unlock the mutex on a list
+ * @param list The list to unlock
+ */
+void ListUnlock(List list);
+
+/**
+ * Clear all items from the list
+ * @param list List to clear
+ * @warning This does not free the data in the list
+ */
+void ListClear(List *list);
+
+/**
  * Free the list structure
  * @param list List to free
  * @param freeListPointer A boolean indicating if the pointer passed to the first argument should be freed.
@@ -74,21 +104,6 @@ void ListFreeOnlyContents(List list);
  * @warning If the data is a struct, any pointers in the struct will not be freed, just the struct itself
  */
 void ListAndContentsFree(List *list, bool freeListPointer);
-
-/**
- * Find an item in the list
- * @param list List to search
- * @param data Data to search for
- * @return Index of the item in the list, -1 if not found
- */
-size_t ListFind(List list, const void *data);
-
-/**
- * Clear all items from the list
- * @param list List to clear
- * @warning This does not free the data in the list
- */
-void ListClear(List *list);
 
 /**
  * Get an item from the list by index

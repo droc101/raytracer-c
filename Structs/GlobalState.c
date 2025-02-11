@@ -3,8 +3,10 @@
 //
 
 #include "GlobalState.h"
+#include <box2d/box2d.h>
 #include <stdio.h>
 #include <string.h>
+
 #include "../GameStates/GLevelSelectState.h"
 #include "../GameStates/GMenuState.h"
 #include "../GameStates/GOptionsState.h"
@@ -142,7 +144,10 @@ void SetStateCallbacks(const FrameUpdateFunction UpdateGame,
 
 void ChangeLevel(Level *l)
 {
-	DestroyLevel(state.level);
+	if (state.level)
+	{
+		DestroyLevel(state.level);
+	}
 	state.level = l;
 	state.textBoxActive = false;
 	if (strncmp(l->music, "none", 4) != 0)
@@ -153,12 +158,6 @@ void ChangeLevel(Level *l)
 	} else
 	{
 		StopMusic();
-	}
-
-	for (int i = 0; i < l->walls.length; i++)
-	{
-		Wall *w = ListGet(l->walls, i);
-		WallBake(w);
 	}
 
 	LoadLevelWalls(l);
@@ -316,6 +315,7 @@ bool ChangeLevelByName(const char *name)
 void SendSignal(const int signal, const Actor *sender)
 {
 	// LogDebug("Sending signal %d from actor %p\n", signal, sender);
+	ListLock(state.level->actors);
 	for (int i = 0; i < state.level->actors.length; i++)
 	{
 		Actor *a = ListGet(state.level->actors, i);
@@ -327,10 +327,13 @@ void SendSignal(const int signal, const Actor *sender)
 			}
 		}
 	}
+	ListUnlock(state.level->actors);
 }
 
 void RemoveTrigger(const size_t index)
 {
+	const Trigger *trigger = ListGet(state.level->triggers, index);
+	b2DestroyBody(b2Shape_GetBody(trigger->sensorId));
 	if (index != -1)
 	{
 		ListRemoveAt(&state.level->triggers, index);

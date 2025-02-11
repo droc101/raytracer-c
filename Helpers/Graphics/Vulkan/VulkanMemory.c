@@ -3,6 +3,7 @@
 //
 
 #include "VulkanMemory.h"
+#include "../../Core/Logging.h"
 
 bool AllocateMemory(MemoryInfo *memoryInfo, const uint32_t memoryTypeBits)
 {

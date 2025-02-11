@@ -4,7 +4,6 @@
 
 #include "Logging.h"
 #include <stdio.h>
-
 #include "Error.h"
 
 /// The length of the longest value passed to the type argument of the LogInternal function (including the null) plus 7

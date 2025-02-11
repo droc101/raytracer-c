@@ -140,8 +140,6 @@ Asset *DecompressAsset(const char *relPath)
 	assetStruct->size = decompressedSize;
 	assetStruct->type = assetType;
 
-	asset += offset; // skip header
-
 	// Allocate memory for the decompressed data
 	byte *decompressedData = malloc(decompressedSize);
 	CheckAlloc(decompressedData);
@@ -149,7 +147,7 @@ Asset *DecompressAsset(const char *relPath)
 	z_stream stream = {0};
 
 	// Initialize the zlib stream
-	stream.next_in = asset;
+	stream.next_in = asset + offset; // skip header
 	stream.avail_in = compressedSize;
 	stream.next_out = decompressedData;
 	stream.avail_out = decompressedSize;
@@ -158,7 +156,7 @@ Asset *DecompressAsset(const char *relPath)
 	if (inflateInit2(&stream, MAX_WBITS | 16) != Z_OK)
 	{
 		free(decompressedData);
-		free(asset - 16);
+		free(asset);
 		free(assetStruct);
 		LogError("Failed to initialize zlib stream: %s\n", stream.msg);
 		return NULL;
@@ -171,7 +169,7 @@ Asset *DecompressAsset(const char *relPath)
 		if (inflateReturnValue != Z_OK)
 		{
 			free(decompressedData);
-			free(asset - 16);
+			free(asset);
 			free(assetStruct);
 			LogError("Failed to decompress zlib stream: %s\n", stream.msg);
 			return NULL;
@@ -183,7 +181,7 @@ Asset *DecompressAsset(const char *relPath)
 	if (inflateEnd(&stream) != Z_OK)
 	{
 		free(decompressedData);
-		free(asset - 16);
+		free(asset);
 		free(assetStruct);
 		LogError("Failed to end zlib stream: %s\n", stream.msg);
 		return NULL;
@@ -199,7 +197,7 @@ Asset *DecompressAsset(const char *relPath)
 	ListAdd(&assetCacheNames, data);
 	ListAdd(&assetCacheData, assetStruct);
 
-	free(asset - 16);
+	free(asset);
 
 	return assetStruct;
 }
@@ -366,7 +364,7 @@ Font *LoadFont(const char *asset)
 		LogError("Failed to load font from asset, asset was NULL!");
 		Error("Failed to load model!");
 	}
-	if (assetData->size < sizeof(Font) - sizeof(Image*))
+	if (assetData->size < sizeof(Font) - sizeof(Image *))
 	{
 		LogError("Failed to load font from asset, size was too small!");
 		return NULL;

@@ -5,7 +5,6 @@
 #include "GLogoSplashState.h"
 #include "../Helpers/Core/AssetReader.h"
 #include "../Helpers/Core/Input.h"
-#include "../Helpers/Core/MathEx.h"
 #include "../Helpers/Graphics/Drawing.h"
 #include "../Structs/GlobalState.h"
 #include "../Structs/Vector2.h"
@@ -53,14 +52,16 @@ void GLogoSplashStateRender(GlobalState *State)
 	if (State->physicsFrame < 40)
 	{
 		alpha = (float)(State->physicsFrame - 20) / 20.0f;
-	}
-	else if (State->physicsFrame > 80)
+	} else if (State->physicsFrame > 80)
 	{
 		alpha = 1.0f - ((float)(State->physicsFrame - 80) / 20.0f);
 	}
 	const uint color = (uint)(alpha * 255) << 24 | 0xFFFFFF;
 
-	DrawTextureMod(v2(destRect.x, destRect.y), v2(destRect.w, destRect.h), TEXTURE("interface_studio"), color);
+	DrawTextureMod(v2((float)destRect.x, (float)destRect.y),
+				   v2((float)destRect.w, (float)destRect.h),
+				   TEXTURE("interface_studio"),
+				   color);
 }
 
 void GLogoSplashStateSet()

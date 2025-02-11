@@ -91,6 +91,12 @@ void GL_DebugMessageCallback(GLenum source,
  */
 void GL_LoadTextureFromAsset(const char *texture);
 
+/**
+ * Draw an actor wall in 3D
+ * @param actor The actor to draw
+ * @note This expects 3D mode to be enabled
+ */
+void GL_DrawActorWall(const Actor *actor);
 
 /**
  * Register a texture from pixel data

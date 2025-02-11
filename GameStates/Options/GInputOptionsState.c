@@ -3,13 +3,13 @@
 //
 
 #include "GInputOptionsState.h"
+#include "../../../Structs/Vector2.h"
 #include "../../Helpers/CommonAssets.h"
 #include "../../Helpers/Core/Input.h"
 #include "../../Helpers/Graphics/Drawing.h"
 #include "../../Helpers/Graphics/Font.h"
 #include "../../Helpers/Graphics/RenderingHelpers.h"
 #include "../../Structs/GlobalState.h"
-#include "../../Structs/Level.h"
 #include "../../Structs/UI/Controls/Button.h"
 #include "../../Structs/UI/Controls/CheckBox.h"
 #include "../../Structs/UI/Controls/Slider.h"
@@ -71,7 +71,7 @@ void GInputOptionsStateRender(GlobalState *)
 					32,
 					0xFFFFFFFF,
 					v2s(0),
-					v2(WindowWidth(), 100),
+					v2(WindowWidthFloat(), 100),
 					FONT_HALIGN_CENTER,
 					FONT_VALIGN_MIDDLE,
 					largeFont);
@@ -83,7 +83,7 @@ void GInputOptionsStateRender(GlobalState *)
 					16,
 					-1,
 					v2(0, 160),
-					v2(WindowWidth(), 40),
+					v2(WindowWidthFloat(), 40),
 					FONT_HALIGN_CENTER,
 					FONT_VALIGN_MIDDLE,
 					smallFont);
@@ -94,7 +94,7 @@ void GInputOptionsStateRender(GlobalState *)
 						12,
 						-1,
 						v2(0, 400),
-						v2(WindowWidth(), 40),
+						v2(WindowWidthFloat(), 40),
 						FONT_HALIGN_CENTER,
 						FONT_VALIGN_MIDDLE,
 						smallFont);
@@ -107,7 +107,7 @@ void GInputOptionsStateRender(GlobalState *)
 						12,
 						-1,
 						v2(0, 420),
-						v2(WindowWidth(), 40),
+						v2(WindowWidthFloat(), 40),
 						FONT_HALIGN_CENTER,
 						FONT_VALIGN_MIDDLE,
 						smallFont);
@@ -119,8 +119,8 @@ void GInputOptionsStateSet()
 	if (inputOptionsStack == NULL)
 	{
 		inputOptionsStack = CreateUiStack();
-		int opY = 80;
-		const int opSpacing = 45;
+		float opY = 80;
+		const float opSpacing = 45;
 
 		UiStackPush(inputOptionsStack,
 					CreateSliderControl(v2(0, opY),

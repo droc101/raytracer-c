@@ -106,7 +106,7 @@ Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, cons
 	free(verts);
 	free(indices);
 
-	return v2(x + width, y + size); // Return the bottom right corner of the text
+	return v2((float)(x + width), (float)(y + size)); // Return the bottom right corner of the text
 }
 
 Vector2 MeasureText(const char *str, const uint size, const Font *font)
@@ -137,7 +137,7 @@ Vector2 MeasureText(const char *str, const uint size, const Font *font)
 
 	textWidth = max(textWidth, tempWidth);
 
-	return v2(textWidth, textHeight);
+	return v2((float)textWidth, (float)textHeight);
 }
 
 int StringLineCount(const char *str)
@@ -209,10 +209,10 @@ void DrawTextAligned(const char *str,
 	int y = (int)rect_pos.y;
 	if (v_align == FONT_VALIGN_MIDDLE)
 	{
-		y += (int)(rect_size.y - lines * size) / 2;
+		y += ((int)rect_size.y - lines * (int)size) / 2;
 	} else if (v_align == FONT_VALIGN_BOTTOM)
 	{
-		y += (int)(rect_size.y - lines * size);
+		y += (int)rect_size.y - lines * (int)size;
 	}
 
 	for (int i = 0; i < lines; i++)
@@ -230,7 +230,7 @@ void DrawTextAligned(const char *str,
 		{
 			x = (int)rect_pos.x;
 		}
-		FontDrawString(v2(x, y), line, size, color, font);
-		y += (uint)size + font->line_spacing;
+		FontDrawString(v2((float)x, (float)y), line, size, color, font);
+		y += (int)(size + font->line_spacing);
 	}
 }

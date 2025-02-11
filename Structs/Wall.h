@@ -7,9 +7,6 @@
 
 #include "../defines.h"
 
-/// How far out the hitbox of the wall extends from the actual wall (on both sides)
-#define WALL_HITBOX_EXTENTS 0.2
-
 /**
  * Create a wall
  * @param a Wall start point
@@ -20,6 +17,14 @@
  * @return Wall pointer
  */
 Wall *CreateWall(Vector2 a, Vector2 b, const char *texture, float uvScale, float uvOffset);
+
+/**
+ * Create a Box2D rigid body to serve as a wall's hitbox
+ * @param wall The wall to create the hitbox for
+ * @param worldId The Box2D world within which to create the hitbox
+ * @note This function expects the wall to be baked
+ */
+void CreateWallCollider(Wall *wall, b2WorldId worldId);
 
 /**
  * Bake a wall's information

@@ -24,9 +24,9 @@
 #pragma region Movement
 
 /// Player movement speed
-#define MOVE_SPEED 0.1
+#define MOVE_SPEED 0.237f
 /// Player movement speed when shift is held
-#define SLOW_MOVE_SPEED 0.01
+#define SLOW_MOVE_SPEED 0.0237f
 
 #pragma endregion
 

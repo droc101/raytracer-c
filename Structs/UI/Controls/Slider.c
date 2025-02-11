@@ -87,9 +87,8 @@ void DestroySlider(const Control *c)
 	free(data);
 }
 
-// ReSharper disable once CppParameterMayBeConst
 // ReSharper disable twice CppParameterMayBeConstPtrOrRef
-void UpdateSlider(UiStack *stack, Control *c, Vector2 /*localMousePos*/, uint ctlIndex)
+void UpdateSlider(UiStack *stack, Control *c, Vector2 /*localMousePos*/, const uint ctlIndex)
 {
 	SliderData *data = c->ControlData;
 
@@ -173,7 +172,7 @@ void DrawSlider(const Control *c, const ControlState /*state*/, const Vector2 po
 	DrawNinePatchTexture(c->anchoredPosition, c->size, 8, 8, TEXTURE("interface_slider"));
 
 	const SliderData *data = (SliderData *)c->ControlData;
-	const double handlePos = remap(data->value, data->min, data->max, 0, c->size.x - 18);
+	const float handlePos = remap(data->value, data->min, data->max, 0, c->size.x - 18);
 
 	DrawTexture(v2(position.x + handlePos + 4, position.y + 1),
 				v2(10, c->size.y - 2),

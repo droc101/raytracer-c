@@ -4,7 +4,6 @@
 
 #include "Options.h"
 #include <stdio.h>
-
 #include "../Helpers/Core/Error.h"
 #include "../Helpers/Core/Logging.h"
 
