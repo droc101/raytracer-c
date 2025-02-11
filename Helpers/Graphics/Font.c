@@ -3,6 +3,7 @@
 //
 
 #include "Font.h"
+#include <ctype.h>
 #include <string.h>
 #include "../../Structs/Vector2.h"
 #include "../Core/Error.h"
@@ -122,12 +123,10 @@ Vector2 MeasureText(const char *str, const uint size, const Font *font)
 		{
 			tempWidth -= fSize;
 			tempWidth += (int)(font->space_width * sizeMultiplier);
-		}
-		else if (str[j+1] == '\0')
-        {
+		} else if (str[j + 1] == '\0')
+		{
 			tempWidth -= (int)(font->char_spacing * sizeMultiplier); // fix extra spacing at the end of the string
-        }
-		else if (str[j] == '\n')
+		} else if (str[j] == '\n')
 		{
 			tempWidth -= fSize;
 			textWidth = max(textWidth, tempWidth);

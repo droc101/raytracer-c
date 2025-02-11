@@ -1,4 +1,4 @@
-#version 460 core
+#version 330 core
 
 /**
  * This shader is used to render a textured quad with a tint and optional region.

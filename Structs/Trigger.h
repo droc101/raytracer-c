@@ -13,7 +13,7 @@
  * @param extents The extents of the trigger (half in each direction)
  * @param rotation The rotation of the trigger
  * @param command The command to execute when the trigger is activated
- * @param flags @TODO(droc101): Why isn't this documented?
+ * @param flags The flags of the trigger. See @c TriggerFlags for a list of flags
  * @param worldId The Box2D world within which to create the trigger
  * @return The created trigger
  */

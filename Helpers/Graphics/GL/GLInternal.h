@@ -17,16 +17,16 @@ typedef struct GL_Buffer GL_Buffer;
 
 struct GL_Shader
 {
-	GLuint vsh;
-	GLuint fsh;
+	GLuint vertexShader;
+	GLuint fragmentShader;
 	GLuint program;
 };
 
 struct GL_Buffer
 {
-	GLuint vao;
-	GLuint vbo;
-	GLuint ebo;
+	GLuint vertexArrayObject;
+	GLuint vertexBufferObject;
+	GLuint elementBufferObject;
 };
 
 /**
