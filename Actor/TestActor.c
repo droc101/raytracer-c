@@ -82,5 +82,6 @@ void TestActorUpdate(Actor *this, const double delta)
 // ReSharper disable once CppParameterMayBeConstPtrOrRef
 void TestActorDestroy(Actor *this)
 {
+	free(this->extra_data);
 	b2DestroyBody(this->bodyId);
 }
