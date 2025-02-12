@@ -35,7 +35,7 @@ jobs:
     - name: Install Packages
       shell: msys2 {0}
       run: |
-        cd /c/Users/runner/work/raytracer-c/raytracer-c
+        cd ${{github.workspace}}
         yes | pacman -S mingw-w64-x86_64-python mingw-w64-x86_64-python-requests mingw-w64-x86_64-python-regex mingw-w64-x86_64-python-pillow mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja mingw-w64-x86_64-shaderc
         python setup-windows.py
 
@@ -50,3 +50,9 @@ jobs:
       # Build your program with the given configuration
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
+    - name: Upload results
+      uses: actions/upload-artifact@v4
+      with:
+        name: game
+        path: build/
+        retention-days: 5
