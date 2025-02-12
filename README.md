@@ -1,4 +1,5 @@
 # raytracer-c
+[![Linux Build](https://github.com/droc101/raytracer-c/actions/workflows/cmake-single-platform.yml/badge.svg)](https://github.com/droc101/raytracer-c/actions/workflows/cmake-single-platform.yml)
 
 ![](Assets/actor/BLOB2.png)
 
