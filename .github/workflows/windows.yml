@@ -29,18 +29,23 @@ jobs:
       uses: msys2/setup-msys2@v2
       with:
           msystem: MINGW64
-          install: mingw-w64-x86_64-toolchain
+          install: >-
+            mingw-w64-x86_64-toolchain
+            mingw-w64-x86_64-python
+            mingw-w64-x86_64-python-requests
+            mingw-w64-x86_64-python-regex
+            mingw-w64-x86_64-python-pillow
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
+            mingw-w64-x86_64-shaderc
           update: true
-          
-    - name: Install Packages
-      shell: msys2 {0}
-      run: pacman --noconfirm --needed -S mingw-w64-x86_64-python mingw-w64-x86_64-python-requests mingw-w64-x86_64-python-regex mingw-w64-x86_64-python-pillow mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja mingw-w64-x86_64-shaderc;
 
-    - name: Run setup-window.py
+    - name: Run setup-windows.py
       shell: msys2 {0}
       run: python setup-windows.py
 
-    - name: Set path to env variable
+    - name: Convert github.workspace to mingw path
       shell: msys2 {0}
       run: echo "MINGW_WORKSPACE=$(cygpath -u '${{github.workspace}}')" >> $GITHUB_ENV
 
