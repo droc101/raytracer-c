@@ -40,16 +40,20 @@ jobs:
       shell: msys2 {0}
       run: python setup-windows.py
 
+    - name: Set path to env variable
+      shell: msys2 {0}
+      run: echo "MINGW_WORKSPACE=$(cygpath -u '${{github.workspace}}')" >> $GITHUB_ENV
+
     - name: Configure CMake
       shell: msys2 {0}
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      run: cmake -B "$MINGW_WORKSPACE/build" -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
 
     - name: Build
       shell: msys2 {0}
       # Build your program with the given configuration
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+      run: cmake --build "$MINGW_WORKSPACE/build" --config ${{env.BUILD_TYPE}}
 
     - name: Upload results
       uses: actions/upload-artifact@v4
