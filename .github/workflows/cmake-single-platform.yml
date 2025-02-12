@@ -34,3 +34,10 @@ jobs:
       # Build your program with the given configuration
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
+    - name: Upload results
+      uses: actions/upload-artifact@v4
+      with:
+        name: game
+        path: build/
+        retention-days: 5
+
