@@ -779,6 +779,7 @@ bool CreateDescriptorSetLayouts()
 	};
 	const VkDescriptorSetLayoutCreateInfo layoutInfo = {
 		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+		.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT,
 		.bindingCount = 1,
 		.pBindings = &binding,
 	};
@@ -1708,7 +1709,7 @@ bool CreateDescriptorPool()
 	const VkDescriptorPoolCreateInfo poolCreateInfo = {
 		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
 		.pNext = NULL,
-		.flags = 0,
+		.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT,
 		.maxSets = MAX_FRAMES_IN_FLIGHT,
 		.poolSizeCount = 3,
 		.pPoolSizes = poolSizes,
