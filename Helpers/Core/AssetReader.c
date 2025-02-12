@@ -122,7 +122,14 @@ Asset *DecompressAsset(const char *relPath)
 	byte *asset = malloc(fileSize);
 	CheckAlloc(asset);
 	fseek(file, 0, SEEK_SET);
-	fread(asset, 1, fileSize, file);
+	const size_t bytesRead = fread(asset, 1, fileSize, file);
+	if (bytesRead != fileSize)
+	{
+		free(asset);
+		fclose(file);
+		LogError("Failed to read asset file: %s\n", relPath);
+		return NULL;
+	}
 
 	fclose(file);
 

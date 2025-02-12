@@ -155,7 +155,7 @@ bool CreateImageView(VkImageView *imageView,
 		.subresourceRange = subresourceRange,
 	};
 
-	VulkanTest(vkCreateImageView(device, &createInfo, NULL, imageView), errorMessage);
+	VulkanTest(vkCreateImageView(device, &createInfo, NULL, imageView), "%s", errorMessage);
 
 	return true;
 }
