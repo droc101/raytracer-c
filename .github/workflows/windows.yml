@@ -34,7 +34,7 @@ jobs:
           
     - name: Install Packages
       shell: msys2 {0}
-      run: pacman --no-confirm --needed -S mingw-w64-x86_64-python mingw-w64-x86_64-python-requests mingw-w64-x86_64-python-regex mingw-w64-x86_64-python-pillow mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja mingw-w64-x86_64-shaderc;
+      run: pacman --noconfirm --needed -S mingw-w64-x86_64-python mingw-w64-x86_64-python-requests mingw-w64-x86_64-python-regex mingw-w64-x86_64-python-pillow mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja mingw-w64-x86_64-shaderc;
 
     - name: Run setup-window.py
       shell: msys2 {0}
