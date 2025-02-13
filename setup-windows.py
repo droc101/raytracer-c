@@ -6,23 +6,23 @@ import zipfile
 import os
 import shutil
 
-sdl_version_regex = re.compile("^2.\\d*.\\d*$") # 2.x.x
+sdl_version_regex = re.compile("^2\\.\\d+\\.\\d+$")  # 2.x.x
 any_version_regex = re.compile("^.*$") # Any version
 
-sdl_zip_regex = re.compile("^SDL2-devel-2.\\d*.\\d*-mingw.zip$") # SDL2-devel-2.x.x-mingw.zip
+sdl_zip_regex = re.compile("^SDL2-devel-2\\.\\d+\\.\\d+-mingw\\.zip$")  # SDL2-devel-2.x.x-mingw.zip
 sdl_release_url = "https://api.github.com/repos/libsdl-org/SDL/releases"
-sdl_zip_folder_regex = re.compile("^SDL2-2.\\d*.\\d*$") # SDL2-2.x.x
+sdl_zip_folder_regex = re.compile("^SDL2-2\\.\\d+\\.\\d+$")  # SDL2-2.x.x
 
-sdl_mixer_zip_regex = re.compile("^SDL2_mixer-devel-2.\\d*.\\d*-mingw.zip$") # SDL2_mixer-devel-2.x.x-mingw.zip
+sdl_mixer_zip_regex = re.compile("^SDL2_mixer-devel-2\\.\\d+\\.\\d+-mingw\\.zip$")  # SDL2_mixer-devel-2.x.x-mingw.zip
 sdl_mixer_release_url = "https://api.github.com/repos/libsdl-org/SDL_Mixer/releases"
-sdl_mixer_zip_folder_regex = re.compile("^SDL2_mixer-2.\\d*.\\d*$") # SDL2_mixer-2.x.x
+sdl_mixer_zip_folder_regex = re.compile("^SDL2_mixer-2\\.\\d+\\.\\d+$")  # SDL2_mixer-2.x.x
 
-glew_zip_regex = re.compile("^glew-2.\\d*.\\d*-win32.zip$") # glew-2.x.x.zip
+glew_zip_regex = re.compile("^glew-2\\.\\d+\\.\\d+-win32\\.zip$")  # glew-2.x.x.zip
 glew_release_url = "https://api.github.com/repos/nigels-com/glew/releases"
-glew_zip_folder_regex = re.compile("^glew-2.\\d*.\\d*$") # glew-2.x.x
+glew_zip_folder_regex = re.compile("^glew-2\\.\\d+\\.\\d+$")  # glew-2.x.x
 
 cglm_release_url = "https://api.github.com/repos/recp/cglm/releases"
-cglm_zip_folder_regex = re.compile("^recp-cglm-.*$") # recp-cglm-* (should end with a short commit hash)
+cglm_zip_folder_regex = re.compile("^recp-cglm-[0-9a-f]+$")  # recp-cglm-* (should end with a short commit hash)
 
 # Download a release zip and extract & rename it according to the given regex
 def handle_release_zip(asset_url, output_folder, output_folder_regex):
