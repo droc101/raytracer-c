@@ -7,7 +7,7 @@ Every instance of an actor has:
 - A 3D position
 - A single rotation around the Y-axis
 - An optional shadow
-- An optional model, either a wall or a full 3D model
-- Optional collision using the wall (3D models are not supported for collision)
+- Either a wall or a full 3D model
+- Actors use Box2D for collision, and can create a collider with any shape that best suits the actor.
 - Four parameters that can be set in the level editor
 - A pointer to any additional data the actor needs
