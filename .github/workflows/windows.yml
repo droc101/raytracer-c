@@ -63,6 +63,11 @@ jobs:
     - name: Upload results
       uses: actions/upload-artifact@v4
       with:
-        name: game
-        path: build/
+        name: game.windows
+        path: |
+          build/game.exe
+          build/SDL2.dll
+          build/SDL2_mixer.dll
+          build/libzlib1.dll
+          build/assets/
         retention-days: 5
