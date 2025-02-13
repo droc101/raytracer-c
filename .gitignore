@@ -1,8 +1,7 @@
 
-/cmake-build-debug
-/cmake-build-release
 /.vs
 /out
+/build
 
 # User-specific stuff
 .idea/**/workspace.xml
@@ -35,7 +34,10 @@ cmake-build-*/
 /lib/glew
 /lib/SDL2
 /lib/SDL2_mixer
-# we include zlib because it is a pain to get
+# we include zlib and box2d because they are a pain to get
+
+# Downloaded CMake modules
+/module
 
 # This file is generated on build
 /Assets/Assets.c

@@ -1,6 +1,16 @@
 cmake_minimum_required(VERSION 3.25)
 project(game C)
 
+# Adds the module folder to the CMake module path
+# This folder is populated by the setup-windows.py script
+if (WIN32)
+    if (NOT EXISTS "${CMAKE_SOURCE_DIR}/module")
+        message(FATAL_ERROR "The module folder is missing. Please run setup-windows.py to download the required dependencies.")
+    endif ()
+
+    list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/module")
+endif()
+
 #region Compile options
 
 set(CMAKE_C_STANDARD 11)
@@ -232,4 +242,19 @@ if (UNIX)
     add_dependencies(game actor)
 endif ()
 
+#endregion
+
+#region Windows DLLs
+if (WIN32)
+
+    add_custom_target( # Python script for generating assets code
+            copydlls ALL
+            COMMAND "python" ${CMAKE_CURRENT_SOURCE_DIR}/postbuild-windows.py ${CMAKE_CURRENT_BINARY_DIR}
+            COMMENT "Copying DLLs"
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+
+    add_dependencies(game copydlls)
+
+endif()
 #endregion
