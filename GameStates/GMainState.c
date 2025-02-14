@@ -160,26 +160,9 @@ void GMainStateFixedUpdate(GlobalState *state, const double delta)
 		}
 	}
 
-	// view bobbing (scam edition) 💀 (it's better now trust me)
-	if (speed == SLOW_MOVE_SPEED)
-	{
-		if (isMoving)
-		{
-			state->cameraY = sin((double)state->physicsFrame / 7.0) * 0.005 - 0.1;
-		} else
-		{
-			state->cameraY = lerp(state->cameraY, -0.1, 0.1);
-		}
-	} else
-	{
-		if (isMoving)
-		{
-			state->cameraY = sin((double)state->physicsFrame / 7.0) * 0.04;
-		} else
-		{
-			state->cameraY = lerp(state->cameraY, 0, 0.1);
-		}
-	}
+	const float velocity = Vector2Length(b2Body_GetLinearVelocity(l->player.bodyId));
+	const float bobHeight = remap(velocity, 0, MOVE_SPEED, 0, 0.003);
+	state->cameraY = 0.1 + sin((double)state->physicsFrame / 7.0) * bobHeight;
 
 	l->player.angle = wrap(l->player.angle, 0, 2 * PI);
 
