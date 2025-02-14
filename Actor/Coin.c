@@ -72,11 +72,11 @@ void CoinUpdate(Actor *this, double /*delta*/)
 	{
 		if (this->paramB == 0)
 		{
-			GetState()->coins++;
+			GetState()->saveData->coins++;
 		} else
 		{
-			GetState()->blueCoins++;
-			GetState()->coins += 5;
+			GetState()->saveData->blueCoins++;
+			GetState()->saveData->coins += 5;
 		}
 		PlaySoundEffect(SOUND("sfx_coincling"));
 		RemoveActor(this);

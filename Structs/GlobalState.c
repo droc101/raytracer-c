@@ -50,12 +50,10 @@ void InitOptions()
 
 void InitState()
 {
-	state.hp = 100;
-	state.maxHp = 100;
-	state.ammo = 100;
-	state.maxAmmo = 100;
-	state.coins = 0;
-	state.blueCoins = 0;
+	state.saveData = calloc(1, sizeof(SaveData));
+	state.saveData->hp = 100;
+	state.saveData->coins = 0;
+	state.saveData->blueCoins = 0;
 	state.physicsFrame = 0;
 	state.level = CreateLevel(); // empty level so we don't segfault
 	state.requestExit = false;
@@ -96,37 +94,19 @@ inline GlobalState *GetState()
 
 void TakeDamage(const int damage)
 {
-	state.hp -= damage;
-	if (state.hp < 0)
+	state.saveData->hp -= damage;
+	if (state.saveData->hp < 0)
 	{
-		state.hp = 0;
+		state.saveData->hp = 0;
 	}
 }
 
 void Heal(const int amount)
 {
-	state.hp += amount;
-	if (state.hp > state.maxHp)
+	state.saveData->hp += amount;
+	if (state.saveData->hp > MAX_HEALTH)
 	{
-		state.hp = state.maxHp;
-	}
-}
-
-void AddAmmo(const int amount)
-{
-	state.ammo += amount;
-	if (state.ammo > state.maxAmmo)
-	{
-		state.ammo = state.maxAmmo;
-	}
-}
-
-void UseAmmo(const int amount)
-{
-	state.ammo -= amount;
-	if (state.ammo < 0)
-	{
-		state.ammo = 0;
+		state.saveData->hp = MAX_HEALTH;
 	}
 }
 
@@ -252,6 +232,7 @@ void DestroyGlobalState()
 {
 	SaveOptions(&state.options);
 	DestroyLevel(state.level);
+	free(state.saveData);
 	free(state.cam);
 	if (state.music != NULL)
 	{
@@ -306,7 +287,7 @@ bool ChangeLevelByName(const char *name)
 		LogError("Failed to load level asset.\n");
 		return false;
 	}
-	GetState()->blueCoins = 0;
+	GetState()->saveData->blueCoins = 0;
 	Level *l = LoadLevel(levelData->data);
 	ChangeLevel(l);
 	return true;

@@ -47,6 +47,7 @@ typedef struct Asset Asset;
 typedef struct Image Image;
 typedef struct Trigger Trigger;
 typedef struct Font Font;
+typedef struct SaveData SaveData;
 
 // Function signatures
 typedef void (*FixedUpdateFunction)(GlobalState *state, double delta);
@@ -405,25 +406,15 @@ struct GlobalState
 	/// The number of physics frames that have passed since the last game state change
 	ulong physicsFrame;
 
-	/// Player health
-	int hp;
-	/// Player max health
-	int maxHp;
-	/// Player ammo
-	int ammo;
-	/// Player max ammo
-	int maxAmmo;
-	/// The number of coins the player has
-	int coins;
-	/// The number of blue coins the player has
-	int blueCoins;
-
 	/// Whether the text box is active
 	bool textBoxActive;
 	/// The text box
 	TextBox textBox;
 	/// The current page of the text box
 	int textBoxPage;
+
+	/// The save data (persists between levels)
+	SaveData *saveData;
 
 	/// The camera
 	Camera *cam;
@@ -449,6 +440,16 @@ struct GlobalState
 	bool freezeEvents;
 	/// Request to exit the game
 	bool requestExit;
+};
+
+struct SaveData
+{
+	/// Player health
+	int hp;
+	/// The number of coins the player has
+	int coins;
+	/// The number of blue coins the player has
+	int blueCoins;
 };
 
 // Actor (interactable/moving wall) struct

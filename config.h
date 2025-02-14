@@ -105,4 +105,6 @@
 /// Far clipping plane
 #define FAR_Z 1000
 
+#define MAX_HEALTH 100
+
 #endif //GAME_CONFIG_H

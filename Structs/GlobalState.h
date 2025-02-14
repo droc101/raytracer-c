@@ -50,18 +50,6 @@ void TakeDamage(int damage);
 void Heal(int amount);
 
 /**
- * Add ammo to the player
- * @param amount Amount to add
- */
-void AddAmmo(int amount);
-
-/**
- * Use ammo
- * @param amount amount to use
- */
-void UseAmmo(int amount);
-
-/**
  * Set game state callbacks
  * @param UpdateGame update callback
  * @param FixedUpdateGame fixed-FPS update callback

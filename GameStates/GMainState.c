@@ -71,13 +71,13 @@ void GMainStateUpdate(GlobalState *State)
 		AddActor(leaf);
 	}
 
-	if (State->coins > 9999)
+	if (State->saveData->coins > 9999)
 	{
-		State->coins = 9999;
+		State->saveData->coins = 9999;
 	}
-	if (State->blueCoins > 5)
+	if (State->saveData->blueCoins > 5)
 	{
-		State->blueCoins = 5;
+		State->saveData->blueCoins = 5;
 	}
 }
 
@@ -219,12 +219,12 @@ void GMainStateRender(GlobalState *State)
 	DrawTexture(v2(WindowWidthFloat() - 260, 16), v2(40, 40), TEXTURE("interface_hud_ycoin"));
 
 	char coinStr[16];
-	sprintf(coinStr, "%d", State->coins);
+	sprintf(coinStr, "%d", State->saveData->coins);
 	FontDrawString(v2(WindowWidthFloat() - 210, 16), coinStr, 40, 0xFFFFFFFF, largeFont);
 
 	coinIconRect.y = 64;
 
-	for (int bc = 0; bc < State->blueCoins; bc++)
+	for (int bc = 0; bc < State->saveData->blueCoins; bc++)
 	{
 		coinIconRect.x = WindowWidth() - 260 + bc * 48;
 		DrawTexture(v2((float)coinIconRect.x, (float)coinIconRect.y), v2(40, 40), TEXTURE("interface_hud_bcoin"));
