@@ -230,6 +230,8 @@ void GMainStateRender(GlobalState *State)
 		DrawTexture(v2((float)coinIconRect.x, (float)coinIconRect.y), v2(40, 40), TEXTURE("interface_hud_bcoin"));
 	}
 
+	DrawTexture(v2((WindowWidth() * 0.5) - 12, (WindowHeight() * 0.5) - 12), v2s(24), TEXTURE("interface_crosshair"));
+
 	if (State->textBoxActive)
 	{
 		TextBoxRender(&State->textBox, State->textBoxPage);
