@@ -7,6 +7,7 @@
 #include <math.h>
 #include <stdio.h>
 #include "../Debug/DPrint.h"
+#include "../Helpers/Collision.h"
 #include "../Helpers/CommandParser.h"
 #include "../Helpers/CommonAssets.h"
 #include "../Helpers/Core/AssetReader.h"
@@ -187,6 +188,16 @@ void GMainStateFixedUpdate(GlobalState *state, const double delta)
 			break;
 		}
 	}
+
+	Actor *target = GetTargetedEnemy(10);
+	if (target)
+	{
+		if (IsMouseButtonPressed(SDL_BUTTON_LEFT) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_X))
+		{
+			RemoveActor(target);
+		}
+	}
+
 	b2World_Step(l->worldId, (float)delta / PHYSICS_TARGET_TPS, 4);
 	l->player.pos = b2Body_GetPosition(l->player.bodyId);
 }
@@ -213,7 +224,13 @@ void GMainStateRender(GlobalState *State)
 		DrawTexture(v2((float)coinIconRect.x, (float)coinIconRect.y), v2(40, 40), TEXTURE("interface_hud_bcoin"));
 	}
 
-	DrawTexture(v2((WindowWidth() * 0.5) - 12, (WindowHeight() * 0.5) - 12), v2s(24), TEXTURE("interface_crosshair"));
+	uint crosshairColor = 0xFFFFCCCC;
+	if (GetTargetedEnemy(10))
+	{
+		crosshairColor = 0xFFFF0000;
+	}
+
+	DrawTextureMod(v2((WindowWidth() * 0.5) - 12, (WindowHeight() * 0.5) - 12), v2s(24), TEXTURE("interface_crosshair"), crosshairColor);
 
 	if (State->textBoxActive)
 	{

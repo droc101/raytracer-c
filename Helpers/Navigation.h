@@ -63,19 +63,6 @@ struct NavigationConfig
 float PlayerRelativeAngle(const Actor *actor);
 
 /**
- * Box2D raycast callback function
- * @param shapeId The shape hit by the ray
- * @param point Unused
- * @param normal Unused
- * @param fraction The fraction along the ray at the point of intersection
- * @param raycastHit A pointer to a shapeId that is used to store the closest hit shape
- * @return The @c fraction argument
- *
- * @see https://box2d.org/documentation/group__world.html#gad34f863cfebe93a7d6448c30e30f6a01
- */
-float RaycastCallback(b2ShapeId shapeId, Vector2 point, Vector2 normal, float fraction, void *raycastHit);
-
-/**
  * Check an actor's vision (defined by @c navigationConfig) for the player
  * @param actor The actor to check player visibility for
  * @param navigationConfig The navigation configuration

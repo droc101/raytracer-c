@@ -6,7 +6,7 @@
 #include <box2d/box2d.h>
 #include "../Structs/GlobalState.h"
 #include "../Structs/Vector2.h"
-#include "Core/Logging.h"
+#include "Collision.h"
 #include "Core/MathEx.h"
 
 float PlayerRelativeAngle(const Actor *actor)
@@ -15,17 +15,6 @@ float PlayerRelativeAngle(const Actor *actor)
 	const float actorPlayerAngleDifference = atan2f(playerPosition.y - actor->position.y,
 													playerPosition.x - actor->position.x);
 	return wrap(actorPlayerAngleDifference - actor->rotation, -PIf, PIf) + PIf / 2;
-}
-
-float RaycastCallback(const b2ShapeId shapeId, Vector2, Vector2, const float fraction, void *raycastHit)
-{
-	if (!raycastHit)
-	{
-		LogError("raycastHit was NULL, likely box2d issue");
-		return -1;
-	}
-	*(b2ShapeId *)raycastHit = shapeId;
-	return fraction;
 }
 
 bool IsPlayerVisibleInternal(const Actor *actor,

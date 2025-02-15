@@ -44,7 +44,7 @@ void CreateTestActorCollider(Actor *this, const b2WorldId worldId)
 		.radius = 0.25f,
 	};
 	b2ShapeDef shapeDef = b2DefaultShapeDef();
-	shapeDef.filter.categoryBits = COLLISION_GROUP_ACTOR;
+	shapeDef.filter.categoryBits = COLLISION_GROUP_ACTOR | COLLISION_GROUP_ACTOR_ENEMY;
 	b2CreateCircleShape(this->bodyId, &shapeDef, &shape);
 }
 
