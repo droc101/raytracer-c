@@ -179,6 +179,15 @@ bool PickPhysicalDevice()
 		{
 			continue;
 		}
+		if (!QuerySwapChainSupport(pDevice))
+		{
+			VulkanLogError("Failed to query swap chain support!\n");
+			return false;
+		}
+		if (swapChainSupport.formatCount == 0 && swapChainSupport.presentModeCount == 0)
+		{
+			continue;
+		}
 
 		uint32_t familyCount = 0;
 		vkGetPhysicalDeviceQueueFamilyProperties(pDevice, &familyCount, NULL);
@@ -252,18 +261,8 @@ bool PickPhysicalDevice()
 				   "Failed to enumerate Vulkan device extensions!");
 		for (uint32_t j = 0; j < extensionCount; j++)
 		{
-			if (strcmp(availableExtensions[j].extensionName, VK_KHR_SWAPCHAIN_EXTENSION_NAME) != 0)
+			if (strcmp(availableExtensions[j].extensionName, VK_KHR_SWAPCHAIN_EXTENSION_NAME) == 0)
 			{
-				if (!QuerySwapChainSupport(pDevice))
-				{
-					VulkanLogError("Failed to query swap chain support!\n");
-					return false;
-				}
-				if (swapChainSupport.formatCount == 0 && swapChainSupport.presentModeCount == 0)
-				{
-					continue;
-				}
-
 				VkPhysicalDeviceProperties deviceProperties;
 				VkPhysicalDeviceMemoryProperties memoryProperties;
 
