@@ -40,12 +40,18 @@ void CreateTestActorCollider(Actor *this, const b2WorldId worldId)
 	bodyDef.fixedRotation = true;
 	bodyDef.linearDamping = 5;
 	this->bodyId = b2CreateBody(worldId, &bodyDef);
-	const b2Circle shape = {
-		.radius = 0.25f,
+	const b2Circle circle = {
+		.radius = 0.2867f,
 	};
 	b2ShapeDef shapeDef = b2DefaultShapeDef();
-	shapeDef.filter.categoryBits = COLLISION_GROUP_ACTOR | COLLISION_GROUP_ACTOR_ENEMY;
-	b2CreateCircleShape(this->bodyId, &shapeDef, &shape);
+	shapeDef.filter.categoryBits = COLLISION_GROUP_ACTOR;
+	b2CreateCircleShape(this->bodyId, &shapeDef, &circle);
+	const b2Circle hitbox = {
+		.radius = 0.28f,
+	};
+	b2ShapeDef hitboxDef = b2DefaultShapeDef();
+	hitboxDef.filter.categoryBits = COLLISION_GROUP_ACTOR_ENEMY;
+	b2CreateCircleShape(this->bodyId, &hitboxDef, &hitbox);
 }
 
 void TestActorInit(Actor *this, const b2WorldId worldId)
@@ -60,7 +66,7 @@ void TestActorInit(Actor *this, const b2WorldId worldId)
 	CheckAlloc(this->extra_data);
 	NavigationConfig *navigationConfig = this->extra_data;
 	navigationConfig->fov = PIf / 2;
-	navigationConfig->speed = 0.0425f;
+	navigationConfig->speed = 0.075f;
 	navigationConfig->rotationSpeed = 0.1f;
 	navigationConfig->directness = 0.5f;
 	navigationConfig->minDistance = 1.5f;
