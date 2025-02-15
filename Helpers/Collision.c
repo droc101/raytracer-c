@@ -58,11 +58,12 @@ Actor *GetTargetedEnemy(const float maxDistance)
 	b2World_CastRay(state->level->worldId,
 					state->level->player.pos,
 					rayEnd,
-					(b2QueryFilter){.categoryBits = COLLISION_GROUP_ACTOR_ENEMY, .maskBits = ~COLLISION_GROUP_TRIGGER},
+					(b2QueryFilter){.categoryBits = COLLISION_GROUP_PLAYER,
+									.maskBits = ~(COLLISION_GROUP_TRIGGER | COLLISION_GROUP_ACTOR_ENEMY)},
 					RaycastCallback,
 					&raycastHit);
 
-	if (b2Shape_IsValid(raycastHit) && b2Shape_GetFilter(raycastHit).categoryBits & COLLISION_GROUP_ACTOR_ENEMY)
+	if (b2Shape_IsValid(raycastHit) && b2Shape_GetFilter(raycastHit).categoryBits & COLLISION_GROUP_HURTBOX)
 	{
 		ListLock(state->level->actors);
 		for (int i = 0; i < state->level->actors.length; i++)

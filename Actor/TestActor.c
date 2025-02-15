@@ -44,14 +44,14 @@ void CreateTestActorCollider(Actor *this, const b2WorldId worldId)
 		.radius = 0.2867f,
 	};
 	b2ShapeDef shapeDef = b2DefaultShapeDef();
-	shapeDef.filter.categoryBits = COLLISION_GROUP_ACTOR;
+	shapeDef.filter.categoryBits = COLLISION_GROUP_ACTOR_ENEMY;
 	b2CreateCircleShape(this->bodyId, &shapeDef, &circle);
-	const b2Circle hitbox = {
+	const b2Circle hurtbox = {
 		.radius = 0.28f,
 	};
-	b2ShapeDef hitboxDef = b2DefaultShapeDef();
-	hitboxDef.filter.categoryBits = COLLISION_GROUP_ACTOR_ENEMY;
-	b2CreateCircleShape(this->bodyId, &hitboxDef, &hitbox);
+	b2ShapeDef hurtboxDef = b2DefaultShapeDef();
+	hurtboxDef.filter.categoryBits = COLLISION_GROUP_HURTBOX;
+	b2CreateCircleShape(this->bodyId, &hurtboxDef, &hurtbox);
 }
 
 void TestActorInit(Actor *this, const b2WorldId worldId)
