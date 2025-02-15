@@ -32,6 +32,8 @@ void CreateGoalSensor(Actor *this, const b2WorldId worldId)
 	};
 	b2ShapeDef sensorShapeDef = b2DefaultShapeDef();
 	sensorShapeDef.isSensor = true;
+	sensorShapeDef.filter.categoryBits = COLLISION_GROUP_ACTOR;
+	sensorShapeDef.filter.maskBits = COLLISION_GROUP_PLAYER;
 	*shapeId = b2CreateCircleShape(this->bodyId, &sensorShapeDef, &sensorShape);
 }
 
