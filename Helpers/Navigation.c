@@ -106,9 +106,9 @@ void NavigationStep(Actor *actor, NavigationConfig *navigationConfig, const doub
 		}
 		return;
 	}
+	navigationConfig->agroTicksRemaining = navigationConfig->agroTicks;
 move:
 	actor->rotation += lerp(0, relativeAngle, navigationConfig->rotationSpeed * (float)delta);
-	navigationConfig->agroTicksRemaining = navigationConfig->agroTicks;
 	navigationConfig->ticksUntilDirectionChange -= delta;
 	if (navigationConfig->ticksUntilDirectionChange < 0.5)
 	{
