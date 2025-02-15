@@ -24,6 +24,8 @@
 #include "../Structs/Vector2.h"
 #include "GPauseState.h"
 
+bool targetingEnemy = false;
+
 void GMainStateUpdate(GlobalState *State)
 {
 	if (IsKeyJustPressed(SDL_SCANCODE_ESCAPE) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_START))
@@ -190,6 +192,7 @@ void GMainStateFixedUpdate(GlobalState *state, const double delta)
 	}
 
 	Actor *target = GetTargetedEnemy(10);
+	targetingEnemy = target != NULL;
 	if (target)
 	{
 		if (IsMouseButtonPressed(SDL_BUTTON_LEFT) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_X))
@@ -225,7 +228,7 @@ void GMainStateRender(GlobalState *State)
 	}
 
 	uint crosshairColor = 0xFFFFCCCC;
-	if (GetTargetedEnemy(10))
+	if (targetingEnemy)
 	{
 		crosshairColor = 0xFFFF0000;
 	}
