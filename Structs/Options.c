@@ -102,10 +102,10 @@ void LoadOptions(Options *options)
 		LogInfo("Valid options file found, loading options\n");
 
 		fseek(file, 0, SEEK_SET);
-		const size_t bytesRead = fread(options, sizeof(Options), 1, file);
+		const size_t bytesRead = fread(options, 1, sizeof(Options), file);
 		if (bytesRead != sizeof(Options))
 		{
-			LogWarning("Failed to read options file, using defaults\n");
+			LogWarning("Failed to read options file, using defaults (got %d bytes, expected %d)\n", bytesRead, sizeof(Options));
 			DefaultOptions(options);
 		} else if (options->checksum != GetOptionsChecksum(options)) // This is an else because defaultOptions does not set the checksum
 		{
