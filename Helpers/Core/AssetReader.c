@@ -140,7 +140,7 @@ Asset *DecompressAsset(const char *relPath)
 	// Read the first 4 bytes of the asset to get the size of the compressed data
 	const uint compressedSize = ReadUint(asset, &offset);
 	const uint decompressedSize = ReadUint(asset, &offset);
-	ReadUint(asset, &offset); // Asset ID was deprecated, this value is no longer used
+	offset += sizeof(uint); // skip asset ID as it is no longer used
 	const uint assetType = ReadUint(asset, &offset);
 
 	assetStruct->compressedSize = compressedSize;

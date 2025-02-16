@@ -21,7 +21,6 @@
 #include "../Helpers/Graphics/RenderingHelpers.h"
 #include "../Helpers/LevelLoader.h"
 #include "../Structs/Level.h"
-#include "../Structs/Wall.h"
 #include "Camera.h"
 #include "Options.h"
 

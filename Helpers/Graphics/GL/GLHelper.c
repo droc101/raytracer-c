@@ -6,7 +6,6 @@
 #include <cglm/cglm.h>
 #include "../../../Structs/GlobalState.h"
 #include "../../../Structs/Vector2.h"
-#include "../../../Structs/Wall.h"
 #include "../../CommonAssets.h"
 #include "../../Core/AssetReader.h"
 #include "../../Core/Error.h"
@@ -872,7 +871,7 @@ void GL_DrawFloor(const Vector2 vp1, const Vector2 vp2, const char *texture, con
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 }
 
-void GL_DrawShadow(const Vector2 vp1, const Vector2 vp2, const mat4 *mvp, const mat4 mdl, const Level *l)
+void GL_DrawShadow(const Vector2 vp1, const Vector2 vp2, const mat4 mdl)
 {
 	glUseProgram(shadowShader->program);
 
@@ -1066,7 +1065,7 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
 			// remove the rotation and y position from the actor matrix so the shadow draws correctly
 			glm_rotate(actorXfm, (float)actor->rotation, (vec3){0, 1, 0});
 			glm_translate(actorXfm, (vec3){0, -actor->yPosition, 0});
-			GL_DrawShadow(v2s(-0.5f * actor->shadowSize), v2s(0.5f * actor->shadowSize), worldViewMatrix, actorXfm, l);
+			GL_DrawShadow(v2s(-0.5f * actor->shadowSize), v2s(0.5f * actor->shadowSize), actorXfm);
 		}
 	}
 	glEnable(GL_DEPTH_TEST);

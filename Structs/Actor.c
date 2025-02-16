@@ -3,13 +3,10 @@
 //
 
 #include "Actor.h"
-
 #include <box2d/box2d.h>
 #include <box2d/types.h>
-
 #include "../Helpers/Core/Error.h"
 #include "Vector2.h"
-#include "Wall.h"
 
 #include "../Actor/Coin.h"
 #include "../Actor/Door.h"

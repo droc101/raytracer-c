@@ -5,11 +5,9 @@
 #include "Trigger.h"
 #include <box2d/box2d.h>
 #include <string.h>
-
 #include "../Helpers/Collision.h"
 #include "../Helpers/Core/Error.h"
 #include "GlobalState.h"
-#include "Vector2.h"
 
 void CreateTriggerSensor(Trigger *trigger, const Vector2 position, const b2WorldId worldId)
 {

@@ -5,7 +5,7 @@
 #include "MathEx.h"
 #include <math.h>
 
-int wrapi(int x, int min, int max)
+int wrapi(const int x, const int min, const int max)
 {
 	if (min > max)
 	{
@@ -14,7 +14,7 @@ int wrapi(int x, int min, int max)
 	return (x >= 0 ? min : max) + x % max - min;
 }
 
-float wrapf(float x, float min, float max)
+float wrapf(const float x, const float min, const float max)
 {
 	if (min > max)
 	{
@@ -23,7 +23,7 @@ float wrapf(float x, float min, float max)
 	return (x >= 0 ? min : max) + fmodf(x, max - min);
 }
 
-double wrapd(double x, double min, double max)
+double wrapd(const double x, const double min, const double max)
 {
 	if (min > max)
 	{

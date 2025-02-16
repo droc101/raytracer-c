@@ -144,11 +144,9 @@ void GL_DrawFloor(Vector2 vp1, Vector2 vp2, const char *texture, float height, f
  * Draw a shadow sprite
  * @param vp1 The first vertex
  * @param vp2 The second vertex
- * @param mvp The model -> screen matrix
  * @param mdl The model -> world matrix
- * @param l The level
  */
-void GL_DrawShadow(Vector2 vp1, Vector2 vp2, const mat4 *mvp, const mat4 mdl, const Level *l);
+void GL_DrawShadow(Vector2 vp1, Vector2 vp2, const mat4 mdl);
 
 /**
  * Update the viewport size

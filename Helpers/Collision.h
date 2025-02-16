@@ -35,6 +35,6 @@ bool GetSensorState(b2WorldId worldId, uint sensorShapeIdIndex, bool currentStat
  * @param maxDistance The maximum distance to check for enemies
  * @return The actor struct, or NULL if no enemy is targeted
  */
-Actor *GetTargetedEnemy(const float maxDistance);
+Actor *GetTargetedEnemy(float maxDistance);
 
 #endif //COLLISION_H

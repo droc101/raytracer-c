@@ -14,7 +14,7 @@
 Control *CreateButtonControl(const Vector2 position,
 							 const Vector2 size,
 							 char *text,
-							 ButtonCallback callback,
+							 const ButtonCallback callback,
 							 const ControlAnchor anchor)
 {
 	Control *btn = CreateEmptyControl();

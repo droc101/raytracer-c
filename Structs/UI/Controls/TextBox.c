@@ -43,7 +43,7 @@ Control *CreateTextBoxControl(const char *placeholder,
 							  const Vector2 size,
 							  const ControlAnchor anchor,
 							  const uint maxLength,
-							  TextBoxCallback callback)
+							  const TextBoxCallback callback)
 {
 	Control *c = CreateEmptyControl();
 	c->type = TEXTBOX;
@@ -90,7 +90,7 @@ void DrawTextBox(const Control *c, ControlState, Vector2 position)
 					smallFont);
 }
 
-void UpdateTextBox(UiStack *stack, Control *c, Vector2, uint ctlIndex)
+void UpdateTextBox(UiStack *stack, Control *c, Vector2, const uint ctlIndex)
 {
 	if (stack->ActiveControl != ctlIndex)
 	{
