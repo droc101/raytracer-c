@@ -24,7 +24,8 @@
 #include "../Structs/Vector2.h"
 #include "GPauseState.h"
 
-bool targetingEnemy = false;
+Actor *targetedEnemy = NULL;
+bool leafyGeneratorPolitelyRequestLeafyGenerationOnNextPhysicsTickPlease = false;
 
 void GMainStateUpdate(GlobalState *State)
 {
@@ -48,30 +49,11 @@ void GMainStateUpdate(GlobalState *State)
 		return;
 	}
 
-	if (IsKeyJustPressed(SDL_SCANCODE_C))
-	{
-		Error("Manually triggered error.");
-	}
-
-	if (IsKeyJustPressed(SDL_SCANCODE_T))
-	{
-		const TextBox tb = DEFINE_TEXT("TEXT BOX",
-									   2,
-									   20,
-									   0,
-									   60,
-									   TEXT_BOX_H_ALIGN_CENTER,
-									   TEXT_BOX_V_ALIGN_TOP,
-									   TEXT_BOX_THEME_BLACK);
-		ShowTextBox(tb);
-	}
-
 	State->level->player.angle += GetMouseRel().x * (float)State->options.mouseSpeed / 120.0f;
 
 	if (IsKeyJustPressed(SDL_SCANCODE_L))
 	{
-		Actor *leaf = CreateActor(State->level->player.pos, 0, 1, 0, 0, 0, 0, State->level->worldId);
-		AddActor(leaf);
+		leafyGeneratorPolitelyRequestLeafyGenerationOnNextPhysicsTickPlease = true;
 	}
 
 	if (State->saveData->coins > 9999)
@@ -84,53 +66,49 @@ void GMainStateUpdate(GlobalState *State)
 	}
 }
 
-void GMainStateFixedUpdate(GlobalState *state, const double delta)
+void CalculateMoveVec(const double delta, const Player *player, Vector2 *moveVec, bool *isMoving)
 {
-	if (state->textBoxActive)
-	{
-		return;
-	}
+	*moveVec = v2s(0);
+	*isMoving = false;
 
-	Level *l = state->level;
-	Vector2 moveVec = v2(0, 0);
 	if (UseController())
 	{
-		moveVec.y = GetAxis(SDL_CONTROLLER_AXIS_LEFTX);
-		moveVec.x = -GetAxis(SDL_CONTROLLER_AXIS_LEFTY);
-		if (fabsf(moveVec.x) < 0.1)
+		moveVec->y = GetAxis(SDL_CONTROLLER_AXIS_LEFTX);
+		moveVec->x = -GetAxis(SDL_CONTROLLER_AXIS_LEFTY);
+		if (fabsf(moveVec->x) < STICK_DEADZONE)
 		{
-			moveVec.x = 0;
+			moveVec->x = 0;
 		}
-		if (fabsf(moveVec.y) < 0.1)
+		if (fabsf(moveVec->y) < STICK_DEADZONE)
 		{
-			moveVec.y = 0;
+			moveVec->y = 0;
 		}
 
 	} else
 	{
 		if (IsKeyPressed(SDL_SCANCODE_W) || GetAxis(SDL_CONTROLLER_AXIS_LEFTY) < -0.5)
 		{
-			moveVec.x += 1;
+			moveVec->x += 1;
 		} else if (IsKeyPressed(SDL_SCANCODE_S) || GetAxis(SDL_CONTROLLER_AXIS_LEFTY) > 0.5)
 		{
-			moveVec.x -= 1;
+			moveVec->x -= 1;
 		}
 
 		if (IsKeyPressed(SDL_SCANCODE_A) || GetAxis(SDL_CONTROLLER_AXIS_LEFTX) < -0.5)
 		{
-			moveVec.y -= 1;
+			moveVec->y -= 1;
 		} else if (IsKeyPressed(SDL_SCANCODE_D) || GetAxis(SDL_CONTROLLER_AXIS_LEFTX) > 0.5)
 		{
-			moveVec.y += 1;
+			moveVec->y += 1;
 		}
 	}
 
 
-	const bool isMoving = moveVec.x != 0 || moveVec.y != 0;
+	*isMoving = moveVec->x != 0 || moveVec->y != 0;
 
-	if (isMoving && !UseController())
+	if (*isMoving && !UseController())
 	{
-		moveVec = Vector2Normalize(moveVec);
+		*moveVec = Vector2Normalize(*moveVec);
 	}
 
 
@@ -142,8 +120,23 @@ void GMainStateFixedUpdate(GlobalState *state, const double delta)
 
 	speed *= (float)delta;
 
-	moveVec = Vector2Scale(moveVec, speed);
-	moveVec = Vector2Rotate(moveVec, l->player.angle);
+	Vector2 rotScaled = Vector2Scale(*moveVec, speed);
+	rotScaled = Vector2Rotate(rotScaled, player->angle);
+	*moveVec = rotScaled;
+}
+
+void GMainStateFixedUpdate(GlobalState *state, const double delta)
+{
+	if (state->textBoxActive)
+	{
+		return;
+	}
+
+	Level *l = state->level;
+
+	Vector2 moveVec;
+	bool isMoving;
+	CalculateMoveVec(delta, &l->player, &moveVec, &isMoving);
 
 	if (isMoving)
 	{
@@ -157,7 +150,7 @@ void GMainStateFixedUpdate(GlobalState *state, const double delta)
 		{
 			cx *= -1;
 		}
-		if (fabsf(cx) > 0.1)
+		if (fabsf(cx) > STICK_DEADZONE)
 		{
 			l->player.angle += cx * (float)state->options.mouseSpeed / 11.25f;
 		}
@@ -191,13 +184,19 @@ void GMainStateFixedUpdate(GlobalState *state, const double delta)
 		}
 	}
 
-	Actor *target = GetTargetedEnemy(10);
-	targetingEnemy = target != NULL;
-	if (target)
+	if (leafyGeneratorPolitelyRequestLeafyGenerationOnNextPhysicsTickPlease)
+	{
+		Actor *leaf = CreateActor(state->level->player.pos, 0, 1, 0, 0, 0, 0, state->level->worldId);
+		AddActor(leaf);
+		leafyGeneratorPolitelyRequestLeafyGenerationOnNextPhysicsTickPlease = false;
+	}
+
+	targetedEnemy = GetTargetedEnemy(10);
+	if (targetedEnemy)
 	{
 		if (IsMouseButtonPressed(SDL_BUTTON_LEFT) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_X))
 		{
-			RemoveActor(target);
+			RemoveActor(targetedEnemy);
 		}
 	}
 
@@ -228,7 +227,7 @@ void GMainStateRender(GlobalState *State)
 	}
 
 	uint crosshairColor = 0xFFFFCCCC;
-	if (targetingEnemy)
+	if (targetedEnemy != NULL)
 	{
 		crosshairColor = 0xFFFF0000;
 	}
@@ -250,6 +249,7 @@ void GMainStateRender(GlobalState *State)
 	DPrintF("Walls: %d", 0xFFFFFFFF, false, l->walls.length);
 	DPrintF("Actors: %d", 0xFFFFFFFF, false, l->actors.length);
 	DPrintF("Triggers: %d", 0xFFFFFFFF, false, l->triggers.length);
+	DPrintF("Targeted Actor: %p", 0xFFFFFFFF, false, targetedEnemy);
 }
 
 void GMainStateSet()

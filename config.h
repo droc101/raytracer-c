@@ -28,6 +28,8 @@
 /// Player movement speed when shift is held
 #define SLOW_MOVE_SPEED 0.0237f
 
+#define STICK_DEADZONE 0.1
+
 #pragma endregion
 
 #pragma region Debug
