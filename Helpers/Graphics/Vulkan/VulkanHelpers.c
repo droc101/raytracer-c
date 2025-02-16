@@ -98,7 +98,7 @@ bool QuerySwapChainSupport(const VkPhysicalDevice pDevice)
 	if (swapChainSupport.formatCount != 0)
 	{
 		free(swapChainSupport.formats);
-		swapChainSupport.formats = malloc(sizeof(*swapChainSupport.formats) * swapChainSupport.formatCount);
+		swapChainSupport.formats = malloc(sizeof(VkSurfaceFormatKHR) * swapChainSupport.formatCount);
 		CheckAlloc(swapChainSupport.formats);
 		VulkanTest(vkGetPhysicalDeviceSurfaceFormatsKHR(pDevice,
 														surface,
@@ -112,7 +112,7 @@ bool QuerySwapChainSupport(const VkPhysicalDevice pDevice)
 	if (swapChainSupport.presentModeCount != 0)
 	{
 		free(swapChainSupport.presentMode);
-		swapChainSupport.presentMode = calloc(swapChainSupport.presentModeCount, sizeof(*swapChainSupport.presentMode));
+		swapChainSupport.presentMode = calloc(swapChainSupport.presentModeCount, sizeof(VkPresentModeKHR));
 		CheckAlloc(swapChainSupport.presentMode);
 		VulkanTest(vkGetPhysicalDeviceSurfacePresentModesKHR(pDevice,
 															 surface,
