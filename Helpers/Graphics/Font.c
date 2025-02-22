@@ -10,24 +10,6 @@
 #include "../Core/MathEx.h"
 #include "RenderingHelpers.h"
 
-int FontFindChar(char target, const Font *font)
-{
-	if (font->uppercase_only)
-	{
-		target = (char)toupper(target);
-	}
-	int i = 0;
-	while (font->chars[i] != 0)
-	{
-		if (font->chars[i] == target)
-		{
-			return i;
-		}
-		i++;
-	}
-	return -1; // Character not found
-}
-
 Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, const uint color, const Font *font)
 {
 	const ulong stringLength = strlen(str);
@@ -63,22 +45,14 @@ Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, cons
 			continue;
 		}
 
-		const double uvPerChar = 1.0 / (double)strlen(font->chars);
-		// ReSharper disable once CppRedundantCastExpression
-		int index = FontFindChar((char)str[i], font);
-		if (index == -1)
-		{
-			index = FontFindChar('?', font);
-		}
-
 		const Vector2 ndcPos = v2(X_TO_NDC((float)x), Y_TO_NDC((float)y));
 		const Vector2 ndcPosEnd = v2(X_TO_NDC((float)(x + width)), Y_TO_NDC((float)(y + quadHeight)));
-		const double charUV = uvPerChar * index;
-		const double charUVEnd = uvPerChar * (index + 1) - uvPixel;
+		const double charUVStart = (double)font->indices[(int)str[i]] / font->char_count;
+		const double charUVEnd = (font->indices[(int)str[i]] + 1.0) / font->char_count - uvPixel;
 
 		const mat4 quad = {
-			{(float)ndcPos.x, (float)ndcPos.y, (float)charUV, 0},
-			{(float)ndcPos.x, (float)ndcPosEnd.y, (float)charUV, 1},
+			{(float)ndcPos.x, (float)ndcPos.y, (float)charUVStart, 0},
+			{(float)ndcPos.x, (float)ndcPosEnd.y, (float)charUVStart, 1},
 			{(float)ndcPosEnd.x, (float)ndcPosEnd.y, (float)charUVEnd, 1},
 			{(float)ndcPosEnd.x, (float)ndcPos.y, (float)charUVEnd, 0},
 		};

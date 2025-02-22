@@ -7,8 +7,12 @@ def ConvertFont(path):
 	font = json.loads(file.read())
 
 	widths = []
+	indices = []
+	unknownCharacterUvOffset = font["chars"].find('?')
 	for i in range(128):
 		widths.append(font["default_char_width"])
+		index = font["chars"].find(chr(i).upper() if font["uppercase_only"] else chr(i))
+		indices.append(unknownCharacterUvOffset if index == -1 else index)
 	
 	for char in font["char_widths"]:
 		if (ord(char) > 128) or (ord(char) < 0):
@@ -21,7 +25,7 @@ def ConvertFont(path):
 		return
 	
 	texnam = util.CString(font["texture"], 48)
-	chars = util.CString(font["chars"], 128)
+	# chars = util.CString(font["chars"], 128)
 
 	data = bytearray([])
 	data += struct.pack("I", font["width"])
@@ -34,7 +38,8 @@ def ConvertFont(path):
 	data += struct.pack("I", len(font["chars"]))
 	data += struct.pack("B", font["uppercase_only"])
 	data += texnam.encode("ascii")
-	data += chars.encode("ascii")
+	for index in indices:
+		data += struct.pack("B", index)
 	for width in widths:
 		data += struct.pack("B", width)
 

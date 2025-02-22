@@ -584,8 +584,8 @@ struct Font
 
 	/// The texture this font uses (fully qualified)
 	char texture[48];
-	/// The characters in the font
-	char chars[128];
+	/// The index of the character in the texture
+	byte indices[128];
 	/// The width of each character, index directly by the character
 	byte char_widths[128];
 
