@@ -193,6 +193,8 @@ void GL_DrawColoredArrays(const float *vertices, const uint *indices, uint quad_
  */
 mat4 *GL_GetMatrix(const Camera *cam);
 
+void GL_GetViewModelMatrix(mat4 *perspectiveMatrix);
+
 /**
  * OpenGL code to render the 3D portion of a level
  * @param l The level to render

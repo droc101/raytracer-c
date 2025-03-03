@@ -703,24 +703,6 @@ void GL_SetLevelParams(mat4 *mvp, const Level *l)
 	glBindBuffer(GL_UNIFORM_BUFFER, sharedUniformBuffer);
 	glBufferData(GL_UNIFORM_BUFFER, sizeof(GL_SharedUniforms), &uniforms, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-	// glUseProgram(skyShader->program);
-	// glUniformMatrix4fv(skyWorldViewMatrixLoc,
-	// 				   1,
-	// 				   GL_FALSE,
-	// 				   mvp[0][0]); // world -> screen
-	//
-	// glUseProgram(modelShadedShader->program);
-	// glUniformMatrix4fv(modelShadedWorldViewMatrixLoc,
-	// 				   1,
-	// 				   GL_FALSE,
-	// 				   mvp[0][0]); // world -> screen
-	//
-	// glUseProgram(modelUnshadedShader->program);
-	// glUniformMatrix4fv(modelUnshadedWorldViewMatrixLoc,
-	// 				   1,
-	// 				   GL_FALSE,
-	// 				   mvp[0][0]); // world -> screen
 }
 
 void GL_DrawWall(const Wall *w)
@@ -1027,6 +1009,25 @@ mat4 *GL_GetMatrix(const Camera *cam)
 	return modelViewProjectionMatrix;
 }
 
+void GL_GetViewModelMatrix(mat4 *out)
+{
+	mat4 perspectiveMatrix = GLM_MAT4_ZERO_INIT;
+
+	const float aspectRatio = WindowWidthFloat() / WindowHeightFloat();
+	glm_mat4_identity(perspectiveMatrix);
+	glm_perspective(glm_rad(70), aspectRatio, NEAR_Z, FAR_Z, perspectiveMatrix);
+
+	mat4 translationMatrix = GLM_MAT4_IDENTITY_INIT;
+	glm_translate(translationMatrix, (vec3){0.5, -0.35, 0});
+
+	mat4 rotationMatrix = GLM_MAT4_IDENTITY_INIT;
+	glm_rotate(rotationMatrix, glm_rad(5), (vec3){0, 1, 0});
+
+	glm_mat4_mul(translationMatrix, rotationMatrix, translationMatrix);
+
+	glm_mat4_mul(perspectiveMatrix, translationMatrix, *out);
+}
+
 void GL_RenderLevel(const Level *l, const Camera *cam)
 {
 	GL_Enable3D();
@@ -1094,6 +1095,23 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
 	}
 
 	free(worldViewMatrix);
+
+	glClear(GL_DEPTH_BUFFER_BIT);
+
+	mat4 viewModelMatrix;
+	GL_GetViewModelMatrix(&viewModelMatrix);
+
+	GL_SharedUniforms uniforms;
+	glm_mat4_copy(&viewModelMatrix[0], uniforms.worldViewMatrix);
+	uniforms.cameraYaw = 0;
+	uniforms.fogStart = (float)1000;
+	uniforms.fogEnd = (float)1001;
+
+	glBindBuffer(GL_UNIFORM_BUFFER, sharedUniformBuffer);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(GL_SharedUniforms), &uniforms, GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+	GL_RenderModel(LoadModel(MODEL("model_eraser")), GLM_MAT4_IDENTITY, TEXTURE("item_eraser"), SHADER_SHADED);
 
 	//glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 	GL_Disable3D();
