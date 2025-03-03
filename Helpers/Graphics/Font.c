@@ -101,7 +101,7 @@ Vector2 MeasureTextNChars(const char *str, const uint size, const Font *font, co
 		if (str[j] == ' ')
 		{
 			tempWidth -= fSize;
-			tempWidth += (int)(font->space_width * sizeMultiplier);
+			tempWidth += (int)((font->space_width + font->char_spacing) * sizeMultiplier);
 		} else if (str[j + 1] == '\0')
 		{
 			tempWidth -= (int)(font->char_spacing * sizeMultiplier); // fix extra spacing at the end of the string

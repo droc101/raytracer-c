@@ -84,6 +84,7 @@ UiStack *CreateUiStack()
 	ListCreate(&stack->Controls);
 	stack->ActiveControl = -1;
 	stack->ActiveControlState = NORMAL;
+	stack->focusedControl = -1;
 	UiStackResetFocus(stack);
 	return stack;
 }

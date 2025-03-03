@@ -8,6 +8,7 @@
 #include "../../../Helpers/Core/AssetReader.h"
 #include "../../../Helpers/Core/Error.h"
 #include "../../../Helpers/Core/Input.h"
+#include "../../../Helpers/Core/Logging.h"
 #include "../../../Helpers/Core/MathEx.h"
 #include "../../../Helpers/Core/Timing.h"
 #include "../../../Helpers/Graphics/Drawing.h"
@@ -51,8 +52,8 @@ void DrawTextBox(const Control *c, ControlState state, Vector2 position)
 	DrawTextAligned(strlen(data->text) == 0 ? data->placeholder : data->text,
 					16,
 					strlen(data->text) == 0 ? 0x7FFFFFFF : 0xFFFFFFFF,
-					v2(position.x + 4, position.y + 4),
-					v2(c->size.x - 8, c->size.y - 8),
+					v2(position.x + 6, position.y + 6),
+					v2(c->size.x - 12, c->size.y - 12),
 					FONT_HALIGN_LEFT,
 					FONT_VALIGN_MIDDLE,
 					smallFont);
@@ -64,8 +65,8 @@ void DrawTextBox(const Control *c, ControlState state, Vector2 position)
 		DrawTextAligned("_",
 						16,
 						-1,
-						v2(position.x + 4 + textSize.x, position.y + 6),
-						v2(12, c->size.y - 8),
+						v2(position.x + 6 + textSize.x, position.y + 6),
+						v2(12, c->size.y - 12),
 						FONT_HALIGN_LEFT,
 						FONT_VALIGN_MIDDLE,
 						smallFont);
@@ -126,8 +127,6 @@ void UnfocusTextBox(const Control *c)
 
 void TextBoxTextInputCallback(TextInput *data, SDL_TextInputEvent *event)
 {
-	if (!isprint(event->text)) return;
-
 	const TextBoxData *textBoxData = (TextBoxData *)((Control*)data->user_data)->ControlData;
 	const size_t originalLen = strlen(textBoxData->text);
 
