@@ -85,11 +85,16 @@ Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, cons
 
 Vector2 MeasureText(const char *str, const uint size, const Font *font)
 {
+	return MeasureTextNChars(str, size, font, strlen(str));
+}
+
+Vector2 MeasureTextNChars(const char *str, const uint size, const Font *font, const size_t n)
+{
 	int textWidth = 0;
 	int textHeight = (int)size;
 	int tempWidth = 0;
 	const double sizeMultiplier = (double)size / font->default_size;
-	for (int j = 0; j < strlen(str); j++)
+	for (int j = 0; j < n; j++)
 	{
 		const int fSize = (int)((font->char_widths[(int)str[j]] + font->char_spacing) * sizeMultiplier);
 		tempWidth += fSize;

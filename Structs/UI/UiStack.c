@@ -19,6 +19,8 @@
 typedef void (*ControlDrawFunc)(const Control *, ControlState state, Vector2 position);
 typedef void (*ControlUpdateFunc)(UiStack *stack, Control *, Vector2 localMousePos, uint ctlIndex);
 typedef void (*ControlDestroyFunc)(const Control *);
+typedef void (*ControlFocusFunc)(const Control *);
+typedef void (*ControlUnfocusFunc)(const Control *);
 
 /**
  * Destroy functions for each control type
@@ -51,6 +53,28 @@ const ControlUpdateFunc ControlUpdateFuncs[CONTROL_TYPE_COUNT] = {
 	UpdateCheckbox, // CHECKBOX
 	UpdateRadioButton, // RADIO_BUTTON
 	UpdateTextBox, // TEXTBOX
+};
+
+/**
+ * Focus functions for each control type
+ */
+const ControlFocusFunc ControlFocusFuncs[CONTROL_TYPE_COUNT] = {
+	NULL, // BUTTON
+	NULL, // SLIDER
+	NULL, // CHECKBOX
+	NULL, // RADIO_BUTTON
+	FocusTextBox, // TEXTBOX
+};
+
+/**
+ * Unfocus functions for each control type
+ */
+const ControlUnfocusFunc ControlUnfocusFuncs[CONTROL_TYPE_COUNT] = {
+	NULL, // BUTTON
+	NULL, // SLIDER
+	NULL, // CHECKBOX
+	NULL, // RADIO_BUTTON
+	UnfocusTextBox, // TEXTBOX
 };
 
 UiStack *CreateUiStack()
@@ -107,7 +131,8 @@ bool ProcessUiStack(UiStack *stack)
 
 	if (IsMouseButtonPressed(SDL_BUTTON_LEFT) || IsButtonPressed(CONTROLLER_OK))
 	{
-		stack->focusedControl = stack->ActiveControl;
+		SetFocusedControl(stack, stack->ActiveControl);
+		//stack->focusedControl = stack->ActiveControl;
 		stack->ActiveControlState = ACTIVE;
 		return stack->ActiveControl != -1;
 	}
@@ -143,7 +168,8 @@ bool ProcessUiStack(UiStack *stack)
 				{
 					stack->ActiveControlState = ACTIVE;
 					// make this control the focused control
-					stack->focusedControl = i;
+					SetFocusedControl(stack, i);
+					//stack->focusedControl = i;
 				} else
 				{
 					stack->ActiveControlState = HOVER;
@@ -159,31 +185,57 @@ bool ProcessUiStack(UiStack *stack)
 	{
 		if (stack->focusedControl == -1)
 		{
-			stack->focusedControl = 0;
+			SetFocusedControl(stack, 0);
+			//stack->focusedControl = 0;
 		} else
 		{
-			stack->focusedControl = (int)((stack->focusedControl + 1) % stack->Controls.length);
+			SetFocusedControl(stack, (int)((stack->focusedControl + 1) % stack->Controls.length));
+			//stack->focusedControl = (int)((stack->focusedControl + 1) % stack->Controls.length);
 		}
 	} else if ((IsKeyJustPressed(SDL_SCANCODE_TAB) && IsKeyPressed(SDL_SCANCODE_LSHIFT)) ||
 			   IsButtonJustPressed(SDL_CONTROLLER_BUTTON_DPAD_UP))
 	{
 		if (stack->focusedControl == -1)
 		{
-			stack->focusedControl = (int)stack->Controls.length - 1;
+			SetFocusedControl(stack, (int)stack->Controls.length - 1);
+			//stack->focusedControl = (int)stack->Controls.length - 1;
 		} else
 		{
-			stack->focusedControl = (int)((stack->focusedControl - 1) % stack->Controls.length);
+			SetFocusedControl(stack,(int)((stack->focusedControl - 1) % stack->Controls.length));
+			//stack->focusedControl = (int)((stack->focusedControl - 1) % stack->Controls.length);
 		}
 		// ensure the index is positive
 		if (stack->focusedControl < 0)
 		{
-			stack->focusedControl += (int)stack->Controls.length;
+			SetFocusedControl(stack, stack->focusedControl + (int)stack->Controls.length);
+			//stack->focusedControl += (int)stack->Controls.length;
 		}
 	}
 
 
 	// return whether the mouse is over a control
 	return stack->ActiveControl != -1;
+}
+
+void SetFocusedControl(UiStack *stack, const int index)
+{
+	if (stack->Controls.length == 0) return;
+	if (stack->focusedControl == index) return;
+	// Call the unfocus function for the currently focused control
+	if (stack->focusedControl != -1)
+	{
+		Control *c = ListGet(stack->Controls, stack->focusedControl);
+		if (ControlUnfocusFuncs[c->type] != NULL) ControlUnfocusFuncs[c->type](c);
+	}
+
+	stack->focusedControl = index;
+
+	// Call the focus function for the newly focused control
+	if (stack->focusedControl != -1)
+	{
+		Control *c = ListGet(stack->Controls, stack->focusedControl);
+		if (ControlFocusFuncs[c->type] != NULL) ControlFocusFuncs[c->type](c);
+	}
 }
 
 void DrawUiStack(const UiStack *stack)
@@ -308,5 +360,6 @@ bool HasActivation(UiStack *stack, Control *Control)
 
 void UiStackResetFocus(UiStack *stack)
 {
-	stack->focusedControl = UseController() ? 0 : -1;
+	SetFocusedControl(stack, UseController() ? 0 : -1);
+	//stack->focusedControl = UseController() ? 0 : -1;
 }

@@ -152,4 +152,11 @@ bool HasActivation(UiStack *stack, Control *Control);
  */
 void UiStackResetFocus(UiStack *stack);
 
+/**
+ * Set the focused control index and call the focus/unfocus functions if necessary
+* @param stack The UiStack to set the focused control of
+ * @param index The index of the control to focus
+ */
+void SetFocusedControl(UiStack *stack, const int index);
+
 #endif //GAME_UISTACK_H

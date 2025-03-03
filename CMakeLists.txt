@@ -164,6 +164,8 @@ add_executable(
         Helpers/Navigation.h
         Helpers/Collision.c
         Helpers/Collision.h
+        Helpers/TextInputSystem.c
+        Helpers/TextInputSystem.h
 )
 
 #endregion

@@ -7,6 +7,7 @@
 
 #include "../../../defines.h"
 #include "../UiStack.h"
+#include "../../../Helpers/TextInputSystem.h"
 
 typedef struct TextBoxData TextBoxData;
 
@@ -14,11 +15,11 @@ typedef void (*TextBoxCallback)(const char *text);
 
 struct TextBoxData
 {
-	uint cursorPos;
 	uint maxLength;
 	char *text;
 	char placeholder[32];
 	TextBoxCallback callback;
+	TextInput input;
 };
 
 Control *CreateTextBoxControl(const char *placeholder,
@@ -33,5 +34,11 @@ void DrawTextBox(const Control *c, ControlState state, Vector2 position);
 void UpdateTextBox(UiStack *stack, Control *, Vector2 localMousePos, uint ctlIndex);
 
 void DestroyTextBox(const Control *c);
+
+void FocusTextBox(const Control *c);
+
+void UnfocusTextBox(const Control *c);
+
+void TextBoxTextInputCallback(TextInput *data, SDL_TextInputEvent *event);
 
 #endif //TEXTBOX_H

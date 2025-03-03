@@ -21,6 +21,7 @@
 #include "Helpers/PlatformHelpers.h"
 #include "Structs/GlobalState.h"
 #include "Structs/Level.h"
+#include "Helpers/TextInputSystem.h"
 
 SDL_Surface *windowIcon;
 
@@ -82,6 +83,8 @@ void InitSDL()
 	}
 
 	LogInfo("SDL Video Driver: %s\n", SDL_GetCurrentVideoDriver());
+
+	SDL_StopTextInput(); // is enabled by default on desktop
 }
 
 /**
@@ -214,6 +217,9 @@ void HandleEvent(const SDL_Event event, bool *shouldQuit)
 			break;
 		case SDL_CONTROLLERAXISMOTION:
 			HandleControllerAxis(event.caxis.axis, event.caxis.value);
+			break;
+		case SDL_TEXTINPUT:
+			HandleTextInput(&event.text);
 			break;
 		default:
 			break;

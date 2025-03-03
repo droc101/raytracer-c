@@ -43,6 +43,8 @@ int StringLineCount(const char *str);
  */
 Vector2 MeasureText(const char *str, uint size, const Font *font);
 
+Vector2 MeasureTextNChars(const char *str, uint size, const Font *font, size_t n);
+
 /**
  * Get a line of text from a string
  * @param str String to get line from
