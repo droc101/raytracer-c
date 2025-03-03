@@ -45,13 +45,13 @@ Control *CreateTextBoxControl(const char *placeholder,
 
 void DrawTextBox(const Control *c, ControlState state, Vector2 position)
 {
-	DrawNinePatchTexture(c->anchoredPosition, c->size, 8, 8, TEXTURE("interface_slider"));
+	DrawNinePatchTexture(c->anchoredPosition, c->size, 8, 8, TEXTURE("interface_textbox"));
 
 	const TextBoxData *data = (TextBoxData *)c->ControlData;
 
 	DrawTextAligned(strlen(data->text) == 0 ? data->placeholder : data->text,
 					16,
-					strlen(data->text) == 0 ? 0x7FFFFFFF : 0xFFFFFFFF,
+					strlen(data->text) == 0 ? 0x7F000000 : 0xFF000000,
 					v2(position.x + 6, position.y + 6),
 					v2(c->size.x - 12, c->size.y - 12),
 					FONT_HALIGN_LEFT,
@@ -64,8 +64,8 @@ void DrawTextBox(const Control *c, ControlState state, Vector2 position)
 	{
 		DrawTextAligned("_",
 						16,
-						-1,
-						v2(position.x + 6 + textSize.x, position.y + 6),
+						0xFF000000,
+						v2(position.x + 6 + textSize.x, position.y + 6 + 4),
 						v2(12, c->size.y - 12),
 						FONT_HALIGN_LEFT,
 						FONT_VALIGN_MIDDLE,
