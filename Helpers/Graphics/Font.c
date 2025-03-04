@@ -196,6 +196,7 @@ void DrawTextAligned(const char *str,
 
 	for (int i = 0; i < lines; i++)
 	{
+		// TODO: This is a live bomb. Fix it.
 		char line[256];
 		TextGetLine(str, i, line);
 		const Vector2 textSize = MeasureText(line, size, font);
