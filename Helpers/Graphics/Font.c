@@ -83,7 +83,7 @@ Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, cons
 	return v2((float)(x + width), (float)(y + size)); // Return the bottom right corner of the text
 }
 
-Vector2 MeasureText(const char *str, const uint size, const Font *font)
+inline Vector2 MeasureText(const char *str, const uint size, const Font *font)
 {
 	return MeasureTextNChars(str, size, font, strlen(str));
 }
@@ -179,8 +179,8 @@ void DrawTextAligned(const char *str,
 					 const uint color,
 					 const Vector2 rect_pos,
 					 const Vector2 rect_size,
-					 const byte h_align,
-					 const byte v_align,
+					 const FontHorizontalAlign h_align,
+					 const FontVerticalAlign v_align,
 					 const Font *font)
 {
 	const int lines = StringLineCount(str);

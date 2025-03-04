@@ -193,6 +193,10 @@ void GL_DrawColoredArrays(const float *vertices, const uint *indices, uint quad_
  */
 mat4 *GL_GetMatrix(const Camera *cam);
 
+/**
+ * Get the transform matrix for the viewmodel/held item
+ * @param perspectiveMatrix The destination matrix
+ */
 void GL_GetViewModelMatrix(mat4 *perspectiveMatrix);
 
 /**

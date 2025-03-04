@@ -37,11 +37,3 @@ void HandleTextInput(SDL_TextInputEvent *event)
 	}
 	CurrentTextInput->TextInput(CurrentTextInput, event);
 }
-
-void DefaultTextEditingCallback(TextInput* data, SDL_TextEditingEvent *event)
-{
-	LogDebug("Cursor %d Selection %d Composition %s", data->cursor, data->selection_len, data->composition);
-	data->cursor = event->start;
-	data->selection_len = event->length;
-	data->composition = event->text;
-}
