@@ -157,6 +157,6 @@ void UiStackResetFocus(UiStack *stack);
 * @param stack The UiStack to set the focused control of
  * @param index The index of the control to focus
  */
-void SetFocusedControl(UiStack *stack, const int index);
+void SetFocusedControl(UiStack *stack, int index);
 
 #endif //GAME_UISTACK_H

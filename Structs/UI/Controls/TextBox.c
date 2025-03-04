@@ -58,7 +58,7 @@ void DrawTextBox(const Control *c, ControlState state, Vector2 position)
 					FONT_VALIGN_MIDDLE,
 					smallFont);
 
-	Vector2 textSize = MeasureTextNChars(data->text, 16, smallFont, data->input.cursor);
+	const Vector2 textSize = MeasureTextNChars(data->text, 16, smallFont, data->input.cursor);
 
 	if (data->isActive && (GetTimeMs() % 1000) < 500)
 	{

@@ -195,9 +195,9 @@ mat4 *GL_GetMatrix(const Camera *cam);
 
 /**
  * Get the transform matrix for the viewmodel/held item
- * @param perspectiveMatrix The destination matrix
+ * @param out The destination matrix
  */
-void GL_GetViewModelMatrix(mat4 *perspectiveMatrix);
+void GL_GetViewModelMatrix(mat4 *out);
 
 /**
  * OpenGL code to render the 3D portion of a level

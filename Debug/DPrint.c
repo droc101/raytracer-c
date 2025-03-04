@@ -22,7 +22,7 @@ void DPrint(const char *str, const uint color)
 #ifdef ENABLE_DEBUG_PRINT
 	FontDrawString(v2(12, (float)dprintYPosition + 2), str, 16, 0xFF000000, smallFont);
 	FontDrawString(v2(10, (float)dprintYPosition), str, 16, color, smallFont);
-	dprintYPosition += MeasureText(str, 16, smallFont).y + 8;
+	dprintYPosition += (int)MeasureText(str, 16, smallFont).y + 8;
 #endif
 }
 

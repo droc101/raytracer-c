@@ -69,6 +69,7 @@ Vector2 MeasureTextNChars(const char *str, uint size, const Font *font, size_t n
  * @param str String to get line from
  * @param line Line number to get
  * @param out buffer to store the line in
+ * @param outBufferSize Size of the buffer, if the line is longer than this it will be truncated
  * @param outBufferSize
  */
 void TextGetLine(const char *str, int line, char *out, size_t outBufferSize);

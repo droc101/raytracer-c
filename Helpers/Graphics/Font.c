@@ -130,7 +130,6 @@ void DrawTextAligned(const char *str,
 	const double sizeMultiplier = (double)size / font->default_size;
 	const int width = (int)(font->width * sizeMultiplier);
 	const int quadHeight = (int)(font->texture_height * sizeMultiplier);
-	const int baselineHeight = (int)(font->baseline * sizeMultiplier);
 	const double uvPixel = 1.0 / font->image->width;
 	int c = 0;
 
@@ -161,7 +160,7 @@ void DrawTextAligned(const char *str,
 			x = (int)rect_pos.x;
 		}
 		int lx = x;
-		int ly = y;
+		const int ly = y;
 		int j = 0;
 		while (line[j] != '\0')
 		{
@@ -186,15 +185,15 @@ void DrawTextAligned(const char *str,
 				{(float)ndcPosEnd.x, (float)ndcPos.y, (float)charUVEnd, 0},
 			};
 
-			memcpy(verts + (c+j) * 16, quad, sizeof(quad));
+			memcpy(verts + (c + j) * 16, quad, sizeof(quad));
 
 			uint quadIndices[6] = {0, 1, 2, 0, 2, 3};
 			for (int k = 0; k < 6; k++)
 			{
-				quadIndices[k] += (c+j) * 4;
+				quadIndices[k] += (c + j) * 4;
 			}
 
-			memcpy(indices + (c+j) * 6, quadIndices, sizeof(quadIndices));
+			memcpy(indices + (c + j) * 6, quadIndices, sizeof(quadIndices));
 
 			lx += fSize;
 			j++;

@@ -222,19 +222,18 @@ void SetFocusedControl(UiStack *stack, const int index)
 {
 	if (stack->Controls.length == 0) return;
 	if (stack->focusedControl == index) return;
-	// Call the unfocus function for the currently focused control
+
 	if (stack->focusedControl != -1)
 	{
-		Control *c = ListGet(stack->Controls, stack->focusedControl);
+		const Control *c = ListGet(stack->Controls, stack->focusedControl);
 		if (ControlUnfocusFuncs[c->type] != NULL) ControlUnfocusFuncs[c->type](c);
 	}
 
 	stack->focusedControl = index;
 
-	// Call the focus function for the newly focused control
 	if (stack->focusedControl != -1)
 	{
-		Control *c = ListGet(stack->Controls, stack->focusedControl);
+		const Control *c = ListGet(stack->Controls, stack->focusedControl);
 		if (ControlFocusFuncs[c->type] != NULL) ControlFocusFuncs[c->type](c);
 	}
 }
