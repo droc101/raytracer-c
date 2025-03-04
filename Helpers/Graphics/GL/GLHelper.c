@@ -1018,7 +1018,7 @@ void GL_GetViewModelMatrix(mat4 *out)
 	glm_perspective(glm_rad(70), aspectRatio, NEAR_Z, FAR_Z, perspectiveMatrix);
 
 	mat4 translationMatrix = GLM_MAT4_IDENTITY_INIT;
-	glm_translate(translationMatrix, (vec3){0.5, -0.35, 0});
+	glm_translate(translationMatrix, (vec3){0.5, -0.35 + (GetState()->cameraY * 0.2), 0});
 
 	mat4 rotationMatrix = GLM_MAT4_IDENTITY_INIT;
 	glm_rotate(rotationMatrix, glm_rad(5), (vec3){0, 1, 0});
