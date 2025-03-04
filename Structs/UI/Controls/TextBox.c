@@ -145,6 +145,16 @@ void UpdateTextBox(UiStack *stack, Control *c, Vector2, const uint ctlIndex)
 			data->input.cursor -= 1;
 			if (data->callback != NULL) data->callback(data->text);
 		}
+	} else if (IsKeyJustPressed(SDL_SCANCODE_DELETE))
+	{
+		if (data->input.cursor < (int)strlen(data->text))
+		{
+			ConsumeKey(SDL_SCANCODE_DELETE);
+			memmove(data->text + data->input.cursor,
+					data->text + data->input.cursor + 1,
+					strlen(data->text) - data->input.cursor);
+			if (data->callback != NULL) data->callback(data->text);
+		}
 	}
 }
 
