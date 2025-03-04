@@ -20,7 +20,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Install Vulkan SDK
-      uses: humbletim/install-vulkan-sdk@v1.1.1
+      uses: humbletim/install-vulkan-sdk@c2aa128094d42ba02959a660f03e0a4e012192f9
       with:
         version: latest
         cache: true
