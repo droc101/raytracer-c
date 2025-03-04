@@ -20,6 +20,7 @@ struct TextBoxData
 	char placeholder[32];
 	TextBoxCallback callback;
 	TextInput input;
+	bool isActive;
 };
 
 Control *CreateTextBoxControl(const char *placeholder,

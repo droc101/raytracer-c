@@ -13,7 +13,7 @@ typedef void (TextInputCallback)(TextInput *data, SDL_TextInputEvent *event);
 struct TextInput
 {
 	char *composition;
-	int cursor;
+	size_t cursor;
 	int selection_len;
 	void* user_data;
 	TextInputCallback *TextInput;

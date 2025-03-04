@@ -60,7 +60,7 @@ void DrawTextBox(const Control *c, ControlState state, Vector2 position)
 
 	Vector2 textSize = MeasureTextNChars(data->text, 16, smallFont, data->input.cursor);
 
-	if ((GetTimeMs() % 1000) < 500)
+	if (data->isActive && (GetTimeMs() % 1000) < 500)
 	{
 		DrawTextAligned("_",
 						16,
@@ -75,23 +75,63 @@ void DrawTextBox(const Control *c, ControlState state, Vector2 position)
 
 void UpdateTextBox(UiStack *stack, Control *c, Vector2, const uint ctlIndex)
 {
+	TextBoxData *data = (TextBoxData *)c->ControlData;
 	if (stack->focusedControl != ctlIndex)
 	{
+		data->isActive = false;
 		return;
 	}
+	data->isActive = true;
 
-	TextBoxData *data = (TextBoxData *)c->ControlData;
-
-	if (IsKeyJustPressed(SDL_SCANCODE_LEFT))
+	if (IsKeyPressed(SDL_SCANCODE_LCTRL) || IsKeyPressed(SDL_SCANCODE_RCTRL))
 	{
-		ConsumeKey(SDL_SCANCODE_LEFT);
-		data->input.cursor -= 1;
-	} else if (IsKeyJustPressed(SDL_SCANCODE_RIGHT))
+		int dir = 0;
+		if (IsKeyJustPressed(SDL_SCANCODE_LEFT))
+		{
+			ConsumeKey(SDL_SCANCODE_LEFT);
+			dir = -1;
+		} else if (IsKeyJustPressed(SDL_SCANCODE_RIGHT))
+		{
+			ConsumeKey(SDL_SCANCODE_RIGHT);
+			dir = 1;
+		}
+		if (dir != 0)
+		{
+			size_t i = data->input.cursor + dir;
+			while (i > 0 && i < (int)strlen(data->text) && data->text[i] != ' ')
+			{
+				i += dir;
+			}
+			if (dir == 1)
+			{
+				i++; // jump to start of word instead of space
+			}
+			data->input.cursor = i;
+		}
+	} else
 	{
-		ConsumeKey(SDL_SCANCODE_RIGHT);
-		data->input.cursor += 1;
+		if (IsKeyJustPressed(SDL_SCANCODE_LEFT))
+		{
+			ConsumeKey(SDL_SCANCODE_LEFT);
+			data->input.cursor -= 1;
+		} else if (IsKeyJustPressed(SDL_SCANCODE_RIGHT))
+		{
+			ConsumeKey(SDL_SCANCODE_RIGHT);
+			data->input.cursor += 1;
+		}
 	}
+
 	data->input.cursor = clamp(data->input.cursor, 0, strlen(data->text));
+
+	if (IsKeyJustPressed(SDL_SCANCODE_HOME))
+	{
+		ConsumeKey(SDL_SCANCODE_HOME);
+		data->input.cursor = 0;
+	} else if (IsKeyJustPressed(SDL_SCANCODE_END))
+	{
+		ConsumeKey(SDL_SCANCODE_END);
+		data->input.cursor = (int)strlen(data->text);
+	}
 
 	// handle backspace
 	if (IsKeyJustPressed(SDL_SCANCODE_BACKSPACE))
@@ -144,9 +184,6 @@ void TextBoxTextInputCallback(TextInput *data, SDL_TextInputEvent *event)
 
 	memccpy(textBoxData->text + data->cursor, event->text, 0, insertLen);
 
-	if (data->cursor >= originalLen)
-    {
-        data->cursor = (int)(originalLen + strlen(event->text));
-    }
+	data->cursor += insertLen;
 	if (textBoxData->callback != NULL) textBoxData->callback(textBoxData->text);
 }
