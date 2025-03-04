@@ -68,8 +68,9 @@ Vector2 MeasureTextNChars(const char *str, uint size, const Font *font, size_t n
  * @param str String to get line from
  * @param line Line number to get
  * @param out buffer to store the line in
+ * @param outBufferSize
  */
-void TextGetLine(const char *str, int line, char *out);
+void TextGetLine(const char *str, int line, char *out, size_t outBufferSize);
 
 /**
  * Draw a string of text to the screen with alignment

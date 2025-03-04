@@ -78,7 +78,7 @@ void TextBoxRender(const TextBox *box, const int page)
 	for (int i = startLine; i < endLine; i++)
 	{
 		char line[256];
-		TextGetLine(box->text, i, line);
+		TextGetLine(box->text, i, line, 256);
 		const Vector2 pos = {topLeft.x + BOX_OUTER_PADDING, (float)txtY};
 		FontDrawString(pos, line, TEXT_BOX_FONT_SIZE, textColor, smallFont);
 		txtY += TEXT_BOX_FONT_SIZE;
