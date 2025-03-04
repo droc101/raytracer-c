@@ -22,6 +22,7 @@ void InitCommonAssets()
 	SetTexParams(TEXTURE("interface_button_press"), true, false);
 	SetTexParams(TEXTURE("interface_slider"), true, false);
 	SetTexParams(TEXTURE("interface_slider_thumb"), true, false);
+	SetTexParams(TEXTURE("interface_textbox"), true, false);
 	SetTexParams(TEXTURE("interface_checkbox_checked"), true, false);
 	SetTexParams(TEXTURE("interface_checkbox_unchecked"), true, false);
 	SetTexParams(TEXTURE("interface_radio_checked"), true, false);

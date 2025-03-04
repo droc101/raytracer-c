@@ -1102,7 +1102,7 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
 	GL_GetViewModelMatrix(&viewModelMatrix);
 
 	GL_SharedUniforms uniforms;
-	glm_mat4_copy(&viewModelMatrix[0], uniforms.worldViewMatrix);
+	glm_mat4_copy(viewModelMatrix, uniforms.worldViewMatrix);
 	uniforms.cameraYaw = 0;
 	uniforms.fogStart = (float)1000;
 	uniforms.fogEnd = (float)1001;
