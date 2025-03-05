@@ -61,7 +61,7 @@ Vector2 ActualWindowSize();
  * @param y Y position
  * @param w Width
  * @param h Height
- * @param color
+ * @param color The color to draw with
  * @note Call @c setColorUint before calling this function
  */
 void DrawRect(int x, int y, int w, int h, Color color);
@@ -94,7 +94,7 @@ void SetTexParams(const char *texture, bool linear, bool repeat);
  * @param start The start of the line
  * @param end The end of the line
  * @param thickness The thickness of the line
- * @param color
+ * @param color The color to draw with
  */
 void DrawLine(const Vector2 start, const Vector2 end, const float thickness, const Color color);
 
@@ -103,7 +103,7 @@ void DrawLine(const Vector2 start, const Vector2 end, const float thickness, con
  * @param pos The position
  * @param size The size
  * @param thickness The thickness of the outline
- * @param color
+ * @param color The color to draw with
  */
 void DrawOutlineRect(const Vector2 pos, const Vector2 size, const float thickness, const Color color);
 
