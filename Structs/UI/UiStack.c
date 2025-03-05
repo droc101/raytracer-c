@@ -7,6 +7,7 @@
 #include "../../Helpers/Core/Error.h"
 #include "../../Helpers/Core/Input.h"
 #include "../../Helpers/Graphics/Drawing.h"
+#include "../../Helpers/Graphics/RenderingHelpers.h"
 #include "../GlobalState.h"
 #include "../Vector2.h"
 

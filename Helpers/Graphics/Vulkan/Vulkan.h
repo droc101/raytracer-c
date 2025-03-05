@@ -7,6 +7,7 @@
 
 #include <vulkan/vulkan.h>
 #include "../Drawing.h"
+#include "../RenderingHelpers.h"
 
 #define VK_X_TO_NDC(x) ((float)(x) / WindowWidth() * 2.0f - 1.0f)
 #define VK_Y_TO_NDC(y) ((float)(y) / WindowHeight() * 2.0f - 1.0f)

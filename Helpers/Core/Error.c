@@ -13,6 +13,7 @@
 #include "../../Structs/GlobalState.h"
 #include "../../Structs/Options.h"
 #include "../Graphics/Drawing.h"
+#include "../Graphics/RenderingHelpers.h"
 #include "Logging.h"
 
 SDL_MessageBoxColorScheme mbColorScheme;

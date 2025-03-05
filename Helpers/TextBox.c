@@ -5,6 +5,7 @@
 #include "TextBox.h"
 #include "CommonAssets.h"
 #include "Graphics/Drawing.h"
+#include "Graphics/RenderingHelpers.h"
 #include "Graphics/Font.h"
 
 #define BOX_OUTER_PADDING 14

@@ -4,7 +4,7 @@
 
 #include "CommonAssets.h"
 #include "Core/AssetReader.h"
-#include "Graphics/Drawing.h"
+#include "Graphics/RenderingHelpers.h"
 
 Model *skyModel;
 

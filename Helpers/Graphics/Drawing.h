@@ -8,52 +8,18 @@
 #include "../../defines.h"
 #include "SDL.h"
 
-/**
- * Set the main window
- * @param w The window to use
- */
-void SetGameWindow(SDL_Window *w);
+typedef struct BatchedQuadArray BatchedQuadArray;
 
-/**
- * Get the main window
- * @return the window
- */
-SDL_Window *GetGameWindow();
-
-/**
- * Get the width of the window
- * @return width of the window
- */
-int WindowWidth();
-
-/**
- * Get the height of the window
- * @return height of the window
- */
-int WindowHeight();
-
-/**
- * Get the width of the window
- * @return width of the window
- */
-float WindowWidthFloat();
-
-/**
- * Get the height of the window
- * @return height of the window
- */
-float WindowHeightFloat();
-
-/**
- * Updates the variables returned by @c WindowWidth() and @c WindowHeight()
- */
-void UpdateWindowSize();
-
-/**
- * Get the actual size of the window, ignoring UI scale
- * @return The actual size of the window
- */
-Vector2 ActualWindowSize();
+struct BatchedQuadArray
+{
+	/// If used in a textured quad, @c verts takes the form of a @c float[quad_count * 16] holding values for X, Y, U, and V for each vertex.
+	/// If used in a colored quad, @c verts takes the form of a @c float[quad_count * 8] holding values for X and Y for each vertex.
+	float *verts;
+	/// uint[quad_count * 6] with indices
+	uint *indices;
+	/// Number of quads in the array
+	int quad_count;
+};
 
 /**
  * Draw a solid color rectangle
@@ -73,21 +39,6 @@ void DrawRect(int x, int y, int w, int h, Color color);
  * @return The @c SDL_Surface
  */
 SDL_Surface *ToSDLSurface(const char *texture, const char *filterMode);
-
-/**
- * Convert a color uint (0xAARRGGBB) to a Color vec4 (RGBA 0-1)
- * @param argb The color uint
- * @param color The output color
- */
-void GetColor(const uint argb, Color *color);
-
-/**
- * Set the texture parameters (linear, repeat)
- * @param texture The texture name
- * @param linear Whether to use linear filtering (blurring)
- * @param repeat Whether to repeat the texture
- */
-void SetTexParams(const char *texture, bool linear, bool repeat);
 
 /**
  * Draw a line from start to end
@@ -167,13 +118,6 @@ void ClearScreen();
 void ClearDepthOnly();
 
 /**
- * Get the size of a texture
- * @param texture The texture name
- * @return The size of the texture
- */
-Vector2 GetTextureSize(const char *texture);
-
-/**
  * Draw a nine patch image to the screen
  * @param pos The position to draw at
  * @param size The size of the output
@@ -187,5 +131,39 @@ void DrawNinePatchTexture(Vector2 pos,
 						  float output_margins_px,
 						  float texture_margins_px,
 						  const char *texture);
+
+/**
+ * Draw a `BatchedQuadArray` to the screen using the textured shader. This is faster than multiple draw calls, but harder to use.
+ * @param batch The batch to draw
+ * @param texture The texture name
+ * @param color The color to use
+ */
+void DrawBatchedQuadsTextured(const BatchedQuadArray *batch, const char *texture, Color color);
+
+/**
+ * Draw a `BatchedQuadArray` to the screen using the solid color shader. This is faster than multiple draw calls, but harder to use.
+ * @param batch The batch to draw
+ * @param color The color to use
+ */
+void DrawBatchedQuadsColored(const BatchedQuadArray *batch, Color color);
+
+/**
+ * Render the background of the menu screen (main menu, options, level select, etc.)
+ */
+void RenderMenuBackground();
+
+/**
+ * Render the background of the in-game menu (pause, in-game options, etc.)
+ */
+void RenderInGameMenuBackground();
+
+/**
+ * Render the 3D portion of a level
+ * @param l The level to render
+ * @param cam The camera to render with
+ * @note - This does not render the sky
+ * @note - This destroys the contents of the depth buffer
+ */
+void RenderLevel3D(const Level *l, const Camera *cam);
 
 #endif //GAME_DRAWING_H

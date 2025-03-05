@@ -14,63 +14,8 @@
 #include "RenderingHelpers.h"
 #include "SDL.h"
 #include "Vulkan/Vulkan.h"
+#include "../../Structs/Level.h"
 
-SDL_Window *window;
-int windowWidth;
-int windowHeight;
-
-void SetGameWindow(SDL_Window *w)
-{
-	window = w;
-}
-
-inline SDL_Window *GetGameWindow()
-{
-	return window;
-}
-
-inline int WindowWidth()
-{
-	return windowWidth;
-}
-
-inline int WindowHeight()
-{
-	return windowHeight;
-}
-
-inline float WindowWidthFloat()
-{
-	return (float)windowWidth;
-}
-
-inline float WindowHeightFloat()
-{
-	return (float)windowHeight;
-}
-
-inline void UpdateWindowSize()
-{
-	SDL_GetWindowSize(window, &windowWidth, &windowHeight);
-	windowWidth = (int)(windowWidth / GetState()->uiScale);
-	windowHeight = (int)(windowHeight / GetState()->uiScale);
-}
-
-inline Vector2 ActualWindowSize()
-{
-	int w;
-	int h;
-	SDL_GetWindowSize(window, &w, &h);
-	return v2((float)w, (float)h);
-}
-
-inline void GetColor(const uint argb, Color *color)
-{
-	color->r = (float)(argb >> 16 & 0xFF) / 255.0f;
-	color->g = (float)(argb >> 8 & 0xFF) / 255.0f;
-	color->b = (float)(argb >> 0 & 0xFF) / 255.0f;
-	color->a = (float)(argb >> 24 & 0xFF) / 255.0f;
-}
 
 SDL_Surface *ToSDLSurface(const char *texture, const char *filterMode)
 {
@@ -97,21 +42,6 @@ SDL_Surface *ToSDLSurface(const char *texture, const char *filterMode)
 }
 
 // Rendering subsystem abstractions
-
-void SetTexParams(const char *texture, const bool linear, const bool repeat)
-{
-	switch (currentRenderer)
-	{
-		case RENDERER_VULKAN:
-			VK_SetTexParams(texture, linear, repeat);
-			break;
-		case RENDERER_OPENGL:
-			GL_SetTexParams(texture, linear, repeat);
-			break;
-		default:
-			break;
-	}
-}
 
 inline void DrawLine(const Vector2 start, const Vector2 end, const float thickness, const Color color)
 {
@@ -299,13 +229,6 @@ inline void DrawRect(const int x, const int y, const int w, const int h, const C
 	}
 }
 
-Vector2 GetTextureSize(const char *texture)
-{
-	const Image *img = LoadImage(texture);
-
-	return v2((float)img->width, (float)img->height);
-}
-
 void DrawNinePatchTexture(const Vector2 pos,
 						  const Vector2 size,
 						  const float output_margins_px,
@@ -358,4 +281,71 @@ void DrawNinePatchTexture(const Vector2 pos,
 					  texture,
 					  v2(textureSize.x - texture_margins_px, textureSize.y - texture_margins_px),
 					  v2s(texture_margins_px)); // bottom right
+}
+
+inline void DrawBatchedQuadsTextured(const BatchedQuadArray *batch, const char *texture, const Color color)
+{
+	switch (currentRenderer)
+	{
+		case RENDERER_VULKAN:
+			VK_DrawTexturedQuadsBatched(batch->verts, batch->quad_count, texture, color);
+		break;
+		case RENDERER_OPENGL:
+			GL_DrawTexturedArrays(batch->verts, batch->indices, batch->quad_count, texture, color);
+		break;
+		default:
+			break;
+	}
+}
+
+inline void DrawBatchedQuadsColored(const BatchedQuadArray *batch, const Color color)
+{
+	switch (currentRenderer)
+	{
+		case RENDERER_VULKAN:
+			VK_DrawColoredQuadsBatched(batch->verts, batch->quad_count, color);
+		break;
+		case RENDERER_OPENGL:
+			GL_DrawColoredArrays(batch->verts, batch->indices, batch->quad_count, color);
+		break;
+		default:
+			break;
+	}
+}
+
+void RenderMenuBackground()
+{
+	// sorry for the confusing variable names
+	const Vector2 bgTileSize = v2(320, 240); // size on screen
+	const Vector2 bgTexSize = GetTextureSize(TEXTURE("interface_menu_bg_tile")); // actual size of the texture
+
+	const Vector2 tilesOnScreen = v2(WindowWidthFloat() / bgTileSize.x, WindowHeightFloat() / bgTileSize.y);
+	const Vector2 tileRegion = v2(tilesOnScreen.x * bgTexSize.x, tilesOnScreen.y * bgTexSize.y);
+	DrawTextureRegion(v2(0, 0),
+					  v2(WindowWidthFloat(), WindowHeightFloat()),
+					  TEXTURE("interface_menu_bg_tile"),
+					  v2(0, 0),
+					  tileRegion);
+}
+
+void RenderInGameMenuBackground()
+{
+	RenderLevel(GetState());
+
+	DrawRect(0, 0, WindowWidth(), WindowHeight(), COLOR(0xA0000000));
+}
+
+void RenderLevel3D(const Level *l, const Camera *cam)
+{
+	switch (currentRenderer)
+	{
+		case RENDERER_VULKAN:
+			VK_RenderLevel(l, cam);
+		break;
+		case RENDERER_OPENGL:
+			GL_RenderLevel(l, cam);
+		break;
+		default:
+			break;
+	}
 }
