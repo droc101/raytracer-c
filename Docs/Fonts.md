@@ -16,3 +16,5 @@ The *.font files under Assets/Fonts use the following JSON keys:
 - `char_widths`: A dictionary of character widths, where the keys are the character, and the value is their width. Any char without a key here will use `default_char_width`.
 
 All fields are required.
+
+**NOTE: The font MUST contain the question mark `?` character, as it is used as the fallback for missing chars.**
