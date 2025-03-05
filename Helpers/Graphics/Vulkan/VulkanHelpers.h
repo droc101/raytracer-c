@@ -40,11 +40,6 @@
 #define VulkanTestWithReturn(function, returnValue, ...) VulkanTestInternal(function, returnValue, __VA_ARGS__)
 #define VulkanTestReturnResult(function, ...) VulkanTestInternal(function, result, __VA_ARGS__)
 #define VulkanTest(function, ...) VulkanTestInternal(function, false, __VA_ARGS__)
-#define GET_COLOR(color) \
-	const float r = color.r; \
-	const float g = color.g; \
-	const float b = color.b; \
-	const float a = color.a
 #pragma endregion macros
 
 #pragma region typedefs

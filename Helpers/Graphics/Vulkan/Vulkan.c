@@ -1009,9 +1009,8 @@ void VK_DrawRectOutline(const int32_t x,
 
 void VK_ClearColor(const Color color)
 {
-	GET_COLOR(color);
 
-	clearColor = (VkClearColorValue){{r, g, b, a}};
+	clearColor = (VkClearColorValue){{color.r, color.g, color.b, color.a}};
 }
 
 void VK_SetTexParams(const char *texture, const bool linear, const bool repeat)

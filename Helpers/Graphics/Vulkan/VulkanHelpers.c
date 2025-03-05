@@ -1066,8 +1066,6 @@ void DrawRectInternal(const float ndcStartX,
 
 void DrawQuadInternal(const mat4 vertices_posXY_uvZW, const Color color, const uint32_t textureIndex)
 {
-	GET_COLOR(color);
-
 	if (buffers.ui.quadCount >= buffers.ui.maxQuads)
 	{
 		buffers.ui.maxQuads += 16;
@@ -1087,10 +1085,10 @@ void DrawQuadInternal(const mat4 vertices_posXY_uvZW, const Color color, const u
 		.y = vertices_posXY_uvZW[0][1],
 		.u = vertices_posXY_uvZW[0][2],
 		.v = vertices_posXY_uvZW[0][3],
-		.r = r,
-		.g = g,
-		.b = b,
-		.a = a,
+		.r = color.r,
+		.g = color.g,
+		.b = color.b,
+		.a = color.a,
 		.textureIndex = textureIndex,
 	};
 	buffers.ui.vertices[4 * buffers.ui.quadCount + 1] = (UiVertex){
@@ -1098,10 +1096,10 @@ void DrawQuadInternal(const mat4 vertices_posXY_uvZW, const Color color, const u
 		.y = vertices_posXY_uvZW[1][1],
 		.u = vertices_posXY_uvZW[1][2],
 		.v = vertices_posXY_uvZW[1][3],
-		.r = r,
-		.g = g,
-		.b = b,
-		.a = a,
+		.r = color.r,
+		.g = color.g,
+		.b = color.b,
+		.a = color.a,
 		.textureIndex = textureIndex,
 	};
 	buffers.ui.vertices[4 * buffers.ui.quadCount + 2] = (UiVertex){
@@ -1109,10 +1107,10 @@ void DrawQuadInternal(const mat4 vertices_posXY_uvZW, const Color color, const u
 		.y = vertices_posXY_uvZW[2][1],
 		.u = vertices_posXY_uvZW[2][2],
 		.v = vertices_posXY_uvZW[2][3],
-		.r = r,
-		.g = g,
-		.b = b,
-		.a = a,
+		.r = color.r,
+		.g = color.g,
+		.b = color.b,
+		.a = color.a,
 		.textureIndex = textureIndex,
 	};
 	buffers.ui.vertices[4 * buffers.ui.quadCount + 3] = (UiVertex){
@@ -1120,10 +1118,10 @@ void DrawQuadInternal(const mat4 vertices_posXY_uvZW, const Color color, const u
 		.y = vertices_posXY_uvZW[3][1],
 		.u = vertices_posXY_uvZW[3][2],
 		.v = vertices_posXY_uvZW[3][3],
-		.r = r,
-		.g = g,
-		.b = b,
-		.a = a,
+		.r = color.r,
+		.g = color.g,
+		.b = color.b,
+		.a = color.a,
 		.textureIndex = textureIndex,
 	};
 
