@@ -118,12 +118,12 @@ inline void DrawLine(const Vector2 start, const Vector2 end, const float thickne
 	switch (currentRenderer)
 	{
 		case RENDERER_VULKAN:
-			// VK_DrawLine((int)start.x,
-			// 			(int)start.y,
-			// 			(int)end.x,
-			// 			(int)end.y,
-			// 			(int)(thickness * GetState()->uiScale),
-			// 			drawColor);
+			VK_DrawLine((int)start.x,
+						(int)start.y,
+						(int)end.x,
+						(int)end.y,
+						(int)(thickness * GetState()->uiScale),
+						color);
 			break;
 		case RENDERER_OPENGL:
 			GL_DrawLine(start, end, color, (float)(thickness * GetState()->uiScale));
@@ -138,12 +138,12 @@ inline void DrawOutlineRect(const Vector2 pos, const Vector2 size, const float t
 	switch (currentRenderer)
 	{
 		case RENDERER_VULKAN:
-			// VK_DrawRectOutline((int)pos.x,
-			// 				   (int)pos.y,
-			// 				   (int)size.x,
-			// 				   (int)size.y,
-			// 				   (int)(thickness * GetState()->uiScale),
-			// 				   drawColor);
+			VK_DrawRectOutline((int)pos.x,
+							   (int)pos.y,
+							   (int)size.x,
+							   (int)size.y,
+							   (int)(thickness * GetState()->uiScale),
+							   color);
 			break;
 		case RENDERER_OPENGL:
 			GL_DrawRectOutline(pos, size, color, (float)(thickness * GetState()->uiScale));
@@ -173,7 +173,7 @@ inline void DrawTextureMod(const Vector2 pos, const Vector2 size, const char *te
 	switch (currentRenderer)
 	{
 		case RENDERER_VULKAN:
-			//VK_DrawTexturedQuadMod((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, texture, color);
+			VK_DrawTexturedQuadMod((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, texture, color);
 			break;
 		case RENDERER_OPENGL:
 			GL_DrawTextureMod(pos, size, texture, color);
@@ -220,16 +220,16 @@ inline void DrawTextureRegionMod(const Vector2 pos,
 	switch (currentRenderer)
 	{
 		case RENDERER_VULKAN:
-			// VK_DrawTexturedQuadRegionMod((int)pos.x,
-			// 							 (int)pos.y,
-			// 							 (int)size.x,
-			// 							 (int)size.y,
-			// 							 (int)region_start.x,
-			// 							 (int)region_start.y,
-			// 							 (int)region_end.x,
-			// 							 (int)region_end.y,
-			// 							 texture,
-			// 							 color);
+			VK_DrawTexturedQuadRegionMod((int)pos.x,
+										 (int)pos.y,
+										 (int)size.x,
+										 (int)size.y,
+										 (int)region_start.x,
+										 (int)region_start.y,
+										 (int)region_end.x,
+										 (int)region_end.y,
+										 texture,
+										 color);
 			break;
 		case RENDERER_OPENGL:
 			GL_DrawTextureRegionMod(pos, size, texture, region_start, region_end, color);
@@ -244,7 +244,7 @@ inline void ClearColor(const Color color)
 	switch (currentRenderer)
 	{
 		case RENDERER_VULKAN:
-			//VK_ClearColor(color);
+			VK_ClearColor(color);
 			break;
 		case RENDERER_OPENGL:
 			GL_ClearColor(color);
@@ -289,7 +289,7 @@ inline void DrawRect(const int x, const int y, const int w, const int h, const C
 	switch (currentRenderer)
 	{
 		case RENDERER_VULKAN:
-			//VK_DrawColoredQuad(x, y, w, h, drawColor);
+			VK_DrawColoredQuad(x, y, w, h, color);
 			break;
 		case RENDERER_OPENGL:
 			GL_DrawRect(v2((float)x, (float)y), v2((float)w, (float)h), color);

@@ -41,10 +41,10 @@
 #define VulkanTestReturnResult(function, ...) VulkanTestInternal(function, result, __VA_ARGS__)
 #define VulkanTest(function, ...) VulkanTestInternal(function, false, __VA_ARGS__)
 #define GET_COLOR(color) \
-	const float r = ((color) >> 16 & 0xFF) / 255.0f; \
-	const float g = ((color) >> 8 & 0xFF) / 255.0f; \
-	const float b = ((color) & 0xFF) / 255.0f; \
-	const float a = ((color) >> 24 & 0xFF) / 255.0f
+	const float r = color.r; \
+	const float g = color.g; \
+	const float b = color.b; \
+	const float a = color.a
 #pragma endregion macros
 
 #pragma region typedefs
@@ -700,10 +700,10 @@ void DrawRectInternal(float ndcStartX,
 					  float startV,
 					  float endU,
 					  float endV,
-					  uint32_t color,
+					  Color color,
 					  uint32_t textureIndex);
 
-void DrawQuadInternal(const mat4 vertices_posXY_uvZW, uint32_t color, uint32_t textureIndex);
+void DrawQuadInternal(const mat4 vertices_posXY_uvZW, Color color, uint32_t textureIndex);
 #pragma endregion drawingHelpers
 
 #endif //VULKANHELPERS_H

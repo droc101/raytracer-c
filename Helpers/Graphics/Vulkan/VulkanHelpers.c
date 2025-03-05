@@ -1052,7 +1052,7 @@ void DrawRectInternal(const float ndcStartX,
 					  const float startV,
 					  const float endU,
 					  const float endV,
-					  const uint32_t color,
+					  const Color color,
 					  const uint32_t textureIndex)
 {
 	const mat4 matrix = {
@@ -1064,7 +1064,7 @@ void DrawRectInternal(const float ndcStartX,
 	DrawQuadInternal(matrix, color, textureIndex);
 }
 
-void DrawQuadInternal(const mat4 vertices_posXY_uvZW, const uint32_t color, const uint32_t textureIndex)
+void DrawQuadInternal(const mat4 vertices_posXY_uvZW, const Color color, const uint32_t textureIndex)
 {
 	GET_COLOR(color);
 

@@ -811,12 +811,12 @@ bool VK_LoadNewActor()
 	return DestroyBuffer(&stagingBuffer);
 }
 
-void VK_DrawColoredQuad(const int32_t x, const int32_t y, const int32_t w, const int32_t h, const uint32_t color)
+void VK_DrawColoredQuad(const int32_t x, const int32_t y, const int32_t w, const int32_t h, const Color color)
 {
 	DrawRectInternal(VK_X_TO_NDC(x), VK_Y_TO_NDC(y), VK_X_TO_NDC(x + w), VK_Y_TO_NDC(y + h), 0, 0, 0, 0, color, -1);
 }
 
-void VK_DrawColoredQuadsBatched(const float *vertices, const int32_t quadCount, const uint32_t color)
+void VK_DrawColoredQuadsBatched(const float *vertices, const int32_t quadCount, const Color color)
 {
 	for (int32_t i = 0; i < quadCount; i++)
 	{
@@ -841,7 +841,7 @@ void VK_DrawTexturedQuad(const int32_t x, const int32_t y, const int32_t w, cons
 					 0,
 					 1,
 					 1,
-					 0xFFFFFFFF,
+					 COLOR(0xFFFFFFFF),
 					 TextureIndex(texture));
 }
 
@@ -850,7 +850,7 @@ void VK_DrawTexturedQuadMod(const int32_t x,
 							const int32_t w,
 							const int32_t h,
 							const char *texture,
-							const uint32_t color)
+							const Color color)
 {
 	DrawRectInternal(VK_X_TO_NDC(x),
 					 VK_Y_TO_NDC(y),
@@ -887,7 +887,7 @@ void VK_DrawTexturedQuadRegion(const int32_t x,
 					 startV,
 					 startU + (float)regionW / (float)image->width,
 					 startV + (float)regionH / (float)image->height,
-					 0xFFFFFFFF,
+					 COLOR(0xFFFFFFFF),
 					 imageAssetIdToIndexMap[image->id]);
 }
 
@@ -900,7 +900,7 @@ void VK_DrawTexturedQuadRegionMod(const int32_t x,
 								  const int32_t regionW,
 								  const int32_t regionH,
 								  const char *texture,
-								  const uint32_t color)
+								  const Color color)
 {
 	const Image *image = LoadImage(texture);
 
@@ -919,10 +919,7 @@ void VK_DrawTexturedQuadRegionMod(const int32_t x,
 					 imageAssetIdToIndexMap[image->id]);
 }
 
-void VK_DrawTexturedQuadsBatched(const float *vertices,
-								 const int32_t quadCount,
-								 const char *texture,
-								 const uint32_t color)
+void VK_DrawTexturedQuadsBatched(const float *vertices, const int32_t quadCount, const char *texture, const Color color)
 {
 	for (int32_t i = 0; i < quadCount; i++)
 	{
@@ -962,7 +959,7 @@ void VK_DrawLine(const int32_t startX,
 				 const int32_t endX,
 				 const int32_t endY,
 				 const int32_t thickness,
-				 const uint32_t color)
+				 const Color color)
 {
 	const float dx = (float)endX - (float)startX;
 	const float dy = (float)endY - (float)startY;
@@ -1002,7 +999,7 @@ void VK_DrawRectOutline(const int32_t x,
 						const int32_t w,
 						const int32_t h,
 						const int32_t thickness,
-						const uint32_t color)
+						const Color color)
 {
 	VK_DrawLine(x, y, x + w, y, thickness, color);
 	VK_DrawLine(x + w, y, x + w, y + h, thickness, color);
@@ -1010,7 +1007,7 @@ void VK_DrawRectOutline(const int32_t x,
 	VK_DrawLine(x, y + h, x, y, thickness, color);
 }
 
-void VK_ClearColor(const uint32_t color)
+void VK_ClearColor(const Color color)
 {
 	GET_COLOR(color);
 
