@@ -38,7 +38,7 @@ void GLogoSplashStateFixedUpdate(GlobalState *State, double /*delta*/)
 // ReSharper disable once CppParameterMayBeConstPtrOrRef
 void GLogoSplashStateRender(GlobalState *State)
 {
-	ClearColor(COLOR(0xFF000000));
+	ClearColor(COLOR_BLACK);
 	if (State->physicsFrame < 20 || State->physicsFrame > 100)
 	{
 		return;
@@ -55,7 +55,7 @@ void GLogoSplashStateRender(GlobalState *State)
 	{
 		alpha = 1.0f - ((float)(State->physicsFrame - 80) / 20.0f);
 	}
-	Color color = COLOR(-1);
+	Color color = COLOR_WHITE;
 	color.a = alpha;
 
 	DrawTextureMod(v2((float)destRect.x, (float)destRect.y),

@@ -594,7 +594,7 @@ void GL_DrawTexture_Internal(const Vector2 pos,
 
 inline void GL_DrawTexture(const Vector2 pos, const Vector2 size, const char *texture)
 {
-	GL_DrawTexture_Internal(pos, size, texture, COLOR(0xFFFFFFFF), v2(-1, 0), v2s(0));
+	GL_DrawTexture_Internal(pos, size, texture, COLOR_WHITE, v2(-1, 0), v2s(0));
 }
 
 inline void GL_DrawTextureMod(const Vector2 pos, const Vector2 size, const char *texture, const Color color)
@@ -608,7 +608,7 @@ inline void GL_DrawTextureRegion(const Vector2 pos,
 								 const Vector2 region_start,
 								 const Vector2 region_end)
 {
-	GL_DrawTexture_Internal(pos, size, texture, COLOR(0xFFFFFFFF), region_start, region_end);
+	GL_DrawTexture_Internal(pos, size, texture, COLOR_WHITE, region_start, region_end);
 }
 
 inline void GL_DrawTextureRegionMod(const Vector2 pos,

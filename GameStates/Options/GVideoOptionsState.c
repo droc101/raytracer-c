@@ -112,7 +112,7 @@ void GVideoOptionsStateRender(GlobalState *)
 
 	DrawTextAligned("Video Options",
 					32,
-					COLOR(0xFFFFFFFF),
+					COLOR_WHITE,
 					v2s(0),
 					v2(WindowWidthFloat(), 100),
 					FONT_HALIGN_CENTER,

@@ -154,7 +154,7 @@ void FrameGraphDraw()
 	// Draw the current framerate
 	char fps[40];
 	sprintf(fps, "FPS: %.2f\nMS: %2.2f", currentF, currentMs);
-	FontDrawString(v2(12, WindowHeightFloat() - 8 - 38), fps, 16, COLOR(0xff000000), smallFont);
+	FontDrawString(v2(12, WindowHeightFloat() - 8 - 38), fps, 16, COLOR_BLACK, smallFont);
 	FontDrawString(v2(10, WindowHeightFloat() - 10 - 38), fps, 16, lineColor, smallFont);
 
 #endif

@@ -63,7 +63,7 @@ void GMenuStateRender(GlobalState * /*State*/)
 	sprintf(buffer, "Engine %s\n%s", VERSION, COPYRIGHT);
 	DrawTextAligned(buffer,
 					16,
-					COLOR(0xFF000000),
+					COLOR_BLACK,
 					v2(WindowWidthFloat() - 208, WindowHeightFloat() - 208),
 					v2(200, 200),
 					FONT_HALIGN_RIGHT,

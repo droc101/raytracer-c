@@ -841,7 +841,7 @@ void VK_DrawTexturedQuad(const int32_t x, const int32_t y, const int32_t w, cons
 					 0,
 					 1,
 					 1,
-					 COLOR(0xFFFFFFFF),
+					 COLOR_WHITE,
 					 TextureIndex(texture));
 }
 
@@ -887,7 +887,7 @@ void VK_DrawTexturedQuadRegion(const int32_t x,
 					 startV,
 					 startU + (float)regionW / (float)image->width,
 					 startV + (float)regionH / (float)image->height,
-					 COLOR(0xFFFFFFFF),
+					 COLOR_WHITE,
 					 imageAssetIdToIndexMap[image->id]);
 }
 

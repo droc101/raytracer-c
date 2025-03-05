@@ -51,7 +51,7 @@ void DrawTextBox(const Control *c, ControlState state, Vector2 position)
 
 	DrawTextAligned(strlen(data->text) == 0 ? data->placeholder : data->text,
 					16,
-					strlen(data->text) == 0 ? COLOR(0x7F000000) : COLOR(0xFF000000),
+					strlen(data->text) == 0 ? COLOR(0x7F000000) : COLOR_BLACK,
 					v2(position.x + 6, position.y + 6),
 					v2(c->size.x - 12, c->size.y - 12),
 					FONT_HALIGN_LEFT,
@@ -64,7 +64,7 @@ void DrawTextBox(const Control *c, ControlState state, Vector2 position)
 	{
 		DrawTextAligned("_",
 						16,
-						COLOR(0xFF000000),
+						COLOR_BLACK,
 						v2(position.x + 6 + textSize.x, position.y + 6 + 4),
 						v2(12, c->size.y - 12),
 						FONT_HALIGN_LEFT,

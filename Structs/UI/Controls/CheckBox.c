@@ -66,7 +66,7 @@ void DrawCheckbox(const Control *c, ControlState /*state*/, const Vector2 positi
 	const CheckBoxData *data = (CheckBoxData *)c->ControlData;
 	DrawTextAligned(data->label,
 					16,
-					COLOR(0xFFFFFFFF),
+					COLOR_WHITE,
 					v2(c->anchoredPosition.x + 40, c->anchoredPosition.y),
 					v2(c->size.x - 40, c->size.y),
 					FONT_HALIGN_LEFT,

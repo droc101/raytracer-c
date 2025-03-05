@@ -126,6 +126,13 @@ typedef void (*ActorSignalHandlerFunction)(Actor *self, const Actor *sender, int
 
 #pragma endregion
 
+#pragma region Standard Colors
+
+#define COLOR_WHITE COLOR(0xFFFFFFFF)
+#define COLOR_BLACK COLOR(0xFF000000)
+
+#pragma endregion
+
 #pragma region Enum definitions
 
 enum AssetType
