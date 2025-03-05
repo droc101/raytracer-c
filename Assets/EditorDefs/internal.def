@@ -1,0 +1,10 @@
+{
+    "version": 1,
+    "actors": [
+        {
+            "id": 0,
+            "name": "Empty Actor",
+            "params": []
+        }
+    ]
+}

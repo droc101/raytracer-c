@@ -227,25 +227,6 @@ add_dependencies(game genassets)
 
 #endregion
 
-#region Actor Library
-
-if (UNIX)
-    # Libactor is a shared library that is used by the level editor to get information about actor types
-
-    add_library(
-            actor
-            SHARED
-            defines.h
-            libactor/libactor.c
-    )
-
-    target_compile_options(actor PRIVATE -shared -fpie -fPIC)
-
-    add_dependencies(game actor)
-endif ()
-
-#endregion
-
 #region Windows DLLs
 if (WIN32)
 

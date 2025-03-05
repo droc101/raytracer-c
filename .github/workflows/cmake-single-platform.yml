@@ -40,7 +40,6 @@ jobs:
         name: game.linux
         path: |
           build/game
-          build/libactor.so
           build/assets/
         retention-days: 5
 
