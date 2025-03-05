@@ -206,12 +206,12 @@ inline byte GetSampleCountFlags()
 	}
 }
 
-inline void DrawBatchedQuadsTextured(const BatchedQuadArray *batch, const char *texture, const uint color)
+inline void DrawBatchedQuadsTextured(const BatchedQuadArray *batch, const char *texture, const Color color)
 {
 	switch (currentRenderer)
 	{
 		case RENDERER_VULKAN:
-			VK_DrawTexturedQuadsBatched(batch->verts, batch->quad_count, texture, color);
+			//VK_DrawTexturedQuadsBatched(batch->verts, batch->quad_count, texture, color);
 			break;
 		case RENDERER_OPENGL:
 			GL_DrawTexturedArrays(batch->verts, batch->indices, batch->quad_count, texture, color);
@@ -221,12 +221,12 @@ inline void DrawBatchedQuadsTextured(const BatchedQuadArray *batch, const char *
 	}
 }
 
-inline void DrawBatchedQuadsColored(const BatchedQuadArray *batch, const uint color)
+inline void DrawBatchedQuadsColored(const BatchedQuadArray *batch, const Color color)
 {
 	switch (currentRenderer)
 	{
 		case RENDERER_VULKAN:
-			VK_DrawColoredQuadsBatched(batch->verts, batch->quad_count, color);
+			//VK_DrawColoredQuadsBatched(batch->verts, batch->quad_count, color);
 			break;
 		case RENDERER_OPENGL:
 			GL_DrawColoredArrays(batch->verts, batch->indices, batch->quad_count, color);
@@ -281,6 +281,5 @@ void RenderInGameMenuBackground()
 {
 	RenderLevel(GetState());
 
-	SetColorUint(0xA0000000);
-	DrawRect(0, 0, WindowWidth(), WindowHeight());
+	DrawRect(0, 0, WindowWidth(), WindowHeight(), COLOR(0xA0000000));
 }

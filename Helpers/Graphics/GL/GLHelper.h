@@ -53,7 +53,7 @@ void GL_SetTexParams(const char *texture, bool linear, bool repeat);
  * @param size The size in pixels
  * @param color The color to draw
  */
-void GL_DrawRect(Vector2 pos, Vector2 size, uint color);
+void GL_DrawRect(Vector2 pos, Vector2 size, Color color);
 
 /**
  * Draw a rectangle outline
@@ -62,7 +62,7 @@ void GL_DrawRect(Vector2 pos, Vector2 size, uint color);
  * @param color The color to draw
  * @param thickness The thickness of the outline
  */
-void GL_DrawRectOutline(Vector2 pos, Vector2 size, uint color, float thickness);
+void GL_DrawRectOutline(Vector2 pos, Vector2 size, Color color, float thickness);
 
 /**
  * Draw a line
@@ -71,7 +71,7 @@ void GL_DrawRectOutline(Vector2 pos, Vector2 size, uint color, float thickness);
  * @param color The color to draw
  * @param thickness The thickness of the line
  */
-void GL_DrawLine(Vector2 start, Vector2 end, uint color, float thickness);
+void GL_DrawLine(Vector2 start, Vector2 end, Color color, float thickness);
 
 /**
  * Draw a texture in 2D
@@ -88,7 +88,7 @@ void GL_DrawTexture(Vector2 pos, Vector2 size, const char *texture);
  * @param texture The texture name
  * @param color The modulate color
  */
-void GL_DrawTextureMod(Vector2 pos, Vector2 size, const char *texture, uint color);
+void GL_DrawTextureMod(Vector2 pos, Vector2 size, const char *texture, Color color);
 
 /**
  * Draw a texture region in 2D
@@ -114,14 +114,14 @@ void GL_DrawTextureRegionMod(Vector2 pos,
 							 const char *texture,
 							 Vector2 region_start,
 							 Vector2 region_end,
-							 uint color);
+							 Color color);
 
 /**
  * Set the clear color
  * @param color The color to clear the screen with
  * @note This does in fact clear the screen
  */
-void GL_ClearColor(uint color);
+void GL_ClearColor(Color color);
 
 /**
  * Draw a wall in 3D
@@ -161,7 +161,11 @@ void GL_UpdateViewportSize();
  * @param texture The texture name
  * @param color The modulate color
  */
-void GL_DrawTexturedArrays(const float *vertices, const uint *indices, int quad_count, const char *texture, uint color);
+void GL_DrawTexturedArrays(const float *vertices,
+						   const uint *indices,
+						   int quad_count,
+						   const char *texture,
+						   Color color);
 
 /**
  * Draw arrays using the ui_colored shader
@@ -170,7 +174,7 @@ void GL_DrawTexturedArrays(const float *vertices, const uint *indices, int quad_
  * @param quad_count The number of quads to draw
  * @param color The color to draw
  */
-void GL_DrawColoredArrays(const float *vertices, const uint *indices, uint quad_count, uint color);
+void GL_DrawColoredArrays(const float *vertices, const uint *indices, uint quad_count, Color color);
 
 /**
  * Convert screen X to NDC

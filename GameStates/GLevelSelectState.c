@@ -52,13 +52,12 @@ void GLevelSelectStateUpdate(GlobalState * /*State*/)
 
 void GLevelSelectStateRender(GlobalState * /*State*/)
 {
-	SetColorUint(0xFF123456);
-	ClearColor(0xFF123456);
+	ClearColor(COLOR(0xFF123456));
 
 	RenderMenuBackground();
 
-	FontDrawString(v2(20, 20), GAME_TITLE, 128, 0xFFFFFFFF, largeFont);
-	FontDrawString(v2(20, 150), "Press Space to start.", 32, 0xFFa0a0a0, largeFont);
+	FontDrawString(v2(20, 20), GAME_TITLE, 128, COLOR(0xFFFFFFFF), largeFont);
+	FontDrawString(v2(20, 150), "Press Space to start.", 32, COLOR(0xFFa0a0a0), largeFont);
 
 	char levelNameBuffer[64];
 
@@ -74,7 +73,7 @@ void GLevelSelectStateRender(GlobalState * /*State*/)
 
 	DrawTextAligned(levelNameBuffer,
 					32,
-					0xFFFFFFFF,
+					COLOR(0xFFFFFFFF),
 					v2(50, 300),
 					v2(WindowWidthFloat() - 50, 300),
 					FONT_HALIGN_LEFT,

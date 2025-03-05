@@ -181,12 +181,12 @@ void DrawSlider(const Control *c, const ControlState /*state*/, const Vector2 po
 	char *buf = data->getLabel(c);
 	DrawTextAligned(buf,
 					16,
-					0xff000000,
+					COLOR(0xff000000),
 					Vector2Add(position, v2s(2)),
 					c->size,
 					FONT_HALIGN_CENTER,
 					FONT_VALIGN_MIDDLE,
 					smallFont);
-	DrawTextAligned(buf, 16, 0xFFFFFFFF, position, c->size, FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, smallFont);
+	DrawTextAligned(buf, 16, COLOR(0xFFFFFFFF), position, c->size, FONT_HALIGN_CENTER, FONT_VALIGN_MIDDLE, smallFont);
 	free(buf);
 }

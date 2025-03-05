@@ -61,9 +61,10 @@ Vector2 ActualWindowSize();
  * @param y Y position
  * @param w Width
  * @param h Height
+ * @param color
  * @note Call @c setColorUint before calling this function
  */
-void DrawRect(int x, int y, int w, int h);
+void DrawRect(int x, int y, int w, int h, Color color);
 
 /**
  * Convert a texture asset to an SDL_Surface
@@ -74,25 +75,11 @@ void DrawRect(int x, int y, int w, int h);
 SDL_Surface *ToSDLSurface(const char *texture, const char *filterMode);
 
 /**
- * Set the color to draw with
- * @param color Color as uint, @c 0xAARRGGBB
+ * Convert a color uint (0xAARRGGBB) to a Color vec4 (RGBA 0-1)
+ * @param argb The color uint
+ * @param color The output color
  */
-void SetColorUint(uint color);
-
-/**
- * Split a color into its components
- * @param color Color as uint, @c 0xAARRGGBB
- * @return Four byte array with the color components
- */
-byte *GetColorUint(uint color);
-
-/**
- * Mix two colors together
- * @param color_a Color A
- * @param color_b Color B
- * @return Color A mixed with Color B
- */
-uint MixColors(uint color_a, uint color_b);
+void GetColor(const uint argb, Color *color);
 
 /**
  * Set the texture parameters (linear, repeat)
@@ -107,16 +94,18 @@ void SetTexParams(const char *texture, bool linear, bool repeat);
  * @param start The start of the line
  * @param end The end of the line
  * @param thickness The thickness of the line
+ * @param color
  */
-void DrawLine(Vector2 start, Vector2 end, float thickness);
+void DrawLine(const Vector2 start, const Vector2 end, const float thickness, const Color color);
 
 /**
  * Draw a 1px outline of a rectangle
  * @param pos The position
  * @param size The size
  * @param thickness The thickness of the outline
+ * @param color
  */
-void DrawOutlineRect(Vector2 pos, Vector2 size, float thickness);
+void DrawOutlineRect(const Vector2 pos, const Vector2 size, const float thickness, const Color color);
 
 /**
  * Draw a texture on a rectangle
@@ -133,7 +122,7 @@ void DrawTexture(Vector2 pos, Vector2 size, const char *texture);
  * @param texture The texture name
  * @param color The color to draw with
  */
-void DrawTextureMod(Vector2 pos, Vector2 size, const char *texture, uint color);
+void DrawTextureMod(Vector2 pos, Vector2 size, const char *texture, Color color);
 
 /**
  * Draw a texture region on a rectangle
@@ -159,13 +148,13 @@ void DrawTextureRegionMod(Vector2 pos,
 						  const char *texture,
 						  Vector2 region_start,
 						  Vector2 region_end,
-						  uint color);
+						  Color color);
 
 /**
  * Clear the screen with a color
  * @param color The color to clear with
  */
-void ClearColor(uint color);
+void ClearColor(Color color);
 
 /**
  * Clear the screen with the last used color

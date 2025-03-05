@@ -125,7 +125,7 @@ int GL_RegisterTexture(const unsigned char *pixelData, int width, int height);
 void GL_DrawTexture_Internal(Vector2 pos,
 							 Vector2 size,
 							 const char *texture,
-							 uint color,
+							 Color color,
 							 Vector2 region_start,
 							 Vector2 region_end);
 

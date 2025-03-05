@@ -112,14 +112,14 @@ byte GetSampleCountFlags();
  * @param texture The texture name
  * @param color The color to use
  */
-void DrawBatchedQuadsTextured(const BatchedQuadArray *batch, const char *texture, uint color);
+void DrawBatchedQuadsTextured(const BatchedQuadArray *batch, const char *texture, Color color);
 
 /**
  * Draw a `BatchedQuadArray` to the screen using the solid color shader. This is faster than multiple draw calls, but harder to use.
  * @param batch The batch to draw
  * @param color The color to use
  */
-void DrawBatchedQuadsColored(const BatchedQuadArray *batch, uint color);
+void DrawBatchedQuadsColored(const BatchedQuadArray *batch, Color color);
 
 /**
  * Convert screen X to NDC

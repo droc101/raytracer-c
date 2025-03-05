@@ -17,16 +17,16 @@ void ResetDPrintYPos()
 	dprintYPosition = 10;
 }
 
-void DPrint(const char *str, const uint color)
+void DPrint(const char *str, const Color color)
 {
 #ifdef ENABLE_DEBUG_PRINT
-	FontDrawString(v2(12, (float)dprintYPosition + 2), str, 16, 0xFF000000, smallFont);
+	FontDrawString(v2(12, (float)dprintYPosition + 2), str, 16, COLOR(0xFF000000), smallFont);
 	FontDrawString(v2(10, (float)dprintYPosition), str, 16, color, smallFont);
 	dprintYPosition += (int)MeasureText(str, 16, smallFont).y + 8;
 #endif
 }
 
-void DPrintF(const char *str, const uint color, const bool con, ...)
+void DPrintF(const char *str, const Color color, const bool con, ...)
 {
 #ifdef ENABLE_DEBUG_PRINT
 	char buffer[256];

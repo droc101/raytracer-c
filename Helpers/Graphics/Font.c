@@ -10,7 +10,7 @@
 #include "../Core/MathEx.h"
 #include "RenderingHelpers.h"
 
-inline void FontDrawString(const Vector2 pos, const char *str, const uint size, const uint color, const Font *font)
+inline void FontDrawString(const Vector2 pos, const char *str, const uint size, const Color color, const Font *font)
 {
 	DrawTextAligned(str, size, color, pos, v2s(FLT_MAX), FONT_HALIGN_LEFT, FONT_VALIGN_TOP, font);
 }
@@ -114,7 +114,7 @@ void TextGetLine(const char *str, const int line, char *out, size_t outBufferSiz
 
 void DrawTextAligned(const char *str,
 					 const uint size,
-					 const uint color,
+					 const Color color,
 					 const Vector2 rect_pos,
 					 const Vector2 rect_size,
 					 const FontHorizontalAlign h_align,

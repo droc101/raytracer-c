@@ -339,14 +339,9 @@ inline void GL_ClearScreen()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void GL_ClearColor(const uint color)
+void GL_ClearColor(const Color color)
 {
-	const float r = (float)(color >> 16 & 0xFF) / 255.0f;
-	const float g = (float)(color >> 8 & 0xFF) / 255.0f;
-	const float b = (float)(color & 0xFF) / 255.0f;
-	const float a = (float)(color >> 24 & 0xFF) / 255.0f;
-
-	glClearColor(r, g, b, a);
+	glClearColor(color.r, color.g, color.b, color.a);
 
 	GL_ClearScreen();
 }
@@ -392,16 +387,11 @@ void GL_DestroyGL()
 	SDL_GL_DeleteContext(ctx);
 }
 
-void GL_DrawRect(const Vector2 pos, const Vector2 size, const uint color)
+void GL_DrawRect(const Vector2 pos, const Vector2 size, const Color color)
 {
 	glUseProgram(uiColoredShader->program);
 
-	const float a = (float)(color >> 24 & 0xFF) / 255.0f;
-	const float r = (float)(color >> 16 & 0xFF) / 255.0f;
-	const float g = (float)(color >> 8 & 0xFF) / 255.0f;
-	const float b = (float)(color & 0xFF) / 255.0f;
-
-	glUniform4f(hudColoredColorLoc, r, g, b, a);
+	glUniform4fv(hudColoredColorLoc, 1, COLOR_TO_ARR(color));
 
 	const Vector2 ndcStartPos = v2(GL_X_TO_NDC(pos.x), GL_Y_TO_NDC(pos.y));
 	const Vector2 ncdEndPos = v2(GL_X_TO_NDC(pos.x + size.x), GL_Y_TO_NDC(pos.y + size.y));
@@ -431,7 +421,7 @@ void GL_DrawRect(const Vector2 pos, const Vector2 size, const uint color)
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 }
 
-void GL_DrawRectOutline(const Vector2 pos, const Vector2 size, const uint color, const float thickness)
+void GL_DrawRectOutline(const Vector2 pos, const Vector2 size, const Color color, const float thickness)
 {
 	if (thickness < 1.0f)
 	{
@@ -445,12 +435,7 @@ void GL_DrawRectOutline(const Vector2 pos, const Vector2 size, const uint color,
 
 	glUseProgram(uiColoredShader->program);
 
-	const float a = (float)(color >> 24 & 0xFF) / 255.0f;
-	const float r = (float)(color >> 16 & 0xFF) / 255.0f;
-	const float g = (float)(color >> 8 & 0xFF) / 255.0f;
-	const float b = (float)(color & 0xFF) / 255.0f;
-
-	glUniform4f(hudColoredColorLoc, r, g, b, a);
+	glUniform4fv(hudColoredColorLoc, 1, COLOR_TO_ARR(color));
 
 	const Vector2 ndcStartPos = v2(GL_X_TO_NDC(pos.x), GL_Y_TO_NDC(pos.y));
 	const Vector2 ndcEndPos = v2(GL_X_TO_NDC(pos.x + size.x), GL_Y_TO_NDC(pos.y + size.y));
@@ -559,7 +544,7 @@ void GL_SetTexParams(const char *texture, const bool linear, const bool repeat)
 void GL_DrawTexture_Internal(const Vector2 pos,
 							 const Vector2 size,
 							 const char *texture,
-							 const uint color,
+							 const Color color,
 							 const Vector2 region_start,
 							 const Vector2 region_end)
 {
@@ -567,13 +552,7 @@ void GL_DrawTexture_Internal(const Vector2 pos,
 
 	GL_LoadTextureFromAsset(texture);
 
-
-	const float a = (float)(color >> 24 & 0xFF) / 255.0f;
-	const float r = (float)(color >> 16 & 0xFF) / 255.0f;
-	const float g = (float)(color >> 8 & 0xFF) / 255.0f;
-	const float b = (float)(color & 0xFF) / 255.0f;
-
-	glUniform4f(hudTexturedColorLoc, r, g, b, a);
+	glUniform4fv(hudTexturedColorLoc, 1, COLOR_TO_ARR(color));
 
 	glUniform4f(hudTexturedRegionLoc,
 				(GLfloat)region_start.x,
@@ -615,10 +594,10 @@ void GL_DrawTexture_Internal(const Vector2 pos,
 
 inline void GL_DrawTexture(const Vector2 pos, const Vector2 size, const char *texture)
 {
-	GL_DrawTexture_Internal(pos, size, texture, 0xFFFFFFFF, v2(-1, 0), v2s(0));
+	GL_DrawTexture_Internal(pos, size, texture, COLOR(0xFFFFFFFF), v2(-1, 0), v2s(0));
 }
 
-inline void GL_DrawTextureMod(const Vector2 pos, const Vector2 size, const char *texture, const uint color)
+inline void GL_DrawTextureMod(const Vector2 pos, const Vector2 size, const char *texture, const Color color)
 {
 	GL_DrawTexture_Internal(pos, size, texture, color, v2(-1, 0), v2s(0));
 }
@@ -629,7 +608,7 @@ inline void GL_DrawTextureRegion(const Vector2 pos,
 								 const Vector2 region_start,
 								 const Vector2 region_end)
 {
-	GL_DrawTexture_Internal(pos, size, texture, 0xFFFFFFFF, region_start, region_end);
+	GL_DrawTexture_Internal(pos, size, texture, COLOR(0xFFFFFFFF), region_start, region_end);
 }
 
 inline void GL_DrawTextureRegionMod(const Vector2 pos,
@@ -637,12 +616,12 @@ inline void GL_DrawTextureRegionMod(const Vector2 pos,
 									const char *texture,
 									const Vector2 region_start,
 									const Vector2 region_end,
-									const uint color)
+									const Color color)
 {
 	GL_DrawTexture_Internal(pos, size, texture, color, region_start, region_end);
 }
 
-void GL_DrawLine(const Vector2 start, const Vector2 end, const uint color, const float thickness)
+void GL_DrawLine(const Vector2 start, const Vector2 end, const Color color, const float thickness)
 {
 	if (thickness < 1.0f)
 	{
@@ -654,12 +633,7 @@ void GL_DrawLine(const Vector2 start, const Vector2 end, const uint color, const
 
 	glUseProgram(uiColoredShader->program);
 
-	const float a = (float)(color >> 24 & 0xFF) / 255.0f;
-	const float r = (float)(color >> 16 & 0xFF) / 255.0f;
-	const float g = (float)(color >> 8 & 0xFF) / 255.0f;
-	const float b = (float)(color & 0xFF) / 255.0f;
-
-	glUniform4f(hudColoredColorLoc, r, g, b, a);
+	glUniform4fv(hudColoredColorLoc, 1, COLOR_TO_ARR(color));
 
 	const Vector2 ndcStartPos = v2(GL_X_TO_NDC(start.x), GL_Y_TO_NDC(start.y));
 	const Vector2 ndcEndPos = v2(GL_X_TO_NDC(end.x), GL_Y_TO_NDC(end.y));
@@ -911,16 +885,11 @@ inline void GL_UpdateViewportSize()
 	glViewport(0, 0, vpWidth, vpHeight);
 }
 
-void GL_DrawColoredArrays(const float *vertices, const uint *indices, const uint quad_count, const uint color)
+void GL_DrawColoredArrays(const float *vertices, const uint *indices, const uint quad_count, const Color color)
 {
 	glUseProgram(uiColoredShader->program);
 
-	const float a = (float)(color >> 24 & 0xFF) / 255.0f;
-	const float r = (float)(color >> 16 & 0xFF) / 255.0f;
-	const float g = (float)(color >> 8 & 0xFF) / 255.0f;
-	const float b = (float)(color & 0xFF) / 255.0f;
-
-	glUniform4f(hudColoredColorLoc, r, g, b, a);
+	glUniform4fv(hudColoredColorLoc, 1, COLOR_TO_ARR(color));
 
 	glBindVertexArray(glBuffer->vertexArrayObject);
 
@@ -941,18 +910,13 @@ void GL_DrawTexturedArrays(const float *vertices,
 						   const uint *indices,
 						   const int quad_count,
 						   const char *texture,
-						   const uint color)
+						   const Color color)
 {
 	glUseProgram(uiTexturedShader->program);
 
 	GL_LoadTextureFromAsset(texture);
 
-	const float a = (float)(color >> 24 & 0xFF) / 255.0f;
-	const float r = (float)(color >> 16 & 0xFF) / 255.0f;
-	const float g = (float)(color >> 8 & 0xFF) / 255.0f;
-	const float b = (float)(color & 0xFF) / 255.0f;
-
-	glUniform4f(hudTexturedColorLoc, r, g, b, a);
+	glUniform4fv(hudTexturedColorLoc, 1, COLOR_TO_ARR(color));
 
 	glUniform4f(hudTexturedRegionLoc, -1, 0, 0, 0);
 

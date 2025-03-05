@@ -66,14 +66,12 @@ void DrawCheckbox(const Control *c, ControlState /*state*/, const Vector2 positi
 	const CheckBoxData *data = (CheckBoxData *)c->ControlData;
 	DrawTextAligned(data->label,
 					16,
-					0xFFFFFFFF,
+					COLOR(0xFFFFFFFF),
 					v2(c->anchoredPosition.x + 40, c->anchoredPosition.y),
 					v2(c->size.x - 40, c->size.y),
 					FONT_HALIGN_LEFT,
 					FONT_VALIGN_MIDDLE,
 					smallFont);
-
-	SetColorUint(0xFF000000);
 
 	const Vector2 boxSize = v2s(32);
 	const Vector2 boxPos = v2(position.x + 2, position.y + c->size.y / 2 - boxSize.y / 2);

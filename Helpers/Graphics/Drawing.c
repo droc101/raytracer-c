@@ -19,8 +19,6 @@ SDL_Window *window;
 int windowWidth;
 int windowHeight;
 
-uint drawColor = 0xFFFFFFFF;
-
 void SetGameWindow(SDL_Window *w)
 {
 	window = w;
@@ -66,21 +64,12 @@ inline Vector2 ActualWindowSize()
 	return v2((float)w, (float)h);
 }
 
-// Set the SDL color from an ARGB uint32
-inline void SetColorUint(const uint color)
+inline void GetColor(const uint argb, Color *color)
 {
-	drawColor = color;
-}
-
-byte *GetColorUint(const uint color)
-{
-	byte *colorBuf = malloc(4);
-	CheckAlloc(colorBuf);
-	colorBuf[0] = color >> 16 & 0xFF;
-	colorBuf[1] = color >> 8 & 0xFF;
-	colorBuf[2] = color >> 0 & 0xFF;
-	colorBuf[3] = color >> 24 & 0xFF;
-	return colorBuf;
+	color->r = (float)(argb >> 16 & 0xFF) / 255.0f;
+	color->g = (float)(argb >> 8 & 0xFF) / 255.0f;
+	color->b = (float)(argb >> 0 & 0xFF) / 255.0f;
+	color->a = (float)(argb >> 24 & 0xFF) / 255.0f;
 }
 
 SDL_Surface *ToSDLSurface(const char *texture, const char *filterMode)
@@ -107,23 +96,6 @@ SDL_Surface *ToSDLSurface(const char *texture, const char *filterMode)
 	return surface;
 }
 
-uint MixColors(const uint color_a, const uint color_b)
-{
-	// Mix color_a onto color_b, accounting for the alpha of color_a
-	byte *a = GetColorUint(color_a);
-	byte *b = GetColorUint(color_b);
-
-	const uint r = (a[0] * a[3] + b[0] * (255 - a[3])) / 255;
-	const uint g = (a[1] * a[3] + b[1] * (255 - a[3])) / 255;
-	const uint bl = (a[2] * a[3] + b[2] * (255 - a[3])) / 255;
-	const uint al = a[3] + b[3] * (255 - a[3]) / 255;
-
-	free(a);
-	free(b);
-
-	return r << 16 | g << 8 | bl | al << 24;
-}
-
 // Rendering subsystem abstractions
 
 void SetTexParams(const char *texture, const bool linear, const bool repeat)
@@ -141,40 +113,40 @@ void SetTexParams(const char *texture, const bool linear, const bool repeat)
 	}
 }
 
-inline void DrawLine(const Vector2 start, const Vector2 end, const float thickness)
+inline void DrawLine(const Vector2 start, const Vector2 end, const float thickness, const Color color)
 {
 	switch (currentRenderer)
 	{
 		case RENDERER_VULKAN:
-			VK_DrawLine((int)start.x,
-						(int)start.y,
-						(int)end.x,
-						(int)end.y,
-						(int)(thickness * GetState()->uiScale),
-						drawColor);
+			// VK_DrawLine((int)start.x,
+			// 			(int)start.y,
+			// 			(int)end.x,
+			// 			(int)end.y,
+			// 			(int)(thickness * GetState()->uiScale),
+			// 			drawColor);
 			break;
 		case RENDERER_OPENGL:
-			GL_DrawLine(start, end, drawColor, (float)(thickness * GetState()->uiScale));
+			GL_DrawLine(start, end, color, (float)(thickness * GetState()->uiScale));
 			break;
 		default:
 			break;
 	}
 }
 
-inline void DrawOutlineRect(const Vector2 pos, const Vector2 size, const float thickness)
+inline void DrawOutlineRect(const Vector2 pos, const Vector2 size, const float thickness, const Color color)
 {
 	switch (currentRenderer)
 	{
 		case RENDERER_VULKAN:
-			VK_DrawRectOutline((int)pos.x,
-							   (int)pos.y,
-							   (int)size.x,
-							   (int)size.y,
-							   (int)(thickness * GetState()->uiScale),
-							   drawColor);
+			// VK_DrawRectOutline((int)pos.x,
+			// 				   (int)pos.y,
+			// 				   (int)size.x,
+			// 				   (int)size.y,
+			// 				   (int)(thickness * GetState()->uiScale),
+			// 				   drawColor);
 			break;
 		case RENDERER_OPENGL:
-			GL_DrawRectOutline(pos, size, drawColor, (float)(thickness * GetState()->uiScale));
+			GL_DrawRectOutline(pos, size, color, (float)(thickness * GetState()->uiScale));
 			break;
 		default:
 			break;
@@ -196,12 +168,12 @@ inline void DrawTexture(const Vector2 pos, const Vector2 size, const char *textu
 	}
 }
 
-inline void DrawTextureMod(const Vector2 pos, const Vector2 size, const char *texture, const uint color)
+inline void DrawTextureMod(const Vector2 pos, const Vector2 size, const char *texture, const Color color)
 {
 	switch (currentRenderer)
 	{
 		case RENDERER_VULKAN:
-			VK_DrawTexturedQuadMod((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, texture, color);
+			//VK_DrawTexturedQuadMod((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, texture, color);
 			break;
 		case RENDERER_OPENGL:
 			GL_DrawTextureMod(pos, size, texture, color);
@@ -243,21 +215,21 @@ inline void DrawTextureRegionMod(const Vector2 pos,
 								 const char *texture,
 								 const Vector2 region_start,
 								 const Vector2 region_end,
-								 const uint color)
+								 const Color color)
 {
 	switch (currentRenderer)
 	{
 		case RENDERER_VULKAN:
-			VK_DrawTexturedQuadRegionMod((int)pos.x,
-										 (int)pos.y,
-										 (int)size.x,
-										 (int)size.y,
-										 (int)region_start.x,
-										 (int)region_start.y,
-										 (int)region_end.x,
-										 (int)region_end.y,
-										 texture,
-										 color);
+			// VK_DrawTexturedQuadRegionMod((int)pos.x,
+			// 							 (int)pos.y,
+			// 							 (int)size.x,
+			// 							 (int)size.y,
+			// 							 (int)region_start.x,
+			// 							 (int)region_start.y,
+			// 							 (int)region_end.x,
+			// 							 (int)region_end.y,
+			// 							 texture,
+			// 							 color);
 			break;
 		case RENDERER_OPENGL:
 			GL_DrawTextureRegionMod(pos, size, texture, region_start, region_end, color);
@@ -267,12 +239,12 @@ inline void DrawTextureRegionMod(const Vector2 pos,
 	}
 }
 
-inline void ClearColor(const uint color)
+inline void ClearColor(const Color color)
 {
 	switch (currentRenderer)
 	{
 		case RENDERER_VULKAN:
-			VK_ClearColor(color);
+			//VK_ClearColor(color);
 			break;
 		case RENDERER_OPENGL:
 			GL_ClearColor(color);
@@ -312,15 +284,15 @@ inline void ClearDepthOnly()
 	}
 }
 
-inline void DrawRect(const int x, const int y, const int w, const int h)
+inline void DrawRect(const int x, const int y, const int w, const int h, const Color color)
 {
 	switch (currentRenderer)
 	{
 		case RENDERER_VULKAN:
-			VK_DrawColoredQuad(x, y, w, h, drawColor);
+			//VK_DrawColoredQuad(x, y, w, h, drawColor);
 			break;
 		case RENDERER_OPENGL:
-			GL_DrawRect(v2((float)x, (float)y), v2((float)w, (float)h), drawColor);
+			GL_DrawRect(v2((float)x, (float)y), v2((float)w, (float)h), color);
 			break;
 		default:
 			break;

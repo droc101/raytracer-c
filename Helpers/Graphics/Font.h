@@ -34,7 +34,7 @@ enum FontVerticalAlign
  * @return Bottom right position of the text
  * @note This is a wrapper for DrawTextAligned with h_align = FONT_HALIGN_LEFT and v_align = FONT_VALIGN_TOP
  */
-void FontDrawString(Vector2 pos, const char *str, uint size, uint color, const Font *font);
+void FontDrawString(Vector2 pos, const char *str, uint size, Color color, const Font *font);
 
 /**
  * Count the number of lines in a string
@@ -87,7 +87,7 @@ void TextGetLine(const char *str, int line, char *out, size_t outBufferSize);
  */
 void DrawTextAligned(const char *str,
 					 uint size,
-					 uint color,
+					 Color color,
 					 Vector2 rect_pos,
 					 Vector2 rect_size,
 					 FontHorizontalAlign h_align,
