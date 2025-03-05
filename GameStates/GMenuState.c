@@ -96,9 +96,6 @@ void GMenuStateSet()
 		opY += opSpacing;
 		UiStackPush(menuStack, CreateButtonControl(v2(0, opY), v2(480, 40), "Quit", QuitGame, MIDDLE_CENTER));
 		opY += opSpacing;
-
-		Control *t = CreateTextBoxControl("test", v2(0, opY), v2(480, 40), MIDDLE_CENTER, 32, NULL);
-		UiStackPush(menuStack, t);
 	}
 	UiStackResetFocus(menuStack);
 	StopMusic();
