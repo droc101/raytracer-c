@@ -72,7 +72,7 @@ void GPauseStateRender(GlobalState *State)
 
 	DrawTextAligned(levelID,
 					32,
-					COLOR_WHITE,
+					COLOR_BLACK,
 					v2(4, 204),
 					v2(WindowWidthFloat(), 40),
 					FONT_HALIGN_CENTER,
