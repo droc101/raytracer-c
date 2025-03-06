@@ -30,7 +30,6 @@ bool CreateInstance()
 	}
 	VkApplicationInfo applicationInfo = {
 		.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
-		.pNext = NULL,
 		.pApplicationName = GAME_TITLE,
 		.applicationVersion = VULKAN_VERSION,
 		.pEngineName = GAME_TITLE,
@@ -39,11 +38,7 @@ bool CreateInstance()
 	};
 	VkInstanceCreateInfo createInfo = {
 		.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
-		.pNext = NULL,
-		.flags = 0,
 		.pApplicationInfo = &applicationInfo,
-		.enabledLayerCount = 0,
-		.ppEnabledLayerNames = NULL,
 		.enabledExtensionCount = extensionCount,
 		.ppEnabledExtensionNames = extensionNames,
 	};
@@ -305,8 +300,6 @@ bool CreateLogicalDevice()
 		case 3:
 			queueCreateInfos[2] = (VkDeviceQueueCreateInfo){
 				.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
-				.pNext = NULL,
-				.flags = 0,
 				.queueFamilyIndex = queueFamilyIndices.presentFamily,
 				.queueCount = 1,
 				.pQueuePriorities = &queuePriority,
@@ -314,8 +307,6 @@ bool CreateLogicalDevice()
 		case 2:
 			queueCreateInfos[1] = (VkDeviceQueueCreateInfo){
 				.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
-				.pNext = NULL,
-				.flags = 0,
 				.queueFamilyIndex = queueFamilyIndices.families & QUEUE_FAMILY_TRANSFER
 											? queueFamilyIndices.transferFamily
 											: queueFamilyIndices.presentFamily,
@@ -325,8 +316,6 @@ bool CreateLogicalDevice()
 		case 1:
 			queueCreateInfos[0] = (VkDeviceQueueCreateInfo){
 				.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
-				.pNext = NULL,
-				.flags = 0,
 				.queueFamilyIndex = queueFamilyIndices.graphicsFamily,
 				.queueCount = 1,
 				.pQueuePriorities = &queuePriority,
@@ -341,22 +330,17 @@ bool CreateLogicalDevice()
 		.logicOp = VK_TRUE,
 		.multiDrawIndirect = VK_TRUE,
 		.samplerAnisotropy = VK_TRUE,
-		.tessellationShader = VK_TRUE,
 	};
 	VkPhysicalDeviceVulkan12Features vulkan12Features = {
 		.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
-		.pNext = NULL,
 		.runtimeDescriptorArray = VK_TRUE,
 		.shaderSampledImageArrayNonUniformIndexing = VK_TRUE,
 	};
 	VkDeviceCreateInfo createInfo = {
 		.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
 		.pNext = &vulkan12Features,
-		.flags = 0,
 		.queueCreateInfoCount = queueFamilyIndices.familyCount,
 		.pQueueCreateInfos = queueCreateInfos,
-		.enabledLayerCount = 0,
-		.ppEnabledLayerNames = NULL,
 		.enabledExtensionCount = 1,
 		.ppEnabledExtensionNames = (const char *const[1]){VK_KHR_SWAPCHAIN_EXTENSION_NAME},
 		.pEnabledFeatures = &deviceFeatures,
@@ -484,8 +468,6 @@ bool CreateSwapChain()
 
 	const VkSwapchainCreateInfoKHR createInfo = {
 		.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
-		.pNext = NULL,
-		.flags = 0,
 		.surface = surface,
 		.minImageCount = imageCount,
 		.imageFormat = surfaceFormat.format,
@@ -607,7 +589,6 @@ bool CreateRenderPass()
 			.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
 			.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
 			.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
-			.dependencyFlags = 0,
 		},
 		{
 			.srcSubpass = 0,
@@ -616,14 +597,12 @@ bool CreateRenderPass()
 			.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
 			.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
 			.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
-			.dependencyFlags = 0,
 		},
 	};
 
 	if (msaaSamples == VK_SAMPLE_COUNT_1_BIT)
 	{
 		const VkAttachmentDescription colorAttachment = {
-			.flags = 0,
 			.format = swapChainImageFormat,
 			.samples = VK_SAMPLE_COUNT_1_BIT,
 			.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
@@ -634,7 +613,6 @@ bool CreateRenderPass()
 			.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
 		};
 		const VkAttachmentDescription depthAttachment = {
-			.flags = 0,
 			.format = depthImageFormat,
 			.samples = VK_SAMPLE_COUNT_1_BIT,
 			.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
@@ -646,34 +624,19 @@ bool CreateRenderPass()
 		};
 
 		const VkSubpassDescription wallSubpass = {
-			.flags = 0,
 			.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
-			.inputAttachmentCount = 0,
-			.pInputAttachments = NULL,
 			.colorAttachmentCount = 1,
 			.pColorAttachments = &colorAttachmentRef,
-			.pResolveAttachments = NULL,
 			.pDepthStencilAttachment = &depthAttachmentReference,
-			.preserveAttachmentCount = 0,
-			.pPreserveAttachments = NULL,
 		};
 		const VkSubpassDescription uiSubpass = {
-			.flags = 0,
 			.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
-			.inputAttachmentCount = 0,
-			.pInputAttachments = NULL,
 			.colorAttachmentCount = 1,
 			.pColorAttachments = &colorAttachmentRef,
-			.pResolveAttachments = NULL,
-			.pDepthStencilAttachment = NULL,
-			.preserveAttachmentCount = 0,
-			.pPreserveAttachments = NULL,
 		};
 
 		const VkRenderPassCreateInfo renderPassInfo = {
 			.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
-			.pNext = NULL,
-			.flags = 0,
 			.attachmentCount = 2,
 			.pAttachments = (VkAttachmentDescription[]){colorAttachment, depthAttachment},
 			.subpassCount = 2,
@@ -687,7 +650,6 @@ bool CreateRenderPass()
 	} else
 	{
 		const VkAttachmentDescription colorAttachment = {
-			.flags = 0,
 			.format = swapChainImageFormat,
 			.samples = msaaSamples,
 			.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
@@ -698,7 +660,6 @@ bool CreateRenderPass()
 			.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 		};
 		const VkAttachmentDescription depthAttachment = {
-			.flags = 0,
 			.format = depthImageFormat,
 			.samples = msaaSamples,
 			.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
@@ -709,11 +670,10 @@ bool CreateRenderPass()
 			.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
 		};
 		const VkAttachmentDescription colorResolveAttachment = {
-			.flags = 0,
 			.format = swapChainImageFormat,
 			.samples = VK_SAMPLE_COUNT_1_BIT,
 			.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-			.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+			.storeOp = VK_ATTACHMENT_STORE_OP_STORE,
 			.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
 			.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
 			.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
@@ -725,34 +685,21 @@ bool CreateRenderPass()
 			.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 		};
 		const VkSubpassDescription wallSubpass = {
-			.flags = 0,
 			.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
-			.inputAttachmentCount = 0,
-			.pInputAttachments = NULL,
 			.colorAttachmentCount = 1,
 			.pColorAttachments = &colorAttachmentRef,
 			.pResolveAttachments = &colorAttachmentResolveRef,
 			.pDepthStencilAttachment = &depthAttachmentReference,
-			.preserveAttachmentCount = 0,
-			.pPreserveAttachments = NULL,
 		};
 		const VkSubpassDescription uiSubpass = {
-			.flags = 0,
 			.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
-			.inputAttachmentCount = 0,
-			.pInputAttachments = NULL,
 			.colorAttachmentCount = 1,
 			.pColorAttachments = &colorAttachmentRef,
 			.pResolveAttachments = &colorAttachmentResolveRef,
-			.pDepthStencilAttachment = NULL,
-			.preserveAttachmentCount = 0,
-			.pPreserveAttachments = NULL,
 		};
 
 		const VkRenderPassCreateInfo renderPassInfo = {
 			.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
-			.pNext = NULL,
-			.flags = 0,
 			.attachmentCount = 3,
 			.pAttachments = (VkAttachmentDescription[]){colorAttachment, depthAttachment, colorResolveAttachment},
 			.subpassCount = 2,
@@ -793,10 +740,6 @@ bool CreateGraphicsPipelineCache()
 {
 	const VkPipelineCacheCreateInfo pipelineCacheCreateInfo = {
 		.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO,
-		.pNext = NULL,
-		.flags = 0,
-		.initialDataSize = 0,
-		.pInitialData = NULL,
 	};
 	VulkanTest(vkCreatePipelineCache(device, &pipelineCacheCreateInfo, NULL, &pipelineCache),
 			   "Failed to create graphics pipeline cache!");
@@ -808,21 +751,15 @@ bool CreateGraphicsPipelines()
 {
 #pragma region shared
 	const VkViewport viewport = {
-		.x = 0,
-		.y = 0,
 		.width = (float)swapChainExtent.width,
 		.height = (float)swapChainExtent.height,
-		.minDepth = 0,
 		.maxDepth = 1,
 	};
 	const VkRect2D scissor = {
-		.offset = {0, 0},
 		.extent = swapChainExtent,
 	};
 	const VkPipelineViewportStateCreateInfo viewportState = {
 		.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
-		.pNext = NULL,
-		.flags = 0,
 		.viewportCount = 1,
 		.pViewports = &viewport,
 		.scissorCount = 1,
@@ -831,44 +768,23 @@ bool CreateGraphicsPipelines()
 
 	const VkPipelineRasterizationStateCreateInfo rasterizer = {
 		.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
-		.pNext = NULL,
-		.flags = 0,
-		.depthClampEnable = VK_FALSE,
-		.rasterizerDiscardEnable = VK_FALSE,
 		.polygonMode = VK_POLYGON_MODE_FILL,
 		.cullMode = VK_CULL_MODE_NONE,
 		.frontFace = VK_FRONT_FACE_CLOCKWISE,
-		.depthBiasEnable = VK_FALSE,
-		.depthBiasConstantFactor = 0,
-		.depthBiasClamp = 0,
-		.depthBiasSlopeFactor = 0,
 		.lineWidth = 1,
 	};
 
 	const VkPipelineMultisampleStateCreateInfo multisampling = {
 		.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
-		.pNext = NULL,
-		.flags = 0,
 		.rasterizationSamples = msaaSamples,
-		.sampleShadingEnable = VK_FALSE,
 		.minSampleShading = 1,
-		.pSampleMask = NULL,
-		.alphaToCoverageEnable = VK_FALSE,
-		.alphaToOneEnable = VK_FALSE,
 	};
 
 	const VkPipelineDepthStencilStateCreateInfo depthStencil = {
 		.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
-		.pNext = NULL,
-		.flags = 0,
 		.depthTestEnable = VK_TRUE,
 		.depthWriteEnable = VK_TRUE,
 		.depthCompareOp = VK_COMPARE_OP_LESS,
-		.depthBoundsTestEnable = VK_FALSE,
-		.stencilTestEnable = VK_FALSE,
-		.front = {0},
-		.back = {0},
-		.minDepthBounds = 0,
 		.maxDepthBounds = 1,
 	};
 
@@ -887,21 +803,9 @@ bool CreateGraphicsPipelines()
 	};
 	const VkPipelineColorBlendStateCreateInfo colorBlending = {
 		.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
-		.pNext = NULL,
-		.flags = 0,
-		.logicOpEnable = VK_FALSE,
 		.logicOp = VK_LOGIC_OP_COPY,
 		.attachmentCount = 1,
 		.pAttachments = &colorBlendAttachment,
-		.blendConstants = {0, 0, 0, 0},
-	};
-
-	const VkPipelineDynamicStateCreateInfo dynamicState = {
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
-		.pNext = NULL,
-		.flags = 0,
-		.dynamicStateCount = 0,
-		.pDynamicStates = NULL,
 	};
 
 	if (sizeof(PushConstants) > physicalDevice.properties.limits.maxPushConstantsSize)
@@ -914,8 +818,6 @@ bool CreateGraphicsPipelines()
 	};
 	const VkPipelineLayoutCreateInfo pipelineLayoutInfo = {
 		.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-		.pNext = NULL,
-		.flags = 0,
 		.setLayoutCount = 1,
 		.pSetLayouts = &descriptorSetLayout,
 		.pushConstantRangeCount = 1,
@@ -923,6 +825,11 @@ bool CreateGraphicsPipelines()
 	};
 	VulkanTest(vkCreatePipelineLayout(device, &pipelineLayoutInfo, NULL, &pipelineLayout),
 			   "Failed to create graphics pipeline layout!");
+
+	const VkPipelineInputAssemblyStateCreateInfo inputAssembly = {
+		.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
+		.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
+	};
 #pragma endregion shared
 
 #pragma region walls
@@ -937,21 +844,15 @@ bool CreateGraphicsPipelines()
 	const VkPipelineShaderStageCreateInfo wallShaderStages[2] = {
 		{
 			.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-			.pNext = NULL,
-			.flags = 0,
 			.stage = VK_SHADER_STAGE_VERTEX_BIT,
 			.module = wallVertShaderModule,
 			.pName = "main",
-			.pSpecializationInfo = NULL,
 		},
 		{
 			.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-			.pNext = NULL,
-			.flags = 0,
 			.stage = VK_SHADER_STAGE_FRAGMENT_BIT,
 			.module = wallFragShaderModule,
 			.pName = "main",
-			.pSpecializationInfo = NULL,
 		},
 	};
 
@@ -1001,41 +902,25 @@ bool CreateGraphicsPipelines()
 	};
 	const VkPipelineVertexInputStateCreateInfo wallVertexInputInfo = {
 		.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
-		.pNext = NULL,
-		.flags = 0,
 		.vertexBindingDescriptionCount = 2,
 		.pVertexBindingDescriptions = wallBindingDescriptions,
 		.vertexAttributeDescriptionCount = 5,
 		.pVertexAttributeDescriptions = wallVertexDescriptions,
 	};
 
-	const VkPipelineInputAssemblyStateCreateInfo wallInputAssembly = {
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
-		.pNext = NULL,
-		.flags = 0,
-		.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
-		.primitiveRestartEnable = VK_FALSE,
-	};
-
 	VkGraphicsPipelineCreateInfo wallPipelineInfo = {
 		.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
-		.pNext = NULL,
-		.flags = 0,
 		.stageCount = 2,
 		.pStages = wallShaderStages,
 		.pVertexInputState = &wallVertexInputInfo,
-		.pInputAssemblyState = &wallInputAssembly,
-		.pTessellationState = NULL,
+		.pInputAssemblyState = &inputAssembly,
 		.pViewportState = &viewportState,
 		.pRasterizationState = &rasterizer,
 		.pMultisampleState = &multisampling,
 		.pDepthStencilState = &depthStencil,
 		.pColorBlendState = &colorBlending,
-		.pDynamicState = &dynamicState,
 		.layout = pipelineLayout,
 		.renderPass = renderPass,
-		.subpass = 0,
-		.basePipelineHandle = VK_NULL_HANDLE,
 		.basePipelineIndex = -1,
 	};
 #pragma endregion walls
@@ -1052,8 +937,6 @@ bool CreateGraphicsPipelines()
 	const VkPipelineShaderStageCreateInfo actorShaderStages[2] = {
 		{
 			.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-			.pNext = NULL,
-			.flags = 0,
 			.stage = VK_SHADER_STAGE_VERTEX_BIT,
 			.module = actorVertShaderModule,
 			.pName = "main",
@@ -1061,8 +944,6 @@ bool CreateGraphicsPipelines()
 		},
 		{
 			.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-			.pNext = NULL,
-			.flags = 0,
 			.stage = VK_SHADER_STAGE_FRAGMENT_BIT,
 			.module = actorFragShaderModule,
 			.pName = "main",
@@ -1140,46 +1021,45 @@ bool CreateGraphicsPipelines()
 	};
 	const VkPipelineVertexInputStateCreateInfo actorVertexInputInfo = {
 		.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
-		.pNext = NULL,
-		.flags = 0,
 		.vertexBindingDescriptionCount = 2,
 		.pVertexBindingDescriptions = actorBindingDescriptions,
 		.vertexAttributeDescriptionCount = 9,
 		.pVertexAttributeDescriptions = actorVertexDescriptions,
 	};
 
-	const VkPipelineInputAssemblyStateCreateInfo actorInputAssembly = {
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
-		.pNext = NULL,
-		.flags = 0,
-		.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
-		.primitiveRestartEnable = VK_FALSE,
-	};
-
 	VkGraphicsPipelineCreateInfo actorPipelineInfo = {
 		.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
-		.pNext = NULL,
-		.flags = 0,
 		.stageCount = 2,
 		.pStages = actorShaderStages,
 		.pVertexInputState = &actorVertexInputInfo,
-		.pInputAssemblyState = &actorInputAssembly,
-		.pTessellationState = NULL,
+		.pInputAssemblyState = &inputAssembly,
 		.pViewportState = &viewportState,
 		.pRasterizationState = &rasterizer,
 		.pMultisampleState = &multisampling,
 		.pDepthStencilState = &depthStencil,
 		.pColorBlendState = &colorBlending,
-		.pDynamicState = &dynamicState,
 		.layout = pipelineLayout,
 		.renderPass = renderPass,
-		.subpass = 0,
-		.basePipelineHandle = VK_NULL_HANDLE,
 		.basePipelineIndex = -1,
 	};
 #pragma endregion actors
 
 #pragma region UI
+	const VkViewport uiviewport = {
+		.width = (float)swapChainExtent.width / 2,
+		.height = (float)swapChainExtent.height,
+		.maxDepth = 1,
+	};
+	const VkRect2D uiscissor = {
+		.extent = swapChainExtent,
+	};
+	const VkPipelineViewportStateCreateInfo uiviewportState = {
+		.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
+		.viewportCount = 1,
+		.pViewports = &uiviewport,
+		.scissorCount = 1,
+		.pScissors = &uiscissor,
+	};
 	const VkShaderModule uiVertShaderModule = CreateShaderModule(VK_VERT("Vulkan_ui"));
 	const VkShaderModule uiFragShaderModule = CreateShaderModule(VK_FRAG("Vulkan_ui"));
 	if (!uiVertShaderModule || !uiFragShaderModule)
@@ -1191,21 +1071,15 @@ bool CreateGraphicsPipelines()
 	const VkPipelineShaderStageCreateInfo uiShaderStages[2] = {
 		{
 			.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-			.pNext = NULL,
-			.flags = 0,
 			.stage = VK_SHADER_STAGE_VERTEX_BIT,
 			.module = uiVertShaderModule,
 			.pName = "main",
-			.pSpecializationInfo = NULL,
 		},
 		{
 			.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-			.pNext = NULL,
-			.flags = 0,
 			.stage = VK_SHADER_STAGE_FRAGMENT_BIT,
 			.module = uiFragShaderModule,
 			.pName = "main",
-			.pSpecializationInfo = NULL,
 		},
 	};
 
@@ -1242,41 +1116,25 @@ bool CreateGraphicsPipelines()
 	};
 	const VkPipelineVertexInputStateCreateInfo uiVertexInputInfo = {
 		.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
-		.pNext = NULL,
-		.flags = 0,
 		.vertexBindingDescriptionCount = 1,
 		.pVertexBindingDescriptions = &uiBindingDescription,
 		.vertexAttributeDescriptionCount = 4,
 		.pVertexAttributeDescriptions = uiAttributeDescriptions,
 	};
 
-	const VkPipelineInputAssemblyStateCreateInfo uiInputAssembly = {
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
-		.pNext = NULL,
-		.flags = 0,
-		.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
-		.primitiveRestartEnable = VK_FALSE,
-	};
-
 	VkGraphicsPipelineCreateInfo uiPipelineInfo = {
 		.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
-		.pNext = NULL,
-		.flags = 0,
 		.stageCount = 2,
 		.pStages = uiShaderStages,
 		.pVertexInputState = &uiVertexInputInfo,
-		.pInputAssemblyState = &uiInputAssembly,
-		.pTessellationState = NULL,
+		.pInputAssemblyState = &inputAssembly,
 		.pViewportState = &viewportState,
 		.pRasterizationState = &rasterizer,
 		.pMultisampleState = &multisampling,
-		.pDepthStencilState = NULL,
 		.pColorBlendState = &colorBlending,
-		.pDynamicState = &dynamicState,
 		.layout = pipelineLayout,
 		.renderPass = renderPass,
 		.subpass = 1,
-		.basePipelineHandle = VK_NULL_HANDLE,
 		.basePipelineIndex = -1,
 	};
 #pragma endregion UI
@@ -1336,6 +1194,10 @@ bool CreateCommandPools()
 
 bool CreateColorImage()
 {
+	if (msaaSamples == VK_SAMPLE_COUNT_1_BIT)
+	{
+		return true;
+	}
 	if (!CreateImage(&colorImage,
 					 &colorImageMemory,
 					 swapChainImageFormat,
@@ -1385,48 +1247,6 @@ bool CreateDepthImage()
 		return false;
 	}
 
-	const VkCommandBuffer commandBuffer;
-	if (!BeginCommandBuffer(&commandBuffer, graphicsCommandPool))
-	{
-		return false;
-	}
-
-	const VkImageSubresourceRange subresourceRange = {
-		.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT,
-		.baseMipLevel = 0,
-		.levelCount = 1,
-		.baseArrayLayer = 0,
-		.layerCount = 1,
-	};
-	const VkImageMemoryBarrier transferBarrier = {
-		.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-		.pNext = NULL,
-		.srcAccessMask = 0,
-		.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
-		.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-		.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-		.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-		.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-		.image = depthImage,
-		.subresourceRange = subresourceRange,
-	};
-
-	vkCmdPipelineBarrier(commandBuffer,
-						 VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-						 VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
-						 0,
-						 0,
-						 NULL,
-						 0,
-						 NULL,
-						 1,
-						 &transferBarrier);
-
-	if (!EndCommandBuffer(commandBuffer, graphicsCommandPool, graphicsQueue))
-	{
-		return false;
-	}
-
 	return true;
 }
 
@@ -1439,8 +1259,6 @@ bool CreateFramebuffers()
 	{
 		VkFramebufferCreateInfo framebufferInfo = {
 			.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-			.pNext = NULL,
-			.flags = 0,
 			.renderPass = renderPass,
 			.attachmentCount = msaaSamples == VK_SAMPLE_COUNT_1_BIT ? 2 : 3,
 			.pAttachments = msaaSamples == VK_SAMPLE_COUNT_1_BIT
