@@ -9,13 +9,16 @@
 #include "../Helpers/Core/Error.h"
 #include "GlobalState.h"
 
-void CreateTriggerSensor(Trigger *trigger, const Vector2 position, const b2WorldId worldId)
+void CreateTriggerSensor(Trigger *trigger, const Vector2 position, const float rotation, const b2WorldId worldId)
 {
 	b2BodyDef sensorBodyDef = b2DefaultBodyDef();
 	sensorBodyDef.type = b2_staticBody;
 	sensorBodyDef.position = position;
 	const b2BodyId bodyId = b2CreateBody(worldId, &sensorBodyDef);
-	const b2Polygon sensorShape = b2MakeBox(trigger->extents.x * 0.5f, trigger->extents.y * 0.5f);
+	const b2Polygon sensorShape = b2MakeOffsetBox(trigger->extents.x * 0.5f,
+												  trigger->extents.y * 0.5f,
+												  (Vector2){0, 0},
+												  rotation);
 	b2ShapeDef sensorShapeDef = b2DefaultShapeDef();
 	sensorShapeDef.isSensor = true;
 	sensorShapeDef.filter.categoryBits = COLLISION_GROUP_TRIGGER;
@@ -39,7 +42,7 @@ Trigger *CreateTrigger(const Vector2 position,
 	strncpy(trigger->command, command, 63);
 	trigger->playerColliding = false;
 
-	CreateTriggerSensor(trigger, position, worldId);
+	CreateTriggerSensor(trigger, position, rotation, worldId);
 
 	return trigger;
 }
@@ -47,7 +50,7 @@ Trigger *CreateTrigger(const Vector2 position,
 bool CheckTriggerCollision(Trigger *trigger)
 {
 	trigger->playerColliding = GetSensorState(GetState()->level->worldId,
-										   trigger->sensorId.index1,
-										   trigger->playerColliding);
+											  trigger->sensorId.index1,
+											  trigger->playerColliding);
 	return trigger->playerColliding;
 }
