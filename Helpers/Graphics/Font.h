@@ -7,14 +7,22 @@
 
 #include "../../defines.h"
 
-// Font alignment
-#define FONT_HALIGN_LEFT 0
-#define FONT_HALIGN_CENTER 1
-#define FONT_HALIGN_RIGHT 2
+typedef enum FontHorizontalAlign FontHorizontalAlign;
+typedef enum FontVerticalAlign FontVerticalAlign;
 
-#define FONT_VALIGN_TOP 0
-#define FONT_VALIGN_MIDDLE 1
-#define FONT_VALIGN_BOTTOM 2
+enum FontHorizontalAlign
+{
+	FONT_HALIGN_LEFT,
+	FONT_HALIGN_CENTER,
+	FONT_HALIGN_RIGHT
+};
+
+enum FontVerticalAlign
+{
+	FONT_VALIGN_TOP,
+	FONT_VALIGN_MIDDLE,
+	FONT_VALIGN_BOTTOM
+};
 
 /**
  * Draw a string of text to the screen
@@ -24,8 +32,9 @@
  * @param color Color of the font
  * @param font The font to use
  * @return Bottom right position of the text
+ * @note This is a wrapper for DrawTextAligned with h_align = FONT_HALIGN_LEFT and v_align = FONT_VALIGN_TOP
  */
-Vector2 FontDrawString(Vector2 pos, const char *str, uint size, uint color, const Font *font);
+void FontDrawString(Vector2 pos, const char *str, uint size, Color color, const Font *font);
 
 /**
  * Count the number of lines in a string
@@ -40,18 +49,30 @@ int StringLineCount(const char *str);
  * @param size Size of the font
  * @param font The font to use
  * @return Size of the text
+ * @note This is a wrapper for @c MeasureTextNChars where @c n is @code strlen(str) @endcode
  */
 Vector2 MeasureText(const char *str, uint size, const Font *font);
 
+/**
+ * Measure the size of a string of text up to a certain number of characters
+ * @param str The string to measure
+ * @param size The size of the font
+ * @param font The font to use
+ * @param n The number of characters to measure
+ * @return The size of the text up to n characters
+ * @note It is up to the caller to ensure @c n is within the bounds of @c str
+ */
 Vector2 MeasureTextNChars(const char *str, uint size, const Font *font, size_t n);
 
 /**
  * Get a line of text from a string
  * @param str String to get line from
  * @param line Line number to get
- * @param out GL_Buffer to store the line in
+ * @param out buffer to store the line in
+ * @param outBufferSize Size of the buffer, if the line is longer than this it will be truncated
+ * @param outBufferSize
  */
-void TextGetLine(const char *str, int line, char *out);
+void TextGetLine(const char *str, int line, char *out, size_t outBufferSize);
 
 /**
  * Draw a string of text to the screen with alignment
@@ -66,11 +87,11 @@ void TextGetLine(const char *str, int line, char *out);
  */
 void DrawTextAligned(const char *str,
 					 uint size,
-					 uint color,
+					 Color color,
 					 Vector2 rect_pos,
 					 Vector2 rect_size,
-					 byte h_align,
-					 byte v_align,
+					 FontHorizontalAlign h_align,
+					 FontVerticalAlign v_align,
 					 const Font *font);
 
 #endif //GAME_FONT_H

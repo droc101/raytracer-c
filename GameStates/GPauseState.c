@@ -38,7 +38,7 @@ void GPauseStateRender(GlobalState *State)
 
 	DrawTextAligned("Game Paused",
 					32,
-					0xFFFFFFFF,
+					COLOR_WHITE,
 					v2s(0),
 					v2(WindowWidthFloat(), 250),
 					FONT_HALIGN_CENTER,
@@ -54,7 +54,7 @@ void GPauseStateRender(GlobalState *State)
 		sprintf(buf, "Level %d", cNum);
 		DrawTextAligned(buf,
 						16,
-						0xFF000000,
+						COLOR_BLACK,
 						v2(4, 164),
 						v2(WindowWidthFloat(), 40),
 						FONT_HALIGN_CENTER,
@@ -62,7 +62,7 @@ void GPauseStateRender(GlobalState *State)
 						smallFont);
 		DrawTextAligned(buf,
 						16,
-						0xFFFFFFFF,
+						COLOR_WHITE,
 						v2(0, 160),
 						v2(WindowWidthFloat(), 40),
 						FONT_HALIGN_CENTER,
@@ -72,7 +72,7 @@ void GPauseStateRender(GlobalState *State)
 
 	DrawTextAligned(levelID,
 					32,
-					0xFF000000,
+					COLOR_BLACK,
 					v2(4, 204),
 					v2(WindowWidthFloat(), 40),
 					FONT_HALIGN_CENTER,
@@ -80,7 +80,7 @@ void GPauseStateRender(GlobalState *State)
 					smallFont);
 	DrawTextAligned(levelID,
 					32,
-					0xFFFFFFFF,
+					COLOR_WHITE,
 					v2(0, 200),
 					v2(WindowWidthFloat(), 40),
 					FONT_HALIGN_CENTER,

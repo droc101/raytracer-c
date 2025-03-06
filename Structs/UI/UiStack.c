@@ -7,6 +7,7 @@
 #include "../../Helpers/Core/Error.h"
 #include "../../Helpers/Core/Input.h"
 #include "../../Helpers/Graphics/Drawing.h"
+#include "../../Helpers/Graphics/RenderingHelpers.h"
 #include "../GlobalState.h"
 #include "../Vector2.h"
 
@@ -222,19 +223,18 @@ void SetFocusedControl(UiStack *stack, const int index)
 {
 	if (stack->Controls.length == 0) return;
 	if (stack->focusedControl == index) return;
-	// Call the unfocus function for the currently focused control
+
 	if (stack->focusedControl != -1)
 	{
-		Control *c = ListGet(stack->Controls, stack->focusedControl);
+		const Control *c = ListGet(stack->Controls, stack->focusedControl);
 		if (ControlUnfocusFuncs[c->type] != NULL) ControlUnfocusFuncs[c->type](c);
 	}
 
 	stack->focusedControl = index;
 
-	// Call the focus function for the newly focused control
 	if (stack->focusedControl != -1)
 	{
-		Control *c = ListGet(stack->Controls, stack->focusedControl);
+		const Control *c = ListGet(stack->Controls, stack->focusedControl);
 		if (ControlFocusFuncs[c->type] != NULL) ControlFocusFuncs[c->type](c);
 	}
 }
@@ -251,7 +251,6 @@ void DrawUiStack(const UiStack *stack)
 		// if this is the focused control, draw a border around it
 		if (i == stack->focusedControl)
 		{
-			SetColorUint(0xFFFFFFFF);
 			DrawNinePatchTexture(v2(c->anchoredPosition.x - 4, c->anchoredPosition.y - 4),
 								 v2(c->size.x + 8, c->size.y + 8),
 								 16,

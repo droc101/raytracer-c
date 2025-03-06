@@ -60,7 +60,7 @@ void GSoundOptionsStateRender(GlobalState *)
 
 	DrawTextAligned("Sound Options",
 					32,
-					0xFFFFFFFF,
+					COLOR_WHITE,
 					v2s(0),
 					v2(WindowWidthFloat(), 100),
 					FONT_HALIGN_CENTER,

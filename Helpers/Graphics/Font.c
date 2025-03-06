@@ -10,80 +10,12 @@
 #include "../Core/MathEx.h"
 #include "RenderingHelpers.h"
 
-Vector2 FontDrawString(const Vector2 pos, const char *str, const uint size, const uint color, const Font *font)
+inline void FontDrawString(const Vector2 pos, const char *str, const uint size, const Color color, const Font *font)
 {
-	const ulong stringLength = strlen(str);
-	float *verts = calloc(stringLength, sizeof(float[4][4]));
-	CheckAlloc(verts);
-	uint *indices = calloc(stringLength, sizeof(uint[6]));
-	CheckAlloc(indices);
-
-	int x = (int)pos.x;
-	int y = (int)pos.y;
-	int i = 0;
-	const double sizeMultiplier = (double)size / font->default_size;
-	const int width = (int)(font->width * sizeMultiplier);
-	const int quadHeight = (int)(font->texture_height * sizeMultiplier);
-	const int baselineHeight = (int)(font->baseline * sizeMultiplier);
-	const double uvPixel = 1.0 / font->image->width;
-	while (str[i] != '\0')
-	{
-		const int fSize = (int)((font->char_widths[(int)str[i]] + font->char_spacing) * sizeMultiplier);
-
-		if (str[i] == ' ')
-		{
-			i++;
-			x += (int)((font->space_width + font->char_spacing) * sizeMultiplier);
-			continue;
-		}
-
-		if (str[i] == '\n')
-		{
-			i++;
-			x = (int)pos.x;
-			y += (int)((baselineHeight + font->line_spacing) * sizeMultiplier);
-			continue;
-		}
-
-		const Vector2 ndcPos = v2(X_TO_NDC((float)x), Y_TO_NDC((float)y));
-		const Vector2 ndcPosEnd = v2(X_TO_NDC((float)(x + width)), Y_TO_NDC((float)(y + quadHeight)));
-		const double charUVStart = (double)font->indices[(int)str[i]] / font->char_count;
-		const double charUVEnd = (font->indices[(int)str[i]] + 1.0) / font->char_count - uvPixel;
-
-		const mat4 quad = {
-			{(float)ndcPos.x, (float)ndcPos.y, (float)charUVStart, 0},
-			{(float)ndcPos.x, (float)ndcPosEnd.y, (float)charUVStart, 1},
-			{(float)ndcPosEnd.x, (float)ndcPosEnd.y, (float)charUVEnd, 1},
-			{(float)ndcPosEnd.x, (float)ndcPos.y, (float)charUVEnd, 0},
-		};
-
-		memcpy(verts + i * 16, quad, sizeof(quad));
-
-		uint quadIndices[6] = {0, 1, 2, 0, 2, 3};
-		for (int j = 0; j < 6; j++)
-		{
-			quadIndices[j] += i * 4;
-		}
-
-		memcpy(indices + i * 6, quadIndices, sizeof(quadIndices));
-
-		x += fSize;
-		i++;
-	}
-
-	BatchedQuadArray quads;
-	quads.verts = verts;
-	quads.indices = indices;
-	quads.quad_count = (int)stringLength;
-	DrawBatchedQuadsTextured(&quads, font->texture, color);
-
-	free(verts);
-	free(indices);
-
-	return v2((float)(x + width), (float)(y + size)); // Return the bottom right corner of the text
+	DrawTextAligned(str, size, color, pos, v2s(FLT_MAX), FONT_HALIGN_LEFT, FONT_VALIGN_TOP, font);
 }
 
-Vector2 MeasureText(const char *str, const uint size, const Font *font)
+inline Vector2 MeasureText(const char *str, const uint size, const Font *font)
 {
 	return MeasureTextNChars(str, size, font, strlen(str));
 }
@@ -151,7 +83,7 @@ int MeasureLine(const char *str, const int line)
 	return i;
 }
 
-void TextGetLine(const char *str, const int line, char *out)
+void TextGetLine(const char *str, const int line, char *out, size_t outBufferSize)
 {
 	int start = MeasureLine(str, line);
 
@@ -170,19 +102,37 @@ void TextGetLine(const char *str, const int line, char *out)
 		return;
 	}
 
-	strncpy(out, str + start, end - start);
+	size_t copySize = end - start;
+	if (copySize > outBufferSize)
+	{
+		copySize = outBufferSize;
+	}
+
+	strncpy(out, str + start, copySize);
 	out[end - start] = '\0';
 }
 
 void DrawTextAligned(const char *str,
 					 const uint size,
-					 const uint color,
+					 const Color color,
 					 const Vector2 rect_pos,
 					 const Vector2 rect_size,
-					 const byte h_align,
-					 const byte v_align,
+					 const FontHorizontalAlign h_align,
+					 const FontVerticalAlign v_align,
 					 const Font *font)
 {
+	const size_t stringLength = strlen(str);
+	float *verts = calloc(stringLength, sizeof(float[4][4]));
+	CheckAlloc(verts);
+	uint *indices = calloc(stringLength, sizeof(uint[6]));
+	CheckAlloc(indices);
+
+	const double sizeMultiplier = (double)size / font->default_size;
+	const int width = (int)(font->width * sizeMultiplier);
+	const int quadHeight = (int)(font->texture_height * sizeMultiplier);
+	const double uvPixel = 1.0 / font->image->width;
+	int c = 0;
+
 	const int lines = StringLineCount(str);
 	int x;
 	int y = (int)rect_pos.y;
@@ -197,7 +147,7 @@ void DrawTextAligned(const char *str,
 	for (int i = 0; i < lines; i++)
 	{
 		char line[256];
-		TextGetLine(str, i, line);
+		TextGetLine(str, i, line, 256);
 		const Vector2 textSize = MeasureText(line, size, font);
 		if (h_align == FONT_HALIGN_CENTER)
 		{
@@ -209,7 +159,55 @@ void DrawTextAligned(const char *str,
 		{
 			x = (int)rect_pos.x;
 		}
-		FontDrawString(v2((float)x, (float)y), line, size, color, font);
+		int lx = x;
+		const int ly = y;
+		int j = 0;
+		while (line[j] != '\0')
+		{
+			const int fSize = (int)((font->char_widths[(int)line[j]] + font->char_spacing) * sizeMultiplier);
+
+			if (line[j] == ' ')
+			{
+				j++;
+				lx += (int)((font->space_width + font->char_spacing) * sizeMultiplier);
+				continue;
+			}
+
+			const Vector2 ndcPos = v2(X_TO_NDC((float)lx), Y_TO_NDC((float)ly));
+			const Vector2 ndcPosEnd = v2(X_TO_NDC((float)(lx + width)), Y_TO_NDC((float)(ly + quadHeight)));
+			const double charUVStart = (double)font->indices[(int)line[j]] / font->char_count;
+			const double charUVEnd = (font->indices[(int)line[j]] + 1.0) / font->char_count - uvPixel;
+
+			const mat4 quad = {
+				{(float)ndcPos.x, (float)ndcPos.y, (float)charUVStart, 0},
+				{(float)ndcPos.x, (float)ndcPosEnd.y, (float)charUVStart, 1},
+				{(float)ndcPosEnd.x, (float)ndcPosEnd.y, (float)charUVEnd, 1},
+				{(float)ndcPosEnd.x, (float)ndcPos.y, (float)charUVEnd, 0},
+			};
+
+			memcpy(verts + (c + j) * 16, quad, sizeof(quad));
+
+			uint quadIndices[6] = {0, 1, 2, 0, 2, 3};
+			for (int k = 0; k < 6; k++)
+			{
+				quadIndices[k] += (c + j) * 4;
+			}
+
+			memcpy(indices + (c + j) * 6, quadIndices, sizeof(quadIndices));
+
+			lx += fSize;
+			j++;
+		}
+		c += (int)strlen(line);
 		y += (int)(size + font->line_spacing);
 	}
+
+	BatchedQuadArray quads;
+	quads.verts = verts;
+	quads.indices = indices;
+	quads.quad_count = (int)stringLength;
+	DrawBatchedQuadsTextured(&quads, font->texture, color);
+
+	free(verts);
+	free(indices);
 }

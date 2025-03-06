@@ -1,0 +1,36 @@
+{
+    "version": 1,
+    "actors": [
+        {
+            "id": 1,
+            "name": "Test Actor",
+            "params": []
+        },
+        {
+            "id": 2,
+            "name": "Coin",
+            "params": [
+                {
+                    "name": "Anim Frame",
+                    "min": 0,
+                    "max": 0
+                },
+                {
+                    "name": "Type (0=yellow 1=blue)",
+                    "min": 0,
+                    "max": 1
+                }
+            ]
+        },
+        {
+            "id": 3,
+            "name": "Goal",
+            "params": []
+        },
+        {
+            "id": 4,
+            "name": "Door",
+            "params": []
+        }
+    ]
+}

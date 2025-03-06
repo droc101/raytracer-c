@@ -17,15 +17,21 @@ typedef struct GL_Buffer GL_Buffer;
 
 struct GL_Shader
 {
+	/// The ID of the vertex shader
 	GLuint vertexShader;
+	/// The ID of the fragment shader
 	GLuint fragmentShader;
+	/// The ID of the shader program
 	GLuint program;
 };
 
 struct GL_Buffer
 {
+	/// The vertex array object
 	GLuint vertexArrayObject;
+	/// The vertex buffer object
 	GLuint vertexBufferObject;
+	/// The element buffer object
 	GLuint elementBufferObject;
 };
 
@@ -119,7 +125,7 @@ int GL_RegisterTexture(const unsigned char *pixelData, int width, int height);
 void GL_DrawTexture_Internal(Vector2 pos,
 							 Vector2 size,
 							 const char *texture,
-							 uint color,
+							 Color color,
 							 Vector2 region_start,
 							 Vector2 region_end);
 

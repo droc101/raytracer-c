@@ -8,15 +8,16 @@
 
 typedef struct TextInput TextInput;
 
-typedef void (TextInputCallback)(TextInput *data, SDL_TextInputEvent *event);
+typedef void (*TextInputCallback)(TextInput *data, SDL_TextInputEvent *event);
 
 struct TextInput
 {
-	char *composition;
-	int cursor;
-	int selection_len;
+	/// The position of the cursor in the string. Valid range 0-strlen(text)
+	size_t cursor;
+	/// User data to pass to the callback, for example a pointer to the text box being edited
 	void* user_data;
-	TextInputCallback *TextInput;
+	/// The function to call when text is input. This is only TEXT input, you must still handle special keys like backspace and arrow keys.
+	TextInputCallback TextInput;
 };
 
 /**

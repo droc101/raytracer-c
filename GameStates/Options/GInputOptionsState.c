@@ -69,7 +69,7 @@ void GInputOptionsStateRender(GlobalState *)
 
 	DrawTextAligned("Input Options",
 					32,
-					0xFFFFFFFF,
+					COLOR_WHITE,
 					v2s(0),
 					v2(WindowWidthFloat(), 100),
 					FONT_HALIGN_CENTER,
@@ -81,7 +81,7 @@ void GInputOptionsStateRender(GlobalState *)
 
 	DrawTextAligned("Controller Options",
 					16,
-					-1,
+					COLOR_WHITE,
 					v2(0, 160),
 					v2(WindowWidthFloat(), 40),
 					FONT_HALIGN_CENTER,
@@ -92,7 +92,7 @@ void GInputOptionsStateRender(GlobalState *)
 	{
 		DrawTextAligned("Controller Name:",
 						12,
-						-1,
+						COLOR_WHITE,
 						v2(0, 400),
 						v2(WindowWidthFloat(), 40),
 						FONT_HALIGN_CENTER,
@@ -105,7 +105,7 @@ void GInputOptionsStateRender(GlobalState *)
 		}
 		DrawTextAligned(controllerName,
 						12,
-						-1,
+						COLOR_WHITE,
 						v2(0, 420),
 						v2(WindowWidthFloat(), 40),
 						FONT_HALIGN_CENTER,

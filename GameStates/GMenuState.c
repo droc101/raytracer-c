@@ -55,7 +55,7 @@ void GMenuStateRender(GlobalState * /*State*/)
 				TEXTURE("interface_menu_logo"));
 
 #ifdef BUILDSTYLE_DEBUG
-	FontDrawString(v2(20, 200), "DEBUG BUILD", 16, 0xFF00FF00, smallFont);
+	FontDrawString(v2(20, 200), "DEBUG BUILD", 16, COLOR(0xFF00FF00), smallFont);
 #endif
 
 	// draw version and copyright info
@@ -63,7 +63,7 @@ void GMenuStateRender(GlobalState * /*State*/)
 	sprintf(buffer, "Engine %s\n%s", VERSION, COPYRIGHT);
 	DrawTextAligned(buffer,
 					16,
-					0xFF000000,
+					COLOR_BLACK,
 					v2(WindowWidthFloat() - 208, WindowHeightFloat() - 208),
 					v2(200, 200),
 					FONT_HALIGN_RIGHT,
@@ -71,7 +71,7 @@ void GMenuStateRender(GlobalState * /*State*/)
 					smallFont);
 	DrawTextAligned(buffer,
 					16,
-					0xFFa0a0a0,
+					COLOR(0xFFa0a0a0),
 					v2(WindowWidthFloat() - 210, WindowHeightFloat() - 210),
 					v2(200, 200),
 					FONT_HALIGN_RIGHT,
@@ -96,9 +96,6 @@ void GMenuStateSet()
 		opY += opSpacing;
 		UiStackPush(menuStack, CreateButtonControl(v2(0, opY), v2(480, 40), "Quit", QuitGame, MIDDLE_CENTER));
 		opY += opSpacing;
-
-		Control *t = CreateTextBoxControl("test", v2(0, opY), v2(480, 40), MIDDLE_CENTER, 32, NULL);
-		UiStackPush(menuStack, t);
 	}
 	UiStackResetFocus(menuStack);
 	StopMusic();

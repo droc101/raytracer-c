@@ -9,6 +9,7 @@
 #include "../Helpers/Core/MathEx.h"
 #include "../Helpers/Core/Timing.h"
 #include "../Helpers/Graphics/Drawing.h"
+#include "../Helpers/Graphics/RenderingHelpers.h"
 #include "../Helpers/Graphics/Font.h"
 #include "../Structs/Vector2.h"
 
@@ -41,31 +42,31 @@ void FrameGraphDraw()
 #ifdef FRAMEGRAPH_ENABLE
 #ifndef FRAMEGRAPH_FPS_ONLY
 	// Draw a background for the graph
-	SetColorUint(0x80000000);
 	DrawRect(0,
 			 WindowHeight() - FRAMEGRAPH_THRESHOLD_GOOD * 2 * FRAMEGRAPH_V_SCALE - 20,
 			 FRAMEGRAPH_H_SCALE * FRAMEGRAPH_HISTORY_SIZE + 10,
-			 WindowHeight() - 10);
+			 WindowHeight() - 10,
+			 COLOR(0x80000000));
 
 	// Draw a line at the bottom of the graph
-	SetColorUint(0x80808080);
 	DrawLine(v2(10, WindowHeightFloat() - 10),
 			 v2(FRAMEGRAPH_H_SCALE * FRAMEGRAPH_HISTORY_SIZE, WindowHeightFloat() - 10),
-			 2);
+			 2,
+			 COLOR(0x80808080));
 
 	// Draw a line at the target framerate
-	SetColorUint(0x80808080);
 	DrawLine(v2(10, WindowHeightFloat() - 10 - FRAMEGRAPH_THRESHOLD_GOOD * FRAMEGRAPH_V_SCALE),
 			 v2(FRAMEGRAPH_H_SCALE * FRAMEGRAPH_HISTORY_SIZE,
 				WindowHeightFloat() - 10 - FRAMEGRAPH_THRESHOLD_GOOD * FRAMEGRAPH_V_SCALE),
-			 2);
+			 2,
+			 COLOR(0x80808080));
 	FontDrawString(v2(10, WindowHeightFloat() - 10 - FRAMEGRAPH_THRESHOLD_GOOD * FRAMEGRAPH_V_SCALE - 6),
 				   "Target",
 				   12,
-				   0xff00ffff,
+				   COLOR(0xff00ffff),
 				   smallFont);
 
-	uint lineColor = 0;
+	Color lineColor = COLOR(0);
 	// Draw a line graph of all the frame rates/times
 	for (int i = FRAMEGRAPH_HISTORY_SIZE - 2; i >= 0; i--)
 	{
@@ -116,22 +117,21 @@ void FrameGraphDraw()
 
 		if (f > FRAMEGRAPH_THRESHOLD_GOOD)
 		{
-			lineColor = 0xff00ff00;
+			lineColor = COLOR(0xff00ff00);
 		} else if (f < FRAMEGRAPH_THRESHOLD_BAD)
 		{
-			lineColor = 0xffff0000;
+			lineColor = COLOR(0xffff0000);
 		} else
 		{
-			lineColor = 0xffff8000;
+			lineColor = COLOR(0xffff8000);
 		}
-		SetColorUint(lineColor);
-		DrawLine(v2((float)x1, (float)y1), v2((float)x2, (float)y2), 2);
+		DrawLine(v2((float)x1, (float)y1), v2((float)x2, (float)y2), 2, lineColor);
 #ifdef FRAMEGRAPH_SHOW_LINEAR_TIME_GRAPH
 		// 2nd line for frame time
 		y1 = (double)WindowHeight() - nsRemapped * FRAMEGRAPH_V_SCALE - 10;
 		y2 = (double)WindowHeight() - nextNsRemapped * FRAMEGRAPH_V_SCALE - 10;
-		SetColorUint((lineColor & 0x00ffffff) | 0x80000000); // set the alpha to 50% of the line color
-		DrawLine(v2((float)x1, (float)y1), v2((float)x2, (float)y2), 2);
+		lineColor.a = 0.5f;
+		DrawLine(v2((float)x1, (float)y1), v2((float)x2, (float)y2), 2, lineColor);
 #endif
 	}
 #else
@@ -143,20 +143,19 @@ void FrameGraphDraw()
 
 	if (currentF > FRAMEGRAPH_THRESHOLD_GOOD)
 	{
-		lineColor = 0xff00ff00;
+		lineColor = COLOR(0xff00ff00);
 	} else if (currentF < FRAMEGRAPH_THRESHOLD_BAD)
 	{
-		lineColor = 0xffff0000;
+		lineColor = COLOR(0xffff0000);
 	} else
 	{
-		lineColor = 0xffff8000;
+		lineColor = COLOR(0xffff8000);
 	}
 
 	// Draw the current framerate
-	SetColorUint(0xffffffff);
 	char fps[40];
 	sprintf(fps, "FPS: %.2f\nMS: %2.2f", currentF, currentMs);
-	FontDrawString(v2(12, WindowHeightFloat() - 8 - 38), fps, 16, 0xff000000, smallFont);
+	FontDrawString(v2(12, WindowHeightFloat() - 8 - 38), fps, 16, COLOR_BLACK, smallFont);
 	FontDrawString(v2(10, WindowHeightFloat() - 10 - 38), fps, 16, lineColor, smallFont);
 
 #endif

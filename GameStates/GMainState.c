@@ -15,6 +15,7 @@
 #include "../Helpers/Core/Input.h"
 #include "../Helpers/Core/MathEx.h"
 #include "../Helpers/Graphics/Drawing.h"
+#include "../Helpers/Graphics/RenderingHelpers.h"
 #include "../Helpers/Graphics/Font.h"
 #include "../Helpers/TextBox.h"
 #include "../Structs/Actor.h"
@@ -216,7 +217,7 @@ void GMainStateRender(GlobalState *State)
 
 	char coinStr[16];
 	sprintf(coinStr, "%d", State->saveData->coins);
-	FontDrawString(v2(WindowWidthFloat() - 210, 16), coinStr, 40, 0xFFFFFFFF, largeFont);
+	FontDrawString(v2(WindowWidthFloat() - 210, 16), coinStr, 40, COLOR_WHITE, largeFont);
 
 	coinIconRect.y = 64;
 
@@ -226,30 +227,33 @@ void GMainStateRender(GlobalState *State)
 		DrawTexture(v2((float)coinIconRect.x, (float)coinIconRect.y), v2(40, 40), TEXTURE("interface_hud_bcoin"));
 	}
 
-	uint crosshairColor = 0xFFFFCCCC;
+	Color crosshairColor = COLOR(0xFFFFCCCC);
 	if (targetedEnemy != NULL)
 	{
-		crosshairColor = 0xFFFF0000;
+		crosshairColor = COLOR(0xFFFF0000);
 	}
 
-	DrawTextureMod(v2((WindowWidth() * 0.5) - 12, (WindowHeight() * 0.5) - 12), v2s(24), TEXTURE("interface_crosshair"), crosshairColor);
+	DrawTextureMod(v2((WindowWidth() * 0.5) - 12, (WindowHeight() * 0.5) - 12),
+				   v2s(24),
+				   TEXTURE("interface_crosshair"),
+				   crosshairColor);
 
 	if (State->textBoxActive)
 	{
 		TextBoxRender(&State->textBox, State->textBoxPage);
 	}
 	DPrintF("Position: (%.2f, %.2f)\nRotation: %.4f (%.2fdeg)",
-			0xFFFFFFFF,
+			COLOR_WHITE,
 			false,
 			l->player.pos.x,
 			l->player.pos.y,
 			fabsf(l->player.angle),
 			radToDeg(fabsf(l->player.angle)));
 
-	DPrintF("Walls: %d", 0xFFFFFFFF, false, l->walls.length);
-	DPrintF("Actors: %d", 0xFFFFFFFF, false, l->actors.length);
-	DPrintF("Triggers: %d", 0xFFFFFFFF, false, l->triggers.length);
-	DPrintF("Targeted Actor: %p", 0xFFFFFFFF, false, targetedEnemy);
+	DPrintF("Walls: %d", COLOR_WHITE, false, l->walls.length);
+	DPrintF("Actors: %d", COLOR_WHITE, false, l->actors.length);
+	DPrintF("Triggers: %d", COLOR_WHITE, false, l->triggers.length);
+	DPrintF("Targeted Actor: %p", COLOR_WHITE, false, targetedEnemy);
 }
 
 void GMainStateSet()

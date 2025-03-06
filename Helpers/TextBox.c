@@ -5,6 +5,7 @@
 #include "TextBox.h"
 #include "CommonAssets.h"
 #include "Graphics/Drawing.h"
+#include "Graphics/RenderingHelpers.h"
 #include "Graphics/Font.h"
 
 #define BOX_OUTER_PADDING 14
@@ -15,14 +16,14 @@ typedef struct TextBoxTheme TextBoxTheme;
 
 struct TextBoxTheme
 {
-	uint boxColor;
-	uint textColor;
+	Color boxColor;
+	Color textColor;
 };
 
 TextBoxTheme textBoxThemes[3] = {
-	{0x80000000, 0xFFFFFFFF},
-	{0xA0FFFFFF, 0xFF000000},
-	{0x80200000, 0xFFFFEEEE},
+	{COLOR(0x80000000), COLOR_WHITE},
+	{COLOR(0xA0FFFFFF), COLOR_BLACK},
+	{COLOR(0x80200000), COLOR(0xFFFFEEEE)},
 };
 
 void TextBoxRender(const TextBox *box, const int page)
@@ -37,8 +38,8 @@ void TextBoxRender(const TextBox *box, const int page)
 
 	Vector2 topLeft = {0, 0};
 
-	const uint textColor = textBoxThemes[box->theme].textColor;
-	const uint boxColor = textBoxThemes[box->theme].boxColor;
+	const Color textColor = textBoxThemes[box->theme].textColor;
+	const Color boxColor = textBoxThemes[box->theme].boxColor;
 
 	const int width = box->cols * TEXT_BOX_FONT_WIDTH + BOX_OUTER_PADDING * 2;
 	const int height = box->rows * TEXT_BOX_FONT_SIZE + BOX_OUTER_PADDING * 2;
@@ -68,17 +69,17 @@ void TextBoxRender(const TextBox *box, const int page)
 	topLeft.x += (float)box->x;
 	topLeft.y += (float)box->y;
 
-	SetColorUint(boxColor);
 	DrawRect((int)topLeft.x,
 			 (int)topLeft.y,
 			 box->cols * TEXT_BOX_FONT_WIDTH + BOX_OUTER_PADDING * 2,
-			 box->rows * TEXT_BOX_FONT_SIZE + BOX_OUTER_PADDING * 2);
+			 box->rows * TEXT_BOX_FONT_SIZE + BOX_OUTER_PADDING * 2,
+			 boxColor);
 
 	int txtY = (int)topLeft.y + BOX_OUTER_PADDING;
 	for (int i = startLine; i < endLine; i++)
 	{
 		char line[256];
-		TextGetLine(box->text, i, line);
+		TextGetLine(box->text, i, line, 256);
 		const Vector2 pos = {topLeft.x + BOX_OUTER_PADDING, (float)txtY};
 		FontDrawString(pos, line, TEXT_BOX_FONT_SIZE, textColor, smallFont);
 		txtY += TEXT_BOX_FONT_SIZE;

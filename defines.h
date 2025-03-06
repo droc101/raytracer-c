@@ -7,10 +7,12 @@
 
 #include <box2d/id.h>
 #include <box2d/math_functions.h>
+#include <cglm/cglm.h>
 #include <SDL.h>
 #include <SDL_mixer.h>
 #include <stdbool.h>
 #include <stdint.h>
+
 #include "config.h"
 #include "Helpers/Core/List.h"
 
@@ -48,6 +50,7 @@ typedef struct Image Image;
 typedef struct Trigger Trigger;
 typedef struct Font Font;
 typedef struct SaveData SaveData;
+typedef struct Color Color;
 
 // Function signatures
 typedef void (*FixedUpdateFunction)(GlobalState *state, double delta);
@@ -87,6 +90,32 @@ typedef void (*ActorSignalHandlerFunction)(Actor *self, const Actor *sender, int
 #define CONTROLLER_CANCEL \
 	(GetState()->options.controllerSwapOkCancel ? SDL_CONTROLLER_BUTTON_A : SDL_CONTROLLER_BUTTON_B)
 
+/**
+ * Convert a hex color (0xAARRGGBB) to a Color struct (RGBA 0-1)
+ * @param argb
+ * @return The Color struct
+ */
+#define COLOR(argb) \
+	(Color){((argb >> 16) & 0xFF) / 255.0f, \
+	 ((argb >> 8) & 0xFF) / 255.0f, \
+	 ((argb) & 0xFF) / 255.0f, \
+	 ((argb >> 24) & 0xFF) / 255.0f}
+
+/**
+ * Convert a byte to a float (0-1)
+ * Intended for converting color channel bytes to floats
+ * @param byte The byte to convert
+ * @return The float value
+ */
+#define BYTE_TO_FLOAT(byte) (byte / 255.0f)
+
+/**
+ * Convert a Color struct to an array of floats (cglm vec4)
+ * @param color The color struct to convert
+ * @return The color as an array of floats
+ */
+#define COLOR_TO_ARR(color) (float*)&color
+
 #ifdef WIN32
 /// Make this symbol exported (in the symbol table)
 #define EXPORT_SYM __declspec(dllexport)
@@ -94,6 +123,13 @@ typedef void (*ActorSignalHandlerFunction)(Actor *self, const Actor *sender, int
 /// Make this symbol exported (in the symbol table)
 #define EXPORT_SYM __attribute__((visibility("default")))
 #endif
+
+#pragma endregion
+
+#pragma region Standard Colors
+
+#define COLOR_WHITE COLOR(0xFFFFFFFF)
+#define COLOR_BLACK COLOR(0xFF000000)
 
 #pragma endregion
 
@@ -197,6 +233,14 @@ enum CollisionGroups
 #pragma endregion
 
 #pragma region Struct definitions
+
+struct Color
+{
+	float r;
+	float g;
+	float b;
+	float a;
+};
 
 struct Camera
 {

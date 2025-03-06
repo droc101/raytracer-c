@@ -9,6 +9,11 @@ def ConvertFont(path):
 	widths = []
 	indices = []
 	unknownCharacterUvOffset = font["chars"].find('?')
+
+	if unknownCharacterUvOffset == -1:
+		print("Font does not contain a '?' character, skipping")
+		return
+
 	for i in range(128):
 		widths.append(font["default_char_width"])
 		index = font["chars"].find(chr(i).upper() if font["uppercase_only"] else chr(i))

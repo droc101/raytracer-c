@@ -34,6 +34,7 @@ def SetupDirs(out_path):
 	os.makedirs(out_path + "vkshader/")
 	os.makedirs(out_path + "model/")
 	os.makedirs(out_path + "font/")
+	os.makedirs(out_path + "defs/")
 
 # Recursively search for files in the input folder and convert them
 def RecursiveSearch(in_path, out_path):
@@ -74,6 +75,9 @@ def RecursiveSearch(in_path, out_path):
 			elif file.endswith(".font"):
 				print("Converting " + path_from_assets + file)
 				Converter.FontConverter.ConvertFont(in_path + file)
+			elif file.endswith(".def"):
+				print("Copying " + path_from_assets + file)
+				shutil.copyfile(in_path + file, out_path + "defs/" + file)
 			else:
 				print("Unrecognized file type: " + file)
 

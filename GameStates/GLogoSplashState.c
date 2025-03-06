@@ -6,6 +6,7 @@
 #include "../Helpers/Core/AssetReader.h"
 #include "../Helpers/Core/Input.h"
 #include "../Helpers/Graphics/Drawing.h"
+#include "../Helpers/Graphics/RenderingHelpers.h"
 #include "../Structs/GlobalState.h"
 #include "../Structs/Vector2.h"
 #include "GMenuState.h"
@@ -38,8 +39,7 @@ void GLogoSplashStateFixedUpdate(GlobalState *State, double /*delta*/)
 // ReSharper disable once CppParameterMayBeConstPtrOrRef
 void GLogoSplashStateRender(GlobalState *State)
 {
-	SetColorUint(0x0);
-	ClearColor(0xFF000000);
+	ClearColor(COLOR_BLACK);
 	if (State->physicsFrame < 20 || State->physicsFrame > 100)
 	{
 		return;
@@ -56,7 +56,8 @@ void GLogoSplashStateRender(GlobalState *State)
 	{
 		alpha = 1.0f - ((float)(State->physicsFrame - 80) / 20.0f);
 	}
-	const uint color = (uint)(alpha * 255) << 24 | 0xFFFFFF;
+	Color color = COLOR_WHITE;
+	color.a = alpha;
 
 	DrawTextureMod(v2((float)destRect.x, (float)destRect.y),
 				   v2((float)destRect.w, (float)destRect.h),

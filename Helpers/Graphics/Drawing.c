@@ -14,74 +14,8 @@
 #include "RenderingHelpers.h"
 #include "SDL.h"
 #include "Vulkan/Vulkan.h"
+#include "../../Structs/Level.h"
 
-SDL_Window *window;
-int windowWidth;
-int windowHeight;
-
-uint drawColor = 0xFFFFFFFF;
-
-void SetGameWindow(SDL_Window *w)
-{
-	window = w;
-}
-
-inline SDL_Window *GetGameWindow()
-{
-	return window;
-}
-
-inline int WindowWidth()
-{
-	return windowWidth;
-}
-
-inline int WindowHeight()
-{
-	return windowHeight;
-}
-
-inline float WindowWidthFloat()
-{
-	return (float)windowWidth;
-}
-
-inline float WindowHeightFloat()
-{
-	return (float)windowHeight;
-}
-
-inline void UpdateWindowSize()
-{
-	SDL_GetWindowSize(window, &windowWidth, &windowHeight);
-	windowWidth = (int)(windowWidth / GetState()->uiScale);
-	windowHeight = (int)(windowHeight / GetState()->uiScale);
-}
-
-inline Vector2 ActualWindowSize()
-{
-	int w;
-	int h;
-	SDL_GetWindowSize(window, &w, &h);
-	return v2((float)w, (float)h);
-}
-
-// Set the SDL color from an ARGB uint32
-inline void SetColorUint(const uint color)
-{
-	drawColor = color;
-}
-
-byte *GetColorUint(const uint color)
-{
-	byte *colorBuf = malloc(4);
-	CheckAlloc(colorBuf);
-	colorBuf[0] = color >> 16 & 0xFF;
-	colorBuf[1] = color >> 8 & 0xFF;
-	colorBuf[2] = color >> 0 & 0xFF;
-	colorBuf[3] = color >> 24 & 0xFF;
-	return colorBuf;
-}
 
 SDL_Surface *ToSDLSurface(const char *texture, const char *filterMode)
 {
@@ -107,41 +41,9 @@ SDL_Surface *ToSDLSurface(const char *texture, const char *filterMode)
 	return surface;
 }
 
-uint MixColors(const uint color_a, const uint color_b)
-{
-	// Mix color_a onto color_b, accounting for the alpha of color_a
-	byte *a = GetColorUint(color_a);
-	byte *b = GetColorUint(color_b);
-
-	const uint r = (a[0] * a[3] + b[0] * (255 - a[3])) / 255;
-	const uint g = (a[1] * a[3] + b[1] * (255 - a[3])) / 255;
-	const uint bl = (a[2] * a[3] + b[2] * (255 - a[3])) / 255;
-	const uint al = a[3] + b[3] * (255 - a[3]) / 255;
-
-	free(a);
-	free(b);
-
-	return r << 16 | g << 8 | bl | al << 24;
-}
-
 // Rendering subsystem abstractions
 
-void SetTexParams(const char *texture, const bool linear, const bool repeat)
-{
-	switch (currentRenderer)
-	{
-		case RENDERER_VULKAN:
-			VK_SetTexParams(texture, linear, repeat);
-			break;
-		case RENDERER_OPENGL:
-			GL_SetTexParams(texture, linear, repeat);
-			break;
-		default:
-			break;
-	}
-}
-
-inline void DrawLine(const Vector2 start, const Vector2 end, const float thickness)
+inline void DrawLine(const Vector2 start, const Vector2 end, const float thickness, const Color color)
 {
 	switch (currentRenderer)
 	{
@@ -151,17 +53,17 @@ inline void DrawLine(const Vector2 start, const Vector2 end, const float thickne
 						(int)end.x,
 						(int)end.y,
 						(int)(thickness * GetState()->uiScale),
-						drawColor);
+						color);
 			break;
 		case RENDERER_OPENGL:
-			GL_DrawLine(start, end, drawColor, (float)(thickness * GetState()->uiScale));
+			GL_DrawLine(start, end, color, (float)(thickness * GetState()->uiScale));
 			break;
 		default:
 			break;
 	}
 }
 
-inline void DrawOutlineRect(const Vector2 pos, const Vector2 size, const float thickness)
+inline void DrawOutlineRect(const Vector2 pos, const Vector2 size, const float thickness, const Color color)
 {
 	switch (currentRenderer)
 	{
@@ -171,10 +73,10 @@ inline void DrawOutlineRect(const Vector2 pos, const Vector2 size, const float t
 							   (int)size.x,
 							   (int)size.y,
 							   (int)(thickness * GetState()->uiScale),
-							   drawColor);
+							   color);
 			break;
 		case RENDERER_OPENGL:
-			GL_DrawRectOutline(pos, size, drawColor, (float)(thickness * GetState()->uiScale));
+			GL_DrawRectOutline(pos, size, color, (float)(thickness * GetState()->uiScale));
 			break;
 		default:
 			break;
@@ -196,7 +98,7 @@ inline void DrawTexture(const Vector2 pos, const Vector2 size, const char *textu
 	}
 }
 
-inline void DrawTextureMod(const Vector2 pos, const Vector2 size, const char *texture, const uint color)
+inline void DrawTextureMod(const Vector2 pos, const Vector2 size, const char *texture, const Color color)
 {
 	switch (currentRenderer)
 	{
@@ -243,7 +145,7 @@ inline void DrawTextureRegionMod(const Vector2 pos,
 								 const char *texture,
 								 const Vector2 region_start,
 								 const Vector2 region_end,
-								 const uint color)
+								 const Color color)
 {
 	switch (currentRenderer)
 	{
@@ -267,7 +169,7 @@ inline void DrawTextureRegionMod(const Vector2 pos,
 	}
 }
 
-inline void ClearColor(const uint color)
+inline void ClearColor(const Color color)
 {
 	switch (currentRenderer)
 	{
@@ -312,26 +214,19 @@ inline void ClearDepthOnly()
 	}
 }
 
-inline void DrawRect(const int x, const int y, const int w, const int h)
+inline void DrawRect(const int x, const int y, const int w, const int h, const Color color)
 {
 	switch (currentRenderer)
 	{
 		case RENDERER_VULKAN:
-			VK_DrawColoredQuad(x, y, w, h, drawColor);
+			VK_DrawColoredQuad(x, y, w, h, color);
 			break;
 		case RENDERER_OPENGL:
-			GL_DrawRect(v2((float)x, (float)y), v2((float)w, (float)h), drawColor);
+			GL_DrawRect(v2((float)x, (float)y), v2((float)w, (float)h), color);
 			break;
 		default:
 			break;
 	}
-}
-
-Vector2 GetTextureSize(const char *texture)
-{
-	const Image *img = LoadImage(texture);
-
-	return v2((float)img->width, (float)img->height);
 }
 
 void DrawNinePatchTexture(const Vector2 pos,
@@ -386,4 +281,71 @@ void DrawNinePatchTexture(const Vector2 pos,
 					  texture,
 					  v2(textureSize.x - texture_margins_px, textureSize.y - texture_margins_px),
 					  v2s(texture_margins_px)); // bottom right
+}
+
+inline void DrawBatchedQuadsTextured(const BatchedQuadArray *batch, const char *texture, const Color color)
+{
+	switch (currentRenderer)
+	{
+		case RENDERER_VULKAN:
+			VK_DrawTexturedQuadsBatched(batch->verts, batch->quad_count, texture, color);
+		break;
+		case RENDERER_OPENGL:
+			GL_DrawTexturedArrays(batch->verts, batch->indices, batch->quad_count, texture, color);
+		break;
+		default:
+			break;
+	}
+}
+
+inline void DrawBatchedQuadsColored(const BatchedQuadArray *batch, const Color color)
+{
+	switch (currentRenderer)
+	{
+		case RENDERER_VULKAN:
+			VK_DrawColoredQuadsBatched(batch->verts, batch->quad_count, color);
+		break;
+		case RENDERER_OPENGL:
+			GL_DrawColoredArrays(batch->verts, batch->indices, batch->quad_count, color);
+		break;
+		default:
+			break;
+	}
+}
+
+void RenderMenuBackground()
+{
+	// sorry for the confusing variable names
+	const Vector2 bgTileSize = v2(320, 240); // size on screen
+	const Vector2 bgTexSize = GetTextureSize(TEXTURE("interface_menu_bg_tile")); // actual size of the texture
+
+	const Vector2 tilesOnScreen = v2(WindowWidthFloat() / bgTileSize.x, WindowHeightFloat() / bgTileSize.y);
+	const Vector2 tileRegion = v2(tilesOnScreen.x * bgTexSize.x, tilesOnScreen.y * bgTexSize.y);
+	DrawTextureRegion(v2(0, 0),
+					  v2(WindowWidthFloat(), WindowHeightFloat()),
+					  TEXTURE("interface_menu_bg_tile"),
+					  v2(0, 0),
+					  tileRegion);
+}
+
+void RenderInGameMenuBackground()
+{
+	RenderLevel(GetState());
+
+	DrawRect(0, 0, WindowWidth(), WindowHeight(), COLOR(0xA0000000));
+}
+
+void RenderLevel3D(const Level *l, const Camera *cam)
+{
+	switch (currentRenderer)
+	{
+		case RENDERER_VULKAN:
+			VK_RenderLevel(l, cam);
+		break;
+		case RENDERER_OPENGL:
+			GL_RenderLevel(l, cam);
+		break;
+		default:
+			break;
+	}
 }
