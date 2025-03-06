@@ -289,6 +289,10 @@ int main(const int argc, char *argv[])
 			{
 				state->UpdateGame(state);
 			}
+			if (state->requestExit)
+			{
+				shouldQuit = true;
+			}
 			if (IsLowFPSModeEnabled())
 			{
 				SDL_Delay(33);

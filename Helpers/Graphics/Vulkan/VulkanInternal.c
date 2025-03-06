@@ -1045,21 +1045,6 @@ bool CreateGraphicsPipelines()
 #pragma endregion actors
 
 #pragma region UI
-	const VkViewport uiviewport = {
-		.width = (float)swapChainExtent.width / 2,
-		.height = (float)swapChainExtent.height,
-		.maxDepth = 1,
-	};
-	const VkRect2D uiscissor = {
-		.extent = swapChainExtent,
-	};
-	const VkPipelineViewportStateCreateInfo uiviewportState = {
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
-		.viewportCount = 1,
-		.pViewports = &uiviewport,
-		.scissorCount = 1,
-		.pScissors = &uiscissor,
-	};
 	const VkShaderModule uiVertShaderModule = CreateShaderModule(VK_VERT("Vulkan_ui"));
 	const VkShaderModule uiFragShaderModule = CreateShaderModule(VK_FRAG("Vulkan_ui"));
 	if (!uiVertShaderModule || !uiFragShaderModule)

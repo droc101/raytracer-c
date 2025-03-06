@@ -148,22 +148,7 @@ VkResult VK_FrameEnd()
 {
 	if (buffers.ui.shouldResize)
 	{
-		if (currentFrame == 0)
-		{
-			VulkanTestReturnResult(vkWaitForFences(device,
-												   1,
-												   &inFlightFences[MAX_FRAMES_IN_FLIGHT - 1],
-												   VK_TRUE,
-												   UINT64_MAX),
-								   "Failed to wait for Vulkan fences!");
-		} else
-		{
-			VulkanTestReturnResult(vkWaitForFences(device, 1, &inFlightFences[currentFrame - 1], VK_TRUE, UINT64_MAX),
-								   "Failed to wait for Vulkan fences!");
-		}
-
 		VulkanTestReturnResult(ResizeUiBuffer(), "Failed to resize UI buffer!");
-
 		buffers.ui.shouldResize = false;
 	}
 
@@ -590,15 +575,6 @@ bool VK_LoadLevelWalls(const Level *level)
 		sizeof(ActorVertex) * buffers.actors.walls.count * 4 > buffers.actors.walls.vertexSize ||
 		sizeof(uint32_t) * buffers.actors.walls.count * 6 > buffers.actors.walls.indexSize)
 	{
-		if (currentFrame == 0)
-		{
-			VulkanTest(vkWaitForFences(device, 1, &inFlightFences[MAX_FRAMES_IN_FLIGHT - 1], VK_TRUE, UINT64_MAX),
-					   "Failed to wait for Vulkan fences!");
-		} else
-		{
-			VulkanTest(vkWaitForFences(device, 1, &inFlightFences[currentFrame - 1], VK_TRUE, UINT64_MAX),
-					   "Failed to wait for Vulkan fences!");
-		}
 		if (!ResizeActorBuffer())
 		{
 			return false;
@@ -741,15 +717,6 @@ bool VK_LoadNewActor()
 		buffers.walls.shadowCount++;
 	}
 
-	if (currentFrame == 0)
-	{
-		VulkanTest(vkWaitForFences(device, 1, &inFlightFences[MAX_FRAMES_IN_FLIGHT - 1], VK_TRUE, UINT64_MAX),
-				   "Failed to wait for Vulkan fences!");
-	} else
-	{
-		VulkanTest(vkWaitForFences(device, 1, &inFlightFences[currentFrame - 1], VK_TRUE, UINT64_MAX),
-				   "Failed to wait for Vulkan fences!");
-	}
 	if (!ResizeActorBuffer())
 	{
 		return false;
@@ -888,7 +855,7 @@ void VK_DrawTexturedQuadRegion(const int32_t x,
 					 startU + (float)regionW / (float)image->width,
 					 startV + (float)regionH / (float)image->height,
 					 0xFFFFFFFF,
-					 imageAssetIdToIndexMap[image->id]);
+					 ImageIndex(image));
 }
 
 void VK_DrawTexturedQuadRegionMod(const int32_t x,
@@ -916,7 +883,7 @@ void VK_DrawTexturedQuadRegionMod(const int32_t x,
 					 startU + (float)regionW / (float)image->width,
 					 startV + (float)regionH / (float)image->height,
 					 color,
-					 imageAssetIdToIndexMap[image->id]);
+					 ImageIndex(image));
 }
 
 void VK_DrawTexturedQuadsBatched(const float *vertices,

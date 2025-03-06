@@ -547,9 +547,8 @@ bool ResizeActorBuffer()
 	return true;
 }
 
-bool LoadTexture(const char *textureName)
+bool LoadTexture(const Image *image)
 {
-	const Image *image = LoadImage(textureName);
 	Texture *texture = calloc(1, sizeof(Texture));
 	CheckAlloc(texture);
 	ListAdd(&textures, texture);

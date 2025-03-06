@@ -12,7 +12,7 @@
 
 #pragma region macros
 #define VULKAN_VERSION VK_MAKE_VERSION(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH)
-#define MAX_FRAMES_IN_FLIGHT 2
+#define MAX_FRAMES_IN_FLIGHT 1
 #define MAX_UI_QUADS_INIT 8192 // TODO: find best value
 #define MAX_WALLS_INIT 1024
 /// This is an expected estimate for the largest that a texture will be. It is used to create an overallocation of
@@ -650,6 +650,8 @@ bool CreateBuffer(Buffer *buffer, bool newAllocation);
 bool CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, uint32_t regionCount, const VkBufferCopy *regions);
 
 uint32_t TextureIndex(const char *texture);
+
+uint32_t ImageIndex(const Image *image);
 
 void CleanupSwapChain();
 
