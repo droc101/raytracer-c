@@ -41,11 +41,12 @@ void FrameGraphDraw()
 {
 #ifdef FRAMEGRAPH_ENABLE
 #ifndef FRAMEGRAPH_FPS_ONLY
+	const int height = FRAMEGRAPH_THRESHOLD_GOOD * 2 * FRAMEGRAPH_V_SCALE + 20;
 	// Draw a background for the graph
 	DrawRect(0,
-			 WindowHeight() - FRAMEGRAPH_THRESHOLD_GOOD * 2 * FRAMEGRAPH_V_SCALE - 20,
+			 WindowHeight() - height,
 			 FRAMEGRAPH_H_SCALE * FRAMEGRAPH_HISTORY_SIZE + 10,
-			 WindowHeight() - 10,
+			 height,
 			 COLOR(0x80000000));
 
 	// Draw a line at the bottom of the graph
