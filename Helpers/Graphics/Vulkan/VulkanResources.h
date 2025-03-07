@@ -34,6 +34,8 @@ bool ResizeBuffer(Buffer *buffer, bool lossy);
 
 bool ResizeBufferRegion(Buffer *buffer, VkDeviceSize offset, VkDeviceSize oldSize, VkDeviceSize newSize, bool lossy);
 
+bool ResizeStagingBuffer(size_t size);
+
 VkResult ResizeUiBuffer();
 
 bool ResizeActorBuffer();

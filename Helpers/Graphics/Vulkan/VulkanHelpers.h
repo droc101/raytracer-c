@@ -147,6 +147,7 @@ typedef struct MemoryPools
 {
 	MemoryInfo localMemory;
 	MemoryInfo sharedMemory;
+	MemoryInfo stagingMemory;
 } MemoryPools;
 
 typedef struct ActorVertex
@@ -482,6 +483,7 @@ typedef struct Buffers
 {
 	Buffer local;
 	Buffer shared;
+	Buffer staging;
 
 	UiVertexBuffer ui;
 	WallVertexBuffer walls;
@@ -534,6 +536,8 @@ typedef struct PushConstants
 #pragma region variables
 extern SDL_Window *vk_window;
 extern bool minimized;
+extern bool textureCacheMiss;
+extern size_t loadedActors;
 
 /// When the instance is created the Vulkan library gets initialized, allowing the game to provide the library with any
 /// information about itself. Any state information that the library provides will then be stored in the instance.
@@ -607,10 +611,11 @@ extern VkSampleCountFlagBits msaaSamples;
 extern uint16_t textureCount;
 extern PushConstants pushConstants;
 extern VkCommandBuffer transferCommandBuffer;
-extern bool textureCacheMiss;
 #pragma endregion variables
 
 #pragma region helperFunctions
+bool LoadActors(const Level *level);
+
 /**
  * Provides information about the physical device's support for the swap chain.
  * @param pDevice The physical device to query for

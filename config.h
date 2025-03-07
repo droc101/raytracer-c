@@ -54,7 +54,7 @@
 #define BENCHMARK_SYSTEM_ENABLE
 
 // Enable or disable recording highest and lowest frame times (has a performance impact)
-//#define BENCHMARK_RECORD_HIGH_LOW_TIMES
+// #define BENCHMARK_RECORD_HIGH_LOW_TIMES
 
 #ifdef BUILDSTYLE_DEBUG
 /**

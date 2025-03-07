@@ -42,8 +42,6 @@ uint8_t VK_GetSampleCountFlags();
 
 bool VK_LoadLevelWalls(const Level *level);
 
-bool VK_LoadNewActor();
-
 void VK_DrawColoredQuad(int x, int y, int w, int h, Color color);
 
 void VK_DrawColoredQuadsBatched(const float *vertices, int quadCount, Color color);

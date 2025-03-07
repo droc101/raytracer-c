@@ -231,7 +231,6 @@ bool ResizeBufferRegion(Buffer *buffer,
 	const VkDeviceSize bufferSize = buffer->size;
 	void *resizedBufferData = NULL;
 	void *otherBufferData = NULL;
-	Buffer stagingBuffer = {.buffer = VK_NULL_HANDLE};
 	if (buffer->memoryAllocationInfo.memoryInfo->mappedMemory)
 	{
 		otherBufferData = malloc(bufferSize - oldSize);
@@ -250,19 +249,10 @@ bool ResizeBufferRegion(Buffer *buffer,
 		}
 	} else
 	{
-		MemoryInfo memoryInfo = {
-			.type = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-		};
-		stagingBuffer.memoryAllocationInfo = (MemoryAllocationInfo){
-			.memoryInfo = &memoryInfo,
-			.usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-		};
-		stagingBuffer.size = bufferSize - oldSize;
-		if (!CreateBuffer(&stagingBuffer, true))
+		if (__builtin_expect(buffer->size > buffers.staging.size, false) && !ResizeStagingBuffer(buffer->size))
 		{
 			return false;
 		}
-
 		VkBufferCopy regions[2] = {
 			{
 				.size = offset,
@@ -276,19 +266,19 @@ bool ResizeBufferRegion(Buffer *buffer,
 		if (offset == 0)
 		{
 			regions[0] = regions[1];
-			if (!CopyBuffer(buffer->buffer, stagingBuffer.buffer, 1, regions))
+			if (!CopyBuffer(buffer->buffer, buffers.staging.buffer, 1, regions))
 			{
 				return false;
 			}
 		} else if (offset + oldSize == buffer->size)
 		{
-			if (!CopyBuffer(buffer->buffer, stagingBuffer.buffer, 1, regions))
+			if (!CopyBuffer(buffer->buffer, buffers.staging.buffer, 1, regions))
 			{
 				return false;
 			}
 		} else
 		{
-			if (!CopyBuffer(buffer->buffer, stagingBuffer.buffer, 2, regions))
+			if (!CopyBuffer(buffer->buffer, buffers.staging.buffer, 2, regions))
 			{
 				return false;
 			}
@@ -333,29 +323,42 @@ bool ResizeBufferRegion(Buffer *buffer,
 		if (offset == 0)
 		{
 			regions[0] = regions[1];
-			if (!CopyBuffer(stagingBuffer.buffer, buffer->buffer, 1, regions))
+			if (!CopyBuffer(buffers.staging.buffer, buffer->buffer, 1, regions))
 			{
 				return false;
 			}
 		} else if (offset + newSize == buffer->size)
 		{
-			if (!CopyBuffer(stagingBuffer.buffer, buffer->buffer, 1, regions))
+			if (!CopyBuffer(buffers.staging.buffer, buffer->buffer, 1, regions))
 			{
 				return false;
 			}
 		} else
 		{
-			if (!CopyBuffer(stagingBuffer.buffer, buffer->buffer, 2, regions))
+			if (!CopyBuffer(buffers.staging.buffer, buffer->buffer, 2, regions))
 			{
 				return false;
 			}
 		}
-
-		if (!DestroyBuffer(&stagingBuffer))
-		{
-			return false;
-		}
 	}
+
+	return true;
+}
+
+bool ResizeStagingBuffer(const size_t size)
+{
+	buffers.staging.size = size;
+	if (!ResizeBuffer(&buffers.staging, true))
+	{
+		return false;
+	}
+	VulkanTest(vkMapMemory(device,
+						   buffers.staging.memoryAllocationInfo.memoryInfo->memory,
+						   0,
+						   VK_WHOLE_SIZE,
+						   0,
+						   &buffers.staging.memoryAllocationInfo.memoryInfo->mappedMemory),
+			   "Failed to map actor staging buffer memory!");
 
 	return true;
 }

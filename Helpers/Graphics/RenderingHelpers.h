@@ -110,11 +110,6 @@ void FrameEnd();
 void LoadLevelWalls(const Level *l);
 
 /**
- * An abstraction to allow the rendering code to have an indicator of when a new actor is added to the level.
- */
-void LoadNewActor();
-
-/**
  * Update the viewport size
  */
 void UpdateViewportSize();

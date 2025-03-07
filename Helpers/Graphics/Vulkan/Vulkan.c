@@ -14,7 +14,7 @@
 #include "VulkanMemory.h"
 #include "VulkanResources.h"
 
-const Level *loadedLevel = NULL;
+static const Level *loadedLevel;
 
 bool VK_Init(SDL_Window *window)
 {
@@ -87,6 +87,11 @@ bool VK_Init(SDL_Window *window)
 
 VkResult VK_FrameStart()
 {
+	if (!LoadActors(loadedLevel))
+	{
+		return VK_ERROR_UNKNOWN;
+	}
+
 	if (minimized)
 	{
 		return VK_NOT_READY;
@@ -431,7 +436,6 @@ inline uint8_t VK_GetSampleCountFlags()
 
 bool VK_LoadLevelWalls(const Level *level)
 {
-	void *data;
 	uint32_t skyVertexCount = 0;
 	const Model *_skyModel = !skyModel ? LoadModel(MODEL("model_sky")) : skyModel;
 	if (level->hasCeiling)
@@ -529,58 +533,6 @@ bool VK_LoadLevelWalls(const Level *level)
 		SetLocalBufferAliasingInfo();
 	}
 
-	ListClear(&buffers.actors.models.loadedModelIds);
-	ListClear(&buffers.actors.models.modelCounts);
-	buffers.walls.shadowCount = 0;
-	memset(&buffers.actors.models, 0, sizeof(ModelActorBuffer));
-	memset(&buffers.actors.walls, 0, sizeof(WallActorBuffer));
-	ListLock(level->actors);
-	for (size_t i = 0; i < level->actors.length; i++)
-	{
-		const Actor *actor = ListGet(level->actors, i);
-		if (!actor->actorModel)
-		{
-			if (!actor->actorWall)
-			{
-				continue;
-			}
-			buffers.actors.walls.count++;
-		} else
-		{
-			size_t index = ListFind(buffers.actors.models.loadedModelIds, (void *)actor->actorModel->id);
-			if (index == -1)
-			{
-				index = buffers.actors.models.loadedModelIds.length;
-				ListAdd(&buffers.actors.models.loadedModelIds, (void *)actor->actorModel->id);
-				buffers.actors.models.vertexCount += actor->actorModel->vertexCount;
-				buffers.actors.models.indexCount += actor->actorModel->indexCount;
-			}
-			if (index < buffers.actors.models.modelCounts.length)
-			{
-				buffers.actors.models.modelCounts.data[index]++;
-			} else
-			{
-				ListAdd(&buffers.actors.models.modelCounts, (void *)1);
-			}
-		}
-		if (actor->showShadow)
-		{
-			buffers.walls.shadowCount++;
-		}
-	}
-	ListUnlock(level->actors);
-
-	if (sizeof(ActorVertex) * buffers.actors.models.vertexCount > buffers.actors.models.vertexSize ||
-		sizeof(uint32_t) * buffers.actors.models.indexCount > buffers.actors.models.indexSize ||
-		sizeof(ActorVertex) * buffers.actors.walls.count * 4 > buffers.actors.walls.vertexSize ||
-		sizeof(uint32_t) * buffers.actors.walls.count * 6 > buffers.actors.walls.indexSize)
-	{
-		if (!ResizeActorBuffer())
-		{
-			return false;
-		}
-	}
-
 	if (level->hasCeiling)
 	{
 		pushConstants.skyVertexCount = 0;
@@ -600,52 +552,22 @@ bool VK_LoadLevelWalls(const Level *level)
 	uint32_t *wallIndices = calloc(buffers.walls.wallCount * 6 + buffers.walls.skyIndexCount, sizeof(uint32_t));
 	CheckAlloc(wallIndices);
 
-	ActorVertex *actorVertices = calloc(buffers.actors.models.vertexCount, sizeof(ActorVertex));
-	CheckAlloc(actorVertices);
-	uint32_t *actorIndices = calloc(buffers.actors.models.indexCount, sizeof(uint32_t));
-	CheckAlloc(actorIndices);
-
 	LoadWalls(level, _skyModel, wallVertices, wallIndices, skyVertexCount);
-	LoadActorModels(level, actorVertices, actorIndices);
 
 	const VkDeviceSize wallVertexSize = sizeof(WallVertex) * (buffers.walls.maxWallCount * 4 + _skyModel->vertexCount);
 	const VkDeviceSize wallIndexSize = sizeof(uint32_t) * (buffers.walls.maxWallCount * 6 + _skyModel->indexCount);
 
-	MemoryInfo memoryInfo = {
-		.type = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-	};
-	const MemoryAllocationInfo allocationInfo = {
-		.memoryInfo = &memoryInfo,
-		.usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-	};
-	Buffer stagingBuffer = {
-		.memoryAllocationInfo = allocationInfo,
-		.size = wallVertexSize + wallIndexSize + buffers.actors.models.vertexSize + buffers.actors.models.indexSize,
-	};
-	if (!CreateBuffer(&stagingBuffer, true))
+	if (__builtin_expect(wallVertexSize + wallIndexSize > buffers.staging.size, false) &&
+		!ResizeStagingBuffer(wallVertexSize + wallIndexSize))
 	{
-		free(wallVertices);
-		free(wallIndices);
-		free(actorVertices);
-		free(actorIndices);
-
 		return false;
 	}
-
-	VulkanTest(vkMapMemory(device, memoryInfo.memory, 0, stagingBuffer.size, 0, &data),
-			   "Failed to map staging buffer memory!");
+	void *data = buffers.staging.memoryAllocationInfo.memoryInfo->mappedMemory;
 
 	memcpy(data, wallVertices, sizeof(WallVertex) * (buffers.walls.wallCount * 4 + skyVertexCount));
 	memcpy(data + wallVertexSize,
 		   wallIndices,
 		   sizeof(uint32_t) * (buffers.walls.wallCount * 6 + buffers.walls.skyIndexCount));
-	memcpy(data + wallVertexSize + wallIndexSize,
-		   actorVertices,
-		   sizeof(ActorVertex) * buffers.actors.models.vertexCount);
-	memcpy(data + wallVertexSize + wallIndexSize + buffers.actors.models.vertexSize,
-		   actorIndices,
-		   sizeof(uint32_t) * buffers.actors.models.indexCount);
-	vkUnmapMemory(device, memoryInfo.memory);
 
 	const VkBufferCopy regions[] = {
 		{
@@ -658,18 +580,8 @@ bool VK_LoadLevelWalls(const Level *level)
 			.dstOffset = buffers.walls.indexOffset,
 			.size = wallIndexSize,
 		},
-		{
-			.srcOffset = wallVertexSize + wallIndexSize,
-			.dstOffset = buffers.actors.vertexOffset,
-			.size = buffers.actors.models.vertexSize,
-		},
-		{
-			.srcOffset = wallVertexSize + wallIndexSize + buffers.actors.models.vertexSize,
-			.dstOffset = buffers.actors.indexOffset,
-			.size = buffers.actors.models.indexSize,
-		},
 	};
-	if (!CopyBuffer(stagingBuffer.buffer, buffers.local.buffer, !buffers.actors.models.vertexSize ? 2 : 4, regions))
+	if (!CopyBuffer(buffers.staging.buffer, buffers.local.buffer, 2, regions))
 	{
 		return false;
 	}
@@ -678,104 +590,9 @@ bool VK_LoadLevelWalls(const Level *level)
 
 	free(wallVertices);
 	free(wallIndices);
-	free(actorVertices);
-	free(actorIndices);
 
-	return DestroyBuffer(&stagingBuffer);
-}
-
-bool VK_LoadNewActor()
-{
-	const Actor *actor = ListGet(loadedLevel->actors, loadedLevel->actors.length - 1);
-	if (!actor->actorModel)
-	{
-		if (!actor->actorWall)
-		{
-			return true;
-		}
-		buffers.actors.walls.count++;
-	} else
-	{
-		size_t index = ListFind(buffers.actors.models.loadedModelIds, (void *)actor->actorModel->id);
-		if (index == -1)
-		{
-			index = buffers.actors.models.loadedModelIds.length;
-			ListAdd(&buffers.actors.models.loadedModelIds, (void *)actor->actorModel->id);
-			buffers.actors.models.vertexCount += actor->actorModel->vertexCount;
-			buffers.actors.models.indexCount += actor->actorModel->indexCount;
-		}
-		if (index < buffers.actors.models.modelCounts.length)
-		{
-			buffers.actors.models.modelCounts.data[index]++;
-		} else
-		{
-			ListAdd(&buffers.actors.models.modelCounts, (void *)1);
-		}
-	}
-	if (actor->showShadow)
-	{
-		buffers.walls.shadowCount++;
-	}
-
-	if (!ResizeActorBuffer())
-	{
-		return false;
-	}
-
-	ActorVertex *actorVertices = calloc(buffers.actors.models.vertexCount, sizeof(ActorVertex));
-	CheckAlloc(actorVertices);
-	uint32_t *actorIndices = calloc(buffers.actors.models.indexCount, sizeof(uint32_t));
-	CheckAlloc(actorIndices);
-	LoadActorModels(loadedLevel, actorVertices, actorIndices);
-
-	MemoryInfo memoryInfo = {
-		.type = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-	};
-	const MemoryAllocationInfo allocationInfo = {
-		.memoryInfo = &memoryInfo,
-		.usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-	};
-	Buffer stagingBuffer = {
-		.memoryAllocationInfo = allocationInfo,
-		.size = buffers.actors.models.vertexSize + buffers.actors.models.indexSize,
-	};
-	if (!CreateBuffer(&stagingBuffer, true))
-	{
-		free(actorVertices);
-		free(actorIndices);
-
-		return false;
-	}
-
-	void *data;
-	VulkanTest(vkMapMemory(device, memoryInfo.memory, 0, stagingBuffer.size, 0, &data),
-			   "Failed to map actor model staging buffer memory!");
-
-	memcpy(data, actorVertices, sizeof(ActorVertex) * buffers.actors.models.vertexCount);
-	memcpy(data + buffers.actors.models.vertexSize, actorIndices, sizeof(uint32_t) * buffers.actors.models.indexCount);
-	vkUnmapMemory(device, memoryInfo.memory);
-
-	const VkBufferCopy regions[] = {
-		{
-			.srcOffset = 0,
-			.dstOffset = buffers.actors.vertexOffset,
-			.size = buffers.actors.models.vertexSize,
-		},
-		{
-			.srcOffset = buffers.actors.models.vertexSize,
-			.dstOffset = buffers.actors.indexOffset,
-			.size = buffers.actors.models.indexSize,
-		},
-	};
-	if (!CopyBuffer(stagingBuffer.buffer, buffers.local.buffer, 2, regions))
-	{
-		return false;
-	}
-
-	free(actorVertices);
-	free(actorIndices);
-
-	return DestroyBuffer(&stagingBuffer);
+	loadedActors = 0;
+	return LoadActors(level);
 }
 
 void VK_DrawColoredQuad(const int32_t x, const int32_t y, const int32_t w, const int32_t h, const Color color)

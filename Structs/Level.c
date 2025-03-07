@@ -75,7 +75,6 @@ void AddActor(Actor *actor)
 {
 	Level *l = GetState()->level;
 	ListAdd(&l->actors, actor);
-	LoadNewActor();
 }
 
 void RemoveActor(Actor *actor)

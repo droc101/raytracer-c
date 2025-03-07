@@ -176,19 +176,6 @@ void LoadLevelWalls(const Level *l)
 	}
 }
 
-void LoadNewActor()
-{
-	switch (currentRenderer)
-	{
-		case RENDERER_VULKAN:
-			VK_LoadNewActor();
-			break;
-		case RENDERER_OPENGL:
-		default:
-			break;
-	}
-}
-
 inline void UpdateViewportSize()
 {
 	const float newScaleX = ActualWindowSize().x / DEF_WIDTH;

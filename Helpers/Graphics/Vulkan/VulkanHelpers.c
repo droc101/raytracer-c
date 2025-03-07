@@ -13,23 +13,25 @@
 #include "VulkanResources.h"
 
 #pragma region variables
-SDL_Window *vk_window;
+SDL_Window *vk_window = NULL;
 bool minimized = false;
+bool textureCacheMiss = 0;
+size_t loadedActors = 0;
 
 VkInstance instance = VK_NULL_HANDLE;
-VkSurfaceKHR surface;
-PhysicalDevice physicalDevice;
-QueueFamilyIndices queueFamilyIndices;
+VkSurfaceKHR surface = VK_NULL_HANDLE;
+PhysicalDevice physicalDevice = {0};
+QueueFamilyIndices queueFamilyIndices = {0};
 SwapChainSupportDetails swapChainSupport = {0};
-VkDevice device = NULL;
-VkQueue graphicsQueue;
-VkQueue presentQueue;
-VkQueue transferQueue;
+VkDevice device = VK_NULL_HANDLE;
+VkQueue graphicsQueue = VK_NULL_HANDLE;
+VkQueue presentQueue = VK_NULL_HANDLE;
+VkQueue transferQueue = VK_NULL_HANDLE;
 VkSwapchainKHR swapChain = VK_NULL_HANDLE;
-VkImage *swapChainImages;
+VkImage *swapChainImages = NULL;
 uint32_t swapChainCount = 0;
-VkFormat swapChainImageFormat;
-VkExtent2D swapChainExtent;
+VkFormat swapChainImageFormat = VK_FORMAT_UNDEFINED;
+VkExtent2D swapChainExtent = {0};
 VkImageView *swapChainImageViews = NULL;
 VkRenderPass renderPass = VK_NULL_HANDLE;
 VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
@@ -48,24 +50,21 @@ uint8_t currentFrame = 0;
 uint32_t swapchainImageIndex = -1;
 MemoryPools memoryPools = {
 	{
-		.size = 0,
-		.mappedMemory = NULL,
-		.memory = VK_NULL_HANDLE,
 		.type = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 	},
 	{
-		.size = 0,
-		.mappedMemory = NULL,
-		.memory = VK_NULL_HANDLE,
+		.type = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+	},
+	{
 		.type = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 	},
 };
 Buffers buffers = {0};
 VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
 VkDescriptorSet descriptorSets[MAX_FRAMES_IN_FLIGHT];
-List textures;
+List textures = {0};
 MemoryInfo textureMemory = {.type = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT};
-List texturesImageView;
+List texturesImageView = {0};
 uint32_t imageAssetIdToIndexMap[MAX_TEXTURES];
 TextureSamplers textureSamplers = {
 	.linearRepeat = VK_NULL_HANDLE,
@@ -73,7 +72,7 @@ TextureSamplers textureSamplers = {
 	.linearNoRepeat = VK_NULL_HANDLE,
 	.nearestNoRepeat = VK_NULL_HANDLE,
 };
-VkFormat depthImageFormat;
+VkFormat depthImageFormat = VK_FORMAT_UNDEFINED;
 VkImage depthImage = VK_NULL_HANDLE;
 VkDeviceMemory depthImageMemory = VK_NULL_HANDLE;
 VkImageView depthImageView = VK_NULL_HANDLE;
@@ -82,11 +81,108 @@ VkDeviceMemory colorImageMemory = VK_NULL_HANDLE;
 VkImageView colorImageView = VK_NULL_HANDLE;
 VkClearColorValue clearColor = {{0.0f, 0.0f, 0.0f, 1.0f}};
 VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
-uint16_t textureCount;
-PushConstants pushConstants;
-VkCommandBuffer transferCommandBuffer;
-bool textureCacheMiss;
+uint16_t textureCount = 0;
+PushConstants pushConstants = {0};
+VkCommandBuffer transferCommandBuffer = VK_NULL_HANDLE;
 #pragma endregion variables
+
+bool LoadActors(const Level *level)
+{
+	// if (__builtin_expect(loadedActors == level->actors.length, true))
+	// {
+	// 	return true;
+	// }
+
+	ListClear(&buffers.actors.models.loadedModelIds);
+	ListClear(&buffers.actors.models.modelCounts);
+	buffers.walls.shadowCount = 0;
+	memset(&buffers.actors.models, 0, sizeof(ModelActorBuffer));
+	memset(&buffers.actors.walls, 0, sizeof(WallActorBuffer));
+	loadedActors = 0;
+	ListLock(level->actors);
+	for (size_t i = 0; i < level->actors.length; i++)
+	{
+		loadedActors++;
+		const Actor *actor = ListGet(level->actors, i);
+		if (!actor->actorModel)
+		{
+			if (!actor->actorWall)
+			{
+				continue;
+			}
+			buffers.actors.walls.count++;
+		} else
+		{
+			size_t index = ListFind(buffers.actors.models.loadedModelIds, (void *)actor->actorModel->id);
+			if (index == -1)
+			{
+				index = buffers.actors.models.loadedModelIds.length;
+				ListAdd(&buffers.actors.models.loadedModelIds, (void *)actor->actorModel->id);
+				buffers.actors.models.vertexCount += actor->actorModel->vertexCount;
+				buffers.actors.models.indexCount += actor->actorModel->indexCount;
+			}
+			if (index < buffers.actors.models.modelCounts.length)
+			{
+				buffers.actors.models.modelCounts.data[index]++;
+			} else
+			{
+				ListAdd(&buffers.actors.models.modelCounts, (void *)1);
+			}
+		}
+		if (actor->showShadow)
+		{
+			buffers.walls.shadowCount++;
+		}
+	}
+	ListUnlock(level->actors);
+	if (loadedActors == 0)
+	{
+		return true;
+	}
+
+	if (!ResizeActorBuffer())
+	{
+		return false;
+	}
+
+	ActorVertex *actorVertices = calloc(buffers.actors.models.vertexCount, sizeof(ActorVertex));
+	CheckAlloc(actorVertices);
+	uint32_t *actorIndices = calloc(buffers.actors.models.indexCount, sizeof(uint32_t));
+	CheckAlloc(actorIndices);
+	LoadActorModels(level, actorVertices, actorIndices);
+
+	const size_t size = buffers.actors.models.vertexSize + buffers.actors.models.indexSize;
+	if (__builtin_expect(size > buffers.staging.size, false) && !ResizeStagingBuffer(size))
+	{
+		return false;
+	}
+	void *data = buffers.staging.memoryAllocationInfo.memoryInfo->mappedMemory;
+
+	memcpy(data, actorVertices, sizeof(ActorVertex) * buffers.actors.models.vertexCount);
+	memcpy(data + buffers.actors.models.vertexSize, actorIndices, sizeof(uint32_t) * buffers.actors.models.indexCount);
+
+	const VkBufferCopy regions[] = {
+		{
+			.srcOffset = 0,
+			.dstOffset = buffers.actors.vertexOffset,
+			.size = buffers.actors.models.vertexSize,
+		},
+		{
+			.srcOffset = buffers.actors.models.vertexSize,
+			.dstOffset = buffers.actors.indexOffset,
+			.size = buffers.actors.models.indexSize,
+		},
+	};
+	if (!CopyBuffer(buffers.staging.buffer, buffers.local.buffer, 2, regions))
+	{
+		return false;
+	}
+
+	free(actorVertices);
+	free(actorIndices);
+
+	return true;
+}
 
 bool QuerySwapChainSupport(const VkPhysicalDevice pDevice)
 {
@@ -681,7 +777,11 @@ void LoadActorModels(const Level *level, ActorVertex *vertices, uint32_t *indice
 	size_t indexOffset = 0;
 	ListClear(&buffers.actors.models.loadedModelIds);
 	ListLock(level->actors);
-	for (size_t i = 0; i < level->actors.length; i++)
+	if (__builtin_expect(level->actors.length < loadedActors, false))
+	{
+		loadedActors = level->actors.length;
+	}
+	for (size_t i = 0; i < loadedActors; i++)
 	{
 		const Actor *actor = ListGet(level->actors, i);
 		if (!actor->actorModel)
@@ -706,7 +806,11 @@ void LoadActorWalls(const Level *level, ActorVertex *vertices, uint32_t *indices
 {
 	uint32_t wallCount = 0;
 	ListLock(level->actors);
-	for (size_t i = 0; i < level->actors.length; i++)
+	if (__builtin_expect(level->actors.length < loadedActors, false))
+	{
+		loadedActors = level->actors.length;
+	}
+	for (size_t i = 0; i < loadedActors; i++)
 	{
 		const Actor *actor = ListGet(level->actors, i);
 		if (!actor->actorWall || actor->actorModel != NULL)
@@ -777,7 +881,11 @@ void LoadActorInstanceData(const Level *level,
 					 (size_t)ListGet(buffers.actors.models.modelCounts, i - 1) * sizeof(ActorInstanceData);
 	}
 	ListLock(level->actors);
-	for (size_t i = 0; i < level->actors.length; i++)
+	if (__builtin_expect(level->actors.length < loadedActors, false))
+	{
+		loadedActors = level->actors.length;
+	}
+	for (size_t i = 0; i < loadedActors; i++)
 	{
 		const Actor *actor = ListGet(level->actors, i);
 		if (!actor->actorWall && !actor->actorModel)
@@ -850,7 +958,11 @@ void LoadActorDrawInfo(const Level *level, VkDrawIndexedIndirectCommand *drawInf
 		modelCount += (size_t)ListGet(buffers.actors.models.modelCounts, i);
 	}
 	ListLock(level->actors);
-	for (size_t i = 0; i < level->actors.length; i++)
+	if (__builtin_expect(level->actors.length < loadedActors, false))
+	{
+		loadedActors = level->actors.length;
+	}
+	for (size_t i = 0; i < loadedActors; i++)
 	{
 		const Actor *actor = ListGet(level->actors, i);
 		if (!actor->actorWall || actor->actorModel)

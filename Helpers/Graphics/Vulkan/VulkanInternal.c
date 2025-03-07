@@ -1,4 +1,3 @@
-
 // Created by Noah on 11/23/2024.
 //
 
@@ -1472,6 +1471,25 @@ bool CreateBuffers()
 		return false;
 	}
 	SetSharedBufferAliasingInfo();
+
+	const MemoryAllocationInfo allocationInfo = {
+		.memoryInfo = &memoryPools.stagingMemory,
+		.usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+	};
+	buffers.staging.memoryAllocationInfo = allocationInfo;
+	buffers.staging.size = 33554432;
+	if (!CreateBuffer(&buffers.staging, true))
+	{
+		return false;
+	}
+	VulkanTest(vkMapMemory(device,
+						   buffers.staging.memoryAllocationInfo.memoryInfo->memory,
+						   0,
+						   VK_WHOLE_SIZE,
+						   0,
+						   &buffers.staging.memoryAllocationInfo.memoryInfo->mappedMemory),
+			   "Failed to map actor model staging buffer memory!");
+
 
 	return true;
 }
