@@ -1474,7 +1474,7 @@ bool CreateBuffers()
 
 	const MemoryAllocationInfo allocationInfo = {
 		.memoryInfo = &memoryPools.stagingMemory,
-		.usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+		.usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 	};
 	buffers.staging.memoryAllocationInfo = allocationInfo;
 	buffers.staging.size = 33554432;

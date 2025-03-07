@@ -398,6 +398,10 @@ bool VK_Cleanup()
 		{
 			return false;
 		}
+		if (!DestroyBuffer(&buffers.staging))
+		{
+			return false;
+		}
 
 		CleanupSyncObjects();
 
