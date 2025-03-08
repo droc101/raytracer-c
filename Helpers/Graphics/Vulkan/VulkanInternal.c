@@ -1593,16 +1593,30 @@ bool CreateDescriptorSets()
 
 bool CreateCommandBuffers()
 {
-	const VkCommandBufferAllocateInfo allocateInfo = {
+	const VkCommandBufferAllocateInfo graphicsAllocateInfo = {
 		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-		.pNext = NULL,
 		.commandPool = graphicsCommandPool,
 		.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 		.commandBufferCount = MAX_FRAMES_IN_FLIGHT,
 	};
+	VulkanTest(vkAllocateCommandBuffers(device, &graphicsAllocateInfo, commandBuffers),
+			   "Failed to allocate Vulkan graphics command buffers!");
 
-	VulkanTest(vkAllocateCommandBuffers(device, &allocateInfo, commandBuffers),
-			   "Failed to allocate Vulkan command buffers!");
+	const VkCommandBufferAllocateInfo transferAllocateInfo = {
+		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+		.commandPool = transferCommandPool,
+		.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+		.commandBufferCount = 1,
+	};
+	VulkanTest(vkAllocateCommandBuffers(device, &transferAllocateInfo, &transferCommandBuffer),
+			   "Failed to allocate Vulkan transfer command buffer!");
+
+	const VkFenceCreateInfo fenceCreateInfo = {
+		.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+		.flags = VK_FENCE_CREATE_SIGNALED_BIT,
+	};
+	VulkanTest(vkCreateFence(device, &fenceCreateInfo, NULL, &transferBufferFence),
+			   "Failed to create Vulkan transfer buffer fence!");
 
 	return true;
 }

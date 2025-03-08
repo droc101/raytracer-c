@@ -84,6 +84,7 @@ VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
 uint16_t textureCount = 0;
 PushConstants pushConstants = {0};
 VkCommandBuffer transferCommandBuffer = VK_NULL_HANDLE;
+VkFence transferBufferFence = VK_NULL_HANDLE;
 #pragma endregion variables
 
 bool LoadActors(const Level *level)

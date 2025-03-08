@@ -611,6 +611,7 @@ extern VkSampleCountFlagBits msaaSamples;
 extern uint16_t textureCount;
 extern PushConstants pushConstants;
 extern VkCommandBuffer transferCommandBuffer;
+extern VkFence transferBufferFence;
 #pragma endregion variables
 
 #pragma region helperFunctions

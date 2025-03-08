@@ -139,10 +139,16 @@ VkResult VK_FrameStart()
 							0,
 							NULL);
 
-	if (!BeginCommandBuffer(&transferCommandBuffer, transferCommandPool))
-	{
-		return VK_ERROR_UNKNOWN;
-	}
+	VulkanTestReturnResult(vkWaitForFences(device, 1, &transferBufferFence, VK_TRUE, UINT64_MAX),
+						   "Failed to wait for Vulkan transfer buffer fence!");
+	VulkanTestReturnResult(vkResetFences(device, 1, &transferBufferFence),
+						   "Failed to reset Vulkan transfer buffer fence!");
+	const VkCommandBufferBeginInfo commandBufferBeginInfo = {
+		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+		.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
+	};
+	VulkanTest(vkBeginCommandBuffer(transferCommandBuffer, &commandBufferBeginInfo),
+			   "Failed to start the recording of Vulkan transfer command buffer!");
 
 	buffers.ui.quadCount = 0;
 
@@ -179,10 +185,17 @@ VkResult VK_FrameEnd()
 						});
 	}
 
-	if (!EndCommandBuffer(transferCommandBuffer, transferCommandPool, transferQueue))
-	{
-		return VK_ERROR_UNKNOWN;
-	}
+	VulkanTest(vkEndCommandBuffer(transferCommandBuffer),
+			   "Failed to finish the recording of Vulkan transfer command buffer!");
+
+	const VkSubmitInfo queueSubmitInfo = {
+		.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+		.commandBufferCount = 1,
+		.pCommandBuffers = &transferCommandBuffer,
+	};
+
+	VulkanTest(vkQueueSubmit(transferQueue, 1, &queueSubmitInfo, transferBufferFence),
+			   "Failed to submit Vulkan transfer command buffer to queue!");
 
 	if (textureCacheMiss)
 	{
@@ -404,6 +417,7 @@ bool VK_Cleanup()
 		}
 
 		CleanupSyncObjects();
+		vkDestroyFence(device, transferBufferFence, NULL);
 
 		vkDestroyCommandPool(device, graphicsCommandPool, NULL);
 		vkDestroyCommandPool(device, transferCommandPool, NULL);
