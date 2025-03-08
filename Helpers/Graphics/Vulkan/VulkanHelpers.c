@@ -89,10 +89,10 @@ VkFence transferBufferFence = VK_NULL_HANDLE;
 
 bool LoadActors(const Level *level)
 {
-	// if (__builtin_expect(loadedActors == level->actors.length, true))
-	// {
-	// 	return true;
-	// }
+	if (__builtin_expect(loadedActors == level->actors.length, true))
+	{
+		return true;
+	}
 
 	ListClear(&buffers.actors.models.loadedModelIds);
 	ListClear(&buffers.actors.models.modelCounts);
@@ -136,10 +136,6 @@ bool LoadActors(const Level *level)
 		}
 	}
 	ListUnlock(level->actors);
-	if (loadedActors == 0)
-	{
-		return true;
-	}
 
 	if (!ResizeActorBuffer())
 	{
