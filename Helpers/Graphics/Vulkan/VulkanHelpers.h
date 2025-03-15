@@ -536,7 +536,6 @@ typedef struct PushConstants
 #pragma region variables
 extern SDL_Window *vk_window;
 extern bool minimized;
-extern bool textureCacheMiss;
 extern size_t loadedActors;
 
 /// When the instance is created the Vulkan library gets initialized, allowing the game to provide the library with any

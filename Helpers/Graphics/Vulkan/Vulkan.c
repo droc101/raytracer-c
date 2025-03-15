@@ -97,32 +97,25 @@ VkResult VK_FrameStart()
 		return VK_NOT_READY;
 	}
 
-	if (textureCacheMiss && swapchainImageIndex != -1)
-	{
-		textureCacheMiss = false;
-	} else
-	{
-		VulkanTestReturnResult(vkWaitForFences(device, MAX_FRAMES_IN_FLIGHT, inFlightFences, VK_TRUE, UINT64_MAX),
-							   "Failed to wait for Vulkan fences!");
+	VulkanTestReturnResult(vkWaitForFences(device, MAX_FRAMES_IN_FLIGHT, inFlightFences, VK_TRUE, UINT64_MAX),
+						   "Failed to wait for Vulkan fences!");
 
-		VulkanTestReturnResult(vkResetFences(device, 1, &inFlightFences[currentFrame]),
-							   "Failed to reset Vulkan fences!");
+	VulkanTestReturnResult(vkResetFences(device, 1, &inFlightFences[currentFrame]), "Failed to reset Vulkan fences!");
 
-		const VkResult acquireNextImageResult = vkAcquireNextImageKHR(device,
-																	  swapChain,
-																	  UINT64_MAX,
-																	  imageAvailableSemaphores[currentFrame],
-																	  VK_NULL_HANDLE,
-																	  &swapchainImageIndex);
-		if (acquireNextImageResult == VK_ERROR_OUT_OF_DATE_KHR || acquireNextImageResult == VK_SUBOPTIMAL_KHR)
+	const VkResult acquireNextImageResult = vkAcquireNextImageKHR(device,
+																  swapChain,
+																  UINT64_MAX,
+																  imageAvailableSemaphores[currentFrame],
+																  VK_NULL_HANDLE,
+																  &swapchainImageIndex);
+	if (acquireNextImageResult == VK_ERROR_OUT_OF_DATE_KHR || acquireNextImageResult == VK_SUBOPTIMAL_KHR)
+	{
+		if (RecreateSwapChain())
 		{
-			if (RecreateSwapChain())
-			{
-				return acquireNextImageResult;
-			}
+			return acquireNextImageResult;
 		}
-		VulkanTestReturnResult(acquireNextImageResult, "Failed to acquire next Vulkan image index!");
 	}
+	VulkanTestReturnResult(acquireNextImageResult, "Failed to acquire next Vulkan image index!");
 
 	VulkanTestReturnResult(vkResetCommandBuffer(commandBuffers[currentFrame], 0),
 						   "Failed to reset Vulkan command buffer!");
@@ -196,11 +189,6 @@ VkResult VK_FrameEnd()
 
 	VulkanTest(vkQueueSubmit(transferQueue, 1, &queueSubmitInfo, transferBufferFence),
 			   "Failed to submit Vulkan transfer command buffer to queue!");
-
-	if (textureCacheMiss)
-	{
-		return VK_INCOMPLETE;
-	}
 
 	vkCmdNextSubpass(commandBuffers[currentFrame], VK_SUBPASS_CONTENTS_INLINE);
 	if (buffers.ui.quadCount > 0)
@@ -278,11 +266,6 @@ VkResult VK_RenderLevel(const Level *level, const Camera *camera)
 	UpdateTranslationMatrix(camera);
 
 	VulkanTestReturnResult(CopyBuffers(loadedLevel), "Failed to copy buffers!");
-
-	if (textureCacheMiss)
-	{
-		return VK_INCOMPLETE;
-	}
 
 	vkCmdPushConstants(commandBuffers[currentFrame],
 					   pipelineLayout,

@@ -15,7 +15,6 @@
 #pragma region variables
 SDL_Window *vk_window = NULL;
 bool minimized = false;
-bool textureCacheMiss = 0;
 size_t loadedActors = 0;
 
 VkInstance instance = VK_NULL_HANDLE;
@@ -522,7 +521,6 @@ inline uint32_t ImageIndex(const Image *image)
 	const uint32_t index = imageAssetIdToIndexMap[image->id];
 	if (index == -1)
 	{
-		textureCacheMiss = true;
 		if (!LoadTexture(image))
 		{
 			Error("Failed to load texture!");

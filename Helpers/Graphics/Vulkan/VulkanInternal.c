@@ -334,6 +334,7 @@ bool CreateLogicalDevice()
 		.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
 		.runtimeDescriptorArray = VK_TRUE,
 		.shaderSampledImageArrayNonUniformIndexing = VK_TRUE,
+		.descriptorBindingSampledImageUpdateAfterBind = VK_TRUE,
 	};
 	VkDeviceCreateInfo createInfo = {
 		.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
@@ -720,8 +721,14 @@ bool CreateDescriptorSetLayouts()
 		.descriptorCount = MAX_TEXTURES,
 		.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT,
 	};
+	const VkDescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsCreateInfo = {
+		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO,
+		.bindingCount = 1,
+		.pBindingFlags = (VkDescriptorBindingFlags[]){VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT},
+	};
 	const VkDescriptorSetLayoutCreateInfo layoutInfo = {
 		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+		.pNext = &bindingFlagsCreateInfo,
 		.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT,
 		.bindingCount = 1,
 		.pBindings = &binding,
@@ -1526,7 +1533,6 @@ bool CreateDescriptorPool()
 	};
 	const VkDescriptorPoolCreateInfo poolCreateInfo = {
 		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
-		.pNext = NULL,
 		.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT,
 		.maxSets = MAX_FRAMES_IN_FLIGHT,
 		.poolSizeCount = 3,
@@ -1549,7 +1555,6 @@ bool CreateDescriptorSets()
 
 	const VkDescriptorSetAllocateInfo allocateInfo = {
 		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-		.pNext = NULL,
 		.descriptorPool = descriptorPool,
 		.descriptorSetCount = MAX_FRAMES_IN_FLIGHT,
 		.pSetLayouts = layouts,
