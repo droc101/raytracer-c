@@ -51,6 +51,8 @@ Level *CreateLevel()
 	l->fogEnd = 30;
 	strncpy(l->name, "Unnamed Level", 32);
 	l->courseNum = -1;
+	ListCreate(&l->namedActorNames);
+	ListCreate(&l->namedActorPointers);
 	return l;
 }
 
@@ -66,6 +68,8 @@ void DestroyLevel(Level *l)
 
 	ListAndContentsFree(&l->walls, false);
 	ListAndContentsFree(&l->triggers, false);
+	ListAndContentsFree(&l->namedActorNames, false);
+	ListFree(&l->namedActorPointers, false);
 	ListFree(&l->actors, false);
 	free(l);
 	l = NULL;
@@ -80,6 +84,15 @@ void AddActor(Actor *actor)
 void RemoveActor(Actor *actor)
 {
 	Level *l = GetState()->level;
+
+	// Remove the actor from the named actor lists if it's there
+	const size_t nameIdx = ListFind(l->namedActorPointers, actor);
+	if (nameIdx != -1)
+	{
+		ListRemoveAt(&l->namedActorNames, nameIdx);
+		ListRemoveAt(&l->namedActorPointers, nameIdx);
+	}
+
 	const size_t idx = ListFind(l->actors, actor);
 	if (idx == -1)
 	{
@@ -87,6 +100,49 @@ void RemoveActor(Actor *actor)
 	}
 	ListRemoveAt(&l->actors, idx);
 	FreeActor(actor);
+}
+
+void NameActor(Actor *actor, const char *name, Level *l)
+{
+	char *nameCopy = strdup(name);
+	ListAdd(&l->namedActorNames, nameCopy);
+	ListAdd(&l->namedActorPointers, actor);
+}
+
+Actor* GetActorByName(const char *name, const Level *l)
+{
+	ListLock(l->namedActorNames);
+	for (int i = 0; i < l->namedActorNames.length; i++)
+	{
+		const char *actorName = ListGet(l->namedActorNames, i);
+		if (strcmp(actorName, name) == 0)
+		{
+			Actor *a = ListGet(l->namedActorPointers, i);
+			ListUnlock(l->namedActorNames);
+			return a;
+		}
+	}
+	ListUnlock(l->namedActorNames);
+	return NULL;
+}
+
+List* GetActorsByName(const char *name, const Level *l)
+{
+	List *actors = malloc(sizeof(List));
+	CheckAlloc(actors);
+	ListCreate(actors);
+	ListLock(l->namedActorNames);
+	for (int i = 0; i < l->namedActorNames.length; i++)
+	{
+		const char *actorName = ListGet(l->namedActorNames, i);
+		if (strcmp(actorName, name) == 0)
+		{
+			Actor *a = ListGet(l->namedActorPointers, i);
+			ListAdd(actors, a);
+		}
+	}
+	ListUnlock(l->namedActorNames);
+	return actors;
 }
 
 void RenderLevel(const GlobalState *g)

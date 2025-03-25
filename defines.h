@@ -338,6 +338,11 @@ struct Level
 
 	/// The player object
 	Player player;
+
+	/// The map of named actors in the level (key portion)
+	List namedActorNames;
+	/// The map of named actors in the level (value portion)
+	List namedActorPointers;
 };
 
 struct TextBox

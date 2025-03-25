@@ -55,6 +55,8 @@ Level *LoadLevel(const byte *data)
 		const byte actorParamB = ReadByte(data, &offset);
 		const byte actorParamC = ReadByte(data, &offset);
 		const byte actorParamD = ReadByte(data, &offset);
+		const char actorName[64];
+		ReadString(data, &offset, (char *)&actorName, 64);
 		Actor *a = CreateActor(v2(actorX, actorY),
 							   actorRotation,
 							   actorType,
@@ -64,6 +66,10 @@ Level *LoadLevel(const byte *data)
 							   actorParamD,
 							   l->worldId);
 		ListAdd(&l->actors, a);
+		if (actorName[0] != '\0')
+		{
+			NameActor(a, actorName, l);
+		}
 	}
 
 	const uint wallCount = ReadUint(data, &offset);
