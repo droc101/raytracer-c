@@ -10,6 +10,7 @@
 #include "../Helpers/Core/AssetReader.h"
 #include "../Helpers/Core/Error.h"
 #include "../Helpers/Core/MathEx.h"
+#include "../Structs/Actor.h"
 #include "../Structs/GlobalState.h"
 #include "../Structs/Level.h"
 #include "../Structs/Vector2.h"
@@ -81,6 +82,7 @@ void CoinUpdate(Actor *this, double /*delta*/)
 			GetState()->saveData->coins += 5;
 		}
 		PlaySoundEffect(SOUND("sfx_coincling"));
+		ActorFireOutput(this, 2, ""); // 2 = coin collected
 		RemoveActor(this);
 	}
 }

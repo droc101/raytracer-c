@@ -292,24 +292,6 @@ bool ChangeLevelByName(const char *name)
 	return true;
 }
 
-void SendSignal(const int signal, const Actor *sender)
-{
-	// LogDebug("Sending signal %d from actor %p\n", signal, sender);
-	ListLock(state.level->actors);
-	for (int i = 0; i < state.level->actors.length; i++)
-	{
-		Actor *a = ListGet(state.level->actors, i);
-		if (a->SignalHandler != NULL)
-		{
-			if (ListFind(a->listeningFor, (void *)(size_t)signal) != -1)
-			{
-				a->SignalHandler(a, sender, signal);
-			}
-		}
-	}
-	ListUnlock(state.level->actors);
-}
-
 void RemoveTrigger(const size_t index)
 {
 	const Trigger *trigger = ListGet(state.level->triggers, index);

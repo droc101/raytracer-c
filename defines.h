@@ -51,6 +51,7 @@ typedef struct Trigger Trigger;
 typedef struct Font Font;
 typedef struct SaveData SaveData;
 typedef struct Color Color;
+typedef struct ActorConnection ActorConnection;
 
 // Function signatures
 typedef void (*FixedUpdateFunction)(GlobalState *state, double delta);
@@ -71,7 +72,11 @@ typedef void (*ActorTargetReachedFunction)(Actor *self, double delta);
 
 typedef void (*ActorDestroyFunction)(Actor *self);
 
-typedef void (*ActorSignalHandlerFunction)(Actor *self, const Actor *sender, int signal);
+/**
+ * Signal handler function signature for actor
+ * @return True if the signal was handled, false if not
+ */
+typedef bool (*ActorSignalHandlerFunction)(Actor *self, const Actor *sender, byte signal, const char *param);
 
 #pragma endregion
 
@@ -545,8 +550,8 @@ struct Actor
 	ActorDestroyFunction Destroy;
 	/// The function to call when the actor receives a signal.
 	ActorSignalHandlerFunction SignalHandler;
-	/// List of signals the actor is listening for
-	List listeningFor;
+	/// List of I/O connections
+	List ioConnections;
 
 	// extra parameters for the actor. saved in level data, so can be used during Init
 	byte paramA;
@@ -641,6 +646,14 @@ struct Font
 	/// The image loaded from the texture
 	Image *image;
 } __attribute__((packed));
+
+struct ActorConnection
+{
+	byte targetInput;
+	byte myOutput;
+	char outActorName[64];
+	char outParamOverride[64];
+};
 
 #pragma endregion
 

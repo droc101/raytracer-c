@@ -13,9 +13,11 @@
 #include "../Structs/Actor.h"
 #include "../Structs/Vector2.h"
 
-void TestActorSignalHandler(Actor * /*self*/, const Actor *sender, const int signal)
+bool TestActorSignalHandler(Actor *self, const Actor *sender, byte signal, const char *param)
 {
+	if (DefaultSignalHandler(self, sender, signal, param)) return true;
 	LogDebug("Test actor got signal %d from actor %p\n", signal, sender);
+	return false;
 }
 
 void TestActorIdle(Actor *this, const double delta)
@@ -61,7 +63,6 @@ void TestActorInit(Actor *this, const b2WorldId worldId)
 	this->actorModel = LoadModel(MODEL("model_leafy"));
 	this->actorModelTexture = TEXTURE("actor_BLOB2");
 	this->SignalHandler = TestActorSignalHandler;
-	ActorListenFor(this, 0);
 	this->extra_data = calloc(1, sizeof(NavigationConfig));
 	CheckAlloc(this->extra_data);
 	NavigationConfig *navigationConfig = this->extra_data;

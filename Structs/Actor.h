@@ -7,6 +7,10 @@
 
 #include "../defines.h"
 
+#define ACTOR_KILL_INPUT 0
+#define ACTOR_SPAWN_OUTPUT 0
+#define ACTOR_KILLED_OUTPUT 1
+
 /**
  * Create an Actor
  * @param position Actor position
@@ -35,17 +39,30 @@ Actor *CreateActor(Vector2 position,
 void FreeActor(Actor *actor);
 
 /**
- * Add a signal to listen for
- * @param actor The actor that will listen
- * @param signal The signal to listen for
- */
-void ActorListenFor(Actor *actor, int signal);
-
-/**
  * 
  * @param this The actor to create the collider for
  * @param worldId The world within which to create the collider
  */
 void CreateActorWallCollider(Actor *this, b2WorldId worldId);
+
+/**
+ * Fire signal from an actor
+ * @param sender The actor sending the signal
+ * @param signal The signal to send
+ * @param defaultParam The default parameter to send with the signal
+ */
+void ActorFireOutput(const Actor *sender, const byte signal, const char *defaultParam);
+
+/**
+ * Destroy an actor connection
+ * @param connection The connection to destroy
+ */
+void DestroyActorConnection(ActorConnection *connection);
+
+/**
+ * Default signal handler for actors, handling global signals such as kill
+ * @return Whether the signal was handled
+ */
+bool DefaultSignalHandler(Actor *self, const Actor *, byte signal, const char *);
 
 #endif //GAME_ACTOR_H

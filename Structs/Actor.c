@@ -5,13 +5,17 @@
 #include "Actor.h"
 #include <box2d/box2d.h>
 #include <box2d/types.h>
+
 #include "../Helpers/Core/Error.h"
+#include "GlobalState.h"
+#include "Level.h"
 #include "Vector2.h"
 
 #include "../Actor/Coin.h"
 #include "../Actor/Door.h"
 #include "../Actor/Goal.h"
 #include "../Actor/TestActor.h"
+#include "../Helpers/Core/Logging.h"
 
 // Empty template functions
 void ActorInit(Actor * /*this*/, b2WorldId /*worldId*/) {}
@@ -77,27 +81,29 @@ Actor *CreateActor(const Vector2 position,
 	actor->actorModel = NULL;
 	actor->actorModelTexture = NULL;
 	actor->bodyId = b2_nullBodyId;
-	ListCreate(&actor->listeningFor);
-	actor->SignalHandler = NULL;
+	ListCreate(&actor->ioConnections);
+	actor->SignalHandler = DefaultSignalHandler;
 	actor->Init = ActorInitFuncs[actorType];
 	actor->Update = ActorUpdateFuncs[actorType];
 	actor->Destroy = ActorDestroyFuncs[actorType];
 	actor->Init(actor, worldId); // kindly allow the Actor to initialize itself
 	actor->actorType = actorType;
+	ActorFireOutput(actor, ACTOR_SPAWN_OUTPUT, "");
 	return actor;
 }
 
 void FreeActor(Actor *actor)
 {
+	ActorFireOutput(actor, ACTOR_SPAWN_OUTPUT, "");
 	actor->Destroy(actor);
-	ListFree(&actor->listeningFor, false);
+	for (int i = 0; i < actor->ioConnections.length; i++)
+	{
+		ActorConnection *connection = ListGet(actor->ioConnections, i);
+		DestroyActorConnection(connection);
+	}
+	ListFree(&actor->ioConnections, false);
 	free(actor);
 	actor = NULL;
-}
-
-void ActorListenFor(Actor *actor, const int signal)
-{
-	ListAdd(&actor->listeningFor, (void *)(size_t)signal);
 }
 
 void CreateActorWallCollider(Actor *this, const b2WorldId worldId)
@@ -134,4 +140,52 @@ void CreateActorWallCollider(Actor *this, const b2WorldId worldId)
 	shapeDef.friction = 0;
 	shapeDef.filter.categoryBits = COLLISION_GROUP_ACTOR;
 	b2CreatePolygonShape(this->actorWall->bodyId, &shapeDef, &shape);
+}
+
+void ActorFireOutput(const Actor *sender, const byte signal, const char *defaultParam)
+{
+	ListLock(sender->ioConnections);
+	for (int i = 0; i < sender->ioConnections.length; i++)
+	{
+		const ActorConnection *connection = ListGet(sender->ioConnections, i);
+		if (connection->myOutput == signal)
+		{
+			List *actors = GetActorsByName(connection->outActorName, GetState()->level);
+			if (actors == NULL)
+			{
+				LogWarning("Tried to fire signal to actor %s, but it was not found!", connection->outActorName);
+				continue;
+			}
+			for (int j = 0; j < actors->length; j++)
+			{
+				Actor *actor = ListGet(*actors, j);
+				if (actor->SignalHandler != NULL)
+				{
+					char *param = defaultParam;
+					if (connection->outParamOverride[0] != '\0')
+					{
+						strcpy(param, connection->outParamOverride);
+					}
+					actor->SignalHandler(actor, sender, connection->targetInput, param);
+				}
+			}
+			ListFree(actors, true);
+		}
+	}
+	ListUnlock(sender->ioConnections);
+}
+
+void DestroyActorConnection(ActorConnection *connection)
+{
+	free(connection);
+}
+
+bool DefaultSignalHandler(Actor *self, const Actor *, byte signal, const char *)
+{
+	if (signal == ACTOR_KILL_INPUT)
+	{
+		RemoveActor(self);
+		return true;
+	}
+	return false;
 }

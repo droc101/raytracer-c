@@ -98,13 +98,6 @@ void DestroyGlobalState();
 bool ChangeLevelByName(const char *name);
 
 /**
- * Send a signal to all actors listening for it
- * @param signal The signal to send
- * @param sender The actor sending the signal (can be NULL)
- */
-void SendSignal(int signal, const Actor *sender);
-
-/**
  * Remove a trigger from a level
  * @param index The trigger to remove
  */

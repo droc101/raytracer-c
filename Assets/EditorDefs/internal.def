@@ -1,10 +1,26 @@
 {
-    "version": 1,
+    "version": 2,
     "actors": [
         {
             "id": 0,
             "name": "Empty Actor",
-            "params": []
+            "params": [],
+            "inputs": [
+                {
+                    "name": "kill",
+                    "paramType": "none"
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "killed",
+                    "paramType": "none"
+                },
+                {
+                    "name": "spawned",
+                    "paramType": "none"
+                }
+            ]
         }
     ]
 }

@@ -57,6 +57,7 @@ Level *LoadLevel(const byte *data)
 		const byte actorParamD = ReadByte(data, &offset);
 		const char actorName[64];
 		ReadString(data, &offset, (char *)&actorName, 64);
+		const uint connectionCount = ReadUint(data, &offset);
 		Actor *a = CreateActor(v2(actorX, actorY),
 							   actorRotation,
 							   actorType,
@@ -65,6 +66,19 @@ Level *LoadLevel(const byte *data)
 							   actorParamC,
 							   actorParamD,
 							   l->worldId);
+		for (int j = 0; j < connectionCount; j++)
+		{
+			ActorConnection *ac = malloc(sizeof(ActorConnection));
+			ac->myOutput = ReadByte(data, &offset);
+			char outActorName[64];
+			ReadString(data, &offset, (char *)&outActorName, 64);
+			strcpy(ac->outActorName, outActorName);
+			ac->targetInput = ReadByte(data, &offset);
+			char outParamOverride[64];
+			ReadString(data, &offset, (char *)&outParamOverride, 64);
+			strcpy(ac->outParamOverride, outParamOverride);
+			ListAdd(&a->ioConnections, ac);
+		}
 		ListAdd(&l->actors, a);
 		if (actorName[0] != '\0')
 		{
