@@ -8,7 +8,6 @@
 #include "../Helpers/CommonAssets.h"
 #include "../Structs/Actor.h"
 #include "../Structs/Level.h"
-#include "../Structs/Trigger.h"
 #include "../Structs/Vector2.h"
 #include "../Structs/Wall.h"
 #include "Core/DataReader.h"
@@ -103,21 +102,6 @@ Level *LoadLevel(const byte *data)
 		WallBake(w);
 		CreateWallCollider(w, l->worldId);
 		ListAdd(&l->walls, w);
-	}
-
-	const uint triggerCount = ReadUint(data, &offset);
-	for (int i = 0; i < triggerCount; i++)
-	{
-		const float trigX = (float)ReadDouble(data, &offset);
-		const float trigY = (float)ReadDouble(data, &offset);
-		const float trigRot = (float)ReadDouble(data, &offset);
-		const float trigExtX = (float)ReadDouble(data, &offset);
-		const float trigExtY = (float)ReadDouble(data, &offset);
-		char trigCommand[64];
-		ReadString(data, &offset, (char *)&trigCommand, 64);
-		const uint flags = ReadUint(data, &offset);
-		Trigger *t = CreateTrigger(v2(trigX, trigY), v2(trigExtX, trigExtY), trigRot, trigCommand, flags, l->worldId);
-		ListAdd(&l->triggers, t);
 	}
 
 	return l;

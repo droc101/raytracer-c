@@ -1,0 +1,56 @@
+//
+// Created by droc101 on 4/13/25.
+//
+
+#include "Trigger.h"
+#include <box2d/box2d.h>
+#include <box2d/types.h>
+
+#include "../Helpers/Collision.h"
+#include "../Helpers/Core/Error.h"
+#include "../Structs/Actor.h"
+#include "../Structs/GlobalState.h"
+#include "../Structs/Level.h"
+
+void CreateTriggerSensor(Actor *trigger, const Vector2 position, const float rotation, const b2WorldId worldId)
+{
+	b2BodyDef sensorBodyDef = b2DefaultBodyDef();
+	sensorBodyDef.type = b2_staticBody;
+	sensorBodyDef.position = position;
+	const b2BodyId bodyId = b2CreateBody(worldId, &sensorBodyDef);
+	const b2Polygon sensorShape = b2MakeOffsetBox((float)trigger->paramA * 0.5f,
+												  (float)trigger->paramB * 0.5f,
+												  (Vector2){0, 0},
+												  rotation);
+	b2ShapeDef sensorShapeDef = b2DefaultShapeDef();
+	sensorShapeDef.isSensor = true;
+	sensorShapeDef.filter.categoryBits = COLLISION_GROUP_TRIGGER;
+	sensorShapeDef.filter.maskBits = COLLISION_GROUP_PLAYER;
+	*(b2ShapeId*)(trigger->extra_data) = b2CreatePolygonShape(bodyId, &sensorShapeDef, &sensorShape);
+	trigger->bodyId = bodyId;
+}
+
+void TriggerInit(Actor *this, const b2WorldId worldId)
+{
+	this->showShadow = false;
+	this->extra_data = malloc(sizeof(b2ShapeId));
+	CheckAlloc(this->extra_data);
+	CreateTriggerSensor(this, this->position, this->rotation, worldId);
+}
+
+void TriggerUpdate(Actor *this, double /*delta*/)
+{
+	if (GetSensorState(GetState()->level->worldId, ((b2ShapeId *)this->extra_data)->index1, false))
+	{
+		ActorFireOutput(this, 2, ""); // 2 = trigger
+		RemoveActor(this); // for now they are ALL one shot
+	}
+}
+
+// ReSharper disable once CppParameterMayBeConstPtrOrRef
+void TriggerDestroy(Actor *this)
+{
+	b2DestroyBody(this->bodyId);
+	free(this->actorWall);
+	free(this->extra_data);
+}

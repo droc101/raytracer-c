@@ -291,16 +291,3 @@ bool ChangeLevelByName(const char *name)
 	ChangeLevel(l);
 	return true;
 }
-
-void RemoveTrigger(const size_t index)
-{
-	const Trigger *trigger = ListGet(state.level->triggers, index);
-	b2DestroyBody(b2Shape_GetBody(trigger->sensorId));
-	if (index != -1)
-	{
-		ListRemoveAt(&state.level->triggers, index);
-	} else
-	{
-		LogError("Tried to remove a trigger from a level, but it was not in the level!");
-	}
-}

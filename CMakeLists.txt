@@ -146,8 +146,6 @@ add_executable(
         Structs/UI/Controls/TextBox.h
         Helpers/CommandParser.c
         Helpers/CommandParser.h
-        Structs/Trigger.c
-        Structs/Trigger.h
         GameStates/GLoadingState.c
         GameStates/GLoadingState.h
         Helpers/Graphics/Vulkan/Vulkan.c
@@ -166,6 +164,8 @@ add_executable(
         Helpers/Collision.h
         Helpers/TextInputSystem.c
         Helpers/TextInputSystem.h
+        Actor/Trigger.c
+        Actor/Trigger.h
 )
 
 #endregion

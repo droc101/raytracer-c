@@ -5,6 +5,7 @@
             "id": 1,
             "name": "Test Actor",
             "params": [],
+            "render_type": "normal",
             "inputs": [
                 {
                     "name": "kill",
@@ -25,6 +26,7 @@
         {
             "id": 2,
             "name": "Coin",
+            "render_type": "normal",
             "params": [
                 {
                     "name": "Anim Frame",
@@ -62,6 +64,7 @@
             "id": 3,
             "name": "Goal",
             "params": [],
+            "render_type": "normal",
             "inputs": [
                 {
                     "name": "kill",
@@ -87,6 +90,7 @@
             "id": 4,
             "name": "Door",
             "params": [],
+            "render_type": "normal",
             "inputs": [
                 {
                     "name": "kill",

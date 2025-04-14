@@ -31,7 +31,6 @@ typedef enum OptionsMsaa OptionsMsaa;
 typedef enum ModelShader ModelShader;
 typedef enum ImageDataOffsets ImageDataOffsets;
 typedef enum AssetType AssetType;
-typedef enum TriggerFlag TriggerFlag;
 
 // Struct forward declarations
 typedef struct GlobalState GlobalState;
@@ -47,7 +46,6 @@ typedef struct ModelHeader ModelHeader;
 typedef struct Options Options;
 typedef struct Asset Asset;
 typedef struct Image Image;
-typedef struct Trigger Trigger;
 typedef struct Font Font;
 typedef struct SaveData SaveData;
 typedef struct Color Color;
@@ -216,15 +214,6 @@ enum ModelShader
 	SHADER_SHADED
 };
 
-/**
- * List of flags that can be set on a trigger
- */
-enum TriggerFlag
-{
-	/// The trigger will be removed after it is triggered
-	TRIGGER_FLAG_ONE_SHOT = 1
-};
-
 enum CollisionGroups
 {
 	COLLISION_GROUP_DEFAULT = 1 << 0,
@@ -316,10 +305,6 @@ struct Level
 	List actors;
 	/// The list of walls in the level
 	List walls;
-	/// The list of triggers in the level
-	List triggers;
-	/// The list of models in the level
-	List models;
 
 	/// Indicates if the level has a ceiling. If false, the level will use a sky instead
 	bool hasCeiling;
@@ -595,24 +580,6 @@ struct Image
 	char *name;
 	/// The pixel data of the image
 	byte *pixelData;
-};
-
-struct Trigger
-{
-	/// The center position of the trigger
-	Vector2 position;
-	/// The rotation of the trigger
-	float rotation;
-	/// The size of the trigger
-	Vector2 extents;
-	/// The command to execute when this trigger is triggered
-	char command[64];
-	/// The flags set on this trigger
-	uint flags;
-	/// The trigger's sensor's Box2D shape ID
-	b2ShapeId sensorId;
-	/// A boolean indicating if the player is currently colliding with the trigger
-	bool playerColliding;
 };
 
 struct Font

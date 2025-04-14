@@ -35,7 +35,6 @@ Level *CreateLevel()
 	CheckAlloc(l);
 	ListCreate(&l->actors);
 	ListCreate(&l->walls);
-	ListCreate(&l->triggers);
 	b2WorldDef worldDef = b2DefaultWorldDef();
 	worldDef.gravity.y = 0;
 	l->worldId = b2CreateWorld(&worldDef);
@@ -67,7 +66,6 @@ void DestroyLevel(Level *l)
 	b2DestroyWorld(l->worldId);
 
 	ListAndContentsFree(&l->walls, false);
-	ListAndContentsFree(&l->triggers, false);
 	ListAndContentsFree(&l->namedActorNames, false);
 	ListFree(&l->namedActorPointers, false);
 	ListFree(&l->actors, false);

@@ -21,7 +21,6 @@
 #include "../Structs/Actor.h"
 #include "../Structs/GlobalState.h"
 #include "../Structs/Level.h"
-#include "../Structs/Trigger.h"
 #include "../Structs/Vector2.h"
 #include "GPauseState.h"
 
@@ -169,22 +168,6 @@ void GMainStateFixedUpdate(GlobalState *state, const double delta)
 		a->Update(a, delta);
 	}
 
-	// Check for collisions with triggers
-	for (int i = 0; i < l->triggers.length; i++)
-	{
-		Trigger *t = ListGet(l->triggers, i);
-		if (CheckTriggerCollision(t))
-		{
-			ExecuteCommand(t->command);
-			if (t->flags & TRIGGER_FLAG_ONE_SHOT)
-			{
-				RemoveTrigger(i); // goodbye
-				free(t);
-			}
-			break;
-		}
-	}
-
 	if (leafyGeneratorPolitelyRequestLeafyGenerationOnNextPhysicsTickPlease)
 	{
 		Actor *leaf = CreateActor(state->level->player.pos, 0, 1, 0, 0, 0, 0, state->level->worldId);
@@ -252,7 +235,6 @@ void GMainStateRender(GlobalState *State)
 
 	DPrintF("Walls: %d", COLOR_WHITE, false, l->walls.length);
 	DPrintF("Actors: %d", COLOR_WHITE, false, l->actors.length);
-	DPrintF("Triggers: %d", COLOR_WHITE, false, l->triggers.length);
 	DPrintF("Targeted Actor: %p", COLOR_WHITE, false, targetedEnemy);
 }
 

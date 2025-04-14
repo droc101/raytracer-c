@@ -9,13 +9,13 @@
 #include "../Helpers/Core/Error.h"
 #include "GlobalState.h"
 #include "Level.h"
-#include "Vector2.h"
 
 #include "../Actor/Coin.h"
 #include "../Actor/Door.h"
 #include "../Actor/Goal.h"
 #include "../Actor/TestActor.h"
 #include "../Helpers/Core/Logging.h"
+#include "../Actor/Trigger.h"
 
 // Empty template functions
 void ActorInit(Actor * /*this*/, b2WorldId /*worldId*/) {}
@@ -30,6 +30,7 @@ ActorInitFunction ActorInitFuncs[] = {
 	CoinInit,
 	GoalInit,
 	DoorInit,
+	TriggerInit
 };
 
 ActorUpdateFunction ActorUpdateFuncs[] = {
@@ -38,6 +39,7 @@ ActorUpdateFunction ActorUpdateFuncs[] = {
 	CoinUpdate,
 	GoalUpdate,
 	DoorUpdate,
+	TriggerUpdate
 };
 
 ActorDestroyFunction ActorDestroyFuncs[] = {
@@ -46,6 +48,7 @@ ActorDestroyFunction ActorDestroyFuncs[] = {
 	CoinDestroy,
 	GoalDestroy,
 	DoorDestroy,
+	TriggerDestroy
 };
 
 int ActorHealths[] = {
@@ -54,6 +57,7 @@ int ActorHealths[] = {
 	1,
 	1,
 	1,
+	1
 };
 
 Actor *CreateActor(const Vector2 position,

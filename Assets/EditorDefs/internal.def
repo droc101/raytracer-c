@@ -5,6 +5,7 @@
             "id": 0,
             "name": "Empty Actor",
             "params": [],
+            "render_type": "normal",
             "inputs": [
                 {
                     "name": "kill",
@@ -18,6 +19,52 @@
                 },
                 {
                     "name": "spawned",
+                    "paramType": "none"
+                }
+            ]
+        },
+        {
+            "id": 5,
+            "name": "Trigger",
+            "params": [
+                {
+                    "name": "X Size",
+                    "min": 1,
+                    "max": 200
+                },
+                {
+                    "name": "Y Size",
+                    "min": 1,
+                    "max": 200
+                },
+                {
+                    "name": "Flags",
+                    "min": 0,
+                    "max": 255
+                },
+            ],
+            "render_type": "trigger",
+            "inputs": [
+                {
+                    "name": "kill",
+                    "paramType": "none"
+                },
+                {
+                    "name": "force_trigger",
+                    "paramType": "none"
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "killed",
+                    "paramType": "none"
+                },
+                {
+                    "name": "spawned",
+                    "paramType": "none"
+                },
+                {
+                    "name": "triggered",
                     "paramType": "none"
                 }
             ]
