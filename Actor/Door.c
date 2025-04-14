@@ -22,19 +22,13 @@ typedef enum
 	DOOR_CLOSING
 } DoorState;
 
-typedef enum
-{
-	SIG_DOOR_CLOSING = 2,
-	SIG_DOOR_OPENING,
-	SIG_DOOR_FULLY_CLOSED,
-	SIG_DOOR_FULLY_OPEN
-} DoorOutputs;
+#define DOOR_OUTPUT_CLOSING 2
+#define DOOR_OUTPUT_OPENING 3
+#define DOOR_OUTPUT_FULLY_CLOSED 4
+#define DOOR_OUTPUT_FULLY_OPEN 5
 
-typedef enum
-{
-	SIG_DOOR_OPEN = 1,
-	SIG_DOOR_CLOSE
-} DoorInputs;
+#define DOOR_INPUT_OPEN 1
+#define DOOR_INPUT_CLOSE 2
 
 typedef struct DoorData
 {
@@ -51,16 +45,16 @@ void DoorSetState(const Actor *door, const DoorState state)
 	data->animationTime = 0;
 	if (state == DOOR_OPENING)
 	{
-		ActorFireOutput(door, SIG_DOOR_OPENING, "");
+		ActorFireOutput(door, DOOR_OUTPUT_OPENING, "");
 	} else if (state == DOOR_CLOSING)
 	{
-		ActorFireOutput(door, SIG_DOOR_CLOSING, "");
+		ActorFireOutput(door, DOOR_OUTPUT_CLOSING, "");
 	} else if (state == DOOR_OPEN)
 	{
-		ActorFireOutput(door, SIG_DOOR_FULLY_OPEN, "");
+		ActorFireOutput(door, DOOR_OUTPUT_FULLY_OPEN, "");
 	} else if (state == DOOR_CLOSED)
 	{
-		ActorFireOutput(door, SIG_DOOR_FULLY_CLOSED, "");
+		ActorFireOutput(door, DOOR_OUTPUT_FULLY_CLOSED, "");
 	}
 }
 
@@ -190,14 +184,14 @@ bool DoorSignalHandler(Actor *self, const Actor *sender, byte signal, const char
 {
 	if (DefaultSignalHandler(self, sender, signal, param)) return true;
 	DoorData *data = self->extra_data;
-	if (signal == SIG_DOOR_OPEN && data->state == DOOR_CLOSED)
+	if (signal == DOOR_INPUT_OPEN && data->state == DOOR_CLOSED)
 	{
 		b2Body_SetLinearVelocity(self->bodyId,
 										 Vector2Normalize(Vector2Scale(Vector2FromAngle(self->rotation), -1)));
 		DoorSetState(self, DOOR_OPENING);
 		return true;
 	}
-	if (signal == SIG_DOOR_CLOSE && data->state == DOOR_OPEN)
+	if (signal == DOOR_INPUT_CLOSE && data->state == DOOR_OPEN)
 	{
 		b2Body_SetLinearVelocity(self->bodyId, Vector2Normalize(Vector2FromAngle(self->rotation)));
 		DoorSetState(self, DOOR_CLOSING);

@@ -17,6 +17,8 @@
 #include "../Structs/Vector2.h"
 #include "../Structs/Wall.h"
 
+#define GOAL_OUTPUT_COLLECTED 2
+
 void CreateGoalSensor(Actor *this, const b2WorldId worldId)
 {
 	this->extra_data = calloc(1, sizeof(b2ShapeId));
@@ -70,7 +72,7 @@ void GoalUpdate(Actor *this, double /*delta*/)
 									   TEXT_BOX_V_ALIGN_TOP,
 									   TEXT_BOX_THEME_WHITE);
 		ShowTextBox(tb);
-		ActorFireOutput(this, 2, "");
+		ActorFireOutput(this, GOAL_OUTPUT_COLLECTED, "");
 		RemoveActor(this);
 	}
 }

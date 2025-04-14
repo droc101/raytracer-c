@@ -5,7 +5,7 @@
 #ifndef TRIGGER_H
 #define TRIGGER_H
 #include <box2d/id.h>
-#include "../defines.h"
+#include "../../defines.h"
 
 void TriggerInit(Actor *this, b2WorldId worldId);
 

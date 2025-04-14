@@ -6,11 +6,25 @@
 #include <box2d/box2d.h>
 #include <box2d/types.h>
 
-#include "../Helpers/Collision.h"
-#include "../Helpers/Core/Error.h"
-#include "../Structs/Actor.h"
-#include "../Structs/GlobalState.h"
-#include "../Structs/Level.h"
+#include "../../Helpers/Collision.h"
+#include "../../Helpers/Core/Error.h"
+#include "../../Structs/Actor.h"
+#include "../../Structs/GlobalState.h"
+#include "../../Structs/Level.h"
+
+#define TRIGGER_INPUT_FORCE_TRIGGER 1
+#define TRIGGER_OUTPUT_TRIGGERED 2
+
+bool TriggerSignalHandler(Actor *self, const Actor *sender, byte signal, const char *param)
+{
+	if (DefaultSignalHandler(self, sender, signal, param)) return true;
+	if (signal == TRIGGER_INPUT_FORCE_TRIGGER)
+	{
+		ActorFireOutput(self, TRIGGER_OUTPUT_TRIGGERED, "");
+		return true;
+	}
+	return false;
+}
 
 void CreateTriggerSensor(Actor *trigger, const Vector2 position, const float rotation, const b2WorldId worldId)
 {
@@ -34,6 +48,7 @@ void TriggerInit(Actor *this, const b2WorldId worldId)
 {
 	this->showShadow = false;
 	this->extra_data = malloc(sizeof(b2ShapeId));
+	this->SignalHandler = TriggerSignalHandler;
 	CheckAlloc(this->extra_data);
 	CreateTriggerSensor(this, this->position, this->rotation, worldId);
 }
@@ -42,7 +57,7 @@ void TriggerUpdate(Actor *this, double /*delta*/)
 {
 	if (GetSensorState(GetState()->level->worldId, ((b2ShapeId *)this->extra_data)->index1, false))
 	{
-		ActorFireOutput(this, 2, ""); // 2 = trigger
+		ActorFireOutput(this, TRIGGER_OUTPUT_TRIGGERED, ""); // 2 = trigger
 		RemoveActor(this); // for now they are ALL one shot
 	}
 }

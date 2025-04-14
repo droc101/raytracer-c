@@ -15,7 +15,7 @@
 #include "../Actor/Goal.h"
 #include "../Actor/TestActor.h"
 #include "../Helpers/Core/Logging.h"
-#include "../Actor/Trigger.h"
+#include "../Actor/Core/Trigger.h"
 
 // Empty template functions
 void ActorInit(Actor * /*this*/, b2WorldId /*worldId*/) {}
