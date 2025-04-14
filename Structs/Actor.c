@@ -98,7 +98,7 @@ Actor *CreateActor(const Vector2 position,
 
 void FreeActor(Actor *actor)
 {
-	ActorFireOutput(actor, ACTOR_SPAWN_OUTPUT, "");
+	ActorFireOutput(actor, ACTOR_KILLED_OUTPUT, "");
 	actor->Destroy(actor);
 	for (int i = 0; i < actor->ioConnections.length; i++)
 	{
