@@ -8,8 +8,8 @@
 #include "../defines.h"
 
 #define ACTOR_KILL_INPUT 0
-#define ACTOR_SPAWN_OUTPUT 0
-#define ACTOR_KILLED_OUTPUT 1
+#define ACTOR_SPAWN_OUTPUT 1
+#define ACTOR_KILLED_OUTPUT 0
 
 /**
  * Create an Actor

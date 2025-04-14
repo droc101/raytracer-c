@@ -60,7 +60,7 @@ void GoalUpdate(Actor *this, double /*delta*/)
 
 	if (GetSensorState(GetState()->level->worldId, ((b2ShapeId *)this->extra_data)->index1, false))
 	{
-		RemoveActor(this);
+
 		const TextBox tb = DEFINE_TEXT("Goal!",
 									   2,
 									   20,
@@ -71,6 +71,7 @@ void GoalUpdate(Actor *this, double /*delta*/)
 									   TEXT_BOX_THEME_WHITE);
 		ShowTextBox(tb);
 		ActorFireOutput(this, 2, "");
+		RemoveActor(this);
 	}
 }
 

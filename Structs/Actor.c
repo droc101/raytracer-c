@@ -98,7 +98,6 @@ Actor *CreateActor(const Vector2 position,
 
 void FreeActor(Actor *actor)
 {
-	ActorFireOutput(actor, ACTOR_KILLED_OUTPUT, "");
 	actor->Destroy(actor);
 	for (int i = 0; i < actor->ioConnections.length; i++)
 	{
@@ -148,6 +147,7 @@ void CreateActorWallCollider(Actor *this, const b2WorldId worldId)
 
 void ActorFireOutput(const Actor *sender, const byte signal, const char *defaultParam)
 {
+	//LogInfo("Firing signal %d from actor %p with param \"%s\"\n", signal, sender, defaultParam);
 	ListLock(sender->ioConnections);
 	for (int i = 0; i < sender->ioConnections.length; i++)
 	{
@@ -170,7 +170,8 @@ void ActorFireOutput(const Actor *sender, const byte signal, const char *default
 					{
 						strcpy(param, connection->outParamOverride);
 					}
-					actor->SignalHandler(actor, sender, connection->targetInput, param);
+					const bool handled = actor->SignalHandler(actor, sender, connection->targetInput, param);
+					if (!handled) LogWarning("Signal %d was sent to actor %p but was not handled!", signal, actor);
 				}
 			}
 			ListFree(actors, true);

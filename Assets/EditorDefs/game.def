@@ -89,13 +89,32 @@
         {
             "id": 4,
             "name": "Door",
-            "params": [],
+            "params": [
+            	{
+					"name": "Prevent Player Open",
+					"min": 0,
+					"max": 1
+				},
+				{
+					"name": "Stay Open",
+					"min": 0,
+					"max": 1
+				},
+			],
             "render_type": "normal",
             "inputs": [
                 {
                     "name": "kill",
                     "paramType": "none"
-                }
+                },
+                {
+					"name": "open",
+					"paramType": "none"
+				},
+                {
+					"name": "close",
+					"paramType": "none"
+				}
             ],
             "outputs": [
                 {
@@ -113,7 +132,15 @@
                 {
                     "name": "closed",
                     "paramType": "none"
-                }
+                },
+                {
+					"name": "fully_opened",
+					"paramType": "none"
+				},
+				{
+					"name": "fully_closed",
+					"paramType": "none"
+				}
             ]
         }
     ]
