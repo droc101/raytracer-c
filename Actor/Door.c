@@ -35,6 +35,13 @@ void DoorSetState(const Actor *door, const DoorState state)
 	DoorData *data = door->extra_data;
 	data->state = state;
 	data->animationTime = 0;
+	if (state == DOOR_OPENING)
+	{
+		ActorFireOutput(door, 2, "");
+	} else if (state == DOOR_CLOSING)
+	{
+		ActorFireOutput(door, 3, "");
+	}
 }
 
 void CreateDoorCollider(Actor *this, const b2WorldId worldId, const Vector2 wallOffset)

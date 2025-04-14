@@ -11,6 +11,7 @@
 #include "../Helpers/Core/Error.h"
 #include "../Helpers/Core/MathEx.h"
 #include "../Helpers/TextBox.h"
+#include "../Structs/Actor.h"
 #include "../Structs/GlobalState.h"
 #include "../Structs/Level.h"
 #include "../Structs/Vector2.h"
@@ -69,6 +70,7 @@ void GoalUpdate(Actor *this, double /*delta*/)
 									   TEXT_BOX_V_ALIGN_TOP,
 									   TEXT_BOX_THEME_WHITE);
 		ShowTextBox(tb);
+		ActorFireOutput(this, 2, "");
 	}
 }
 
