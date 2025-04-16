@@ -37,18 +37,18 @@ Level *LoadLevel(const byte *data)
 	l->fogStart = ReadDouble(data, &offset);
 	l->fogEnd = ReadDouble(data, &offset);
 
-	l->player.pos.x = (float)ReadDouble(data, &offset);
-	l->player.pos.y = (float)ReadDouble(data, &offset);
-	l->player.angle = (float)ReadDouble(data, &offset);
+	l->player.pos.x = ReadFloat(data, &offset);
+	l->player.pos.y = ReadFloat(data, &offset);
+	l->player.angle = ReadFloat(data, &offset);
 
 	b2Body_SetTransform(l->player.bodyId, l->player.pos, b2MakeRot(l->player.angle));
 
 	const uint actorCount = ReadUint(data, &offset);
 	for (int i = 0; i < actorCount; i++)
 	{
-		const float actorX = (float)ReadDouble(data, &offset);
-		const float actorY = (float)ReadDouble(data, &offset);
-		const float actorRotation = (float)ReadDouble(data, &offset);
+		const float actorX = ReadFloat(data, &offset);
+		const float actorY = ReadFloat(data, &offset);
+		const float actorRotation = ReadFloat(data, &offset);
 		const int actorType = ReadInt(data, &offset);
 		const byte actorParamA = ReadByte(data, &offset);
 		const byte actorParamB = ReadByte(data, &offset);
@@ -88,10 +88,10 @@ Level *LoadLevel(const byte *data)
 	const uint wallCount = ReadUint(data, &offset);
 	for (int i = 0; i < wallCount; i++)
 	{
-		const float wallAX = (float)ReadDouble(data, &offset);
-		const float wallAY = (float)ReadDouble(data, &offset);
-		const float wallBX = (float)ReadDouble(data, &offset);
-		const float wallBY = (float)ReadDouble(data, &offset);
+		const float wallAX = ReadFloat(data, &offset);
+		const float wallAY = ReadFloat(data, &offset);
+		const float wallBX = ReadFloat(data, &offset);
+		const float wallBY = ReadFloat(data, &offset);
 		char lDataWallTex[32];
 		ReadString(data, &offset, (char *)&lDataWallTex, 32);
 		const char wallTex[48];
