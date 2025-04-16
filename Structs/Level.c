@@ -88,6 +88,8 @@ void RemoveActor(Actor *actor)
 	const size_t nameIdx = ListFind(l->namedActorPointers, actor);
 	if (nameIdx != -1)
 	{
+		char* name = ListGet(l->namedActorNames, nameIdx);
+		free(name);
 		ListRemoveAt(&l->namedActorNames, nameIdx);
 		ListRemoveAt(&l->namedActorPointers, nameIdx);
 	}
