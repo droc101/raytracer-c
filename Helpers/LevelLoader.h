@@ -10,8 +10,9 @@
 /**
  * Load a level from level bytecode
  * @param data Level bytecode
+ * @param dataSize
  * @return Level struct
  */
-Level *LoadLevel(const byte *data);
+Level *LoadLevel(const byte *data, size_t dataSize);
 
 #endif //GAME_LEVELLOADER_H

@@ -123,6 +123,11 @@ void SetStateCallbacks(const FrameUpdateFunction UpdateGame,
 
 void ChangeLevel(Level *l)
 {
+	if (!l)
+	{
+		LogError("Cannot change to a NULL level. Something might have gone wrong while loading it.\n");
+		return;
+	}
 	if (state.level)
 	{
 		DestroyLevel(state.level);
@@ -287,7 +292,7 @@ bool ChangeLevelByName(const char *name)
 		return false;
 	}
 	GetState()->saveData->blueCoins = 0;
-	Level *l = LoadLevel(levelData->data);
+	Level *l = LoadLevel(levelData->data, levelData->size);
 	ChangeLevel(l);
 	return true;
 }

@@ -40,4 +40,5 @@ void InitCommonAssets()
 void DestroyCommonAssets()
 {
 	free(smallFont);
+	free(largeFont);
 }
