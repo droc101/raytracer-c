@@ -82,6 +82,7 @@ void AddActor(Actor *actor)
 void RemoveActor(Actor *actor)
 {
 	Level *l = GetState()->level;
+	ActorFireOutput(actor, ACTOR_KILLED_OUTPUT, "");
 
 	// Remove the actor from the named actor lists if it's there
 	const size_t nameIdx = ListFind(l->namedActorPointers, actor);

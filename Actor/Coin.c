@@ -16,6 +16,8 @@
 #include "../Structs/Vector2.h"
 #include "../Structs/Wall.h"
 
+#define COIN_OUTPUT_COLLECTED 2
+
 void CreateCoinSensor(Actor *this, const b2WorldId worldId)
 {
 	this->extra_data = calloc(1, sizeof(b2ShapeId));
@@ -82,7 +84,7 @@ void CoinUpdate(Actor *this, double /*delta*/)
 			GetState()->saveData->coins += 5;
 		}
 		PlaySoundEffect(SOUND("sfx_coincling"));
-		ActorFireOutput(this, 2, ""); // 2 = coin collected
+		ActorFireOutput(this, COIN_OUTPUT_COLLECTED, ""); // 2 = coin collected
 		RemoveActor(this);
 	}
 }

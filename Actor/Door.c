@@ -22,6 +22,14 @@ typedef enum
 	DOOR_CLOSING
 } DoorState;
 
+#define DOOR_OUTPUT_CLOSING 2
+#define DOOR_OUTPUT_OPENING 3
+#define DOOR_OUTPUT_FULLY_CLOSED 4
+#define DOOR_OUTPUT_FULLY_OPEN 5
+
+#define DOOR_INPUT_OPEN 1
+#define DOOR_INPUT_CLOSE 2
+
 typedef struct DoorData
 {
 	DoorState state;
@@ -37,10 +45,16 @@ void DoorSetState(const Actor *door, const DoorState state)
 	data->animationTime = 0;
 	if (state == DOOR_OPENING)
 	{
-		ActorFireOutput(door, 2, "");
+		ActorFireOutput(door, DOOR_OUTPUT_OPENING, "");
 	} else if (state == DOOR_CLOSING)
 	{
-		ActorFireOutput(door, 3, "");
+		ActorFireOutput(door, DOOR_OUTPUT_CLOSING, "");
+	} else if (state == DOOR_OPEN)
+	{
+		ActorFireOutput(door, DOOR_OUTPUT_FULLY_OPEN, "");
+	} else if (state == DOOR_CLOSED)
+	{
+		ActorFireOutput(door, DOOR_OUTPUT_FULLY_CLOSED, "");
 	}
 }
 
@@ -81,6 +95,8 @@ void CreateDoorSensor(Actor *this, const b2WorldId worldId)
 	data->sensorId = b2CreateCircleShape(sensorBody, &sensorShapeDef, &sensorShape);
 }
 
+bool DoorSignalHandler(Actor *self, const Actor *sender, byte signal, const char *param);
+
 void DoorInit(Actor *this, const b2WorldId worldId)
 {
 	const Vector2 wallOffset = Vector2Scale(Vector2Normalize(Vector2FromAngle(this->rotation)), -0.5f);
@@ -99,6 +115,7 @@ void DoorInit(Actor *this, const b2WorldId worldId)
 	this->showShadow = false;
 	data->state = DOOR_CLOSED;
 	data->animationTime = 0;
+	this->SignalHandler = DoorSignalHandler;
 }
 
 // ReSharper disable once CppParameterMayBeConstPtrOrRef
@@ -107,6 +124,7 @@ void DoorUpdate(Actor *this, const double delta)
 	this->position = b2Body_GetPosition(this->bodyId);
 	DoorData *data = this->extra_data;
 	data->playerColliding = GetSensorState(GetState()->level->worldId, data->sensorId.index1, data->playerColliding);
+	if (this->paramA) data->playerColliding = false;
 	switch (data->state)
 	{
 		case DOOR_CLOSED:
@@ -118,7 +136,7 @@ void DoorUpdate(Actor *this, const double delta)
 			}
 			break;
 		case DOOR_OPEN:
-			if (data->animationTime >= 1 && !data->playerColliding)
+			if (data->animationTime >= 1 && !data->playerColliding && !this->paramB)
 			{
 				b2Body_SetLinearVelocity(this->bodyId, Vector2Normalize(Vector2FromAngle(this->rotation)));
 				DoorSetState(this, DOOR_CLOSING);
@@ -160,4 +178,24 @@ void DoorDestroy(Actor *this)
 	b2DestroyBody(b2Shape_GetBody(((DoorData *)this->extra_data)->sensorId));
 	free(this->extra_data);
 	free(this->actorWall);
+}
+
+bool DoorSignalHandler(Actor *self, const Actor *sender, byte signal, const char *param)
+{
+	if (DefaultSignalHandler(self, sender, signal, param)) return true;
+	DoorData *data = self->extra_data;
+	if (signal == DOOR_INPUT_OPEN && data->state == DOOR_CLOSED)
+	{
+		b2Body_SetLinearVelocity(self->bodyId,
+										 Vector2Normalize(Vector2Scale(Vector2FromAngle(self->rotation), -1)));
+		DoorSetState(self, DOOR_OPENING);
+		return true;
+	}
+	if (signal == DOOR_INPUT_CLOSE && data->state == DOOR_OPEN)
+	{
+		b2Body_SetLinearVelocity(self->bodyId, Vector2Normalize(Vector2FromAngle(self->rotation)));
+		DoorSetState(self, DOOR_CLOSING);
+		return true;
+	}
+	return false;
 }

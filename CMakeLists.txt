@@ -164,8 +164,8 @@ add_executable(
         Helpers/Collision.h
         Helpers/TextInputSystem.c
         Helpers/TextInputSystem.h
-        Actor/Trigger.c
-        Actor/Trigger.h
+        Actor/Core/Trigger.c
+        Actor/Core/Trigger.h
 )
 
 #endregion
