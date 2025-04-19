@@ -53,10 +53,10 @@ Level *LoadLevel(const byte *data, const size_t dataSize)
 	EXPECT_BYTES(32);
 	ReadString(data, &offset, l->music, 32);
 
-	EXPECT_BYTES(sizeof(uint) + sizeof(double) + sizeof(double));
+	EXPECT_BYTES(sizeof(uint) + sizeof(float) + sizeof(float));
 	l->fogColor = ReadUint(data, &offset);
-	l->fogStart = ReadDouble(data, &offset);
-	l->fogEnd = ReadDouble(data, &offset);
+	l->fogStart = ReadFloat(data, &offset);
+	l->fogEnd = ReadFloat(data, &offset);
 
 	EXPECT_BYTES(sizeof(float) * 3);
 	l->player.pos.x = ReadFloat(data, &offset);

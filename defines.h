@@ -319,9 +319,9 @@ struct Level
 	/// The color of the fog
 	uint fogColor;
 	/// The distance from the player at which the fog begins to fade in
-	double fogStart;
+	float fogStart;
 	/// The distance from the player at which the fog is fully opaque
-	double fogEnd;
+	float fogEnd;
 
 	/// The ID of the Box2D world
 	b2WorldId worldId;
