@@ -15,12 +15,12 @@
 #define TRIGGER_INPUT_FORCE_TRIGGER 1
 #define TRIGGER_OUTPUT_TRIGGERED 2
 
-bool TriggerSignalHandler(Actor *self, const Actor *sender, byte signal, const char *param)
+bool TriggerSignalHandler(Actor *self, const Actor *sender, byte signal, const Param *param)
 {
 	if (DefaultSignalHandler(self, sender, signal, param)) return true;
 	if (signal == TRIGGER_INPUT_FORCE_TRIGGER)
 	{
-		ActorFireOutput(self, TRIGGER_OUTPUT_TRIGGERED, "");
+		ActorFireOutput(self, TRIGGER_OUTPUT_TRIGGERED, PARAM_NONE);
 		return true;
 	}
 	return false;
@@ -57,7 +57,7 @@ void TriggerUpdate(Actor *this, double /*delta*/)
 {
 	if (GetSensorState(GetState()->level->worldId, ((b2ShapeId *)this->extra_data)->index1, false))
 	{
-		ActorFireOutput(this, TRIGGER_OUTPUT_TRIGGERED, ""); // 2 = trigger
+		ActorFireOutput(this, TRIGGER_OUTPUT_TRIGGERED, PARAM_NONE); // 2 = trigger
 		RemoveActor(this); // for now they are ALL one shot
 	}
 }

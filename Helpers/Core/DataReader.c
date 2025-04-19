@@ -71,3 +71,9 @@ short ReadShort(const byte *data, size_t *offset)
 	*offset += sizeof(short);
 	return s;
 }
+
+void ReadBytes(const byte *data, size_t *offset, const size_t len, void* dest)
+{
+	memcpy(dest, data + *offset, len);
+	*offset += len;
+}

@@ -31,6 +31,7 @@ typedef enum OptionsMsaa OptionsMsaa;
 typedef enum ModelShader ModelShader;
 typedef enum ImageDataOffsets ImageDataOffsets;
 typedef enum AssetType AssetType;
+typedef enum ParamType ParamType;
 
 // Struct forward declarations
 typedef struct GlobalState GlobalState;
@@ -50,6 +51,7 @@ typedef struct Font Font;
 typedef struct SaveData SaveData;
 typedef struct Color Color;
 typedef struct ActorConnection ActorConnection;
+typedef struct Param Param;
 
 // Function signatures
 typedef void (*FixedUpdateFunction)(GlobalState *state, double delta);
@@ -74,7 +76,7 @@ typedef void (*ActorDestroyFunction)(Actor *self);
  * Signal handler function signature for actor
  * @return True if the signal was handled, false if not
  */
-typedef bool (*ActorSignalHandlerFunction)(Actor *self, const Actor *sender, byte signal, const char *param);
+typedef bool (*ActorSignalHandlerFunction)(Actor *self, const Actor *sender, byte signal, const Param *param);
 
 #pragma endregion
 
@@ -126,6 +128,13 @@ typedef bool (*ActorSignalHandlerFunction)(Actor *self, const Actor *sender, byt
 /// Make this symbol exported (in the symbol table)
 #define EXPORT_SYM __attribute__((visibility("default")))
 #endif
+
+#define PARAM_BYTE(x) ((Param){PARAM_TYPE_BYTE, {.byteValue = x}})
+#define PARAM_INT(x) ((Param){PARAM_TYPE_INTEGER, {.intValue = x}})
+#define PARAM_FLOAT(x) ((Param){PARAM_TYPE_FLOAT, {.floatValue = x}})
+#define PARAM_BOOL(x) ((Param){PARAM_TYPE_BOOL, {.boolValue = x}})
+#define PARAM_STRING(x) ((Param){PARAM_TYPE_STRING, {.stringValue = x}})
+#define PARAM_NONE ((Param){PARAM_TYPE_NONE, {}})
 
 #pragma endregion
 
@@ -224,9 +233,34 @@ enum CollisionGroups
 	COLLISION_GROUP_HURTBOX = 1 << 5,
 };
 
+enum ParamType
+{
+	PARAM_TYPE_BYTE,
+	PARAM_TYPE_INTEGER,
+	PARAM_TYPE_FLOAT,
+	PARAM_TYPE_BOOL,
+	PARAM_TYPE_STRING,
+	PARAM_TYPE_NONE
+};
+
 #pragma endregion
 
 #pragma region Struct definitions
+
+union _ParamInternal
+{
+	byte byteValue;
+	int intValue;
+	float floatValue;
+	bool boolValue;
+	char stringValue[64];
+};
+
+struct Param
+{
+	ParamType type;
+	union _ParamInternal value;
+};
 
 struct Color
 {
@@ -619,7 +653,7 @@ struct ActorConnection
 	byte targetInput;
 	byte myOutput;
 	char outActorName[64];
-	char outParamOverride[64];
+	Param outParamOverride;
 };
 
 #pragma endregion

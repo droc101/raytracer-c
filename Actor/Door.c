@@ -45,16 +45,16 @@ void DoorSetState(const Actor *door, const DoorState state)
 	data->animationTime = 0;
 	if (state == DOOR_OPENING)
 	{
-		ActorFireOutput(door, DOOR_OUTPUT_OPENING, "");
+		ActorFireOutput(door, DOOR_OUTPUT_OPENING, PARAM_NONE);
 	} else if (state == DOOR_CLOSING)
 	{
-		ActorFireOutput(door, DOOR_OUTPUT_CLOSING, "");
+		ActorFireOutput(door, DOOR_OUTPUT_CLOSING, PARAM_NONE);
 	} else if (state == DOOR_OPEN)
 	{
-		ActorFireOutput(door, DOOR_OUTPUT_FULLY_OPEN, "");
+		ActorFireOutput(door, DOOR_OUTPUT_FULLY_OPEN, PARAM_NONE);
 	} else if (state == DOOR_CLOSED)
 	{
-		ActorFireOutput(door, DOOR_OUTPUT_FULLY_CLOSED, "");
+		ActorFireOutput(door, DOOR_OUTPUT_FULLY_CLOSED, PARAM_NONE);
 	}
 }
 
@@ -95,7 +95,7 @@ void CreateDoorSensor(Actor *this, const b2WorldId worldId)
 	data->sensorId = b2CreateCircleShape(sensorBody, &sensorShapeDef, &sensorShape);
 }
 
-bool DoorSignalHandler(Actor *self, const Actor *sender, byte signal, const char *param);
+bool DoorSignalHandler(Actor *self, const Actor *sender, byte signal, const Param *param);
 
 void DoorInit(Actor *this, const b2WorldId worldId)
 {
@@ -180,7 +180,7 @@ void DoorDestroy(Actor *this)
 	free(this->actorWall);
 }
 
-bool DoorSignalHandler(Actor *self, const Actor *sender, byte signal, const char *param)
+bool DoorSignalHandler(Actor *self, const Actor *sender, byte signal, const Param *param)
 {
 	if (DefaultSignalHandler(self, sender, signal, param)) return true;
 	DoorData *data = self->extra_data;

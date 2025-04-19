@@ -95,15 +95,13 @@ Level *LoadLevel(const byte *data, const size_t dataSize)
 		for (int j = 0; j < connectionCount; j++)
 		{
 			ActorConnection *ac = malloc(sizeof(ActorConnection));
-			EXPECT_BYTES(1 + 64 + 1 + 64);
+			EXPECT_BYTES(1 + 64 + 1 + sizeof(Param));
 			ac->myOutput = ReadByte(data, &offset);
 			char outActorName[64];
 			ReadString(data, &offset, (char *)&outActorName, 64);
 			strcpy(ac->outActorName, outActorName);
 			ac->targetInput = ReadByte(data, &offset);
-			char outParamOverride[64];
-			ReadString(data, &offset, (char *)&outParamOverride, 64);
-			strcpy(ac->outParamOverride, outParamOverride);
+			ReadBytes(data, &offset, sizeof(Param), &ac->outParamOverride);
 			ListAdd(&a->ioConnections, ac);
 		}
 		ListAdd(&l->actors, a);

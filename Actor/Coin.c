@@ -84,7 +84,7 @@ void CoinUpdate(Actor *this, double /*delta*/)
 			GetState()->saveData->coins += 5;
 		}
 		PlaySoundEffect(SOUND("sfx_coincling"));
-		ActorFireOutput(this, COIN_OUTPUT_COLLECTED, ""); // 2 = coin collected
+		ActorFireOutput(this, COIN_OUTPUT_COLLECTED, PARAM_NONE); // 2 = coin collected
 		RemoveActor(this);
 	}
 }

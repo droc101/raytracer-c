@@ -89,4 +89,14 @@ void ReadString(const byte *data, size_t *offset, char *dest, size_t len);
  */
 short ReadShort(const byte *data, size_t *offset);
 
+/**
+ * Reads arbitrary bytes from the given data at the given offset into dest
+ * @param data The data to read from
+ * @param offset The offset to read from
+ * @param len The length of the data to read
+ * @param dest The buffer to write the data into
+ * @note It is up to the caller to prevent out of bounds access
+ */
+void ReadBytes(const byte *data, size_t *offset, size_t len, void* dest);
+
 #endif //GAME_DATAREADER_H

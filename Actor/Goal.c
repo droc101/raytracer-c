@@ -72,7 +72,7 @@ void GoalUpdate(Actor *this, double /*delta*/)
 									   TEXT_BOX_V_ALIGN_TOP,
 									   TEXT_BOX_THEME_WHITE);
 		ShowTextBox(tb);
-		ActorFireOutput(this, GOAL_OUTPUT_COLLECTED, "");
+		ActorFireOutput(this, GOAL_OUTPUT_COLLECTED, PARAM_NONE);
 		RemoveActor(this);
 	}
 }

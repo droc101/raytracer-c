@@ -92,7 +92,7 @@ Actor *CreateActor(const Vector2 position,
 	actor->Destroy = ActorDestroyFuncs[actorType];
 	actor->Init(actor, worldId); // kindly allow the Actor to initialize itself
 	actor->actorType = actorType;
-	ActorFireOutput(actor, ACTOR_SPAWN_OUTPUT, "");
+	ActorFireOutput(actor, ACTOR_SPAWN_OUTPUT, PARAM_NONE);
 	return actor;
 }
 
@@ -145,7 +145,7 @@ void CreateActorWallCollider(Actor *this, const b2WorldId worldId)
 	b2CreatePolygonShape(this->actorWall->bodyId, &shapeDef, &shape);
 }
 
-void ActorFireOutput(const Actor *sender, const byte signal, const char *defaultParam)
+void ActorFireOutput(const Actor *sender, const byte signal, const Param defaultParam)
 {
 	//LogInfo("Firing signal %d from actor %p with param \"%s\"\n", signal, sender, defaultParam);
 	ListLock(sender->ioConnections);
@@ -165,10 +165,10 @@ void ActorFireOutput(const Actor *sender, const byte signal, const char *default
 				Actor *actor = ListGet(*actors, j);
 				if (actor->SignalHandler != NULL)
 				{
-					char *param = defaultParam;
-					if (connection->outParamOverride[0] != '\0')
+					const Param *param = &defaultParam;
+					if (connection->outParamOverride.type != PARAM_TYPE_NONE)
 					{
-						strcpy(param, connection->outParamOverride);
+						param = &connection->outParamOverride;
 					}
 					const bool handled = actor->SignalHandler(actor, sender, connection->targetInput, param);
 					if (!handled) LogWarning("Signal %d was sent to actor %p but was not handled!", signal, actor);
@@ -185,7 +185,7 @@ void DestroyActorConnection(ActorConnection *connection)
 	free(connection);
 }
 
-bool DefaultSignalHandler(Actor *self, const Actor *, byte signal, const char *)
+bool DefaultSignalHandler(Actor *self, const Actor *, byte signal, const Param *)
 {
 	if (signal == ACTOR_KILL_INPUT)
 	{

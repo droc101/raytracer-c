@@ -13,7 +13,7 @@
 #include "../Structs/Actor.h"
 #include "../Structs/Vector2.h"
 
-bool TestActorSignalHandler(Actor *self, const Actor *sender, byte signal, const char *param)
+bool TestActorSignalHandler(Actor *self, const Actor *sender, byte signal, const Param *param)
 {
 	if (DefaultSignalHandler(self, sender, signal, param)) return true;
 	LogDebug("Test actor got signal %d from actor %p\n", signal, sender);
