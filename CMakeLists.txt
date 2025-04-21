@@ -166,6 +166,8 @@ add_executable(
         Helpers/TextInputSystem.h
         Actor/Core/Trigger.c
         Actor/Core/Trigger.h
+        Actor/Core/IoProxy.c
+        Actor/Core/IoProxy.h
 )
 
 #endregion

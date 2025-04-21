@@ -41,7 +41,7 @@
                     "name": "Flags",
                     "min": 0,
                     "max": 255
-                },
+                }
             ],
             "render_type": "trigger",
             "inputs": [
@@ -65,6 +65,27 @@
                 },
                 {
                     "name": "triggered",
+                    "paramType": "none"
+                }
+            ]
+        },
+        {
+            "id": 6,
+            "name": "I/O Proxy",
+            "render_type": "normal",
+            "params": [],
+            "inputs": [],
+            "outputs": [
+                {
+                    "name": "killed",
+                    "paramType": "none"
+                },
+                {
+                    "name": "spawned",
+                    "paramType": "none"
+                },
+                {
+                    "name": "first_tick",
                     "paramType": "none"
                 }
             ]

@@ -11,11 +11,12 @@
 #include "Level.h"
 
 #include "../Actor/Coin.h"
+#include "../Actor/Core/IoProxy.h"
+#include "../Actor/Core/Trigger.h"
 #include "../Actor/Door.h"
 #include "../Actor/Goal.h"
 #include "../Actor/TestActor.h"
 #include "../Helpers/Core/Logging.h"
-#include "../Actor/Core/Trigger.h"
 
 // Empty template functions
 void ActorInit(Actor * /*this*/, b2WorldId /*worldId*/) {}
@@ -30,7 +31,8 @@ ActorInitFunction ActorInitFuncs[] = {
 	CoinInit,
 	GoalInit,
 	DoorInit,
-	TriggerInit
+	TriggerInit,
+	IoProxyInit
 };
 
 ActorUpdateFunction ActorUpdateFuncs[] = {
@@ -39,7 +41,8 @@ ActorUpdateFunction ActorUpdateFuncs[] = {
 	CoinUpdate,
 	GoalUpdate,
 	DoorUpdate,
-	TriggerUpdate
+	TriggerUpdate,
+	IoProxyUpdate
 };
 
 ActorDestroyFunction ActorDestroyFuncs[] = {
@@ -48,10 +51,12 @@ ActorDestroyFunction ActorDestroyFuncs[] = {
 	CoinDestroy,
 	GoalDestroy,
 	DoorDestroy,
-	TriggerDestroy
+	TriggerDestroy,
+	IoProxyDestroy
 };
 
 int ActorHealths[] = {
+	1,
 	1,
 	1,
 	1,

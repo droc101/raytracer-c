@@ -50,6 +50,7 @@ Level *CreateLevel()
 	l->fogEnd = 30;
 	strncpy(l->name, "Unnamed Level", 32);
 	l->courseNum = -1;
+	l->ioProxy = NULL;
 	ListCreate(&l->namedActorNames);
 	ListCreate(&l->namedActorPointers);
 	return l;

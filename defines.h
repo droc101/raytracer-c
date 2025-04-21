@@ -367,6 +367,9 @@ struct Level
 	List namedActorNames;
 	/// The map of named actors in the level (value portion)
 	List namedActorPointers;
+
+	/// A pointer to the I/O proxy actor, if it exists
+	Actor *ioProxy;
 };
 
 struct TextBox
