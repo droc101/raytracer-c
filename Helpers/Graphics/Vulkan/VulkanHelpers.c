@@ -814,8 +814,8 @@ void LoadActorWalls(const Level *level, ActorVertex *vertices, uint32_t *indices
 		}
 		const Wall *wall = actor->actorWall;
 		const float halfHeight = wall->height / 2.0f;
-		const vec2 startVertex = {wall->dx * 0.5f + actor->position.x, wall->dy * 0.5f + actor->position.y};
-		const vec2 endVertex = {startVertex[0] - wall->dx, startVertex[1] - wall->dy};
+		const vec2 startVertex = {actor->position.x + wall->a.x, actor->position.y + wall->a.y};
+		const vec2 endVertex = {actor->position.x + wall->b.x, actor->position.y + wall->b.y};
 		const vec2 startUV = {wall->uvOffset, 0};
 		const vec2 endUV = {wall->uvScale * wall->length + wall->uvOffset, 1};
 

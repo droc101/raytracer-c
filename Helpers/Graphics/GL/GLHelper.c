@@ -738,35 +738,40 @@ void GL_DrawActorWall(const Actor *actor)
 	glUniform1f(wallAngleLoc, wall->angle);
 
 
+	const float halfHeight = wall->height / 2.0f;
+	const Vector2 startVertex = v2(actor->position.x + wall->a.x, actor->position.y + wall->a.y);
+	const Vector2 endVertex = v2(actor->position.x + wall->b.x, actor->position.y + wall->b.y);
+	const Vector2 startUV = v2(wall->uvOffset, 0);
+	const Vector2 endUV = v2(wall->uvScale * wall->length + wall->uvOffset, 1);
 	const float vertices[4][5] = {
 		// X Y Z U V
 		{
-			0.5f * wall->dx + actor->position.x,
-			0.5f * wall->height + actor->yPosition,
-			0.5f * wall->dy + actor->position.y,
-			wall->uvOffset,
-			0.0f,
+			startVertex.x,
+			actor->yPosition + halfHeight,
+			startVertex.y,
+			startUV.x,
+			startUV.y,
 		},
 		{
-			-0.5f * wall->dx + actor->position.x,
-			0.5f * wall->height + actor->yPosition,
-			-0.5f * wall->dy + actor->position.y,
-			wall->length * wall->uvScale + wall->uvOffset,
-			0.0f,
+			endVertex.x,
+			actor->yPosition + halfHeight,
+			endVertex.y,
+			endUV.x,
+			startUV.y,
 		},
 		{
-			-0.5f * wall->dx + actor->position.x,
-			-0.5f * wall->height + actor->yPosition,
-			-0.5f * wall->dy + actor->position.y,
-			wall->length * wall->uvScale + wall->uvOffset,
-			1.0f,
+			endVertex.x,
+			actor->yPosition - halfHeight,
+			endVertex.y,
+			endUV.x,
+			endUV.y,
 		},
 		{
-			0.5f * wall->dx + actor->position.x,
-			-0.5f * wall->height + actor->yPosition,
-			0.5f * wall->dy + actor->position.y,
-			wall->uvOffset,
-			1.0f,
+			startVertex.x,
+			actor->yPosition - halfHeight,
+			startVertex.y,
+			startUV.x,
+			endUV.y,
 		},
 	};
 

@@ -36,6 +36,7 @@ typedef struct DoorData
 	bool playerColliding;
 	double animationTime;
 	b2ShapeId sensorId;
+	Vector2 spawnPosition;
 } DoorData;
 
 void DoorSetState(const Actor *door, const DoorState state)
@@ -58,16 +59,15 @@ void DoorSetState(const Actor *door, const DoorState state)
 	}
 }
 
-void CreateDoorCollider(Actor *this, const b2WorldId worldId, const Vector2 wallOffset)
+void CreateDoorCollider(Actor *this, const b2WorldId worldId, const Vector2 wallEnd)
 {
 	b2BodyDef doorBodyDef = b2DefaultBodyDef();
 	doorBodyDef.type = b2_kinematicBody;
-	doorBodyDef.position = this->actorWall->a;
+	doorBodyDef.position = this->position;
 	this->bodyId = b2CreateBody(worldId, &doorBodyDef);
 	this->actorWall->bodyId = this->bodyId;
 	const b2Segment doorShape = {
-		.point1 = {-wallOffset.x, -wallOffset.y},
-		.point2 = {wallOffset.x, wallOffset.y},
+		.point2 = wallEnd,
 	};
 	b2ShapeDef doorShapeDef = b2DefaultShapeDef();
 	doorShapeDef.friction = 0;
@@ -83,7 +83,7 @@ void CreateDoorSensor(Actor *this, const b2WorldId worldId)
 
 	b2BodyDef sensorBodyDef = b2DefaultBodyDef();
 	sensorBodyDef.type = b2_staticBody;
-	sensorBodyDef.position = Vector2Scale(Vector2Add(this->actorWall->a, this->actorWall->b), 0.5f);
+	sensorBodyDef.position = this->position;
 	const b2BodyId sensorBody = b2CreateBody(worldId, &sensorBodyDef);
 	const b2Circle sensorShape = {
 		.radius = 1,
@@ -99,23 +99,19 @@ bool DoorSignalHandler(Actor *self, const Actor *sender, byte signal, const Para
 
 void DoorInit(Actor *this, const b2WorldId worldId)
 {
-	const Vector2 wallOffset = Vector2Scale(Vector2Normalize(Vector2FromAngle(this->rotation)), -0.5f);
-	this->actorWall = CreateWall(Vector2Sub(this->position, wallOffset),
-								 Vector2Add(this->position, wallOffset),
-								 TEXTURE("actor_door"),
-								 1.0f,
-								 0.0f);
+	const Vector2 wallEnd = Vector2Normalize(Vector2FromAngle(this->rotation));
+	this->actorWall = CreateWall((Vector2){0, 0}, wallEnd, TEXTURE("actor_door"), 1.0f, 0.0f);
 	WallBake(this->actorWall);
 
-	CreateDoorCollider(this, worldId, wallOffset);
+	CreateDoorCollider(this, worldId, wallEnd);
 	CreateDoorSensor(this, worldId);
+	this->SignalHandler = DoorSignalHandler;
+	this->showShadow = false;
 
 	DoorData *data = this->extra_data; // Allocated in CreateDoorSensor
-	CheckAlloc(data);
-	this->showShadow = false;
 	data->state = DOOR_CLOSED;
 	data->animationTime = 0;
-	this->SignalHandler = DoorSignalHandler;
+	data->spawnPosition = this->position;
 }
 
 // ReSharper disable once CppParameterMayBeConstPtrOrRef
@@ -124,7 +120,10 @@ void DoorUpdate(Actor *this, const double delta)
 	this->position = b2Body_GetPosition(this->bodyId);
 	DoorData *data = this->extra_data;
 	data->playerColliding = GetSensorState(GetState()->level->worldId, data->sensorId.index1, data->playerColliding);
-	if (this->paramA) data->playerColliding = false;
+	if (this->paramA)
+	{
+		data->playerColliding = false;
+	}
 	switch (data->state)
 	{
 		case DOOR_CLOSED:
@@ -146,7 +145,7 @@ void DoorUpdate(Actor *this, const double delta)
 			if (data->animationTime >= 1)
 			{
 				b2Body_SetLinearVelocity(this->bodyId, v2s(0));
-				b2Body_SetTransform(this->bodyId, this->actorWall->b, b2MakeRot(0));
+				b2Body_SetTransform(this->bodyId, Vector2Sub(data->spawnPosition, this->actorWall->b), b2MakeRot(0));
 				DoorSetState(this, DOOR_OPEN);
 			}
 			break;
@@ -160,7 +159,7 @@ void DoorUpdate(Actor *this, const double delta)
 			} else if (data->animationTime >= 1)
 			{
 				b2Body_SetLinearVelocity(this->bodyId, v2s(0));
-				b2Body_SetTransform(this->bodyId, this->actorWall->a, b2MakeRot(0));
+				b2Body_SetTransform(this->bodyId, data->spawnPosition, b2MakeRot(0));
 				DoorSetState(this, DOOR_CLOSED);
 			}
 			break;
@@ -182,12 +181,14 @@ void DoorDestroy(Actor *this)
 
 bool DoorSignalHandler(Actor *self, const Actor *sender, byte signal, const Param *param)
 {
-	if (DefaultSignalHandler(self, sender, signal, param)) return true;
+	if (DefaultSignalHandler(self, sender, signal, param))
+	{
+		return true;
+	}
 	DoorData *data = self->extra_data;
 	if (signal == DOOR_INPUT_OPEN && data->state == DOOR_CLOSED)
 	{
-		b2Body_SetLinearVelocity(self->bodyId,
-										 Vector2Normalize(Vector2Scale(Vector2FromAngle(self->rotation), -1)));
+		b2Body_SetLinearVelocity(self->bodyId, Vector2Normalize(Vector2Scale(Vector2FromAngle(self->rotation), -1)));
 		DoorSetState(self, DOOR_OPENING);
 		return true;
 	}
