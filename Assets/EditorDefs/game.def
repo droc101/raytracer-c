@@ -99,7 +99,7 @@
 					"name": "Stay Open",
 					"min": 0,
 					"max": 1
-				},
+				}
 			],
             "render_type": "normal",
             "inputs": [
@@ -141,6 +141,56 @@
 					"name": "fully_closed",
 					"paramType": "none"
 				}
+            ]
+        },
+        {
+            "id": 7,
+            "name": "Physbox",
+            "params": [],
+            "render_type": "normal",
+            "inputs": [
+                {
+                    "name": "kill",
+                    "paramType": "none"
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "killed",
+                    "paramType": "none"
+                },
+                {
+                    "name": "spawned",
+                    "paramType": "none"
+                }
+            ]
+        },
+        {
+            "id": 8,
+            "name": "Laser",
+            "params": [
+                {
+					"name": "Height (0=ground 1=mid 2=ceiling)",
+					"min": 0,
+					"max": 2
+				}
+            ],
+            "render_type": "normal",
+            "inputs": [
+                {
+                    "name": "kill",
+                    "paramType": "none"
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "killed",
+                    "paramType": "none"
+                },
+                {
+                    "name": "spawned",
+                    "paramType": "none"
+                }
             ]
         }
     ]

@@ -168,6 +168,10 @@ add_executable(
         Actor/Core/Trigger.h
         Actor/Core/IoProxy.c
         Actor/Core/IoProxy.h
+        Actor/Physbox.c
+        Actor/Physbox.h
+        Actor/Laser.c
+        Actor/Laser.h
 )
 
 #endregion

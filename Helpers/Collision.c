@@ -21,6 +21,17 @@ float RaycastCallback(const b2ShapeId shapeId, Vector2, Vector2, const float fra
 	return fraction;
 }
 
+float RaycastCallback_GetPosition(const b2ShapeId, Vector2 point, Vector2, const float fraction, void *raycastHit)
+{
+	if (!raycastHit)
+	{
+		LogError("raycastHit was NULL, likely box2d issue");
+		return -1;
+	}
+	*(Vector2 *)raycastHit = point;
+	return fraction;
+}
+
 bool GetSensorState(const b2WorldId worldId, const uint sensorShapeIdIndex, const bool currentState)
 {
 	const b2SensorEvents sensorEvents = b2World_GetSensorEvents(worldId);
@@ -78,4 +89,26 @@ Actor *GetTargetedEnemy(const float maxDistance)
 		ListUnlock(state->level->actors);
 	}
 	return NULL;
+}
+
+bool PerformRaycast(const Vector2 origin, const float angle, const float maxDistance, Vector2 *collisionPoint, const uint64_t category, const uint16_t mask)
+{
+	const GlobalState *state = GetState();
+	Vector2 rayEnd = Vector2FromAngle(angle);
+	rayEnd = Vector2Scale(rayEnd, maxDistance);
+	Vector2 raycastHit = v2s(FP_NAN);
+	b2World_CastRay(state->level->worldId,
+					origin,
+					rayEnd,
+					(b2QueryFilter){.categoryBits = category,
+									.maskBits = mask},
+					RaycastCallback_GetPosition,
+					&raycastHit);
+
+	if (raycastHit.x != FP_NAN)
+	{
+		*collisionPoint = raycastHit;
+		return true;
+	}
+	return false;
 }

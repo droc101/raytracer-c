@@ -15,6 +15,8 @@
 #include "../Actor/Core/Trigger.h"
 #include "../Actor/Door.h"
 #include "../Actor/Goal.h"
+#include "../Actor/Laser.h"
+#include "../Actor/Physbox.h"
 #include "../Actor/TestActor.h"
 #include "../Helpers/Core/Logging.h"
 
@@ -32,7 +34,9 @@ ActorInitFunction ActorInitFuncs[] = {
 	GoalInit,
 	DoorInit,
 	TriggerInit,
-	IoProxyInit
+	IoProxyInit,
+	PhysboxInit,
+	LaserInit
 };
 
 ActorUpdateFunction ActorUpdateFuncs[] = {
@@ -42,7 +46,9 @@ ActorUpdateFunction ActorUpdateFuncs[] = {
 	GoalUpdate,
 	DoorUpdate,
 	TriggerUpdate,
-	IoProxyUpdate
+	IoProxyUpdate,
+	PhysboxUpdate,
+	LaserUpdate
 };
 
 ActorDestroyFunction ActorDestroyFuncs[] = {
@@ -52,10 +58,13 @@ ActorDestroyFunction ActorDestroyFuncs[] = {
 	GoalDestroy,
 	DoorDestroy,
 	TriggerDestroy,
-	IoProxyDestroy
+	IoProxyDestroy,
+	PhysboxDestroy,
+	LaserDestroy
 };
 
 int ActorHealths[] = {
+	1,
 	1,
 	1,
 	1,
