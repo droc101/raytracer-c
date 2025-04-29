@@ -1517,25 +1517,17 @@ bool AllocateMemoryPools()
 
 bool CreateDescriptorPool()
 {
-	const VkDescriptorPoolSize poolSizes[3] = {
-		{
-			.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-			.descriptorCount = MAX_FRAMES_IN_FLIGHT * MAX_FRAMES_IN_FLIGHT,
-		},
+	const VkDescriptorPoolSize poolSizes[] = {
 		{
 			.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 			.descriptorCount = MAX_TEXTURES * MAX_FRAMES_IN_FLIGHT,
-		},
-		{
-			.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-			.descriptorCount = MAX_FRAMES_IN_FLIGHT,
 		},
 	};
 	const VkDescriptorPoolCreateInfo poolCreateInfo = {
 		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
 		.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT,
 		.maxSets = MAX_FRAMES_IN_FLIGHT,
-		.poolSizeCount = 3,
+		.poolSizeCount = 1,
 		.pPoolSizes = poolSizes,
 	};
 
@@ -1562,36 +1554,6 @@ bool CreateDescriptorSets()
 
 	VulkanTest(vkAllocateDescriptorSets(device, &allocateInfo, descriptorSets),
 			   "Failed to allocate Vulkan descriptor sets!");
-
-	VkDescriptorImageInfo imageInfo[textures.length];
-	for (size_t textureIndex = 0; textureIndex < textures.length; textureIndex++)
-	{
-		imageInfo[textureIndex] = (VkDescriptorImageInfo){
-			.sampler = textureSamplers.nearestRepeat,
-			.imageView = ListGet(texturesImageView, textureIndex),
-			.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-		};
-	}
-	for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-	{
-		if (textures.length == 0)
-		{
-			break;
-		}
-		const VkWriteDescriptorSet writeDescriptor = {
-			.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-			.pNext = NULL,
-			.dstSet = descriptorSets[i],
-			.dstBinding = 0,
-			.dstArrayElement = 0,
-			.descriptorCount = textures.length,
-			.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-			.pImageInfo = imageInfo,
-			.pBufferInfo = NULL,
-			.pTexelBufferView = NULL,
-		};
-		vkUpdateDescriptorSets(device, 1, &writeDescriptor, 0, NULL);
-	}
 
 	return true;
 }
