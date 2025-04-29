@@ -11,6 +11,7 @@
 
 void LaserInit(Actor *this, b2WorldId)
 {
+	this->showShadow = false;
 	this->actorWall = CreateWall(v2s(0), v2s(0), TEXTURE("actor_laser"), 1.0f, 0.0f);
 	if (this->paramA == 0)
 	{
