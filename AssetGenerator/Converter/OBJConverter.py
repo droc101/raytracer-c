@@ -112,6 +112,7 @@ def ParseOBJ(file_path):
 				obj.positions.append(v3l(line))
 			elif line.startswith('vt '):
 				obj.uvs.append(v2l(line))
+				obj.uvs[-1].y = 1 - obj.uvs[-1].y
 			elif line.startswith('vn '):
 				obj.normals.append(v3l(line))
 
