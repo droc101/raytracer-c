@@ -6,6 +6,7 @@
 
 #include "../Helpers/Collision.h"
 #include "../Helpers/Core/AssetReader.h"
+#include "../Structs/GlobalState.h"
 #include "../Structs/Vector2.h"
 #include "../Structs/Wall.h"
 
@@ -39,6 +40,10 @@ void LaserUpdate(Actor *this, double)
 	{
 		this->actorWall->b = Vector2Sub(col, this->position);
 		WallBake(this->actorWall);
+	}
+	if (GetState()->physicsFrame % 4 == 0)
+	{
+		this->actorWall->uvOffset = fmod(this->actorWall->uvOffset + 0.5f, 1.0f);
 	}
 }
 
