@@ -17,7 +17,7 @@ List assetCacheData;
 uint textureId;
 uint modelId;
 Image *images[MAX_TEXTURES];
-Model *models[MAX_MODELS];
+ModelDefinition *models[MAX_MODELS];
 
 FILE *OpenAssetFile(const char *relPath)
 {
@@ -52,17 +52,14 @@ FILE *OpenAssetFile(const char *relPath)
 	return file;
 }
 
-void FreeModel(Model *model)
+void FreeModel(ModelDefinition *model)
 {
+	// TODO: Free model
 	if (model == NULL)
 	{
 		return;
 	}
-	free(model->name);
-	free(model->vertexData);
-	free(model->indexData);
-	free(model);
-	model = NULL;
+	// don't worry about it
 }
 
 void AssetCacheInit()
@@ -282,11 +279,11 @@ Image *LoadImage(const char *asset)
 	return img;
 }
 
-Model *LoadModel(const char *asset)
+ModelDefinition *LoadModel(const char *asset)
 {
 	for (int i = 0; i < MAX_MODELS; i++)
 	{
-		Model *model = models[i];
+		ModelDefinition *model = models[i];
 		if (model == NULL)
 		{
 			break;
@@ -303,28 +300,8 @@ Model *LoadModel(const char *asset)
 		LogError("Failed to load model from asset, asset was NULL!");
 		Error("Failed to load model!");
 	}
-	if (assetData->size < sizeof(ModelHeader))
-	{
-		LogError("Failed to load model from asset, size was too small!");
-		return NULL;
-	}
-	Model *model = malloc(sizeof(Model));
+	ModelDefinition *model = malloc(sizeof(ModelDefinition));
 	CheckAlloc(model);
-	memcpy(&model->header, assetData->data, sizeof(ModelHeader));
-
-	if (strncmp(model->header.sig, "MSH", 3) != 0)
-	{
-		LogError("Tried to load a model, but its first magic was incorrect (got %s)!", model->header.sig);
-		free(model);
-		return NULL;
-	}
-
-	if (strncmp(model->header.dataSig, "DAT", 3) != 0)
-	{
-		LogError("Tried to load a model, but its second magic was incorrect (got %s)!", model->header.dataSig);
-		free(model);
-		return NULL;
-	}
 
 	model->id = modelId;
 	models[modelId] = model;
@@ -335,25 +312,58 @@ Model *LoadModel(const char *asset)
 	CheckAlloc(model->name);
 	strncpy(model->name, asset, nameLength);
 
-	const size_t vertsSizeBytes = model->header.vertexCount * (sizeof(float) * 8);
-	const size_t indexSizeBytes = model->header.indexCount * sizeof(uint);
+	size_t offset = 0;
+	model->materialCount = ReadUint(assetData->data, &offset);
+	model->skinCount = ReadUint(assetData->data, &offset);
+	model->lodCount = ReadUint(assetData->data, &offset);
+	model->skins = malloc(sizeof(Material*) * model->skinCount);
+	size_t skinSize = sizeof(Material) * model->materialCount;
+	CheckAlloc(model->skins);
+	for (int i = 0; i < model->skinCount; i++)
+	{
+		model->skins[i] = malloc(skinSize);
+		CheckAlloc(model->skins[i]);
+		Material* skin = model->skins[i];
+		for (int j = 0; j < model->materialCount; j++)
+		{
+			Material *mat = &skin[j];
+			ReadString(assetData->data, &offset, mat->texture, 64);
+			mat->color = ReadUint(assetData->data, &offset);
+			mat->shader = ReadUint(assetData->data, &offset);
+		}
+	}
 
-	model->vertexCount = model->header.vertexCount;
-	model->indexCount = model->header.indexCount;
-
-	model->vertexData = malloc(vertsSizeBytes);
-	CheckAlloc(model->vertexData);
-	model->indexData = malloc(indexSizeBytes);
-	CheckAlloc(model->indexData);
-
-	// Copy the index data, then the vertex data
-	memcpy(model->indexData, assetData->data + sizeof(ModelHeader), indexSizeBytes);
-	memcpy(model->vertexData, assetData->data + sizeof(ModelHeader) + indexSizeBytes, vertsSizeBytes);
+	model->lods = malloc(sizeof(ModelLod*) * model->lodCount);
+	for (int i = 0; i < model->lodCount; i++)
+	{
+		model->lods[i] = malloc(sizeof(ModelLod));
+		CheckAlloc(model->lods[i]);
+		ModelLod *lod = model->lods[i];
+		lod->distance = ReadFloat(assetData->data, &offset);
+		lod->vertexCount = ReadUint(assetData->data, &offset);
+		size_t vertexDataSize = lod->vertexCount * sizeof(float) * 8;
+		lod->vertexData = malloc(vertexDataSize);
+		CheckAlloc(lod->vertexData);
+		ReadBytes(assetData->data, &offset, vertexDataSize, lod->vertexData);
+		size_t index_count_size = model->materialCount * sizeof(uint);
+		lod->indexCount = malloc(index_count_size);
+		CheckAlloc(lod->indexCount);
+		ReadBytes(assetData->data, &offset, index_count_size, lod->indexCount);
+		lod->indexData = malloc(sizeof(uint*) * model->materialCount);
+		CheckAlloc(lod->indexData);
+		for (int j = 0; j < model->materialCount; j++)
+		{
+			uint *indexData = malloc(lod->indexCount[j] * sizeof(uint));
+			CheckAlloc(indexData);
+			lod->indexData[j] = indexData;
+			ReadBytes(assetData->data, &offset, lod->indexCount[j] * sizeof(uint), indexData);
+		}
+	}
 
 	return model;
 }
 
-Model *GetModelFromId(const uint id)
+ModelDefinition *GetModelFromId(const uint id)
 {
 	if (id >= modelId)
 	{

@@ -29,7 +29,6 @@ void PhysboxInit(Actor *this, const b2WorldId worldId)
 	CreatePhysboxCollider(this, worldId);
 
 	this->actorModel = LoadModel(MODEL("model_cube"));
-	this->actorModelTexture = TEXTURE("actor_BLOB2");
 	this->yPosition = -0.3f;
 	this->showShadow = false;
 }

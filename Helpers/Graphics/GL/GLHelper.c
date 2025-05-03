@@ -40,7 +40,7 @@ int GL_NextFreeSlot = 0;
 int GL_AssetTextureMap[MAX_TEXTURES];
 char GL_LastError[512];
 
-GL_Buffer *GL_ModelBuffers[MAX_MODELS];
+GL_ModelBuffers *GL_Models[MAX_MODELS];
 
 GLuint sharedUniformBuffer;
 
@@ -217,7 +217,7 @@ bool GL_Init(SDL_Window *wnd)
 
 	glGenBuffers(1, &sharedUniformBuffer);
 	glBindBuffer(GL_UNIFORM_BUFFER, sharedUniformBuffer);
-	glBufferData(GL_UNIFORM_BUFFER, sizeof(GL_SharedUniforms), NULL, GL_DYNAMIC_DRAW);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(GL_SharedUniforms), NULL, GL_STREAM_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 	glEnable(GL_BLEND);
@@ -379,9 +379,10 @@ void GL_DestroyGL()
 	}
 	for (int i = 0; i < MAX_MODELS; i++)
 	{
-		if (GL_ModelBuffers[i] != NULL)
+		// TODO: Free GL Models
+		if (GL_Models[i] != NULL)
 		{
-			GL_DestroyBuffer(GL_ModelBuffers[i]);
+		// 	GL_DestroyBuffer(GL_ModelBuffers[i]);
 		}
 	}
 	SDL_GL_DeleteContext(ctx);
@@ -409,10 +410,10 @@ void GL_DrawRect(const Vector2 pos, const Vector2 size, const Color color)
 	glBindVertexArray(glBuffer->vertexArrayObject);
 
 	glBindBuffer(GL_ARRAY_BUFFER, glBuffer->vertexBufferObject);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STREAM_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glBuffer->elementBufferObject);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STREAM_DRAW);
 
 	const GLint posAttrLoc = glGetAttribLocation(uiColoredShader->program, "VERTEX");
 	glVertexAttribPointer(posAttrLoc, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void *)0);
@@ -453,10 +454,10 @@ void GL_DrawRectOutline(const Vector2 pos, const Vector2 size, const Color color
 	glBindVertexArray(glBuffer->vertexArrayObject);
 
 	glBindBuffer(GL_ARRAY_BUFFER, glBuffer->vertexBufferObject);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STREAM_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glBuffer->elementBufferObject);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STREAM_DRAW);
 
 	const GLint posAttrLoc = glGetAttribLocation(uiColoredShader->program, "VERTEX");
 	glVertexAttribPointer(posAttrLoc, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void *)0);
@@ -576,10 +577,10 @@ void GL_DrawTexture_Internal(const Vector2 pos,
 	glBindVertexArray(glBuffer->vertexArrayObject);
 
 	glBindBuffer(GL_ARRAY_BUFFER, glBuffer->vertexBufferObject);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STREAM_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glBuffer->elementBufferObject);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STREAM_DRAW);
 
 	const GLint posAttrLoc = glGetAttribLocation(uiTexturedShader->program, "VERTEX");
 	glVertexAttribPointer(posAttrLoc, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void *)0);
@@ -649,10 +650,10 @@ void GL_DrawLine(const Vector2 start, const Vector2 end, const Color color, cons
 	glBindVertexArray(glBuffer->vertexArrayObject);
 
 	glBindBuffer(GL_ARRAY_BUFFER, glBuffer->vertexBufferObject);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STREAM_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glBuffer->elementBufferObject);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STREAM_DRAW);
 
 	const GLint posAttrLoc = glGetAttribLocation(uiColoredShader->program, "VERTEX");
 	glVertexAttribPointer(posAttrLoc, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void *)0);
@@ -675,7 +676,7 @@ void GL_SetLevelParams(mat4 *mvp, const Level *l)
 	uniforms.fogEnd = (float)l->fogEnd;
 
 	glBindBuffer(GL_UNIFORM_BUFFER, sharedUniformBuffer);
-	glBufferData(GL_UNIFORM_BUFFER, sizeof(GL_SharedUniforms), &uniforms, GL_DYNAMIC_DRAW);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(GL_SharedUniforms), &uniforms, GL_STREAM_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
@@ -709,10 +710,10 @@ void GL_DrawWall(const Wall *w)
 	glBindVertexArray(glBuffer->vertexArrayObject);
 
 	glBindBuffer(GL_ARRAY_BUFFER, glBuffer->vertexBufferObject);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STREAM_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glBuffer->elementBufferObject);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STREAM_DRAW);
 
 	const GLint posAttrLoc = glGetAttribLocation(wallShader->program, "VERTEX");
 	glVertexAttribPointer(posAttrLoc, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void *)0);
@@ -780,10 +781,10 @@ void GL_DrawActorWall(const Actor *actor)
 	glBindVertexArray(glBuffer->vertexArrayObject);
 
 	glBindBuffer(GL_ARRAY_BUFFER, glBuffer->vertexBufferObject);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STREAM_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glBuffer->elementBufferObject);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STREAM_DRAW);
 
 	const GLint posAttrLoc = glGetAttribLocation(wallShader->program, "VERTEX");
 	glVertexAttribPointer(posAttrLoc, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void *)0);
@@ -820,10 +821,10 @@ void GL_DrawFloor(const Vector2 vp1, const Vector2 vp2, const char *texture, con
 	glBindVertexArray(glBuffer->vertexArrayObject);
 
 	glBindBuffer(GL_ARRAY_BUFFER, glBuffer->vertexBufferObject);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STREAM_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glBuffer->elementBufferObject);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STREAM_DRAW);
 
 	const GLint posAttrLoc = glGetAttribLocation(floorAndCeilingShader->program, "VERTEX");
 	glVertexAttribPointer(posAttrLoc, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void *)0);
@@ -856,10 +857,10 @@ void GL_DrawShadow(const Vector2 vp1, const Vector2 vp2, const mat4 mdl)
 	glBindVertexArray(glBuffer->vertexArrayObject);
 
 	glBindBuffer(GL_ARRAY_BUFFER, glBuffer->vertexBufferObject);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STREAM_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glBuffer->elementBufferObject);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STREAM_DRAW);
 
 	const GLint posAttrLoc = glGetAttribLocation(shadowShader->program, "VERTEX");
 	glVertexAttribPointer(posAttrLoc, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void *)0);
@@ -899,10 +900,10 @@ void GL_DrawColoredArrays(const float *vertices, const uint *indices, const uint
 	glBindVertexArray(glBuffer->vertexArrayObject);
 
 	glBindBuffer(GL_ARRAY_BUFFER, glBuffer->vertexBufferObject);
-	glBufferData(GL_ARRAY_BUFFER, (long)(quad_count * 16 * sizeof(float)), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, (long)(quad_count * 16 * sizeof(float)), vertices, GL_STREAM_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glBuffer->elementBufferObject);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, (long)(quad_count * 6 * sizeof(uint)), indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, (long)(quad_count * 6 * sizeof(uint)), indices, GL_STREAM_DRAW);
 
 	const GLint posAttrLoc = glGetAttribLocation(uiColoredShader->program, "VERTEX");
 	glVertexAttribPointer(posAttrLoc, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void *)0);
@@ -928,10 +929,10 @@ void GL_DrawTexturedArrays(const float *vertices,
 	glBindVertexArray(glBuffer->vertexArrayObject);
 
 	glBindBuffer(GL_ARRAY_BUFFER, glBuffer->vertexBufferObject);
-	glBufferData(GL_ARRAY_BUFFER, (long)(quad_count * 16 * sizeof(float)), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, (long)(quad_count * 16 * sizeof(float)), vertices, GL_STREAM_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glBuffer->elementBufferObject);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, (long)(quad_count * 6 * sizeof(uint)), indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, (long)(quad_count * 6 * sizeof(uint)), indices, GL_STREAM_DRAW);
 
 	const GLint posAttrLoc = glGetAttribLocation(uiTexturedShader->program, "VERTEX");
 	glVertexAttribPointer(posAttrLoc, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void *)0);
@@ -1018,7 +1019,7 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
 		GL_DrawFloor(floorStart, floorEnd, l->ceilOrSkyTex, 0.5f, 0.8f);
 	} else
 	{
-		GL_RenderModel(skyModel, skyModelWorldMatrix, l->ceilOrSkyTex, SHADER_SKY);
+		GL_RenderModel(skyModel, skyModelWorldMatrix, 0);
 		GL_ClearDepthOnly(); // prevent sky from clipping into walls
 	}
 
@@ -1059,7 +1060,7 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
 			GL_DrawActorWall(actor);
 		} else
 		{
-			GL_RenderModel(actor->actorModel, actorXfm, actor->actorModelTexture, SHADER_SHADED);
+			GL_RenderModel(actor->actorModel, actorXfm, actor->actorModelSkin);
 		}
 	}
 
@@ -1077,39 +1078,79 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
 	uniforms.fogEnd = (float)1001;
 
 	glBindBuffer(GL_UNIFORM_BUFFER, sharedUniformBuffer);
-	glBufferData(GL_UNIFORM_BUFFER, sizeof(GL_SharedUniforms), &uniforms, GL_DYNAMIC_DRAW);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(GL_SharedUniforms), &uniforms, GL_STREAM_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-	GL_RenderModel(LoadModel(MODEL("model_eraser")), GLM_MAT4_IDENTITY, TEXTURE("item_eraser"), SHADER_SHADED);
+	GL_RenderModel(LoadModel(MODEL("model_eraser")), GLM_MAT4_IDENTITY, 0);
 
 	//glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 	GL_Disable3D();
 }
 
-void GL_LoadModel(const Model *model)
+void GL_LoadModel(const ModelDefinition *model, const int lod, const int material)
 {
-	if (GL_ModelBuffers[model->id] != NULL)
+	// If the LOD or material is out of bounds, return
+	// if (lod >= model->lodCount || material >= model->materialCount)
+	// {
+	// 	LogError("Tried to load model with invalid LOD or material");
+	// 	return;
+	// }
+
+	if (GL_Models[model->id] != NULL)
 	{
-		const GL_Buffer *modelBuffer = GL_ModelBuffers[model->id];
-		glBindVertexArray(modelBuffer->vertexArrayObject);
-		glBindBuffer(GL_ARRAY_BUFFER, modelBuffer->vertexBufferObject);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, modelBuffer->elementBufferObject);
+		const GL_ModelBuffers *modelBuffer = GL_Models[model->id];
+		GL_Buffer *lodBuffer = modelBuffer->buffers[lod];
+		GL_Buffer materialBuffer = lodBuffer[material];
+		glBindVertexArray(materialBuffer.vertexArrayObject);
+		glBindBuffer(GL_ARRAY_BUFFER, materialBuffer.vertexBufferObject);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, materialBuffer.elementBufferObject);
 		return;
 	}
-	GL_Buffer *modelBuffer = GL_ConstructBuffer();
-	GL_ModelBuffers[model->id] = modelBuffer;
+	GL_ModelBuffers *buf = malloc(sizeof(GL_ModelBuffers));
+	buf->lodCount = model->lodCount;
+	buf->materialCount = model->materialCount;
+	buf->buffers = malloc(sizeof(void*) * model->lodCount);
 
-	glBindVertexArray(modelBuffer->vertexArrayObject);
+	for (int l = 0; l < buf->lodCount; l++)
+	{
+		buf->buffers[l] = malloc(sizeof(GL_Buffer) * model->materialCount);
+		for (int m = 0; m < buf->materialCount; m++)
+		{
+			// GL_CreateBuffer the Mth slot in the Lth slot
+			GL_Buffer *modelBuffer = &buf->buffers[l][m];
+			glGenVertexArrays(1, &modelBuffer->vertexArrayObject);
+			glGenBuffers(1, &modelBuffer->vertexBufferObject);
+			glGenBuffers(1, &modelBuffer->elementBufferObject);
 
-	glBindBuffer(GL_ARRAY_BUFFER, modelBuffer->vertexBufferObject);
-	glBufferData(GL_ARRAY_BUFFER, (long)(model->vertexCount * sizeof(float) * 8), model->vertexData, GL_STATIC_DRAW);
+			glBindVertexArray(modelBuffer->vertexArrayObject);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, modelBuffer->elementBufferObject);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, (long)(model->indexCount * sizeof(uint)), model->indexData, GL_STATIC_DRAW);
+			glBindBuffer(GL_ARRAY_BUFFER, modelBuffer->vertexBufferObject);
+			glBufferData(GL_ARRAY_BUFFER, (long)(model->lods[lod]->vertexCount * sizeof(float) * 8), model->lods[lod]->vertexData, GL_STATIC_DRAW);
+
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, modelBuffer->elementBufferObject);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, (long)(model->lods[lod]->indexCount[m] * sizeof(uint)), model->lods[lod]->indexData[m], GL_STATIC_DRAW);
+		}
+	}
+
+	GL_Models[model->id] = buf;
 }
 
-void GL_RenderModel(const Model *model, const mat4 modelWorldMatrix, const char *texture, const ModelShader shader)
+void GL_RenderModelPart(const ModelDefinition *model,
+						const mat4 modelWorldMatrix,
+						const int lod,
+						const int material,
+						const int skin)
 {
+	if (lod >= model->lodCount || material >= model->materialCount || skin >= model->skinCount)
+	{
+		LogError("Tried to load model with invalid skin, LOD, or material.\n");
+		return;
+	}
+
+	Material* skinMats = model->skins[skin];
+
+	ModelShader shader = skinMats[material].shader;
+
 	GL_Shader *glShader;
 	switch (shader)
 	{
@@ -1128,7 +1169,7 @@ void GL_RenderModel(const Model *model, const mat4 modelWorldMatrix, const char 
 
 	glUseProgram(glShader->program);
 
-	GL_LoadTextureFromAsset(texture);
+	GL_LoadTextureFromAsset(skinMats[material].texture);
 
 	glBindBufferBase(GL_UNIFORM_BUFFER,
 					 glGetUniformBlockIndex(glShader->program, "SharedUniforms"),
@@ -1139,7 +1180,7 @@ void GL_RenderModel(const Model *model, const mat4 modelWorldMatrix, const char 
 					   GL_FALSE,
 					   modelWorldMatrix[0]); // model -> world
 
-	GL_LoadModel(model);
+	GL_LoadModel(model, lod, material);
 
 	const GLint posAttrLoc = glGetAttribLocation(glShader->program, "VERTEX");
 	glVertexAttribPointer(posAttrLoc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void *)0);
@@ -1156,5 +1197,13 @@ void GL_RenderModel(const Model *model, const mat4 modelWorldMatrix, const char 
 		glEnableVertexAttribArray(normAttrLoc);
 	}
 
-	glDrawElements(GL_TRIANGLES, (int)model->indexCount, GL_UNSIGNED_INT, NULL);
+	glDrawElements(GL_TRIANGLES, (int)model->lods[lod]->indexCount[material], GL_UNSIGNED_INT, NULL);
+}
+
+void GL_RenderModel(const ModelDefinition *model, const mat4 modelWorldMatrix, const int skin)
+{
+	for (int m = 0; m < model->materialCount; m++)
+	{
+		GL_RenderModelPart(model, modelWorldMatrix, 0, m, skin);
+	}
 }

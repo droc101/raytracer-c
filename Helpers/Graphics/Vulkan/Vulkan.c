@@ -438,23 +438,23 @@ inline uint8_t VK_GetSampleCountFlags()
 bool VK_LoadLevelWalls(const Level *level)
 {
 	uint32_t skyVertexCount = 0;
-	const Model *_skyModel = !skyModel ? LoadModel(MODEL("model_sky")) : skyModel;
+	const ModelDefinition *_skyModel = !skyModel ? LoadModel(MODEL("model_sky")) : skyModel;
 	if (level->hasCeiling)
 	{
 		buffers.walls.skyIndexCount = 0;
 		buffers.walls.wallCount = level->walls.length + 2;
 	} else
 	{
-		skyVertexCount = _skyModel->vertexCount;
-		buffers.walls.skyIndexCount = _skyModel->indexCount;
+		skyVertexCount = 0; // _skyModel->vertexCount;
+		buffers.walls.skyIndexCount = 0; // _skyModel->indexCount;
 		buffers.walls.wallCount = level->walls.length + 1;
 	}
 
 	if (buffers.walls.wallCount > buffers.walls.maxWallCount)
 	{
 		const VkDeviceSize wallVertexSize = sizeof(WallVertex) *
-											(buffers.walls.maxWallCount * 4 + _skyModel->vertexCount);
-		const VkDeviceSize wallIndexSize = sizeof(uint32_t) * (buffers.walls.maxWallCount * 6 + _skyModel->indexCount);
+											(buffers.walls.maxWallCount * 4 + 0 /*_skyModel->vertexCount*/);
+		const VkDeviceSize wallIndexSize = sizeof(uint32_t) * (buffers.walls.maxWallCount * 6 + 0/*_skyModel->indexCount*/);
 
 		buffers.walls.maxWallCount = buffers.walls.wallCount;
 
@@ -466,8 +466,8 @@ bool VK_LoadLevelWalls(const Level *level)
 									wallVertexSize + wallIndexSize,
 									sizeof(WallVertex) * buffers.walls.maxWallCount * 4 +
 											sizeof(uint32_t) * buffers.walls.maxWallCount * 6 +
-											sizeof(WallVertex) * _skyModel->vertexCount +
-											sizeof(uint32_t) * _skyModel->indexCount,
+											sizeof(WallVertex) * 0/*_skyModel->vertexCount*/ +
+											sizeof(uint32_t) * 0/*_skyModel->indexCount*/,
 									true))
 			{
 				return false;
@@ -480,8 +480,8 @@ bool VK_LoadLevelWalls(const Level *level)
 									wallIndexSize + wallVertexSize,
 									sizeof(WallVertex) * buffers.walls.maxWallCount * 4 +
 											sizeof(uint32_t) * buffers.walls.maxWallCount * 6 +
-											sizeof(WallVertex) * _skyModel->vertexCount +
-											sizeof(uint32_t) * _skyModel->indexCount,
+											sizeof(WallVertex) * 0/*_skyModel->vertexCount*/ +
+											sizeof(uint32_t) * 0/*_skyModel->indexCount*/,
 									true))
 			{
 				return false;
@@ -492,7 +492,7 @@ bool VK_LoadLevelWalls(const Level *level)
 									buffers.walls.vertexOffset,
 									wallVertexSize,
 									sizeof(WallVertex) * buffers.walls.maxWallCount * 4 +
-											sizeof(WallVertex) * _skyModel->vertexCount,
+											sizeof(WallVertex) * 0/*_skyModel->vertexCount*/,
 									true))
 			{
 				return false;
@@ -501,7 +501,7 @@ bool VK_LoadLevelWalls(const Level *level)
 									buffers.walls.indexOffset,
 									wallIndexSize,
 									sizeof(uint32_t) * buffers.walls.maxWallCount * 6 +
-											sizeof(uint32_t) * _skyModel->indexCount,
+											sizeof(uint32_t) * 0/*_skyModel->indexCount*/,
 									true))
 			{
 				return false;
@@ -540,7 +540,7 @@ bool VK_LoadLevelWalls(const Level *level)
 		pushConstants.skyTextureIndex = MAX_TEXTURES;
 	} else
 	{
-		pushConstants.skyVertexCount = skyModel->vertexCount;
+		pushConstants.skyVertexCount = 0;//skyModel->vertexCount;
 		pushConstants.skyTextureIndex = TextureIndex(level->ceilOrSkyTex);
 	}
 	pushConstants.shadowTextureIndex = TextureIndex(TEXTURE("vfx_shadow"));
@@ -555,8 +555,8 @@ bool VK_LoadLevelWalls(const Level *level)
 
 	LoadWalls(level, _skyModel, wallVertices, wallIndices, skyVertexCount);
 
-	const VkDeviceSize wallVertexSize = sizeof(WallVertex) * (buffers.walls.maxWallCount * 4 + _skyModel->vertexCount);
-	const VkDeviceSize wallIndexSize = sizeof(uint32_t) * (buffers.walls.maxWallCount * 6 + _skyModel->indexCount);
+	const VkDeviceSize wallVertexSize = sizeof(WallVertex) * (buffers.walls.maxWallCount * 4 + 0/*_skyModel->vertexCount*/);
+	const VkDeviceSize wallIndexSize = sizeof(uint32_t) * (buffers.walls.maxWallCount * 6 + 0/*_skyModel->indexCount*/);
 
 	if (__builtin_expect(wallVertexSize + wallIndexSize > buffers.staging.size, false) &&
 		!ResizeStagingBuffer(wallVertexSize + wallIndexSize))
