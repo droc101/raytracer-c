@@ -11,6 +11,7 @@
 #include "DataReader.h"
 #include "Error.h"
 #include "Logging.h"
+#include "../Graphics/RenderingHelpers.h"
 
 List assetCacheNames;
 List assetCacheData;
@@ -328,7 +329,7 @@ ModelDefinition *LoadModel(const char *asset)
 		{
 			Material *mat = &skin[j];
 			ReadString(assetData->data, &offset, mat->texture, 64);
-			mat->color = ReadUint(assetData->data, &offset);
+			GetColor(ReadUint(assetData->data, &offset), &mat->color);
 			mat->shader = ReadUint(assetData->data, &offset);
 		}
 	}

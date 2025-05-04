@@ -112,7 +112,7 @@ def ConvertModelDefinition(path):
 			mat_data = skin[mat]
 			bin_data.extend(util.CString(mat_data.texture, 64).encode("ascii"))
 			# Convert the color to a 4-byte integer RGBA but assume the 4th byte is 0 instead of indexing the array with 3
-			color_int = (mat_data.color[0] << 24) | (mat_data.color[1] << 16) | (mat_data.color[2] << 8) | 0xFF
+			color_int = (mat_data.color[0] << 16) | (mat_data.color[1] << 8) | (mat_data.color[2] << 0) | 0xFF000000
 			bin_data.extend(util.IntToBytes(color_int))
 			bin_data.extend(util.IntToBytes(mat_data.shader))
 	# Pack the LOD data

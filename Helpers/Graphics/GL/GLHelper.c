@@ -1169,7 +1169,14 @@ void GL_RenderModelPart(const ModelDefinition *model,
 
 	glUseProgram(glShader->program);
 
-	GL_LoadTextureFromAsset(skinMats[material].texture);
+	if (shader == SHADER_SKY)
+	{
+		GL_LoadTextureFromAsset(GetState()->level->ceilOrSkyTex);
+	} else
+	{
+		GL_LoadTextureFromAsset(skinMats[material].texture);
+	}
+
 
 	glBindBufferBase(GL_UNIFORM_BUFFER,
 					 glGetUniformBlockIndex(glShader->program, "SharedUniforms"),
@@ -1195,6 +1202,12 @@ void GL_RenderModelPart(const ModelDefinition *model,
 		const GLint normAttrLoc = glGetAttribLocation(glShader->program, "VERTEX_NORMAL");
 		glVertexAttribPointer(normAttrLoc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void *)(5 * sizeof(GLfloat)));
 		glEnableVertexAttribArray(normAttrLoc);
+	}
+
+	if (shader != SHADER_SKY)
+	{
+		const GLint colUniformLocation = glGetUniformLocation(glShader->program, "albColor");
+		glUniform4fv(colUniformLocation, 1, COLOR_TO_ARR(skinMats[material].color));
 	}
 
 	glDrawElements(GL_TRIANGLES, (int)model->lods[lod]->indexCount[material], GL_UNSIGNED_INT, NULL);

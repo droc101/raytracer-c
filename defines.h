@@ -634,7 +634,7 @@ struct ActorConnection
 struct Material
 {
 	char texture[64];
-	uint color;
+	Color color;
 	ModelShader shader;
 };
 
