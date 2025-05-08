@@ -19,12 +19,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Install Vulkan SDK
-      uses: humbletim/install-vulkan-sdk@c2aa128094d42ba02959a660f03e0a4e012192f9
-      with:
-        version: latest
-        cache: true
-
     - name: Setup MSYS2
       uses: msys2/setup-msys2@v2
       with:
@@ -39,6 +33,8 @@ jobs:
             mingw-w64-x86_64-cmake
             mingw-w64-x86_64-ninja
             mingw-w64-x86_64-shaderc
+            mingw-w64-x86_64-vulkan-headers
+            mingw-w64-x86_64-vulkan-loader
           update: true
 
     - name: Run setup-windows.py
@@ -70,4 +66,4 @@ jobs:
           build/SDL2_mixer.dll
           build/libzlib1.dll
           build/assets/
-        retention-days: 5
+        retention-days: 90

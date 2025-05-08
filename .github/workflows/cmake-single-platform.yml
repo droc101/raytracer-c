@@ -41,5 +41,5 @@ jobs:
         path: |
           build/game
           build/assets/
-        retention-days: 5
+        retention-days: 90
 
