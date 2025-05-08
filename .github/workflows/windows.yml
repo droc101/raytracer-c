@@ -39,6 +39,7 @@ jobs:
             mingw-w64-x86_64-cmake
             mingw-w64-x86_64-ninja
             mingw-w64-x86_64-shaderc
+            mingw-w64-x86_64-vulkan-headers
           update: true
 
     - name: Run setup-windows.py
@@ -70,4 +71,4 @@ jobs:
           build/SDL2_mixer.dll
           build/libzlib1.dll
           build/assets/
-        retention-days: 5
+        retention-days: 90
