@@ -1,6 +1,6 @@
-# raytracer-c
-[![Linux Build](https://github.com/droc101/raytracer-c/actions/workflows/cmake-single-platform.yml/badge.svg)](https://github.com/droc101/raytracer-c/actions/workflows/cmake-single-platform.yml)
-[![Windows Build](https://github.com/droc101/raytracer-c/actions/workflows/windows.yml/badge.svg)](https://github.com/droc101/raytracer-c/actions/workflows/windows.yml)
+# c-game-engine
+[![Linux Build](https://github.com/droc101/c-game-engine/actions/workflows/cmake-single-platform.yml/badge.svg)](https://github.com/droc101/c-game-engine/actions/workflows/cmake-single-platform.yml)
+[![Windows Build](https://github.com/droc101/c-game-engine/actions/workflows/windows.yml/badge.svg)](https://github.com/droc101/c-game-engine/actions/workflows/windows.yml)
 
 ![](Assets/actor/BLOB2.png)
 
