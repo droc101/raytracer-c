@@ -378,7 +378,7 @@ Font *LoadFont(const char *asset)
 	}
 	Font *font = malloc(sizeof(Font));
 	CheckAlloc(font);
-	memcpy(font, assetData->data, sizeof(Font) - sizeof(Image*));
+	memcpy(font, assetData->data, sizeof(Font) - sizeof(Image *));
 	char temp[32];
 	strncpy(temp, font->texture, 32);
 	sprintf(font->texture, "texture/%s.gtex", temp);

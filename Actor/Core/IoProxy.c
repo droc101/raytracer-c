@@ -16,7 +16,10 @@ bool IoProxySignalHandler(Actor *self, const Actor *sender, byte signal, const P
 		LogError("IoProxy actor should not be killed! The kill input will be ignored!");
 		return false;
 	}
-	if (DefaultSignalHandler(self, sender, signal, param)) return true;
+	if (DefaultSignalHandler(self, sender, signal, param))
+	{
+		return true;
+	}
 	return false;
 }
 

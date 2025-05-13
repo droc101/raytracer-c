@@ -17,7 +17,10 @@
 
 bool TriggerSignalHandler(Actor *self, const Actor *sender, byte signal, const Param *param)
 {
-	if (DefaultSignalHandler(self, sender, signal, param)) return true;
+	if (DefaultSignalHandler(self, sender, signal, param))
+	{
+		return true;
+	}
 	if (signal == TRIGGER_INPUT_FORCE_TRIGGER)
 	{
 		ActorFireOutput(self, TRIGGER_OUTPUT_TRIGGERED, PARAM_NONE);
@@ -40,22 +43,22 @@ void CreateTriggerSensor(Actor *trigger, const Vector2 position, const float rot
 	sensorShapeDef.isSensor = true;
 	sensorShapeDef.filter.categoryBits = COLLISION_GROUP_TRIGGER;
 	sensorShapeDef.filter.maskBits = COLLISION_GROUP_PLAYER;
-	*(b2ShapeId*)(trigger->extra_data) = b2CreatePolygonShape(bodyId, &sensorShapeDef, &sensorShape);
+	*(b2ShapeId *)(trigger->extraData) = b2CreatePolygonShape(bodyId, &sensorShapeDef, &sensorShape);
 	trigger->bodyId = bodyId;
 }
 
 void TriggerInit(Actor *this, const b2WorldId worldId)
 {
 	this->showShadow = false;
-	this->extra_data = malloc(sizeof(b2ShapeId));
+	this->extraData = malloc(sizeof(b2ShapeId));
 	this->SignalHandler = TriggerSignalHandler;
-	CheckAlloc(this->extra_data);
+	CheckAlloc(this->extraData);
 	CreateTriggerSensor(this, this->position, this->rotation, worldId);
 }
 
 void TriggerUpdate(Actor *this, double /*delta*/)
 {
-	if (GetSensorState(GetState()->level->worldId, ((b2ShapeId *)this->extra_data)->index1, false))
+	if (GetSensorState(GetState()->level->worldId, ((b2ShapeId *)this->extraData)->index1, false))
 	{
 		ActorFireOutput(this, TRIGGER_OUTPUT_TRIGGERED, PARAM_NONE); // 2 = trigger
 		RemoveActor(this); // for now they are ALL one shot
@@ -67,5 +70,5 @@ void TriggerDestroy(Actor *this)
 {
 	b2DestroyBody(this->bodyId);
 	free(this->actorWall);
-	free(this->extra_data);
+	free(this->extraData);
 }

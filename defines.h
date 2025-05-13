@@ -585,7 +585,7 @@ struct Actor
 	/// @note May be unused for some actors
 	int health;
 	/// Extra data for the actor
-	void *extra_data;
+	void *extraData;
 
 	/// The actor's Box2D body ID
 	b2BodyId bodyId;
@@ -624,28 +624,28 @@ struct Font
 	/// The texture width of one character
 	uint width;
 	/// The texture height (including below baseline)
-	uint texture_height;
+	uint textureHeight;
 	/// The pixel coordinate of the baseline
 	uint baseline;
 	/// The pixels between characters
-	uint char_spacing;
+	uint charSpacing;
 	/// The pixels between lines
-	uint line_spacing;
+	uint lineSpacing;
 	/// The width of a space character
-	uint space_width;
+	uint spaceWidth;
 	/// The default size of the font, used for calculating scale
-	uint default_size;
+	uint defaultSize;
 	/// The number of characters in the font
-	uint char_count;
+	uint charCount;
 	/// Whether this font only contains uppercase characters
-	bool uppercase_only;
+	bool uppercaseOnly;
 
 	/// The texture this font uses (fully qualified)
 	char texture[48];
 	/// The index of the character in the texture
 	byte indices[128];
 	/// The width of each character, index directly by the character
-	byte char_widths[128];
+	byte charWidths[128];
 
 	/// The image loaded from the texture
 	Image *image;

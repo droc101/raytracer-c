@@ -18,7 +18,7 @@ static const Level *loadedLevel;
 
 bool VK_Init(SDL_Window *window)
 {
-	vk_window = window;
+	vulkanWindow = window;
 	// clang-format off
 	if (CreateInstance() && CreateSurface() && PickPhysicalDevice() && CreateLogicalDevice() && CreateSwapChain() &&
 		CreateImageViews() && CreateRenderPass() && CreateDescriptorSetLayouts() && CreateGraphicsPipelineCache() &&

@@ -118,16 +118,16 @@ int GL_RegisterTexture(const unsigned char *pixelData, int width, int height);
  * @param pos The position in pixels
  * @param size The size in pixels
  * @param texture The texture name
- * @param region_start The start of the region in pixels
- * @param region_end The end of the region in pixels
+ * @param regionStart The start of the region in pixels
+ * @param regionEnd The end of the region in pixels
  * @param color The modulate color
  */
 void GL_DrawTexture_Internal(Vector2 pos,
 							 Vector2 size,
 							 const char *texture,
 							 Color color,
-							 Vector2 region_start,
-							 Vector2 region_end);
+							 Vector2 regionStart,
+							 Vector2 regionEnd);
 
 /**
  * Set the level parameters for rendering

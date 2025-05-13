@@ -21,9 +21,9 @@
 
 void CreateGoalSensor(Actor *this, const b2WorldId worldId)
 {
-	this->extra_data = calloc(1, sizeof(b2ShapeId));
-	CheckAlloc(this->extra_data);
-	b2ShapeId *shapeId = this->extra_data;
+	this->extraData = calloc(1, sizeof(b2ShapeId));
+	CheckAlloc(this->extraData);
+	b2ShapeId *shapeId = this->extraData;
 
 	b2BodyDef sensorBodyDef = b2DefaultBodyDef();
 	sensorBodyDef.type = b2_staticBody;
@@ -42,9 +42,7 @@ void CreateGoalSensor(Actor *this, const b2WorldId worldId)
 
 void GoalInit(Actor *this, const b2WorldId worldId)
 {
-	this->actorWall = CreateWall(v2(0, 0.5f), v2(0, -0.5f), TEXTURE("actor_goal0"),
-								 1.0f,
-								 0.0f);
+	this->actorWall = CreateWall(v2(0, 0.5f), v2(0, -0.5f), TEXTURE("actor_goal0"), 1.0f, 0.0f);
 	WallBake(this->actorWall);
 
 	CreateGoalSensor(this, worldId);
@@ -57,9 +55,8 @@ void GoalUpdate(Actor *this, double /*delta*/)
 	this->actorWall->a = v2(0.5f * cosf(rotation), 0.5f * sinf(rotation));
 	this->actorWall->b = v2(-0.5f * cosf(rotation), -0.5f * sinf(rotation));
 
-	if (GetSensorState(GetState()->level->worldId, ((b2ShapeId *)this->extra_data)->index1, false))
+	if (GetSensorState(GetState()->level->worldId, ((b2ShapeId *)this->extraData)->index1, false))
 	{
-
 		const TextBox tb = DEFINE_TEXT("Goal!",
 									   2,
 									   20,
@@ -79,5 +76,5 @@ void GoalDestroy(Actor *this)
 {
 	b2DestroyBody(this->bodyId);
 	free(this->actorWall);
-	free(this->extra_data);
+	free(this->extraData);
 }

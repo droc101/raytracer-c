@@ -95,25 +95,25 @@ void GL_DrawTextureMod(Vector2 pos, Vector2 size, const char *texture, Color col
  * @param pos The position in pixels
  * @param size The size in pixels
  * @param texture The texture name
- * @param region_start The start of the region in pixels
- * @param region_end The end of the region in pixels
+ * @param regionStart The start of the region in pixels
+ * @param regionEnd The end of the region in pixels
  */
-void GL_DrawTextureRegion(Vector2 pos, Vector2 size, const char *texture, Vector2 region_start, Vector2 region_end);
+void GL_DrawTextureRegion(Vector2 pos, Vector2 size, const char *texture, Vector2 regionStart, Vector2 regionEnd);
 
 /**
  * Draw a texture region in 2D with a color mod
  * @param pos The position in pixels
  * @param size The size in pixels
  * @param texture The texture name
- * @param region_start The start of the region in pixels
- * @param region_end The end of the region in pixels
+ * @param regionStart The start of the region in pixels
+ * @param regionEnd The end of the region in pixels
  * @param color The modulate color
  */
 void GL_DrawTextureRegionMod(Vector2 pos,
 							 Vector2 size,
 							 const char *texture,
-							 Vector2 region_start,
-							 Vector2 region_end,
+							 Vector2 regionStart,
+							 Vector2 regionEnd,
 							 Color color);
 
 /**
@@ -157,24 +157,20 @@ void GL_UpdateViewportSize();
  * Draw arrays using the ui_textured shader
  * @param vertices Vertex data [x, y, u, v] with UVs in NDC
  * @param indices Index data
- * @param quad_count The number of quads to draw
+ * @param quadCount The number of quads to draw
  * @param texture The texture name
  * @param color The modulate color
  */
-void GL_DrawTexturedArrays(const float *vertices,
-						   const uint *indices,
-						   int quad_count,
-						   const char *texture,
-						   Color color);
+void GL_DrawTexturedArrays(const float *vertices, const uint *indices, int quadCount, const char *texture, Color color);
 
 /**
  * Draw arrays using the ui_colored shader
  * @param vertices Vertex data [x, y] with positions in NDC
  * @param indices Index data
- * @param quad_count The number of quads to draw
+ * @param quadCount The number of quads to draw
  * @param color The color to draw
  */
-void GL_DrawColoredArrays(const float *vertices, const uint *indices, uint quad_count, Color color);
+void GL_DrawColoredArrays(const float *vertices, const uint *indices, uint quadCount, Color color);
 
 /**
  * Convert screen X to NDC

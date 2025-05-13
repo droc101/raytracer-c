@@ -534,7 +534,7 @@ typedef struct PushConstants
 #pragma endregion typedefs
 
 #pragma region variables
-extern SDL_Window *vk_window;
+extern SDL_Window *vulkanWindow;
 extern bool minimized;
 extern size_t loadedActors;
 

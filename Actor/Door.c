@@ -41,7 +41,7 @@ typedef struct DoorData
 
 void DoorSetState(const Actor *door, const DoorState state)
 {
-	DoorData *data = door->extra_data;
+	DoorData *data = door->extraData;
 	data->state = state;
 	data->animationTime = 0;
 	if (state == DOOR_OPENING)
@@ -77,9 +77,9 @@ void CreateDoorCollider(Actor *this, const b2WorldId worldId, const Vector2 wall
 
 void CreateDoorSensor(Actor *this, const b2WorldId worldId)
 {
-	this->extra_data = calloc(1, sizeof(DoorData));
-	CheckAlloc(this->extra_data);
-	DoorData *data = this->extra_data;
+	this->extraData = calloc(1, sizeof(DoorData));
+	CheckAlloc(this->extraData);
+	DoorData *data = this->extraData;
 
 	b2BodyDef sensorBodyDef = b2DefaultBodyDef();
 	sensorBodyDef.type = b2_staticBody;
@@ -108,7 +108,7 @@ void DoorInit(Actor *this, const b2WorldId worldId)
 	this->SignalHandler = DoorSignalHandler;
 	this->showShadow = false;
 
-	DoorData *data = this->extra_data; // Allocated in CreateDoorSensor
+	DoorData *data = this->extraData; // Allocated in CreateDoorSensor
 	data->state = DOOR_CLOSED;
 	data->animationTime = 0;
 	data->spawnPosition = this->position;
@@ -118,7 +118,7 @@ void DoorInit(Actor *this, const b2WorldId worldId)
 void DoorUpdate(Actor *this, const double delta)
 {
 	this->position = b2Body_GetPosition(this->bodyId);
-	DoorData *data = this->extra_data;
+	DoorData *data = this->extraData;
 	data->playerColliding = GetSensorState(GetState()->level->worldId, data->sensorId.index1, data->playerColliding);
 	if (this->paramA)
 	{
@@ -174,8 +174,8 @@ void DoorUpdate(Actor *this, const double delta)
 void DoorDestroy(Actor *this)
 {
 	b2DestroyBody(this->bodyId);
-	b2DestroyBody(b2Shape_GetBody(((DoorData *)this->extra_data)->sensorId));
-	free(this->extra_data);
+	b2DestroyBody(b2Shape_GetBody(((DoorData *)this->extraData)->sensorId));
+	free(this->extraData);
 	free(this->actorWall);
 }
 
@@ -185,7 +185,7 @@ bool DoorSignalHandler(Actor *self, const Actor *sender, byte signal, const Para
 	{
 		return true;
 	}
-	DoorData *data = self->extra_data;
+	DoorData *data = self->extraData;
 	if (signal == DOOR_INPUT_OPEN && data->state == DOOR_CLOSED)
 	{
 		b2Body_SetLinearVelocity(self->bodyId, Vector2Normalize(Vector2Scale(Vector2FromAngle(self->rotation), -1)));
