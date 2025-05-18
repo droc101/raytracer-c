@@ -379,10 +379,14 @@ void GL_DestroyGL()
 	}
 	for (int i = 0; i < MAX_MODELS; i++)
 	{
-		// TODO: Free GL Models
 		if (GL_Models[i] != NULL)
 		{
-		// 	GL_DestroyBuffer(GL_ModelBuffers[i]);
+			for (int j = 0; j < GL_Models[i]->lodCount; j++)
+			{
+				GL_DestroyBuffer(GL_Models[i]->buffers[j]);
+			}
+			free(GL_Models[i]->buffers);
+			free(GL_Models[i]);
 		}
 	}
 	SDL_GL_DeleteContext(ctx);

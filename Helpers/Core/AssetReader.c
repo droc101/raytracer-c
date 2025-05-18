@@ -55,12 +55,32 @@ FILE *OpenAssetFile(const char *relPath)
 
 void FreeModel(ModelDefinition *model)
 {
-	// TODO: Free model
 	if (model == NULL)
 	{
 		return;
 	}
-	// don't worry about it
+	for (int i = 0; i < model->skinCount; i++)
+	{
+		free(model->skins[i]);
+	}
+
+	for (int i = 0; i < model->lodCount; i++)
+	{
+		ModelLod *lod = model->lods[i];
+		free(lod->vertexData);
+		for (int j = 0; j < model->materialCount; j++)
+		{
+			free(lod->indexData[j]);
+		}
+		free(lod->indexData);
+		free(lod->indexCount);
+		free(lod);
+	}
+
+	free(model->name);
+	free(model->skins);
+	free(model->lods);
+	free(model);
 }
 
 void AssetCacheInit()
