@@ -15,14 +15,17 @@
 
 bool TestActorSignalHandler(Actor *self, const Actor *sender, byte signal, const Param *param)
 {
-	if (DefaultSignalHandler(self, sender, signal, param)) return true;
+	if (DefaultSignalHandler(self, sender, signal, param))
+	{
+		return true;
+	}
 	LogDebug("Test actor got signal %d from actor %p\n", signal, sender);
 	return false;
 }
 
 void TestActorIdle(Actor *this, const double delta)
 {
-	const NavigationConfig *navigationConfig = this->extra_data;
+	const NavigationConfig *navigationConfig = this->extraData;
 	this->rotation += 0.01f;
 	const Vector2 impulse = v2(0, navigationConfig->speed * (float)delta);
 	b2Body_ApplyLinearImpulseToCenter(this->bodyId, Vector2Rotate(impulse, this->rotation), true);
@@ -30,7 +33,7 @@ void TestActorIdle(Actor *this, const double delta)
 
 void TestActorTargetReached(Actor *this, const double delta)
 {
-	const NavigationConfig *navigationConfig = this->extra_data;
+	const NavigationConfig *navigationConfig = this->extraData;
 	this->rotation += lerp(0, PlayerRelativeAngle(this), navigationConfig->rotationSpeed * (float)delta);
 }
 
@@ -63,9 +66,9 @@ void TestActorInit(Actor *this, const b2WorldId worldId)
 	this->actorModel = LoadModel(MODEL("model_leafy"));
 	this->actorModelSkin = 0;
 	this->SignalHandler = TestActorSignalHandler;
-	this->extra_data = calloc(1, sizeof(NavigationConfig));
-	CheckAlloc(this->extra_data);
-	NavigationConfig *navigationConfig = this->extra_data;
+	this->extraData = calloc(1, sizeof(NavigationConfig));
+	CheckAlloc(this->extraData);
+	NavigationConfig *navigationConfig = this->extraData;
 	navigationConfig->fov = PIf / 2;
 	navigationConfig->speed = 0.075f;
 	navigationConfig->rotationSpeed = 0.1f;
@@ -83,12 +86,12 @@ void TestActorUpdate(Actor *this, const double delta)
 {
 	this->position = b2Body_GetPosition(this->bodyId);
 
-	NavigationStep(this, this->extra_data, delta);
+	NavigationStep(this, this->extraData, delta);
 }
 
 // ReSharper disable once CppParameterMayBeConstPtrOrRef
 void TestActorDestroy(Actor *this)
 {
-	free(this->extra_data);
+	free(this->extraData);
 	b2DestroyBody(this->bodyId);
 }

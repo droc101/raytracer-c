@@ -27,52 +27,30 @@ void ActorUpdate(Actor * /*this*/, double /*delta*/) {}
 
 void ActorDestroy(Actor * /*this*/) {}
 
-ActorInitFunction ActorInitFuncs[] = {
-	ActorInit,
-	TestActorInit,
-	CoinInit,
-	GoalInit,
-	DoorInit,
-	TriggerInit,
-	IoProxyInit,
-	PhysboxInit,
-	LaserInit
-};
+ActorInitFunction ActorInitFuncs[] =
+		{ActorInit, TestActorInit, CoinInit, GoalInit, DoorInit, TriggerInit, IoProxyInit, PhysboxInit, LaserInit};
 
-ActorUpdateFunction ActorUpdateFuncs[] = {
-	ActorUpdate,
-	TestActorUpdate,
-	CoinUpdate,
-	GoalUpdate,
-	DoorUpdate,
-	TriggerUpdate,
-	IoProxyUpdate,
-	PhysboxUpdate,
-	LaserUpdate
-};
+ActorUpdateFunction ActorUpdateFuncs[] = {ActorUpdate,
+										  TestActorUpdate,
+										  CoinUpdate,
+										  GoalUpdate,
+										  DoorUpdate,
+										  TriggerUpdate,
+										  IoProxyUpdate,
+										  PhysboxUpdate,
+										  LaserUpdate};
 
-ActorDestroyFunction ActorDestroyFuncs[] = {
-	ActorDestroy,
-	TestActorDestroy,
-	CoinDestroy,
-	GoalDestroy,
-	DoorDestroy,
-	TriggerDestroy,
-	IoProxyDestroy,
-	PhysboxDestroy,
-	LaserDestroy
-};
+ActorDestroyFunction ActorDestroyFuncs[] = {ActorDestroy,
+											TestActorDestroy,
+											CoinDestroy,
+											GoalDestroy,
+											DoorDestroy,
+											TriggerDestroy,
+											IoProxyDestroy,
+											PhysboxDestroy,
+											LaserDestroy};
 
-int ActorHealths[] = {
-	1,
-	1,
-	1,
-	1,
-	1,
-	1,
-	1,
-	1
-};
+int ActorHealths[] = {1, 1, 1, 1, 1, 1, 1, 1};
 
 Actor *CreateActor(const Vector2 position,
 				   const float rotation,
@@ -185,7 +163,10 @@ void ActorFireOutput(const Actor *sender, const byte signal, const Param default
 						param = &connection->outParamOverride;
 					}
 					const bool handled = actor->SignalHandler(actor, sender, connection->targetInput, param);
-					if (!handled) LogWarning("Signal %d was sent to actor %p but was not handled!", signal, actor);
+					if (!handled)
+					{
+						LogWarning("Signal %d was sent to actor %p but was not handled!", signal, actor);
+					}
 				}
 			}
 			ListFree(actors, true);

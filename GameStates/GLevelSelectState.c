@@ -19,7 +19,7 @@
 #include "GMainState.h"
 #include "GMenuState.h"
 
-int GLevelSelectState_SelectedLevel = 0;
+int selectedLevel = 0;
 List levelList;
 
 void GLevelSelectStateUpdate(GlobalState * /*State*/)
@@ -32,17 +32,17 @@ void GLevelSelectStateUpdate(GlobalState * /*State*/)
 	{
 		if (IsKeyJustPressed(SDL_SCANCODE_DOWN) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_DPAD_DOWN))
 		{
-			GLevelSelectState_SelectedLevel--;
-			GLevelSelectState_SelectedLevel = wrap(GLevelSelectState_SelectedLevel, 0, levelList.length);
+			selectedLevel--;
+			selectedLevel = wrap(selectedLevel, 0, levelList.length);
 		} else if (IsKeyJustPressed(SDL_SCANCODE_UP) || IsButtonJustPressed(SDL_CONTROLLER_BUTTON_DPAD_UP))
 		{
-			GLevelSelectState_SelectedLevel++;
-			GLevelSelectState_SelectedLevel = wrap(GLevelSelectState_SelectedLevel, 0, levelList.length);
+			selectedLevel++;
+			selectedLevel = wrap(selectedLevel, 0, levelList.length);
 		} else if (IsKeyJustReleased(SDL_SCANCODE_SPACE) || IsButtonJustReleased(CONTROLLER_OK))
 		{
 			ConsumeKey(SDL_SCANCODE_SPACE);
 			ConsumeButton(CONTROLLER_OK);
-			if (ChangeLevelByName(ListGet(levelList, GLevelSelectState_SelectedLevel)))
+			if (ChangeLevelByName(ListGet(levelList, selectedLevel)))
 			{
 				GMainStateSet();
 			}
@@ -63,9 +63,9 @@ void GLevelSelectStateRender(GlobalState * /*State*/)
 
 	if (levelList.length > 0)
 	{
-		char *levelName = ListGet(levelList, GLevelSelectState_SelectedLevel);
+		char *levelName = ListGet(levelList, selectedLevel);
 
-		sprintf(levelNameBuffer, "%02d %s", GLevelSelectState_SelectedLevel + 1, levelName);
+		sprintf(levelNameBuffer, "%02d %s", selectedLevel + 1, levelName);
 	} else
 	{
 		strcpy((char *)&levelNameBuffer, "No levels found");

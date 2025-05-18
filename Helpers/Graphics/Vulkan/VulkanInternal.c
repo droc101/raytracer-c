@@ -16,13 +16,13 @@
 bool CreateInstance()
 {
 	uint32_t extensionCount;
-	if (SDL_Vulkan_GetInstanceExtensions(vk_window, &extensionCount, NULL) == SDL_FALSE)
+	if (SDL_Vulkan_GetInstanceExtensions(vulkanWindow, &extensionCount, NULL) == SDL_FALSE)
 	{
 		VulkanLogError("Failed to acquire Vulkan extensions required for SDL window!\n");
 		return false;
 	}
 	const char *extensionNames[extensionCount];
-	if (SDL_Vulkan_GetInstanceExtensions(vk_window, &extensionCount, extensionNames) == SDL_FALSE)
+	if (SDL_Vulkan_GetInstanceExtensions(vulkanWindow, &extensionCount, extensionNames) == SDL_FALSE)
 	{
 		VulkanLogError("Failed to acquire Vulkan extensions required for SDL window!\n");
 		return false;
@@ -133,7 +133,7 @@ bool CreateInstance()
 
 bool CreateSurface()
 {
-	if (SDL_Vulkan_CreateSurface(vk_window, instance, &surface) == SDL_FALSE)
+	if (SDL_Vulkan_CreateSurface(vulkanWindow, instance, &surface) == SDL_FALSE)
 	{
 		VulkanLogError("Failed to create Vulkan window surface\n");
 		return false;
@@ -408,7 +408,7 @@ bool CreateSwapChain()
 	{
 		int32_t width;
 		int32_t height;
-		SDL_Vulkan_GetDrawableSize(vk_window, &width, &height);
+		SDL_Vulkan_GetDrawableSize(vulkanWindow, &width, &height);
 		extent.width = clamp(width,
 							 swapChainSupport.capabilities.minImageExtent.width,
 							 swapChainSupport.capabilities.maxImageExtent.width);

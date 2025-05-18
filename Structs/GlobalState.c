@@ -257,8 +257,6 @@ void DestroyGlobalState()
 				Mix_FreeChunk(state.channels[i]);
 			}
 		}
-
-
 	}
 
 	GInputOptionsStateDestroy();

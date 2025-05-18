@@ -5,8 +5,8 @@
 #ifndef LASER_H
 #define LASER_H
 
-#include "../defines.h"
 #include <box2d/box2d.h>
+#include "../defines.h"
 
 void LaserInit(Actor *this, b2WorldId worldId);
 void LaserUpdate(Actor *this, double delta);

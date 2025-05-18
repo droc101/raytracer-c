@@ -19,13 +19,14 @@
  * @note I apologize for this macro and am open to better ideas.
  * @warning This leaks memory if the level is invalid
  */
-#define EXPECT_BYTES(expected) {\
-	if (bytesRemaining < (expected)) \
+#define EXPECT_BYTES(expected) \
 	{ \
-		LogError("Not enough bytes remaining to read %zu bytes\n", (expected)); \
-		return NULL; \
-	} \
-	bytesRemaining -= (expected); \
+		if (bytesRemaining < (expected)) \
+		{ \
+			LogError("Not enough bytes remaining to read %zu bytes\n", (expected)); \
+			return NULL; \
+		} \
+		bytesRemaining -= (expected); \
 	}
 
 Level *LoadLevel(const byte *data, const size_t dataSize)

@@ -13,7 +13,7 @@
 #include "VulkanResources.h"
 
 #pragma region variables
-SDL_Window *vk_window = NULL;
+SDL_Window *vulkanWindow = NULL;
 bool minimized = false;
 size_t loadedActors = 0;
 

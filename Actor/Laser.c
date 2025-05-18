@@ -35,7 +35,12 @@ void LaserUpdate(Actor *this, double)
 	Vector2 castStart = Vector2FromAngle(this->rotation);
 	castStart = Vector2Scale(castStart, 0.01);
 	castStart = Vector2Add(castStart, this->position);
-	const bool rc = PerformRaycast(castStart, this->rotation, 50.0f, &col, COLLISION_GROUP_ACTOR, ~(COLLISION_GROUP_PLAYER | COLLISION_GROUP_HURTBOX | COLLISION_GROUP_TRIGGER));
+	const bool rc = PerformRaycast(castStart,
+								   this->rotation,
+								   50.0f,
+								   &col,
+								   COLLISION_GROUP_ACTOR,
+								   ~(COLLISION_GROUP_PLAYER | COLLISION_GROUP_HURTBOX | COLLISION_GROUP_TRIGGER));
 	if (rc)
 	{
 		this->actorWall->b = Vector2Sub(col, this->position);
@@ -47,7 +52,4 @@ void LaserUpdate(Actor *this, double)
 	}
 }
 
-void LaserDestroy(Actor *this)
-{
-
-}
+void LaserDestroy(Actor *this) {}

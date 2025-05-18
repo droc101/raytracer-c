@@ -20,9 +20,9 @@
 
 void CreateCoinSensor(Actor *this, const b2WorldId worldId)
 {
-	this->extra_data = calloc(1, sizeof(b2ShapeId));
-	CheckAlloc(this->extra_data);
-	b2ShapeId *shapeId = this->extra_data;
+	this->extraData = calloc(1, sizeof(b2ShapeId));
+	CheckAlloc(this->extraData);
+	b2ShapeId *shapeId = this->extraData;
 
 	b2BodyDef sensorBodyDef = b2DefaultBodyDef();
 	sensorBodyDef.type = b2_staticBody;
@@ -72,7 +72,7 @@ void CoinUpdate(Actor *this, double /*delta*/)
 	this->actorWall->a = v2(0.125f * cosf(rotation), 0.125f * sinf(rotation));
 	this->actorWall->b = v2(-0.125f * cosf(rotation), -0.125f * sinf(rotation));
 
-	if (GetSensorState(GetState()->level->worldId, ((b2ShapeId *)this->extra_data)->index1, false))
+	if (GetSensorState(GetState()->level->worldId, ((b2ShapeId *)this->extraData)->index1, false))
 	{
 		if (this->paramB == 0)
 		{
@@ -93,5 +93,5 @@ void CoinDestroy(Actor *this)
 {
 	b2DestroyBody(this->bodyId);
 	free(this->actorWall);
-	free(this->extra_data);
+	free(this->extraData);
 }

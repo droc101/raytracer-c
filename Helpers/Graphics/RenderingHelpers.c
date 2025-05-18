@@ -68,10 +68,10 @@ void SetTexParams(const char *texture, const bool linear, const bool repeat)
 	{
 		case RENDERER_VULKAN:
 			VK_SetTexParams(texture, linear, repeat);
-		break;
+			break;
 		case RENDERER_OPENGL:
 			GL_SetTexParams(texture, linear, repeat);
-		break;
+			break;
 		default:
 			break;
 	}
