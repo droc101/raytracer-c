@@ -1103,8 +1103,8 @@ void GL_LoadModel(const ModelDefinition *model, const int lod, const int materia
 	if (GL_Models[model->id] != NULL)
 	{
 		const GL_ModelBuffers *modelBuffer = GL_Models[model->id];
-		GL_Buffer *lodBuffer = modelBuffer->buffers[lod];
-		GL_Buffer materialBuffer = lodBuffer[material];
+		const GL_Buffer *lodBuffer = modelBuffer->buffers[lod];
+		const GL_Buffer materialBuffer = lodBuffer[material];
 		glBindVertexArray(materialBuffer.vertexArrayObject);
 		glBindBuffer(GL_ARRAY_BUFFER, materialBuffer.vertexBufferObject);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, materialBuffer.elementBufferObject);
@@ -1120,7 +1120,6 @@ void GL_LoadModel(const ModelDefinition *model, const int lod, const int materia
 		buf->buffers[l] = malloc(sizeof(GL_Buffer) * model->materialCount);
 		for (int m = 0; m < buf->materialCount; m++)
 		{
-			// GL_CreateBuffer the Mth slot in the Lth slot
 			GL_Buffer *modelBuffer = &buf->buffers[l][m];
 			glGenVertexArrays(1, &modelBuffer->vertexArrayObject);
 			glGenBuffers(1, &modelBuffer->vertexBufferObject);
@@ -1129,10 +1128,10 @@ void GL_LoadModel(const ModelDefinition *model, const int lod, const int materia
 			glBindVertexArray(modelBuffer->vertexArrayObject);
 
 			glBindBuffer(GL_ARRAY_BUFFER, modelBuffer->vertexBufferObject);
-			glBufferData(GL_ARRAY_BUFFER, (long)(model->lods[lod]->vertexCount * sizeof(float) * 8), model->lods[lod]->vertexData, GL_STATIC_DRAW);
+			glBufferData(GL_ARRAY_BUFFER, (long)(model->lods[l]->vertexCount * sizeof(float) * 8), model->lods[l]->vertexData, GL_STATIC_DRAW);
 
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, modelBuffer->elementBufferObject);
-			glBufferData(GL_ELEMENT_ARRAY_BUFFER, (long)(model->lods[lod]->indexCount[m] * sizeof(uint)), model->lods[lod]->indexData[m], GL_STATIC_DRAW);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, (long)(model->lods[l]->indexCount[m] * sizeof(uint)), model->lods[l]->indexData[m], GL_STATIC_DRAW);
 		}
 	}
 
@@ -1153,7 +1152,7 @@ void GL_RenderModelPart(const ModelDefinition *model,
 
 	Material* skinMats = model->skins[skin];
 
-	ModelShader shader = skinMats[material].shader;
+	const ModelShader shader = skinMats[material].shader;
 
 	GL_Shader *glShader;
 	switch (shader)
@@ -1219,8 +1218,24 @@ void GL_RenderModelPart(const ModelDefinition *model,
 
 void GL_RenderModel(const ModelDefinition *model, const mat4 modelWorldMatrix, const int skin)
 {
+	int lod = 0;
+	if (model->lodCount > 1)
+	{
+		const float distanceToCamera = glm_vec3_distance((vec3){modelWorldMatrix[3][0], modelWorldMatrix[3][1], modelWorldMatrix[3][2]},
+												 (vec3){GetState()->cam->x, GetState()->cam->y, GetState()->cam->z});
+
+		for (int i = model->lodCount - 1; i >= 0; i--)
+		{
+			if (distanceToCamera > model->lods[i]->distance)
+			{
+				lod = i;
+				break;
+			}
+		}
+	}
+
 	for (int m = 0; m < model->materialCount; m++)
 	{
-		GL_RenderModelPart(model, modelWorldMatrix, 0, m, skin);
+		GL_RenderModelPart(model, modelWorldMatrix, lod, m, skin);
 	}
 }

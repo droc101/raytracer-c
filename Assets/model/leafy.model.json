@@ -33,11 +33,11 @@
             "model": "leafy/leafy.obj"
         },
         {
-            "distance": 10,
+            "distance": 5,
             "model": "leafy/leafy.lod1.obj"
         },
         {
-            "distance": 15,
+            "distance": 10,
             "model": "leafy/leafy.lod2.obj"
         }
     ]
