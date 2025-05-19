@@ -212,9 +212,8 @@ void GL_RenderLevel(const Level *l, const Camera *cam);
  * Render a 3D model
  * @param model The model to render
  * @param modelWorldMatrix The model -> world matrix
- * @param texture The texture name
- * @param shader The shader to use
+ * @param skin The skin to use
  */
-void GL_RenderModel(const Model *model, const mat4 modelWorldMatrix, const char *texture, ModelShader shader);
+void GL_RenderModel(const ModelDefinition *model, const mat4 modelWorldMatrix, int skin);
 
 #endif //GAME_GLHELPER_H

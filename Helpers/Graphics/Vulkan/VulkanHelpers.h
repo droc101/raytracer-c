@@ -668,7 +668,7 @@ bool RecreateSwapChain();
 bool DestroyBuffer(Buffer *buffer);
 
 void LoadWalls(const Level *level,
-			   const Model *skyModel,
+			   const ModelDefinition *skyModel,
 			   WallVertex *vertices,
 			   uint32_t *indices,
 			   uint32_t skyVertexCount);

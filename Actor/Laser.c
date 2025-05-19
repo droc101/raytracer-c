@@ -52,4 +52,7 @@ void LaserUpdate(Actor *this, double)
 	}
 }
 
-void LaserDestroy(Actor *this) {}
+void LaserDestroy(Actor *this)
+{
+	free(this->actorWall);
+}

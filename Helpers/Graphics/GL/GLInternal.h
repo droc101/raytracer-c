@@ -14,6 +14,7 @@
 
 typedef struct GL_Shader GL_Shader;
 typedef struct GL_Buffer GL_Buffer;
+typedef struct GL_ModelBuffers GL_ModelBuffers;
 
 struct GL_Shader
 {
@@ -33,6 +34,16 @@ struct GL_Buffer
 	GLuint vertexBufferObject;
 	/// The element buffer object
 	GLuint elementBufferObject;
+};
+
+struct GL_ModelBuffers
+{
+	/// The number of LODs in this buffer
+	size_t lodCount;
+	/// The number of materials in this buffer
+	size_t materialCount;
+	/// The buffers, indexed by LOD then material
+	GL_Buffer **buffers;
 };
 
 /**

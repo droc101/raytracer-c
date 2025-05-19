@@ -41,9 +41,7 @@ typedef struct Player Player;
 typedef struct Wall Wall;
 typedef struct Level Level;
 typedef struct TextBox TextBox;
-typedef struct Model Model;
 typedef struct Actor Actor;
-typedef struct ModelHeader ModelHeader;
 typedef struct Options Options;
 typedef struct Asset Asset;
 typedef struct Image Image;
@@ -52,6 +50,9 @@ typedef struct SaveData SaveData;
 typedef struct Color Color;
 typedef struct ActorConnection ActorConnection;
 typedef struct Param Param;
+typedef struct ModelDefinition ModelDefinition;
+typedef struct Material Material;
+typedef struct ModelLod ModelLod;
 
 // Function signatures
 typedef void (*FixedUpdateFunction)(GlobalState *state, double delta);
@@ -441,34 +442,6 @@ struct Options
 	double masterVolume;
 } __attribute__((packed)); // This is packed because it is saved to disk
 
-struct ModelHeader
-{
-	/// The "magic" for the header, should be "MSH"
-	char sig[4];
-	/// The number of indices in the model
-	uint indexCount;
-	/// The number of vertices in the model
-	uint vertexCount;
-	/// The "magic" for the data, should be "DAT"
-	char dataSig[4];
-} __attribute__((packed));
-
-struct Model
-{
-	ModelHeader header;
-	size_t id;
-	char *name;
-
-	/// The number of vertices in the model
-	uint vertexCount;
-	/// The number of indices in the model
-	uint indexCount;
-	/// Packed vertex data, (X Y Z) (U V) (NX NY NZ)
-	float *vertexData;
-	/// Index data
-	uint *indexData;
-};
-
 // Global state of the game
 struct GlobalState
 {
@@ -551,9 +524,8 @@ struct Actor
 	/// The size of the shadow
 	float shadowSize;
 	/// Optional model for the actor, if not NULL, will be rendered instead of the wall
-	Model *actorModel;
-	/// Texture for the model
-	char *actorModelTexture;
+	ModelDefinition *actorModel;
+	int actorModelSkin;
 
 	/// The actor's wall, in global space
 	Wall *actorWall;
@@ -657,6 +629,51 @@ struct ActorConnection
 	byte myOutput;
 	char outActorName[64];
 	Param outParamOverride;
+};
+
+struct Material
+{
+	/// The texture name of the material
+	char texture[64];
+	/// The tint color of the material
+	Color color;
+	/// The shader to use for this material
+	ModelShader shader;
+};
+
+struct ModelLod
+{
+	/// How far away the camera must be before this LOD is used
+	float distance;
+
+	/// The number of vertices in the model
+	uint vertexCount;
+	/// Packed vertex data, (X Y Z) (U V) (NX NY NZ)
+	float *vertexData;
+
+	/// The number of indices in each material
+	uint *indexCount;
+	/// Index data for each material
+	uint **indexData;
+};
+
+struct ModelDefinition
+{
+	/// The runtime-generated ID of this model
+	size_t id;
+	/// The asset name of this model
+	char *name;
+
+	/// The number of materials in the model
+	byte materialCount;
+	/// The number of skins in the model
+	byte skinCount;
+	/// The number of LODs in the model
+	byte lodCount;
+	/// The skins for this model, each an array of materialCount materials
+	Material **skins;
+	/// The LODs for this model
+	ModelLod **lods;
 };
 
 #pragma endregion
