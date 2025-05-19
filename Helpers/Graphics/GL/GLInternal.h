@@ -38,9 +38,12 @@ struct GL_Buffer
 
 struct GL_ModelBuffers
 {
+	/// The number of LODs in this buffer
 	size_t lodCount;
+	/// The number of materials in this buffer
 	size_t materialCount;
-	GL_Buffer **buffers; // lodCount arrays of materialCount buffers
+	/// The buffers, indexed by LOD then material
+	GL_Buffer **buffers;
 };
 
 /**

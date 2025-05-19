@@ -633,13 +633,17 @@ struct ActorConnection
 
 struct Material
 {
+	/// The texture name of the material
 	char texture[64];
+	/// The tint color of the material
 	Color color;
+	/// The shader to use for this material
 	ModelShader shader;
 };
 
 struct ModelLod
 {
+	/// How far away the camera must be before this LOD is used
 	float distance;
 
 	/// The number of vertices in the model
@@ -655,14 +659,21 @@ struct ModelLod
 
 struct ModelDefinition
 {
+	/// The runtime-generated ID of this model
 	size_t id;
+	/// The asset name of this model
 	char *name;
 
+	/// The number of materials in the model
 	byte materialCount;
+	/// The number of skins in the model
 	byte skinCount;
+	/// The number of LODs in the model
 	byte lodCount;
-	Material **skins; // skinCount arrays of materialCount materials
-	ModelLod **lods; // lodCount models
+	/// The skins for this model, each an array of materialCount materials
+	Material **skins;
+	/// The LODs for this model
+	ModelLod **lods;
 };
 
 #pragma endregion

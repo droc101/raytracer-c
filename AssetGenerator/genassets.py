@@ -79,8 +79,6 @@ def RecursiveSearch(in_path, out_path):
 			elif file.endswith(".def"):
 				print("Copying " + path_from_assets + file)
 				shutil.copyfile(in_path + file, out_path + "defs/" + file)
-			else:
-				print("Unrecognized file type: " + file)
 
 SetupDirs(util.output_path)
 RecursiveSearch(util.input_path, util.output_path)

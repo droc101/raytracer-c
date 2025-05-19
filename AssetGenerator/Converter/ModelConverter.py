@@ -52,7 +52,6 @@ def ConvertModelDefinition(path):
 		mdef.skins = []
 		for skin in data["skins"]:
 			skin_data = {}
-			print(skin)
 			for mat in skin:
 				mat_data = skin[mat]
 				material = ModelMaterial()
