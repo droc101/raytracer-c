@@ -35,12 +35,12 @@ GL_Shader *modelShadedShader;
 
 GL_Buffer *glBuffer;
 
-GLuint GL_Textures[GL_MAX_TEXTURE_SLOTS];
-int GL_NextFreeSlot = 0;
-int GL_AssetTextureMap[MAX_TEXTURES];
-char GL_LastError[512];
+GLuint glTextures[GL_MAX_TEXTURE_SLOTS];
+int glNextFreeSlot = 0;
+int glAssetTextureMap[MAX_TEXTURES];
+char glLastError[512];
 
-GL_ModelBuffers *GL_Models[MAX_MODELS];
+GL_ModelBuffers *glModels[MAX_MODELS];
 
 GLuint sharedUniformBuffer;
 
@@ -94,7 +94,7 @@ void LoadShaderLocations()
 void GL_Error(const char *error)
 {
 	LogError("OpenGL Error: %s\n", error);
-	strcpy(GL_LastError, error);
+	strcpy(glLastError, error);
 }
 
 bool GL_PreInit()
@@ -143,8 +143,8 @@ bool GL_PreInit()
 					"Failed to set OpenGL double buffer",
 					"Failed to start OpenGL");
 
-	memset(GL_AssetTextureMap, -1, MAX_TEXTURES * sizeof(int));
-	memset(GL_Textures, 0, sizeof(GL_Textures));
+	memset(glAssetTextureMap, -1, MAX_TEXTURES * sizeof(int));
+	memset(glTextures, 0, sizeof(glTextures));
 
 	return true;
 }
@@ -372,21 +372,21 @@ void GL_DestroyGL()
 	glDeleteBuffers(1, &sharedUniformBuffer);
 	for (int i = 0; i < MAX_TEXTURES; i++)
 	{
-		if (GL_Textures[i] != 0)
+		if (glTextures[i] != 0)
 		{
-			glDeleteTextures(1, &GL_Textures[i]);
+			glDeleteTextures(1, &glTextures[i]);
 		}
 	}
 	for (int i = 0; i < MAX_MODELS; i++)
 	{
-		if (GL_Models[i] != NULL)
+		if (glModels[i] != NULL)
 		{
-			for (int j = 0; j < GL_Models[i]->lodCount; j++)
+			for (int j = 0; j < glModels[i]->lodCount; j++)
 			{
-				GL_DestroyBuffer(GL_Models[i]->buffers[j]);
+				GL_DestroyBuffer(glModels[i]->buffers[j]);
 			}
-			free(GL_Models[i]->buffers);
-			free(GL_Models[i]);
+			free(glModels[i]->buffers);
+			free(glModels[i]);
 		}
 	}
 	SDL_GL_DeleteContext(ctx);
@@ -475,27 +475,27 @@ void GL_LoadTextureFromAsset(const char *texture)
 	const Image *image = LoadImage(texture);
 
 	// if the texture is already loaded, don't load it again
-	if (GL_AssetTextureMap[image->id] != -1)
+	if (glAssetTextureMap[image->id] != -1)
 	{
-		if (glIsTexture(GL_Textures[GL_AssetTextureMap[image->id]]))
+		if (glIsTexture(glTextures[glAssetTextureMap[image->id]]))
 		{
-			glBindTexture(GL_TEXTURE_2D, GL_Textures[GL_AssetTextureMap[image->id]]);
+			glBindTexture(GL_TEXTURE_2D, glTextures[glAssetTextureMap[image->id]]);
 			return;
 		}
 	}
 
 	const int slot = GL_RegisterTexture(image->pixelData, (int)image->width, (int)image->height);
 
-	GL_AssetTextureMap[image->id] = slot;
+	glAssetTextureMap[image->id] = slot;
 }
 
 int GL_RegisterTexture(const byte *pixelData, const int width, const int height)
 {
-	const int slot = GL_NextFreeSlot;
+	const int slot = glNextFreeSlot;
 
-	glGenTextures(1, &GL_Textures[slot]);
+	glGenTextures(1, &glTextures[slot]);
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, GL_Textures[slot]);
+	glBindTexture(GL_TEXTURE_2D, glTextures[slot]);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixelData);
 
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, -1.5f);
@@ -516,7 +516,7 @@ int GL_RegisterTexture(const byte *pixelData, const int width, const int height)
 
 	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV, pixelData);
 
-	GL_NextFreeSlot++;
+	glNextFreeSlot++;
 
 	return slot;
 }
@@ -527,7 +527,7 @@ void GL_SetTexParams(const char *texture, const bool linear, const bool repeat)
 
 	const Image *image = LoadImage(texture);
 
-	const GLuint glTextureID = GL_Textures[GL_AssetTextureMap[image->id]];
+	const GLuint glTextureID = glTextures[glAssetTextureMap[image->id]];
 
 	glBindTexture(GL_TEXTURE_2D, glTextureID);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, repeat ? GL_REPEAT : GL_CLAMP_TO_EDGE);
@@ -1093,16 +1093,9 @@ void GL_RenderLevel(const Level *l, const Camera *cam)
 
 void GL_LoadModel(const ModelDefinition *model, const int lod, const int material)
 {
-	// If the LOD or material is out of bounds, return
-	// if (lod >= model->lodCount || material >= model->materialCount)
-	// {
-	// 	LogError("Tried to load model with invalid LOD or material");
-	// 	return;
-	// }
-
-	if (GL_Models[model->id] != NULL)
+	if (glModels[model->id] != NULL)
 	{
-		const GL_ModelBuffers *modelBuffer = GL_Models[model->id];
+		const GL_ModelBuffers *modelBuffer = glModels[model->id];
 		const GL_Buffer *lodBuffer = modelBuffer->buffers[lod];
 		const GL_Buffer materialBuffer = lodBuffer[material];
 		glBindVertexArray(materialBuffer.vertexArrayObject);
@@ -1111,13 +1104,17 @@ void GL_LoadModel(const ModelDefinition *model, const int lod, const int materia
 		return;
 	}
 	GL_ModelBuffers *buf = malloc(sizeof(GL_ModelBuffers));
+	CheckAlloc(buf);
 	buf->lodCount = model->lodCount;
 	buf->materialCount = model->materialCount;
 	buf->buffers = malloc(sizeof(void*) * model->lodCount);
+	CheckAlloc(buf->buffers);
 
 	for (int l = 0; l < buf->lodCount; l++)
 	{
 		buf->buffers[l] = malloc(sizeof(GL_Buffer) * model->materialCount);
+		CheckAlloc(buf->buffers[l]);
+
 		for (int m = 0; m < buf->materialCount; m++)
 		{
 			GL_Buffer *modelBuffer = &buf->buffers[l][m];
@@ -1135,7 +1132,7 @@ void GL_LoadModel(const ModelDefinition *model, const int lod, const int materia
 		}
 	}
 
-	GL_Models[model->id] = buf;
+	glModels[model->id] = buf;
 }
 
 void GL_RenderModelPart(const ModelDefinition *model,
@@ -1144,12 +1141,6 @@ void GL_RenderModelPart(const ModelDefinition *model,
 						const int material,
 						const int skin)
 {
-	if (lod >= model->lodCount || material >= model->materialCount || skin >= model->skinCount)
-	{
-		LogError("Tried to load model with invalid skin, LOD, or material.\n");
-		return;
-	}
-
 	Material* skinMats = model->skins[skin];
 
 	const ModelShader shader = skinMats[material].shader;

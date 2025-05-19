@@ -81,6 +81,8 @@ void FreeModel(ModelDefinition *model)
 	free(model->skins);
 	free(model->lods);
 	free(model);
+
+	model = NULL;
 }
 
 void AssetCacheInit()
@@ -338,8 +340,9 @@ ModelDefinition *LoadModel(const char *asset)
 	model->skinCount = ReadUint(assetData->data, &offset);
 	model->lodCount = ReadUint(assetData->data, &offset);
 	model->skins = malloc(sizeof(Material*) * model->skinCount);
-	size_t skinSize = sizeof(Material) * model->materialCount;
 	CheckAlloc(model->skins);
+
+	const size_t skinSize = sizeof(Material) * model->materialCount;
 	for (int i = 0; i < model->skinCount; i++)
 	{
 		model->skins[i] = malloc(skinSize);
@@ -355,21 +358,26 @@ ModelDefinition *LoadModel(const char *asset)
 	}
 
 	model->lods = malloc(sizeof(ModelLod*) * model->lodCount);
+	CheckAlloc(model->lods);
 	for (int i = 0; i < model->lodCount; i++)
 	{
 		model->lods[i] = malloc(sizeof(ModelLod));
 		CheckAlloc(model->lods[i]);
 		ModelLod *lod = model->lods[i];
+
 		lod->distance = ReadFloat(assetData->data, &offset);
 		lod->vertexCount = ReadUint(assetData->data, &offset);
-		size_t vertexDataSize = lod->vertexCount * sizeof(float) * 8;
+
+		const size_t vertexDataSize = lod->vertexCount * sizeof(float) * 8;
 		lod->vertexData = malloc(vertexDataSize);
 		CheckAlloc(lod->vertexData);
 		ReadBytes(assetData->data, &offset, vertexDataSize, lod->vertexData);
-		size_t index_count_size = model->materialCount * sizeof(uint);
-		lod->indexCount = malloc(index_count_size);
+
+		const size_t indexCountSize = model->materialCount * sizeof(uint);
+		lod->indexCount = malloc(indexCountSize);
 		CheckAlloc(lod->indexCount);
-		ReadBytes(assetData->data, &offset, index_count_size, lod->indexCount);
+		ReadBytes(assetData->data, &offset, indexCountSize, lod->indexCount);
+
 		lod->indexData = malloc(sizeof(uint*) * model->materialCount);
 		CheckAlloc(lod->indexData);
 		for (int j = 0; j < model->materialCount; j++)

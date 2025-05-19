@@ -212,7 +212,7 @@ void GL_RenderLevel(const Level *l, const Camera *cam);
  * Render a 3D model
  * @param model The model to render
  * @param modelWorldMatrix The model -> world matrix
- * @param skin
+ * @param skin The skin to use
  */
 void GL_RenderModel(const ModelDefinition *model, const mat4 modelWorldMatrix, int skin);
 

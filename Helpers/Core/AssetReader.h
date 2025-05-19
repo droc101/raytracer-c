@@ -53,7 +53,6 @@ ModelDefinition *LoadModel(const char *asset);
  */
 ModelDefinition *GetModelFromId(uint id);
 
-
 /**
  * Load a font from an asset
  * @param asset The asset to load the font from

@@ -2,16 +2,14 @@
 // Created by droc101 on 10/2/2024.
 //
 
-#include <signal.h>
-
-
-#include "../../Core/Logging.h"
 #ifdef BUILDSTYLE_DEBUG
 
-#define BREAK_ON_ERROR
-
 #include <GL/glew.h>
+#include <signal.h>
+#include "../../Core/Logging.h"
 #include "GLInternal.h"
+
+#define BREAK_ON_ERROR
 
 void GL_DebugMessageCallback(const GLenum source,
 							 const GLenum type,
