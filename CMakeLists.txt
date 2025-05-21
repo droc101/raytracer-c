@@ -190,7 +190,6 @@ add_executable(
 
 set(SDL2_PATH "${CMAKE_SOURCE_DIR}/lib/SDL2/x86_64-w64-mingw32")
 set(SDL2_MIXER_PATH "${CMAKE_SOURCE_DIR}/lib/SDL2_mixer/x86_64-w64-mingw32")
-set(ZLIB_ROOT "${CMAKE_SOURCE_DIR}/lib/zlib")
 
 find_package(SDL2 REQUIRED) # Platform abstraction
 include_directories(${SDL2_INCLUDE_DIR})
@@ -212,6 +211,11 @@ include_directories("${CMAKE_SOURCE_DIR}/lib/box2d/include")
 if (UNIX)
     find_package(GLEW REQUIRED) # OpenGL Extension Wrangler
     include_directories(${GLEW_INCLUDE_DIRS})
+    if (TARGET_ARCH STREQUAL "arm64")
+        set(BOX2D_LIB "${CMAKE_SOURCE_DIR}/lib/box2d/libbox2d_linux_arm64.a")
+    else ()
+        set(BOX2D_LIB "${CMAKE_SOURCE_DIR}/lib/box2d/libbox2d_linux.a")
+    endif ()
 elseif (WIN32) # Thank you Windows, I hate you.
     include_directories("${CMAKE_SOURCE_DIR}/lib/cglm/include") # C OpenGL Mathematics Library
 
@@ -220,15 +224,6 @@ elseif (WIN32) # Thank you Windows, I hate you.
     set(GLEW_LIBRARIES "${CMAKE_SOURCE_DIR}/lib/glew/lib/Release/x64/glew32s.lib")
     set(GLEW_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/lib/glew/include")
     include_directories(${GLEW_INCLUDE_DIRS})
-endif ()
-
-if (UNIX)
-    if (TARGET_ARCH STREQUAL "arm64")
-        set(BOX2D_LIB "${CMAKE_SOURCE_DIR}/lib/box2d/libbox2d_linux_arm64.a")
-    else ()
-        set(BOX2D_LIB "${CMAKE_SOURCE_DIR}/lib/box2d/libbox2d_linux.a")
-    endif ()
-elseif (WIN32)
     set(BOX2D_LIB "${CMAKE_SOURCE_DIR}/lib/box2d/libbox2d_windows.a")
 endif ()
 
