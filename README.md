@@ -1,6 +1,5 @@
 # c-game-engine
-[![Linux Build](https://github.com/droc101/c-game-engine/actions/workflows/cmake-single-platform.yml/badge.svg)](https://github.com/droc101/c-game-engine/actions/workflows/cmake-single-platform.yml)
-[![Windows Build](https://github.com/droc101/c-game-engine/actions/workflows/windows.yml/badge.svg)](https://github.com/droc101/c-game-engine/actions/workflows/windows.yml)
+[![Linux Build](https://github.com/droc101/c-game-engine/actions/workflows/linux.yml/badge.svg)](https://github.com/droc101/c-game-engine/actions/workflows/linux.yml)[![Windows Build](https://github.com/droc101/c-game-engine/actions/workflows/windows.yml/badge.svg)](https://github.com/droc101/c-game-engine/actions/workflows/windows.yml)
 
 ![](Assets/actor/BLOB2.png)
 
