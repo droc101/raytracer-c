@@ -11,4 +11,4 @@ build_dir = sys.argv[1]
 
 shutil.copy("lib/SDL2/x86_64-w64-mingw32/bin/SDL2.dll", build_dir + "/SDL2.dll")
 shutil.copy("lib/SDL2_mixer/x86_64-w64-mingw32/bin/SDL2_mixer.dll", build_dir + "/SDL2_mixer.dll")
-shutil.copy("lib/zlib/bin/libzlib1.dll", build_dir + "/libzlib1.dll")
+# shutil.copy("lib/zlib/bin/libzlib1.dll", build_dir + "/libzlib1.dll")
