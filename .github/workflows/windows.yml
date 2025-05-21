@@ -59,6 +59,6 @@ jobs:
           build/game.exe
           build/SDL2.dll
           build/SDL2_mixer.dll
-          build/libzlib1.dll
+          build/zlib1.dll
           build/assets/
         retention-days: 90
