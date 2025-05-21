@@ -229,7 +229,7 @@ if (UNIX)
         set(BOX2D_LIB "${CMAKE_SOURCE_DIR}/lib/box2d/libbox2d_linux.a")
     endif ()
 elseif (WIN32)
-    set(BOX2D_LIB "${CMAKE_SOURCE_DIR}/lib/box2d/libbox2d_win.a")
+    set(BOX2D_LIB "${CMAKE_SOURCE_DIR}/lib/box2d/libbox2d_windows.a")
 endif ()
 
 if (UNIX)
