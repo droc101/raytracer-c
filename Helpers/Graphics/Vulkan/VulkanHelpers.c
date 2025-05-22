@@ -708,7 +708,7 @@ void LoadWalls(const Level *level,
 		indices[11] = 7;
 	} else
 	{
-		for (uint32_t i = 0; i < 0/*skyModel->vertexCount*/; i++)
+		for (uint32_t i = 0; i < 0 /*skyModel->vertexCount*/; i++)
 		{
 			// memcpy(&vertices[i], &skyModel->vertexData[i * 8], sizeof(float) * 5);
 			vertices[i].textureIndex = pushConstants.skyTextureIndex;
@@ -786,8 +786,8 @@ void LoadActorModels(const Level *level, ActorVertex *vertices, uint32_t *indice
 		if (ListFind(buffers.actors.models.loadedModelIds, (void *)actor->actorModel->id) == -1)
 		{
 			ListAdd(&buffers.actors.models.loadedModelIds, (void *)actor->actorModel->id);
-			const size_t vertexSize = sizeof(*vertices) * 0/*actor->actorModel->vertexCount*/;
-			const size_t indexSize = sizeof(*indices) * 0/*actor->actorModel->indexCount*/;
+			const size_t vertexSize = sizeof(*vertices) * 0 /*actor->actorModel->vertexCount*/;
+			const size_t indexSize = sizeof(*indices) * 0 /*actor->actorModel->indexCount*/;
 			// memcpy(&vertices[vertexOffset], actor->actorModel->vertexData, vertexSize);
 			// memcpy(&indices[vertexOffset], actor->actorModel->indexData, indexSize);
 			vertexOffset += vertexSize;
@@ -895,7 +895,7 @@ void LoadActorInstanceData(const Level *level,
 			const size_t index = ListFind(buffers.actors.models.loadedModelIds, (void *)actor->actorModel->id);
 			ActorInstanceData *offsetInstanceData = (void *)instanceData + offsets[index];
 			memcpy(offsetInstanceData[modelCounts[index]].transform, transformMatrix, sizeof(mat4));
-			offsetInstanceData[modelCounts[index]].textureIndex = 0;//TextureIndex(actor->actorModelTexture);
+			offsetInstanceData[modelCounts[index]].textureIndex = 0; //TextureIndex(actor->actorModelTexture);
 
 			modelCounts[index]++;
 		} else if (actor->actorWall)
@@ -948,7 +948,8 @@ void LoadActorDrawInfo(const Level *level, VkDrawIndexedIndirectCommand *drawInf
 	uint32_t wallCount = 0;
 	for (size_t i = 0; i < buffers.actors.models.loadedModelIds.length; i++)
 	{
-		drawInfo[i].indexCount = 0;//GetModelFromId((size_t)ListGet(buffers.actors.models.loadedModelIds, i))->indexCount;
+		drawInfo[i]
+				.indexCount = 0; //GetModelFromId((size_t)ListGet(buffers.actors.models.loadedModelIds, i))->indexCount;
 		drawInfo[i].instanceCount = (size_t)ListGet(buffers.actors.models.modelCounts, i);
 		modelCount += (size_t)ListGet(buffers.actors.models.modelCounts, i);
 	}

@@ -19,9 +19,9 @@
 #include "Helpers/Graphics/Drawing.h"
 #include "Helpers/Graphics/RenderingHelpers.h"
 #include "Helpers/PlatformHelpers.h"
+#include "Helpers/TextInputSystem.h"
 #include "Structs/GlobalState.h"
 #include "Structs/Level.h"
-#include "Helpers/TextInputSystem.h"
 
 SDL_Surface *windowIcon;
 
@@ -111,7 +111,8 @@ void WindowAndRenderInit()
 {
 	const size_t titleLen = strlen(GAME_TITLE) + strlen(" - Vulkan") + 1;
 	char title[titleLen];
-	switch (currentRenderer) {
+	switch (currentRenderer)
+	{
 		case RENDERER_OPENGL:
 			snprintf(title, titleLen, "%s - OpenGL", GAME_TITLE);
 			break;

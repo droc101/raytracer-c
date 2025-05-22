@@ -8,10 +8,10 @@
 #include <stdlib.h>
 #include <zlib.h>
 #include "../../Structs/GlobalState.h"
+#include "../Graphics/RenderingHelpers.h"
 #include "DataReader.h"
 #include "Error.h"
 #include "Logging.h"
-#include "../Graphics/RenderingHelpers.h"
 
 List assetCacheNames;
 List assetCacheData;
@@ -339,7 +339,7 @@ ModelDefinition *LoadModel(const char *asset)
 	model->materialCount = ReadUint(assetData->data, &offset);
 	model->skinCount = ReadUint(assetData->data, &offset);
 	model->lodCount = ReadUint(assetData->data, &offset);
-	model->skins = malloc(sizeof(Material*) * model->skinCount);
+	model->skins = malloc(sizeof(Material *) * model->skinCount);
 	CheckAlloc(model->skins);
 
 	const size_t skinSize = sizeof(Material) * model->materialCount;
@@ -347,7 +347,7 @@ ModelDefinition *LoadModel(const char *asset)
 	{
 		model->skins[i] = malloc(skinSize);
 		CheckAlloc(model->skins[i]);
-		Material* skin = model->skins[i];
+		Material *skin = model->skins[i];
 		for (int j = 0; j < model->materialCount; j++)
 		{
 			Material *mat = &skin[j];
@@ -357,7 +357,7 @@ ModelDefinition *LoadModel(const char *asset)
 		}
 	}
 
-	model->lods = malloc(sizeof(ModelLod*) * model->lodCount);
+	model->lods = malloc(sizeof(ModelLod *) * model->lodCount);
 	CheckAlloc(model->lods);
 	for (int i = 0; i < model->lodCount; i++)
 	{
@@ -378,7 +378,7 @@ ModelDefinition *LoadModel(const char *asset)
 		CheckAlloc(lod->indexCount);
 		ReadBytes(assetData->data, &offset, indexCountSize, lod->indexCount);
 
-		lod->indexData = malloc(sizeof(uint*) * model->materialCount);
+		lod->indexData = malloc(sizeof(uint *) * model->materialCount);
 		CheckAlloc(lod->indexData);
 		for (int j = 0; j < model->materialCount; j++)
 		{

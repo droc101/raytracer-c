@@ -1107,7 +1107,7 @@ void GL_LoadModel(const ModelDefinition *model, const int lod, const int materia
 	CheckAlloc(buf);
 	buf->lodCount = model->lodCount;
 	buf->materialCount = model->materialCount;
-	buf->buffers = malloc(sizeof(void*) * model->lodCount);
+	buf->buffers = malloc(sizeof(void *) * model->lodCount);
 	CheckAlloc(buf->buffers);
 
 	for (int l = 0; l < buf->lodCount; l++)
@@ -1125,10 +1125,16 @@ void GL_LoadModel(const ModelDefinition *model, const int lod, const int materia
 			glBindVertexArray(modelBuffer->vertexArrayObject);
 
 			glBindBuffer(GL_ARRAY_BUFFER, modelBuffer->vertexBufferObject);
-			glBufferData(GL_ARRAY_BUFFER, (long)(model->lods[l]->vertexCount * sizeof(float) * 8), model->lods[l]->vertexData, GL_STATIC_DRAW);
+			glBufferData(GL_ARRAY_BUFFER,
+						 (long)(model->lods[l]->vertexCount * sizeof(float) * 8),
+						 model->lods[l]->vertexData,
+						 GL_STATIC_DRAW);
 
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, modelBuffer->elementBufferObject);
-			glBufferData(GL_ELEMENT_ARRAY_BUFFER, (long)(model->lods[l]->indexCount[m] * sizeof(uint)), model->lods[l]->indexData[m], GL_STATIC_DRAW);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+						 (long)(model->lods[l]->indexCount[m] * sizeof(uint)),
+						 model->lods[l]->indexData[m],
+						 GL_STATIC_DRAW);
 		}
 	}
 
@@ -1141,7 +1147,7 @@ void GL_RenderModelPart(const ModelDefinition *model,
 						const int material,
 						const int skin)
 {
-	Material* skinMats = model->skins[skin];
+	Material *skinMats = model->skins[skin];
 
 	const ModelShader shader = skinMats[material].shader;
 
@@ -1212,8 +1218,12 @@ void GL_RenderModel(const ModelDefinition *model, const mat4 modelWorldMatrix, c
 	int lod = 0;
 	if (model->lodCount > 1)
 	{
-		const float distanceToCamera = glm_vec3_distance((vec3){modelWorldMatrix[3][0], modelWorldMatrix[3][1], modelWorldMatrix[3][2]},
-												 (vec3){GetState()->cam->x, GetState()->cam->y, GetState()->cam->z});
+		const float distanceToCamera = glm_vec3_distance((vec3){modelWorldMatrix[3][0],
+																modelWorldMatrix[3][1],
+																modelWorldMatrix[3][2]},
+														 (vec3){GetState()->cam->x,
+																GetState()->cam->y,
+																GetState()->cam->z});
 
 		for (int i = model->lodCount - 1; i >= 0; i--)
 		{
